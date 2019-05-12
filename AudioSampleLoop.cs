@@ -50,7 +50,7 @@ namespace VL.NewAudio
     {
         private TState state;
         private readonly AudioSampleFrameClock sampleClock = new AudioSampleFrameClock();
-        private AudioSampleBuffer buffer = new AudioSampleBuffer(WaveOutput.InternalFormat);
+        private AudioSampleBuffer buffer = new AudioSampleBuffer(WaveOutput.SingleChannelFormat);
         private Func<TState, float, Tuple<TState, float>> updateFunction;
         private float[] inputBuffer;
 

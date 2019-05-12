@@ -7,6 +7,7 @@ namespace VL.NewAudio
     public class WaveOutput
     {
         public static WaveFormat InternalFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
+        public static WaveFormat SingleChannelFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);
 
         private class DynamicOutput : ISampleProvider
         {
@@ -50,6 +51,7 @@ namespace VL.NewAudio
                 }
 
                 InternalFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 2);
+                SingleChannelFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 1);
 
                 try
                 {
@@ -74,6 +76,7 @@ namespace VL.NewAudio
             if (waveOut != null)
             {
                 outputBridge.Other = output;
+                output.WaveFormat = outputFormat;
             }
 
             status = waveOut != null ? waveOut.PlaybackState.ToString() : "Uninitialized";

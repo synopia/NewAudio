@@ -18,6 +18,6 @@ namespace VL.NewAudio
             return count;
         }
 
-        public WaveFormat WaveFormat { get; }
+        public WaveFormat WaveFormat { get; set; }
     }
 }
