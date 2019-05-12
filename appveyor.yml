@@ -19,4 +19,7 @@ build:
   publish_nuget: false
   publish_nuget_symbols: false
   include_nuget_references: true
-  
+
+
+after_build:
+  - nuget pack VL.NewAudio.nuspec -Version %APPVEYOR_BUILD_VERSION%-alpha

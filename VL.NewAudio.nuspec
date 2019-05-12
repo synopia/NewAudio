@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+    <metadata>
+        <id>VL.NewAudio</id>
+        <version>$version$</version>
+        <title>VL.NewAudio</title>
+        <authors>synopia</authors>
+        <owners>synopia</owners>
+        <projectUrl>https://github.com/synopia/NewAudio</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <summary>A new audio library for VL</summary>
+        <tags>VL, audio, naudio</tags>
+        <dependencies>
+            <dependency id="NAudio" version="[1.7.3]"/>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="bin/Release/NewAudio.dll" target="lib" exclude=""/>
+        <file src="*.vl" target="" exclude=""/>
+    </files>
+</package>
