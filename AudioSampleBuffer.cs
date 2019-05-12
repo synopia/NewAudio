@@ -5,11 +5,10 @@ namespace VL.NewAudio
 {
     public class AudioSampleBuffer : ISampleProvider
     {
-        public Action<float[], int, int> Update; 
+        public Action<float[], int, int> Update;
 
         public AudioSampleBuffer()
         {
-            WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);
         }
 
         public int Read(float[] buffer, int offset, int count)
@@ -18,6 +17,6 @@ namespace VL.NewAudio
             return count;
         }
 
-        public WaveFormat WaveFormat { get; }
+        public WaveFormat WaveFormat => AudioEngine.InternalFormat;
     }
 }

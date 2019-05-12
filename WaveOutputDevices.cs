@@ -19,8 +19,9 @@ namespace VL.NewAudio
 
     public interface IWaveOutputFactory
     {
-        Tuple<IWavePlayer, int> Create(int latency);
-    } 
+        IWavePlayer Create(int latency);
+    }
+
     public class WaveOutFactory : IWaveOutputFactory
     {
         private int deviceId;
@@ -30,10 +31,10 @@ namespace VL.NewAudio
             this.deviceId = deviceId;
         }
 
-        public Tuple<IWavePlayer, int> Create(int latency)
+        public IWavePlayer Create(int latency)
         {
             var waveOut = new WaveOutEvent {DeviceNumber = deviceId, DesiredLatency = latency};
-            return new Tuple<IWavePlayer, int>(waveOut, latency);
+            return waveOut;
         }
     }
 
@@ -46,10 +47,10 @@ namespace VL.NewAudio
             this.guid = guid;
         }
 
-        public Tuple<IWavePlayer, int> Create(int latency)
+        public IWavePlayer Create(int latency)
         {
             var directSoundOut = new DirectSoundOut(guid, latency);
-            return new Tuple<IWavePlayer,int>(directSoundOut, latency);
+            return directSoundOut;
         }
     }
 
@@ -62,10 +63,10 @@ namespace VL.NewAudio
             this.deviceId = deviceId;
         }
 
-        public Tuple<IWavePlayer,int> Create(int latency)
+        public IWavePlayer Create(int latency)
         {
             var wasapi = new MMDeviceEnumerator().GetDevice(deviceId);
-            return new Tuple<IWavePlayer, int>(new WasapiOut(wasapi, AudioClientShareMode.Shared, true, latency), latency);
+            return new WasapiOut(wasapi, AudioClientShareMode.Shared, true, latency);
         }
     }
 
@@ -78,24 +79,24 @@ namespace VL.NewAudio
             this.driverName = driverName;
         }
 
-        public Tuple<IWavePlayer,int> Create(int latency)
+        public IWavePlayer Create(int latency)
         {
             var asioOut = new AsioOut(driverName);
-            return new Tuple<IWavePlayer, int>(asioOut, asioOut.PlaybackLatency);
+            return asioOut;
         }
     }
-        
+
     public class WaveOutputDeviceDefinition : DynamicEnumDefinitionBase<WaveOutputDeviceDefinition>
     {
         protected override IReadOnlyDictionary<string, object> GetEntries()
         {
             Dictionary<string, object> devices = new Dictionary<string, object>();
-                
+
             for (int i = 0; i < WaveOut.DeviceCount; i++)
             {
                 var caps = WaveOut.GetCapabilities(i);
                 var name = caps.ProductName;
-                devices[$"WO: {name}"] = new WaveOutFactory(i);
+                devices[$"WaveOut: {name}"] = new WaveOutFactory(i);
             }
 
             foreach (var device in DirectSoundOut.Devices)
@@ -108,7 +109,7 @@ namespace VL.NewAudio
             foreach (var wasapi in enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active))
             {
                 var name = wasapi.FriendlyName;
-                devices[$"WS: {name}"] = new WasapiOutFactory(wasapi.ID);
+                devices[$"Wasapi: {name}"] = new WasapiOutFactory(wasapi.ID);
             }
 
             foreach (var asio in AsioOut.GetDriverNames())
@@ -124,5 +125,4 @@ namespace VL.NewAudio
             return HardwareChangedEvents.HardwareChanged;
         }
     }
-
 }

@@ -1,10 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Reactive.Subjects;
-using System.Threading;
-using NAudio.Wave;
 using VL.Lib.Animation;
-using VL.Lib.Collections;
 
 namespace VL.NewAudio
 {
@@ -50,17 +45,19 @@ namespace VL.NewAudio
             throw new NotImplementedException();
         }
     }
-    
-    public class AudioSampleGenerateLoop<TState> where TState : class
+
+    public class AudioSampleLoop<TState> where TState : class
     {
         private TState state;
         private readonly AudioSampleFrameClock sampleClock = new AudioSampleFrameClock();
         private readonly AudioSampleBuffer buffer = new AudioSampleBuffer();
-        private Func<TState, Tuple<TState, float>> updateFunction;
-        
-        public ISampleProvider Update(
+        private Func<TState, float, Tuple<TState, float>> updateFunction;
+        private float[] inputBuffer;
+
+        public AudioSampleBuffer Update(
+            AudioSampleBuffer input,
             bool reset,
-            Func<IFrameClock, TState> create, Func<TState, Tuple<TState, float>> update )
+            Func<IFrameClock, TState> create, Func<TState, float, Tuple<TState, float>> update)
         {
             if (reset || state == null)
             {
@@ -71,15 +68,24 @@ namespace VL.NewAudio
             {
                 buffer.Update = (b, offset, count) =>
                 {
+                    if (input != null)
+                    {
+                        if (inputBuffer == null || inputBuffer.Length < offset + count)
+                        {
+                            inputBuffer = new float[count];
+                        }
+
+                        input.Read(inputBuffer, offset, count);
+                    }
+
                     var increment = 1.0 / buffer.WaveFormat.SampleRate;
                     for (int i = 0; i < count; i++)
                     {
-                        var result = update(state);
+                        var result = update(state, inputBuffer?[i + offset] ?? 0);
                         state = result.Item1;
                         b[i + offset] = result.Item2;
                         sampleClock.IncrementTime(increment);
                     }
-                    
                 };
                 updateFunction = update;
             }
