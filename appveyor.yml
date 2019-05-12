@@ -30,7 +30,7 @@ artifacts:
 
 deploy:
   - provider: NuGet
-    api-key:
+    api_key:
       secure: D3Or/KEuZVthbszeIV9HNCyJf7NF4SvUwamOfc6ibe4=
     skip_symbols: true
     artifact: NewAudio
