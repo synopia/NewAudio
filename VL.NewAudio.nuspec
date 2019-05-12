@@ -9,6 +9,7 @@
         <projectUrl>https://github.com/synopia/NewAudio</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <summary>A new audio library for VL</summary>
+        <description>A new audio library for VL</description>
         <tags>VL, audio, naudio</tags>
         <dependencies>
             <dependency id="NAudio" version="[1.7.3]"/>
