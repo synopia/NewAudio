@@ -98,6 +98,7 @@
     </ItemGroup>
     <ItemGroup>
         <Content Include="appveyor.yml"/>
+        <Content Include="README.md"/>
         <Content Include="VL.NewAudio.nuspec"/>
         <Content Include="VL.NewAudio.vl"/>
     </ItemGroup>
