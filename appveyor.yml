@@ -1,0 +1,22 @@
+configuration: Release
+version: 0.1.{build}
+assembly_info:
+  patch: true
+  file: AssemblyInfo.*
+  assembly_version: "0.1.{build}-alpha"
+  assembly_file_version: "{version}"
+
+install:
+  - appveyor DownloadFile https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+
+platform: Any CPU
+
+before_build:
+  - nuget restore
+
+build:
+  project: NewAudio.sln
+  publish_nuget: false
+  publish_nuget_symbols: false
+  include_nuget_references: true
+  
