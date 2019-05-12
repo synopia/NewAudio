@@ -23,3 +23,7 @@ build:
 
 after_build:
   - nuget pack VL.NewAudio.nuspec -Version %APPVEYOR_BUILD_VERSION%-alpha
+
+artifacts:
+  - path: '*.nupkg'
+    type: NuGetPackage
