@@ -6,7 +6,7 @@ namespace VL.NewAudio
 {
     public class WaveOutput
     {
-        public static WaveFormat InternalFormat;
+        public static WaveFormat InternalFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
 
         private class DynamicOutput : ISampleProvider
         {
