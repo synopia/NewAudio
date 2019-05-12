@@ -50,22 +50,29 @@ namespace VL.NewAudio
     {
         private TState state;
         private readonly AudioSampleFrameClock sampleClock = new AudioSampleFrameClock();
-        private readonly AudioSampleBuffer buffer = new AudioSampleBuffer();
-        private Func<TState, float, Tuple<TState, float>> updateFunction;
+        private AudioSampleBuffer buffer = new AudioSampleBuffer(WaveOutput.InternalFormat);
+        private Func<TState, float[], Tuple<TState, float[]>> updateFunction;
         private float[] inputBuffer;
+
+        private float[] tempInput;
 
         public AudioSampleBuffer Update(
             AudioSampleBuffer input,
             bool reset,
-            Func<IFrameClock, TState> create, Func<TState, float, Tuple<TState, float>> update)
+            Func<IFrameClock, TState> create, Func<TState, float[], Tuple<TState, float[]>> update)
         {
-            if (reset || state == null)
+            if (reset)
             {
                 state = create(sampleClock);
             }
 
-            if (update != updateFunction)
+            if (update != updateFunction || !input.WaveFormat.Equals(buffer.WaveFormat))
             {
+                if (input != null && !input.WaveFormat.Equals(buffer.WaveFormat))
+                {
+                    buffer = new AudioSampleBuffer(input.WaveFormat);
+                }
+
                 buffer.Update = (b, offset, count) =>
                 {
                     if (input != null)
@@ -78,12 +85,29 @@ namespace VL.NewAudio
                         input.Read(inputBuffer, offset, count);
                     }
 
-                    var increment = 1.0 / buffer.WaveFormat.SampleRate;
-                    for (int i = 0; i < count; i++)
+                    var channels = buffer.WaveFormat.Channels;
+                    if (tempInput == null || tempInput.Length != channels)
                     {
-                        var result = update(state, inputBuffer?[i + offset] ?? 0);
+                        tempInput = new float[channels];
+                    }
+
+                    var increment = 1.0 / buffer.WaveFormat.SampleRate;
+                    for (int i = 0; i < count / channels; i++)
+                    {
+                        for (int j = 0; j < channels; j++)
+                        {
+                            tempInput[j] = inputBuffer?[i * channels + j + offset] ?? 0;
+                        }
+
+                        var result = update(state, tempInput);
+                        var outp = result.Item2;
+                        for (int j = 0; j < channels; j++)
+                        {
+                            b[i * channels + j + offset] = outp[j];
+                        }
+
                         state = result.Item1;
-                        b[i + offset] = result.Item2;
+
                         sampleClock.IncrementTime(increment);
                     }
                 };

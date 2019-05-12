@@ -7,8 +7,9 @@ namespace VL.NewAudio
     {
         public Action<float[], int, int> Update;
 
-        public AudioSampleBuffer()
+        public AudioSampleBuffer(WaveFormat format)
         {
+            WaveFormat = format;
         }
 
         public int Read(float[] buffer, int offset, int count)
@@ -17,6 +18,6 @@ namespace VL.NewAudio
             return count;
         }
 
-        public WaveFormat WaveFormat => AudioEngine.InternalFormat;
+        public WaveFormat WaveFormat { get; }
     }
 }
