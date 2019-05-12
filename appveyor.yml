@@ -5,7 +5,6 @@ assembly_info:
   file: AssemblyInfo.*
   assembly_version: "0.1.{build}-alpha"
   assembly_file_version: "{version}"
-
 install:
   - appveyor DownloadFile https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 
@@ -32,7 +31,7 @@ artifacts:
 deploy:
   - provider: NuGet
     api-key:
-      secure: eo2oXlqnYoh9ksBlpuKuL1eDkqSC3SwQ3PXsG+eyk7hA6X6T+L3tFT+OfAoX+Eeq
+      secure: D3Or/KEuZVthbszeIV9HNCyJf7NF4SvUwamOfc6ibe4=
     skip_symbols: true
     artifact: NewAudio
       
