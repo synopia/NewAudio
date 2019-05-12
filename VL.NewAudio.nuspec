@@ -16,7 +16,7 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="bin/Release/NewAudio.dll" target="lib" exclude=""/>
+        <file src="bin/Release/NewAudio.dll" target="lib/net472" exclude=""/>
         <file src="*.vl" target="" exclude=""/>
     </files>
 </package>
