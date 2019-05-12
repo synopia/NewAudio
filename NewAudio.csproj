@@ -99,6 +99,7 @@
     <ItemGroup>
         <Content Include="appveyor.yml"/>
         <Content Include="VL.NewAudio.nuspec"/>
+        <Content Include="VL.NewAudio.vl"/>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
