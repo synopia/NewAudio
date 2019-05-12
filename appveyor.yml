@@ -27,3 +27,12 @@ after_build:
 artifacts:
   - path: '*.nupkg'
     type: NuGetPackage
+    name: NewAudio
+
+deploy:
+  - provider: NuGet
+    api-key:
+      secure: eo2oXlqnYoh9ksBlpuKuL1eDkqSC3SwQ3PXsG+eyk7hA6X6T+L3tFT+OfAoX+Eeq
+    skip_symbols: true
+    artifact: NewAudio
+      
