@@ -13,9 +13,9 @@ namespace VL.NewAudio
         private WaveFormat inputFormat;
 
 
-        public AudioSampleBuffer Update(bool reset, WaveInputDevice device, out string status,
+        public AudioSampleBuffer Update(WaveInputDevice device, out string status,
             out string error,
-            out WaveFormat waveFormat, int latency = 300)
+            out WaveFormat waveFormat, int latency = 300, bool reset = false)
         {
             if (reset)
             {
@@ -31,8 +31,6 @@ namespace VL.NewAudio
 
                     waveIn.DataAvailable += (s, a) => { bufferedWave.AddSamples(a.Buffer, 0, a.BytesRecorded); };
                     bufferedWave = new BufferedWaveProvider(waveIn.WaveFormat);
-//                    var waveProvider = new MultiplexingWaveProvider(new IWaveProvider[] {bufferedWave}, 1);
-//                    waveProvider.ConnectInputToOutput(0, 0);
                     var sampleProvider = new WaveToSampleProvider(bufferedWave);
                     inputFormat = sampleProvider.WaveFormat;
                     waveIn.StartRecording();

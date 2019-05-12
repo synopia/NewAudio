@@ -1,4 +1,5 @@
 using System;
+using NAudio.Wave;
 using VL.Lib.Animation;
 
 namespace VL.NewAudio
@@ -51,55 +52,58 @@ namespace VL.NewAudio
         private TState state;
         private readonly AudioSampleFrameClock sampleClock = new AudioSampleFrameClock();
         private AudioSampleBuffer buffer = new AudioSampleBuffer(WaveOutput.SingleChannelFormat);
-        private Func<TState, float, Tuple<TState, float>> updateFunction;
+        private Func<TState, float[], int, float[], int, TState> updateFunction;
         private float[] inputBuffer;
 
         public AudioSampleBuffer Update(
-            AudioSampleBuffer input,
             bool reset,
-            Func<IFrameClock, TState> create, Func<TState, float, Tuple<TState, float>> update)
+            AudioSampleBuffer input,
+            Func<IFrameClock, TState> create, Func<TState, float[], int, float[], int, TState> update,
+            int outputChannels = 1)
         {
             if (reset)
             {
                 state = create(sampleClock);
             }
 
-            if (update != updateFunction || !input.WaveFormat.Equals(buffer.WaveFormat))
+            if (buffer.WaveFormat.Channels != outputChannels)
             {
-                if (input != null && !input.WaveFormat.Equals(buffer.WaveFormat))
-                {
-                    buffer = new AudioSampleBuffer(input.WaveFormat);
-                }
+                buffer = new AudioSampleBuffer(
+                    WaveFormat.CreateIeeeFloatWaveFormat(WaveOutput.InternalFormat.SampleRate, outputChannels));
+            }
 
+            if (update != updateFunction)
+            {
                 buffer.Update = (b, offset, count) =>
                 {
-                    if (input != null)
+                    try
                     {
-                        if (inputBuffer == null || inputBuffer.Length < offset + count)
+                        if (input != null)
                         {
-                            inputBuffer = new float[count];
+                            var inputSamples = count * input.WaveFormat.Channels / outputChannels;
+
+                            if (inputBuffer == null || inputBuffer.Length != inputSamples)
+                            {
+                                inputBuffer = new float[inputSamples];
+                            }
+
+                            input.Read(inputBuffer, offset, inputSamples);
                         }
 
-                        input.Read(inputBuffer, offset, count);
+                        var increment = 1.0 / WaveOutput.InternalFormat.SampleRate;
+                        var inputChannels = input?.WaveFormat?.Channels ?? 0;
+                        for (int i = 0; i < count / outputChannels; i++)
+                        {
+                            state = update(state, inputBuffer, i * inputChannels, b, i * outputChannels);
+                            sampleClock.IncrementTime(increment);
+                        }
                     }
-
-                    var channels = buffer.WaveFormat.Channels;
-
-                    var increment = 1.0 / buffer.WaveFormat.SampleRate;
-                    for (int i = 0; i < count / channels; i++)
+                    catch (Exception e)
                     {
-                        for (int j = 0; j < channels; j++)
-                        {
-                            var inputSample = inputBuffer?[i * channels + j + offset] ?? 0;
-                            var result = update(state, inputSample);
-                            var outputSample = result.Item2;
-                            b[i * channels + j + offset] = outputSample;
-                            state = result.Item1;
-                        }
-
-                        sampleClock.IncrementTime(increment);
+                        AudioEngine.Log(e.Message);
                     }
                 };
+
                 updateFunction = update;
             }
 

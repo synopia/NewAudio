@@ -15,7 +15,7 @@ namespace VL.NewAudio
 
             public int Read(float[] buffer, int offset, int count)
             {
-                latencyOut = count * 1000 / WaveFormat.SampleRate;
+                latencyOut = count * 1000 / WaveFormat.SampleRate / WaveFormat.Channels;
                 if (Other != null)
                 {
                     return Other.Read(buffer, offset, count);
@@ -38,9 +38,9 @@ namespace VL.NewAudio
         private WaveFormat outputFormat;
 
 
-        public void Update(bool reset, WaveOutputDevice device, AudioSampleBuffer output, out string status,
+        public void Update(WaveOutputDevice device, AudioSampleBuffer output, out string status,
             out string error, out WaveFormat waveFormatOut, out int latency, int sampleRate = 44100,
-            int requestedLatency = 300)
+            int requestedLatency = 300, bool reset = false)
         {
             if (reset)
             {
@@ -57,9 +57,6 @@ namespace VL.NewAudio
                 {
                     waveOut = ((IWaveOutputFactory) device.Tag).Create(requestedLatency);
                     var wave16 = new SampleToWaveProvider16(outputBridge);
-//                    var waveProvider = new MultiplexingWaveProvider(new IWaveProvider[] {wave16}, 2);
-//                    waveProvider.ConnectInputToOutput(0, 0);
-//                    waveProvider.ConnectInputToOutput(0, 1);
                     waveOut.Init(wave16);
                     waveOut.Play();
                     outputFormat = wave16.WaveFormat;
@@ -76,7 +73,6 @@ namespace VL.NewAudio
             if (waveOut != null)
             {
                 outputBridge.Other = output;
-                output.WaveFormat = outputFormat;
             }
 
             status = waveOut != null ? waveOut.PlaybackState.ToString() : "Uninitialized";

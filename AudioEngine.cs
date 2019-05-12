@@ -6,6 +6,16 @@ namespace VL.NewAudio
 {
     public static class AudioEngine
     {
+        public static float GetSample(float[] buffer, int index, int channel = 0)
+        {
+            return buffer?[channel + index] ?? 0;
+        }
+
+        public static void SetSample(float[] buffer, int index, float sample, int channel = 0)
+        {
+            buffer[index + channel] = sample;
+        }
+
         public static float TanH(float v)
         {
             return (float) Math.Tanh(v);
