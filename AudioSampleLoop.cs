@@ -124,6 +124,7 @@ namespace VL.NewAudio
                     catch (Exception e)
                     {
                         AudioEngine.Log(e.Message);
+                        AudioEngine.Log(e.StackTrace);
                     }
                 };
 

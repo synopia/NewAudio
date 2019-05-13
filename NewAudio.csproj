@@ -89,6 +89,7 @@
         <Compile Include="AudioSampleLoop.cs" />
         <Compile Include="Decimator.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="SolveODE.cs"/>
         <Compile Include="WaveInput.cs"/>
         <Compile Include="WaveInputDevices.cs"/>
         <Compile Include="WaveOutput.cs"/>
