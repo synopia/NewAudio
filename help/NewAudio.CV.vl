@@ -158,7 +158,7 @@
               <Pin Id="KnUbRPnjTgFOXu24d2j59e" Name="Output" Kind="StateOutputPin" />
               <Pin Id="J0NDzowxVNSNMuTg5NKE2f" Name="Result" Kind="OutputPin" />
             </Node>
-            <Pad Id="JT8TBbZRbvXNnKRJGq6tFL" Comment="Oversample" Bounds="699,295,35,15" ShowValueBox="true" isIOBox="true" Value="16">
+            <Pad Id="JT8TBbZRbvXNnKRJGq6tFL" Comment="Oversample" Bounds="699,295,35,15" ShowValueBox="true" isIOBox="true" Value="1">
               <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
                 <Choice Kind="TypeFlag" Name="Integer32" />
               </p:TypeAnnotation>
@@ -778,7 +778,7 @@
               </p:TypeAnnotation>
               <p:ValueBoxSettings />
             </Pad>
-            <Pad Id="NITXtJf06ByOJYybajQLf4" Comment="Oversample" Bounds="658,193,35,15" ShowValueBox="true" isIOBox="true" Value="16">
+            <Pad Id="NITXtJf06ByOJYybajQLf4" Comment="Oversample" Bounds="658,193,35,15" ShowValueBox="true" isIOBox="true" Value="1">
               <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
                 <Choice Kind="TypeFlag" Name="Integer32" />
               </p:TypeAnnotation>
@@ -1075,6 +1075,7 @@
             <Pin Id="JycYUQg6ZHGQbGLu5z7RTQ" Name="Error" Kind="OutputPin" />
             <Pin Id="IYIqUAZhEPOPquY9Ywje4r" Name="Wave Format Out" Kind="OutputPin" />
             <Pin Id="T4lyIBnW3kSMJoO39N8UIT" Name="Latency" Kind="OutputPin" />
+            <Pin Id="KhtNYgJ7THQMawIdpsj2wg" Name="Cpu Usage" Kind="OutputPin" />
           </Node>
           <Pad Id="TDYeR1xXAuuPzQKqaCI3Uf" Comment="Device" Bounds="607,965,309,15" ShowValueBox="true" isIOBox="true" Value="ASIO: Audio 2 DJ">
             <p:TypeAnnotation LastCategoryFullName="Main.VL.NewAudioApplication" LastSymbolSource="VL.NewAudio.vl">
@@ -1090,7 +1091,7 @@
               <p:buttonmode p:Assembly="VL.UI.Forms" p:Type="VL.HDE.PatchEditor.Editors.ButtonModeEnum">Bang</p:buttonmode>
             </p:ValueBoxSettings>
           </Pad>
-          <Pad Id="CTiUTkDIeXNQBWxR3fb6ns" Comment="VCO Frequency" Bounds="541,182,69,130" ShowValueBox="true" isIOBox="true" Value="-5.7">
+          <Pad Id="CTiUTkDIeXNQBWxR3fb6ns" Comment="VCO Frequency" Bounds="541,182,69,130" ShowValueBox="true" isIOBox="true" Value="-9">
             <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
               <Choice Kind="TypeFlag" Name="Float32" />
             </p:TypeAnnotation>
@@ -1120,7 +1121,7 @@
             <Pin Id="E3QZcfAnYztMehumhuq1ZV" Name="Reset" Kind="InputPin" />
             <Pin Id="Akbqt93ZcStPcRI5AP5GJX" Name="Result" Kind="OutputPin" />
           </Node>
-          <Pad Id="IQLM8nZpVOmMtJTQWhPDVc" Comment="VCF Freq" Bounds="842,356,37,93" ShowValueBox="true" isIOBox="true" Value="0.395">
+          <Pad Id="IQLM8nZpVOmMtJTQWhPDVc" Comment="VCF Freq" Bounds="842,356,37,93" ShowValueBox="true" isIOBox="true" Value="0.43">
             <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
               <Choice Kind="TypeFlag" Name="Float32" />
             </p:TypeAnnotation>
@@ -1329,6 +1330,13 @@
               <p:showslider p:Type="Boolean">true</p:showslider>
             </p:ValueBoxSettings>
           </Pad>
+          <Pad Id="OBesGG1OGKmQG8aOPzxucO" Comment="Cpu Usage" Bounds="187,620,35,15" ShowValueBox="true" isIOBox="true" Value="0">
+            <p:TypeAnnotation>
+              <Choice Kind="TypeFlag" Name="Float32" />
+              <FullNameCategoryReference ID="Primitive" />
+            </p:TypeAnnotation>
+            <p:ValueBoxSettings />
+          </Pad>
         </Canvas>
         <Patch Id="ML1FBvX5phcP2SuQ1nNo7O" Name="Create" />
         <Patch Id="O1jLQGRDC36NahiiDEnYY8" Name="Update" />
@@ -1362,7 +1370,8 @@
         <Link Id="IJ3atWylNXOMEqmojd1O7U" Ids="PdWPGrGNcNcMADoCAdQvp4,KS3Hra10aqBPR2KfthDJSB" />
         <Link Id="NAo7biJKQoVPGJxexfDhah" Ids="GcY48Q42lQCNEWpUT6TT8j,VwcfwHgDd64PWOVEezzQIa" />
         <Link Id="A3jRTDKSzSrN8pwaBs9wV5" Ids="LqCw6s6d0gHLTJyBv2r4eV,NPMeIf93bChLg5WjnfJf3H" />
-        <Link Id="IUYETFuJaRHMiZuDSP3D5x" Ids="UsmBIdCdbDNOtkaAUAfp0J,PU9er2MpOKkPfpCB1a6zwi" />
+        <Link Id="U4hKU7GUyNBQBdDFWO4Rm9" Ids="KhtNYgJ7THQMawIdpsj2wg,OBesGG1OGKmQG8aOPzxucO" />
+        <Link Id="FAJb4Icj5d8QXlasg6rCqP" Ids="UsmBIdCdbDNOtkaAUAfp0J,PU9er2MpOKkPfpCB1a6zwi" />
       </Patch>
     </Node>
   </Patch>

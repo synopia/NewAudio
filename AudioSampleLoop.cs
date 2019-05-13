@@ -54,7 +54,10 @@ namespace VL.NewAudio
         private AudioSampleBuffer buffer = new AudioSampleBuffer(WaveOutput.SingleChannelFormat);
         private Func<TState, float[], int, float[], int, TState> updateFunction;
         private float[] inputBuffer;
-        private Decimator decimator;
+        private int oversample;
+        private Decimator[] decimators;
+        private float[] oversampleBuffer;
+        private float[] oversampleBuffer2;
 
         public AudioSampleBuffer Update(
             bool reset,
@@ -65,16 +68,28 @@ namespace VL.NewAudio
             if (reset)
             {
                 state = create(sampleClock);
-                if (oversample != 1)
-                {
-                    decimator = new Decimator(oversample, oversample);
-                }
             }
 
             if (buffer.WaveFormat.Channels != outputChannels)
             {
                 buffer = new AudioSampleBuffer(
                     WaveFormat.CreateIeeeFloatWaveFormat(WaveOutput.InternalFormat.SampleRate, outputChannels));
+                this.oversample = 0;
+            }
+
+            if (oversample != this.oversample)
+            {
+                this.oversample = oversample;
+                if (oversample > 1)
+                {
+                    decimators = new Decimator[outputChannels];
+                    oversampleBuffer = new float[oversample * outputChannels];
+                    oversampleBuffer2 = new float[oversample];
+                    for (int i = 0; i < outputChannels; i++)
+                    {
+                        decimators[i] = new Decimator(oversample, oversample);
+                    }
+                }
             }
 
             if (update != updateFunction)
@@ -95,7 +110,7 @@ namespace VL.NewAudio
                             input.Read(inputBuffer, offset, inputSamples);
                         }
 
-                        if (decimator == null)
+                        if (oversample == 1)
                         {
                             var increment = 1.0 / WaveOutput.InternalFormat.SampleRate;
                             var inputChannels = input?.WaveFormat?.Channels ?? 0;
@@ -107,17 +122,33 @@ namespace VL.NewAudio
                         }
                         else
                         {
-                            var increment = 1.0 / WaveOutput.InternalFormat.SampleRate / decimator.Oversample;
+                            var increment = 1.0 / WaveOutput.InternalFormat.SampleRate / oversample;
                             var inputChannels = input?.WaveFormat?.Channels ?? 0;
                             for (int i = 0; i < count / outputChannels; i++)
                             {
-                                for (int j = 0; j < decimator.Oversample; j++)
+                                for (int j = 0; j < oversample; j++)
                                 {
-                                    state = update(state, inputBuffer, i * inputChannels, decimator.Input, j);
+                                    state = update(state, inputBuffer, i * inputChannels, oversampleBuffer,
+                                        j * outputChannels);
                                     sampleClock.IncrementTime(increment);
                                 }
 
-                                b[i * outputChannels] = decimator.Process();
+                                if (outputChannels == 1)
+                                {
+                                    b[i * outputChannels] = decimators[0].Process(oversampleBuffer);
+                                }
+                                else
+                                {
+                                    for (int j = 0; j < outputChannels; j++)
+                                    {
+                                        for (int k = 0; k < oversample; k++)
+                                        {
+                                            oversampleBuffer2[k] = oversampleBuffer[k * outputChannels + j];
+                                        }
+
+                                        b[i * outputChannels + j] = decimators[j].Process(oversampleBuffer2);
+                                    }
+                                }
                             }
                         }
                     }

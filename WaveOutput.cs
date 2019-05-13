@@ -1,11 +1,12 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
 namespace VL.NewAudio
 {
-    public class WaveOutput
+    public class WaveOutput : IDisposable
     {
         public static WaveFormat InternalFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
         public static WaveFormat SingleChannelFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);
@@ -32,6 +33,7 @@ namespace VL.NewAudio
 
         private IWavePlayer waveOut;
         private static int latencyOut;
+        private float cpuUsage;
 
         private readonly DynamicOutput outputBridge = new DynamicOutput();
         private string errorOut = "";
@@ -40,7 +42,7 @@ namespace VL.NewAudio
         private Thread bufferThread;
 
         public void Update(WaveOutputDevice device, AudioSampleBuffer output, out string status,
-            out string error, out WaveFormat waveFormatOut, out int latency, int sampleRate = 44100,
+            out string error, out WaveFormat waveFormatOut, out int latency, out float cpuUsage, int sampleRate = 44100,
             int requestedLatency = 300, bool reset = false)
         {
             if (reset)
@@ -61,20 +63,37 @@ namespace VL.NewAudio
                     waveOut = ((IWaveOutputFactory) device.Tag).Create(requestedLatency);
                     var wave16 = new SampleToWaveProvider16(outputBridge);
                     playBuffer = new BufferedWaveProvider(wave16.WaveFormat);
-                    bufferThread = new Thread(new ThreadStart(() =>
+                    bufferThread = new Thread(() =>
                     {
                         byte[] buffer = new byte[512];
+                        var stopwatch = Stopwatch.StartNew();
                         while (true)
                         {
                             if (playBuffer.BufferedBytes <
                                 wave16.WaveFormat.AverageBytesPerSecond * requestedLatency / 1000)
                             {
-                                wave16.Read(buffer, 0, 512);
-                                playBuffer.AddSamples(buffer, 0, 512);
-                                latencyOut = playBuffer.BufferedBytes * 1000 / wave16.WaveFormat.AverageBytesPerSecond;
+                                stopwatch.Stop();
+                                var idle = stopwatch.ElapsedTicks;
+                                stopwatch.Restart();
+
+                                while (playBuffer.BufferedBytes <
+                                       wave16.WaveFormat.AverageBytesPerSecond * requestedLatency / 1000)
+                                {
+                                    wave16.Read(buffer, 0, 512);
+                                    playBuffer.AddSamples(buffer, 0, 512);
+                                }
+
+                                latencyOut = playBuffer.BufferedBytes * 1000 /
+                                             wave16.WaveFormat.AverageBytesPerSecond;
+
+                                stopwatch.Stop();
+                                var calc = stopwatch.ElapsedTicks;
+                                stopwatch.Restart();
+
+                                this.cpuUsage = (float) calc / (idle + calc);
                             }
                         }
-                    }));
+                    });
                     bufferThread.Start();
                     waveOut.Init(playBuffer);
                     waveOut.Play();
@@ -98,6 +117,14 @@ namespace VL.NewAudio
             error = errorOut;
             waveFormatOut = outputFormat;
             latency = latencyOut;
+            cpuUsage = this.cpuUsage;
+        }
+
+        public void Dispose()
+        {
+            waveOut.Stop();
+            waveOut.Dispose();
+            bufferThread.Abort();
         }
     }
 }

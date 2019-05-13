@@ -10,7 +10,6 @@ namespace VL.NewAudio
 
         private float[] inBuffer;
         private float[] kernel;
-        public float[] Input;
         private int inIndex;
 
         public Decimator(int oversample, int quality, float cutoff = 0.9f)
@@ -20,7 +19,6 @@ namespace VL.NewAudio
             this.cutoff = cutoff;
             kernel = new float[oversample * quality];
             inBuffer = new float[oversample * quality];
-            Input = new float[oversample];
             BoxcarLowpassIR(kernel, cutoff * 0.5f / oversample);
             BlackmanHarrisWindow(kernel);
         }
@@ -29,12 +27,11 @@ namespace VL.NewAudio
         {
             inIndex = 0;
             Array.Clear(inBuffer, 0, inBuffer.Length);
-            Array.Clear(Input, 0, Oversample);
         }
 
-        public float Process()
+        public float Process(float[] input)
         {
-            Array.Copy(Input, 0, inBuffer, inIndex, Oversample);
+            Array.Copy(input, 0, inBuffer, inIndex, Oversample);
             var length = inBuffer.Length;
             inIndex += Oversample;
             inIndex %= length;

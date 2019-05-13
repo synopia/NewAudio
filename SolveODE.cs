@@ -28,7 +28,7 @@ namespace VL.NewAudio
             this.clock = clock;
         }
 
-        public float[] Update(Func<TState> create, float t, int len, ODESolverType? type, bool reset,
+        public float[] Update(Func<TState> create, float t, int len, ODESolverType type, bool reset,
             Func<TState, float, float[], float[], TState> update)
         {
             if (reset || x == null || k == null || updateFunction == null)
@@ -43,7 +43,7 @@ namespace VL.NewAudio
             if (update != updateFunction)
             {
                 updateFunction = update;
-                switch (type ?? ODESolverType.Euler)
+                switch (type)
                 {
                     case ODESolverType.Euler:
                         euler(t);

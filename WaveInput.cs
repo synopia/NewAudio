@@ -4,7 +4,7 @@ using NAudio.Wave.SampleProviders;
 
 namespace VL.NewAudio
 {
-    public class WaveInput
+    public class WaveInput : IDisposable
     {
         private BufferedWaveProvider bufferedWave;
         private IWaveIn waveIn;
@@ -49,6 +49,12 @@ namespace VL.NewAudio
             status = waveIn != null ? "Recording" : "Uninitialized";
             waveFormat = inputFormat;
             return inputBridge;
+        }
+
+        public void Dispose()
+        {
+            waveIn.StopRecording();
+            waveIn.Dispose();
         }
     }
 }
