@@ -65,13 +65,15 @@ namespace VL.NewAudio
             Func<IFrameClock, TState> create, Func<TState, float[], int, float[], int, TState> update,
             int outputChannels = 1, int oversample = 1)
         {
-            if (reset)
+            if (reset || state == null)
             {
                 state = create(sampleClock);
+                AudioEngine.Log("AudioSampleLoop: Created");
             }
 
             if (buffer.WaveFormat.Channels != outputChannels)
             {
+                AudioEngine.Log($"AudioSampleLoop: outputChannels changed {outputChannels}");
                 buffer = new AudioSampleBuffer(
                     WaveFormat.CreateIeeeFloatWaveFormat(WaveOutput.InternalFormat.SampleRate, outputChannels));
                 this.oversample = 0;
@@ -82,6 +84,7 @@ namespace VL.NewAudio
                 this.oversample = oversample;
                 if (oversample > 1)
                 {
+                    AudioEngine.Log($"AudioSampleLoop: oversampling enabled {oversample}");
                     decimators = new Decimator[outputChannels];
                     oversampleBuffer = new float[oversample * outputChannels];
                     oversampleBuffer2 = new float[oversample];
@@ -89,6 +92,10 @@ namespace VL.NewAudio
                     {
                         decimators[i] = new Decimator(oversample, oversample);
                     }
+                }
+                else
+                {
+                    AudioEngine.Log("AudioSampleLoop: oversampling disabled");
                 }
             }
 

@@ -12,7 +12,7 @@ namespace VL.NewAudio
         private MultiplexingSampleProvider multiplexer;
         private AudioSampleBuffer output;
 
-        public AudioSampleBuffer Mixer(Spread<AudioSampleBuffer> inputs, Spread<int> outputMap, bool reset)
+        public AudioSampleBuffer Mixer(Spread<AudioSampleBuffer> inputs, Spread<int> outputMap)
         {
             if (inputs == null || outputMap == null)
             {
@@ -53,6 +53,7 @@ namespace VL.NewAudio
 
         private void Build()
         {
+            AudioEngine.Log($"AudioMixer: configuration changed");
             multiplexer = new MultiplexingSampleProvider(inputs, outputMap.Length);
             for (int i = 0; i < outputMap.Length; i++)
             {

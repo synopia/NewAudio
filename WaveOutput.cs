@@ -41,14 +41,26 @@ namespace VL.NewAudio
         private BufferedWaveProvider playBuffer;
         private Thread bufferThread;
 
+        private WaveOutputDevice selectedDevice;
+        private int selectedRequestedLatency;
+
         public void Update(WaveOutputDevice device, AudioSampleBuffer output, out string status,
             out string error, out WaveFormat waveFormatOut, out int latency, out float cpuUsage, int sampleRate = 44100,
             int requestedLatency = 300, bool reset = false)
         {
+            if (device?.Value != selectedDevice?.Value ||
+                InternalFormat.SampleRate != sampleRate || requestedLatency != selectedRequestedLatency)
+            {
+                reset = true;
+                selectedDevice = device;
+                selectedRequestedLatency = requestedLatency;
+            }
+
             if (reset)
             {
                 if (waveOut != null)
                 {
+                    AudioEngine.Log("Stopping WaveOut...");
                     waveOut.Stop();
                     waveOut.Dispose();
                 }
@@ -58,53 +70,60 @@ namespace VL.NewAudio
                 InternalFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 2);
                 SingleChannelFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 1);
 
-                try
+                if (device != null)
                 {
-                    waveOut = ((IWaveOutputFactory) device.Tag).Create(requestedLatency);
-                    var wave16 = new SampleToWaveProvider16(outputBridge);
-                    playBuffer = new BufferedWaveProvider(wave16.WaveFormat);
-                    bufferThread = new Thread(() =>
+                    AudioEngine.Log(
+                        $"WaveOutput: Configuration changed, device={device.Value}, sampleRate={sampleRate}, requested latency={selectedRequestedLatency}");
+                    try
                     {
-                        byte[] buffer = new byte[512];
-                        var stopwatch = Stopwatch.StartNew();
-                        while (true)
+                        waveOut = ((IWaveOutputFactory) device.Tag).Create(requestedLatency);
+                        var wave16 = new SampleToWaveProvider16(outputBridge);
+                        playBuffer = new BufferedWaveProvider(wave16.WaveFormat);
+                        bufferThread = new Thread(() =>
                         {
-                            if (playBuffer.BufferedBytes <
-                                wave16.WaveFormat.AverageBytesPerSecond * requestedLatency / 1000)
+                            byte[] buffer = new byte[512];
+                            AudioEngine.Log("WaveOutput: Sound render thread started");
+                            var stopwatch = Stopwatch.StartNew();
+                            while (true)
                             {
-                                stopwatch.Stop();
-                                var idle = stopwatch.ElapsedTicks;
-                                stopwatch.Restart();
-
-                                while (playBuffer.BufferedBytes <
-                                       wave16.WaveFormat.AverageBytesPerSecond * requestedLatency / 1000)
+                                if (playBuffer.BufferedBytes <
+                                    wave16.WaveFormat.AverageBytesPerSecond * requestedLatency / 1000)
                                 {
-                                    wave16.Read(buffer, 0, 512);
-                                    playBuffer.AddSamples(buffer, 0, 512);
+                                    stopwatch.Stop();
+                                    var idle = stopwatch.ElapsedTicks;
+                                    stopwatch.Restart();
+
+                                    while (playBuffer.BufferedBytes <
+                                           wave16.WaveFormat.AverageBytesPerSecond * requestedLatency / 1000)
+                                    {
+                                        wave16.Read(buffer, 0, 512);
+                                        playBuffer.AddSamples(buffer, 0, 512);
+                                    }
+
+                                    latencyOut = playBuffer.BufferedBytes * 1000 /
+                                                 wave16.WaveFormat.AverageBytesPerSecond;
+
+                                    stopwatch.Stop();
+                                    var calc = stopwatch.ElapsedTicks;
+                                    stopwatch.Restart();
+
+                                    this.cpuUsage = (float) calc / (idle + calc);
                                 }
-
-                                latencyOut = playBuffer.BufferedBytes * 1000 /
-                                             wave16.WaveFormat.AverageBytesPerSecond;
-
-                                stopwatch.Stop();
-                                var calc = stopwatch.ElapsedTicks;
-                                stopwatch.Restart();
-
-                                this.cpuUsage = (float) calc / (idle + calc);
                             }
-                        }
-                    });
-                    bufferThread.Start();
-                    waveOut.Init(playBuffer);
-                    waveOut.Play();
-                    outputFormat = wave16.WaveFormat;
-                    errorOut = "";
-                }
-                catch (Exception e)
-                {
-                    AudioEngine.Log(e.ToString());
-                    errorOut = e.Message;
-                    waveOut = null;
+                        });
+                        bufferThread.Start();
+                        waveOut.Init(playBuffer);
+                        waveOut.Play();
+                        AudioEngine.Log("WaveOutput: Started");
+                        outputFormat = wave16.WaveFormat;
+                        errorOut = "";
+                    }
+                    catch (Exception e)
+                    {
+                        AudioEngine.Log(e.ToString());
+                        errorOut = e.Message;
+                        waveOut = null;
+                    }
                 }
             }
 

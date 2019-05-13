@@ -228,6 +228,7 @@
                   <Pin Id="RfZMQXvii0jOXEhSybeyW0" Name="Error" Kind="OutputPin" />
                   <Pin Id="RdAO7ETks7FM5bOhpn3M53" Name="Wave Format Out" Kind="OutputPin" />
                   <Pin Id="ISc6h6QUSCrNl0mnRDs3JA" Name="Latency" Kind="OutputPin" />
+                  <Pin Id="Mm1I8hGRcdSLPSOcyNUQvi" Name="Cpu Usage" Kind="OutputPin" />
                 </Node>
                 <Pin Id="P15Fx9Ih5TwQaur13u5nIx" Name="Input" Kind="InputPin" />
                 <Pin Id="IS7AsCvdlUbMWJoC0LM3Lp" Name="Reset" Kind="InputPin" />
@@ -240,6 +241,7 @@
                 <Pin Id="U043PGRxKhYMHSalebizXR" Name="Error" Kind="OutputPin" />
                 <Pin Id="OlfOpnOlefxNpC7WRrj3SB" Name="Wave Format Out" Kind="OutputPin" />
                 <Pin Id="F99lplYtoSTNm7WKhoP5J1" Name="Latency" Kind="OutputPin" />
+                <Pin Id="KY9T7lwYAefPyIPUOq2m3u" Name="Cpu Usage" Kind="OutputPin" />
               </Patch>
             </Node>
           </Canvas>
@@ -304,14 +306,12 @@
                   <Pin Id="G1PSKhbWF5JPy7ALxWvzZR" Name="Input" Kind="StateInputPin" />
                   <Pin Id="IU1cotdnYtQNQzSQdszPUn" Name="Inputs" Kind="InputPin" />
                   <Pin Id="VOR2qn5msrpLSlmkkiTFqo" Name="Output Map" Kind="InputPin" />
-                  <Pin Id="Q0lSBXG9sDGNrPjF87Ynij" Name="Reset" Kind="InputPin" />
                   <Pin Id="JKvwvThKpa7LR0rIsc17Kf" Name="Output" Kind="StateOutputPin" />
                   <Pin Id="CmDofY8BsRDLX2edzGF9t0" Name="Result" Kind="OutputPin" />
                 </Node>
                 <Pin Id="GFiYWJYqRKLLKk7cl6lH8b" Name="Input" Kind="InputPin" />
                 <Pin Id="R4MndxOdwgyNKhj1RKjPna" Name="Inputs" Kind="InputPin" />
                 <Pin Id="VsizDrIzctiN4X03SJWifs" Name="Output Map" Kind="InputPin" />
-                <Pin Id="HcTl7rw4U5GMr7fM9gZsbC" Name="Reset" Kind="InputPin" />
                 <Pin Id="QWcLL3OooXRPgmJp7Fd6A4" Name="Output" Kind="OutputPin" />
                 <Pin Id="HGOzAuQgpUTOjhnMDSyhLT" Name="Result" Kind="OutputPin" />
               </Patch>
@@ -528,6 +528,29 @@
             <Fragment Id="SEezW6jpwktN6FbgzufuOa" Patch="GTh9PEqM1e3QcvfetwyUTU" Enabled="true" />
             <Fragment Id="RpVLbSph45LNfGyfFTThJJ" Patch="DmrSyHugIr4Mn3KYOGCRwC" Enabled="true" />
           </ProcessDefinition>
+        </Patch>
+      </Node>
+      <!--
+
+    ************************ AudioSampleBuffer ************************
+
+-->
+      <Node Name="AudioSampleBuffer" Bounds="200,300" Id="SSx2e261wohQEVcoumZKBs">
+        <p:NodeReference>
+          <Choice Kind="ForwardDefinition" Name="Forward" />
+          <FullNameCategoryReference ID="Primitive" />
+        </p:NodeReference>
+        <p:TypeAnnotation LastCategoryFullName="VL.NewAudio" LastSymbolSource="NewAudio.dll">
+          <Choice Kind="ClassType" Name="AudioSampleBuffer" />
+        </p:TypeAnnotation>
+        <Patch Id="Ah3dsvupgvrQBfUQhVP4Ry">
+          <Canvas Id="SzLZ4FsvEx2NdQ2k8NzT69" CanvasType="Group" />
+          <!--
+
+    ************************  ************************
+
+-->
+          <ProcessDefinition Id="TYW0KGvfZAvODxUwOMhrWR" IsHidden="true" />
         </Patch>
       </Node>
     </Canvas>

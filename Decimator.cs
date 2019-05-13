@@ -14,6 +14,7 @@ namespace VL.NewAudio
 
         public Decimator(int oversample, int quality, float cutoff = 0.9f)
         {
+            AudioEngine.Log($"Decimator: New Decimator created size={oversample * quality}");
             Oversample = oversample;
             this.quality = quality;
             this.cutoff = cutoff;

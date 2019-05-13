@@ -9,6 +9,7 @@ namespace VL.NewAudio
 
         public AudioSampleBuffer(WaveFormat format)
         {
+            AudioEngine.Log($"AudioSampleBuffer: Created {format}");
             WaveFormat = format;
         }
 
@@ -16,6 +17,13 @@ namespace VL.NewAudio
         {
             Update?.Invoke(buffer, offset, count);
             return count;
+        }
+
+        public static AudioSampleBuffer Silence()
+        {
+            var buffer = new AudioSampleBuffer(WaveOutput.SingleChannelFormat);
+            buffer.Update = (b, o, l) => { };
+            return buffer;
         }
 
         public WaveFormat WaveFormat { get; set; }
