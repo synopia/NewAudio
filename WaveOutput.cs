@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
@@ -15,7 +16,6 @@ namespace VL.NewAudio
 
             public int Read(float[] buffer, int offset, int count)
             {
-                latencyOut = count * 1000 / WaveFormat.SampleRate / WaveFormat.Channels;
                 if (Other != null)
                 {
                     return Other.Read(buffer, offset, count);
@@ -36,7 +36,8 @@ namespace VL.NewAudio
         private readonly DynamicOutput outputBridge = new DynamicOutput();
         private string errorOut = "";
         private WaveFormat outputFormat;
-
+        private BufferedWaveProvider playBuffer;
+        private Thread bufferThread;
 
         public void Update(WaveOutputDevice device, AudioSampleBuffer output, out string status,
             out string error, out WaveFormat waveFormatOut, out int latency, int sampleRate = 44100,
@@ -50,6 +51,8 @@ namespace VL.NewAudio
                     waveOut.Dispose();
                 }
 
+                bufferThread?.Abort();
+
                 InternalFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 2);
                 SingleChannelFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 1);
 
@@ -57,7 +60,23 @@ namespace VL.NewAudio
                 {
                     waveOut = ((IWaveOutputFactory) device.Tag).Create(requestedLatency);
                     var wave16 = new SampleToWaveProvider16(outputBridge);
-                    waveOut.Init(wave16);
+                    playBuffer = new BufferedWaveProvider(wave16.WaveFormat);
+                    bufferThread = new Thread(new ThreadStart(() =>
+                    {
+                        byte[] buffer = new byte[512];
+                        while (true)
+                        {
+                            if (playBuffer.BufferedBytes <
+                                wave16.WaveFormat.AverageBytesPerSecond * requestedLatency / 1000)
+                            {
+                                wave16.Read(buffer, 0, 512);
+                                playBuffer.AddSamples(buffer, 0, 512);
+                                latencyOut = playBuffer.BufferedBytes * 1000 / wave16.WaveFormat.AverageBytesPerSecond;
+                            }
+                        }
+                    }));
+                    bufferThread.Start();
+                    waveOut.Init(playBuffer);
                     waveOut.Play();
                     outputFormat = wave16.WaveFormat;
                     errorOut = "";

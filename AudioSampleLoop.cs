@@ -54,16 +54,21 @@ namespace VL.NewAudio
         private AudioSampleBuffer buffer = new AudioSampleBuffer(WaveOutput.SingleChannelFormat);
         private Func<TState, float[], int, float[], int, TState> updateFunction;
         private float[] inputBuffer;
+        private Decimator decimator;
 
         public AudioSampleBuffer Update(
             bool reset,
             AudioSampleBuffer input,
             Func<IFrameClock, TState> create, Func<TState, float[], int, float[], int, TState> update,
-            int outputChannels = 1)
+            int outputChannels = 1, int oversample = 1)
         {
             if (reset)
             {
                 state = create(sampleClock);
+                if (oversample != 1)
+                {
+                    decimator = new Decimator(oversample, oversample);
+                }
             }
 
             if (buffer.WaveFormat.Channels != outputChannels)
@@ -90,12 +95,30 @@ namespace VL.NewAudio
                             input.Read(inputBuffer, offset, inputSamples);
                         }
 
-                        var increment = 1.0 / WaveOutput.InternalFormat.SampleRate;
-                        var inputChannels = input?.WaveFormat?.Channels ?? 0;
-                        for (int i = 0; i < count / outputChannels; i++)
+                        if (decimator == null)
                         {
-                            state = update(state, inputBuffer, i * inputChannels, b, i * outputChannels);
-                            sampleClock.IncrementTime(increment);
+                            var increment = 1.0 / WaveOutput.InternalFormat.SampleRate;
+                            var inputChannels = input?.WaveFormat?.Channels ?? 0;
+                            for (int i = 0; i < count / outputChannels; i++)
+                            {
+                                state = update(state, inputBuffer, i * inputChannels, b, i * outputChannels);
+                                sampleClock.IncrementTime(increment);
+                            }
+                        }
+                        else
+                        {
+                            var increment = 1.0 / WaveOutput.InternalFormat.SampleRate / decimator.Oversample;
+                            var inputChannels = input?.WaveFormat?.Channels ?? 0;
+                            for (int i = 0; i < count / outputChannels; i++)
+                            {
+                                for (int j = 0; j < decimator.Oversample; j++)
+                                {
+                                    state = update(state, inputBuffer, i * inputChannels, decimator.Input, j);
+                                    sampleClock.IncrementTime(increment);
+                                }
+
+                                b[i * outputChannels] = decimator.Process();
+                            }
                         }
                     }
                     catch (Exception e)

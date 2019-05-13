@@ -6,6 +6,8 @@ namespace VL.NewAudio
 {
     public static class AudioEngine
     {
+        public static float PI = (float) Math.PI;
+
         public static float GetSample(float[] buffer, int index, int channel = 0)
         {
             return buffer?[channel + index] ?? 0;
@@ -19,6 +21,27 @@ namespace VL.NewAudio
         public static float TanH(float v)
         {
             return (float) Math.Tanh(v);
+        }
+
+        public static float SinF(float v)
+        {
+            return (float) Math.Sin(v);
+        }
+
+        public static float CosF(float v)
+        {
+            return (float) Math.Cos(v);
+        }
+
+        public static float SinC(float v)
+        {
+            if (Math.Abs(v) < 0.0000001f)
+            {
+                return 1.0f;
+            }
+
+            v *= PI;
+            return SinF(v) / v;
         }
 
         public static Spread<float> SolveODEEuler(float dt, float t, int len, Spread<float> x,
