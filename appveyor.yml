@@ -3,7 +3,7 @@ version: 0.1.22
 assembly_info:
   patch: true
   file: AssemblyInfo.*
-  assembly_version: "0.1.{build}-alpha"
+  assembly_version: "{version}-alpha"
   assembly_file_version: "{version}"
 install:
   - appveyor DownloadFile https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
