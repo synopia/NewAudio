@@ -91,6 +91,7 @@
         <Compile Include="AudioSampleHistoryBuffer.cs"/>
         <Compile Include="AudioSampleLoop.cs" />
         <Compile Include="Decimator.cs"/>
+        <Compile Include="FFT.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="SolveODE.cs"/>
         <Compile Include="WaveInput.cs"/>

@@ -1,3 +1,4 @@
+using System;
 using VL.Lib.Collections;
 
 namespace VL.NewAudio
@@ -5,6 +6,8 @@ namespace VL.NewAudio
     public class AudioSampleHistoryBuffer
     {
         private float[] buffer;
+        private float[] outBuffer = new float[16];
+        private int outPos = 0;
         private int size;
 
         private int writePos;
@@ -25,16 +28,42 @@ namespace VL.NewAudio
 
         public float GetSample(float time)
         {
-            int index = (int) (time * WaveOutput.InternalFormat.SampleRate);
-            int readPos = writePos - index - 8;
-            if (readPos < 0)
+            if (outPos >= outBuffer.Length)
             {
-                readPos += size;
+                int distance = (int) (time * WaveOutput.InternalFormat.SampleRate);
+                int readFrom = writePos - distance;
+                int consume = Math.Min(16, distance);
+                if (readFrom < 0)
+                {
+                    readFrom += buffer.Length;
+                }
+
+                int readTo = readFrom + consume;
+                if (readTo < buffer.Length)
+                {
+                    for (int i = 0; i < consume; i++)
+                    {
+                        outBuffer[i] = buffer[readFrom + i];
+                    }
+                }
+                else
+                {
+                    var remain = readTo - buffer.Length;
+                    for (int i = 0; i < remain; i++)
+                    {
+                        outBuffer[i] = buffer[readFrom + i];
+                    }
+
+                    for (int i = 0; i < consume - remain; i++)
+                    {
+                        outBuffer[i + remain] = buffer[i];
+                    }
+                }
+
+                outPos = 0;
             }
 
-            readPos %= size;
-
-            return buffer[readPos];
+            return outBuffer[outPos++];
         }
 
         public Spread<float> GetSamples(float time, int downsample = 1)

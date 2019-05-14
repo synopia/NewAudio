@@ -2,28 +2,7 @@
 <Document xmlns:p="property" Id="KmAyiLLcXQdMpaub7RNY4E" LanguageVersion="2019.1.0-0318-g91ff9a39a4" Version="0.128">
   <NugetDependency Id="Hb9C78g1kMyMFLO02PiqLd" Location="VL.CoreLib" Version="2019.1.0-318" />
   <Patch Id="Nq8YmeVPxUTOnzjPHaQg0N">
-    <Canvas Id="UVodregYOV1O409KaBJP5r" DefaultCategory="Main" BordersChecked="false" CanvasType="FullCategory">
-      <!--
-
-    ************************ Node ************************
-
--->
-      <Node Name="Node" Bounds="200,100" Id="OOHLY4a7uRqQeAmP1F2hDM">
-        <p:NodeReference>
-          <Choice Kind="ContainerDefinition" Name="Process" />
-          <FullNameCategoryReference ID="Primitive" />
-        </p:NodeReference>
-        <Patch Id="QqxagTJR7bvOPA02NVNmeZ">
-          <Canvas Id="Rtdni5Qb1agPpiuSozUKGv" BordersChecked="false" CanvasType="Group" />
-          <Patch Id="QRmsCxOYkJJNyHGJQiF6bb" Name="Create" />
-          <Patch Id="Dt52ogdKxxtM6oKFXLGvM4" Name="Update" />
-          <ProcessDefinition Id="UmmugVQdUGFM7fN6vZpwgS">
-            <Fragment Id="Uspuz94krlpNiOueJOUjHO" Patch="QRmsCxOYkJJNyHGJQiF6bb" Enabled="true" />
-            <Fragment Id="AYSZDrc8btvPIbnjLHBxHh" Patch="Dt52ogdKxxtM6oKFXLGvM4" Enabled="true" />
-          </ProcessDefinition>
-        </Patch>
-      </Node>
-    </Canvas>
+    <Canvas Id="UVodregYOV1O409KaBJP5r" DefaultCategory="Main" CanvasType="FullCategory" />
     <!--
 
     ************************ Application ************************
@@ -36,7 +15,7 @@
       </p:NodeReference>
       <Patch Id="NFffYA24UcLOofxAFTuMmA">
         <Canvas Id="RqGQSjV7ytGLSqra8c3MMc" CanvasType="Group">
-          <Node Bounds="373,300,65,19" Id="L7KLsRomklNPejqRB4OYP0">
+          <Node Bounds="375,250,65,19" Id="L7KLsRomklNPejqRB4OYP0">
             <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
               <Choice Kind="ProcessAppFlag" Name="WaveInput" />
@@ -114,6 +93,9 @@
                 </TypeReference>
               </p:TypeArguments>
             </p:TypeAnnotation>
+            <p:ValueBoxSettings>
+              <p:showentryindex p:Type="Boolean">true</p:showentryindex>
+            </p:ValueBoxSettings>
           </Pad>
           <Pad Id="VDppLYzTJyvPNtrY8ql6LP" Comment="Output Map" Bounds="375,342,35,34" ShowValueBox="true" isIOBox="true" Value="0">
             <p:TypeAnnotation LastCategoryFullName="Collections" LastSymbolSource="VL.Collections.vl">
@@ -124,6 +106,9 @@
                 </TypeReference>
               </p:TypeArguments>
             </p:TypeAnnotation>
+            <p:ValueBoxSettings>
+              <p:showentryindex p:Type="Boolean">true</p:showentryindex>
+            </p:ValueBoxSettings>
           </Pad>
           <Node Bounds="354,438,215,184" Id="S6mPlOPMCwPN02j1zzcEWI">
             <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
@@ -185,11 +170,38 @@
               </Node>
             </Patch>
           </Node>
-          <ControlPoint Id="UgeD4Yx9ddmP7zharwkUGn" Bounds="621,717" />
           <Pad Id="It1sdMwLnV1OrAt9pXQHO0" Comment="Cpu Usage" Bounds="482,841,35,15" ShowValueBox="true" isIOBox="true">
             <p:ValueBoxSettings />
           </Pad>
           <ControlPoint Id="JAjf2aGOXJOMq9NaqcOrrX" Bounds="374,230" />
+          <ControlPoint Id="B7fVMEfh1vuQdAliH2hukL" Bounds="438,275" />
+          <Pad Id="Edui9HrydmmNmX50iw4o3Q" Bounds="502,353,317,47" ShowValueBox="true" isIOBox="true" Value="Output channel 0 gets input from Input channel 0 (right channel is dropped)">
+            <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
+              <Choice Kind="TypeFlag" Name="String" />
+            </p:TypeAnnotation>
+            <p:ValueBoxSettings>
+              <p:fontsize p:Type="Int32">9</p:fontsize>
+              <p:stringtype p:Assembly="VL.Core" p:Type="VL.Core.StringType">Comment</p:stringtype>
+            </p:ValueBoxSettings>
+          </Pad>
+          <Pad Id="EjCFVnGgSHNNCOqFwLaOYE" Bounds="434,683,350,38" ShowValueBox="true" isIOBox="true" Value="Output channel 0 and 1  gets input from Input channel 0 (mono to stereo)">
+            <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
+              <Choice Kind="TypeFlag" Name="String" />
+            </p:TypeAnnotation>
+            <p:ValueBoxSettings>
+              <p:fontsize p:Type="Int32">9</p:fontsize>
+              <p:stringtype p:Assembly="VL.Core" p:Type="VL.Core.StringType">Comment</p:stringtype>
+            </p:ValueBoxSettings>
+          </Pad>
+          <Pad Id="HTQinWrJ0hWOeS4dZXp6H9" Bounds="582,502,329,53" ShowValueBox="true" isIOBox="true" Value="GetSamples and SetSamples to access current sample (add a pin for each channel)">
+            <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
+              <Choice Kind="TypeFlag" Name="String" />
+            </p:TypeAnnotation>
+            <p:ValueBoxSettings>
+              <p:fontsize p:Type="Int32">9</p:fontsize>
+              <p:stringtype p:Assembly="VL.Core" p:Type="VL.Core.StringType">Comment</p:stringtype>
+            </p:ValueBoxSettings>
+          </Pad>
         </Canvas>
         <Patch Id="JdAy5MF5KDhNtNuNEZgjhT" Name="Create" />
         <Patch Id="NG4NXUivOn9LivaheS2qoP" Name="Update" />
@@ -204,7 +216,7 @@
         <Link Id="BxQxywVJGl2QTo8T0sh2H7" Ids="EpyYtQrCfMJMGL2Hn46XMK,UmjjEZ8z5w6PBWigtiSe65" />
         <Link Id="LRbXIyc4PDSOl1YOlixP6l" Ids="TkGFMEFTRmULMWVQFS484F,Hlj3PrXPg5hLBPE2LOFUSD" />
         <Link Id="KUsVwDGuaspLbvCegFzRXW" Ids="VDppLYzTJyvPNtrY8ql6LP,GiCns2l9qWfP26p8Xbvue5" />
-        <Link Id="KkXbQLRYdu9MpblgtTTCYn" Ids="TFZ2X8UuSYlNcJXOZBZpc4,E9K4Yl67AyJO7NrrVsNHxg" />
+        <Link Id="KkXbQLRYdu9MpblgtTTCYn" Ids="TFZ2X8UuSYlNcJXOZBZpc4,B7fVMEfh1vuQdAliH2hukL,E9K4Yl67AyJO7NrrVsNHxg" />
         <Link Id="MmUHkMxZWn6MWm06Mu877b" Ids="OLAdPsWxi2TPAREbspeM2l,T0MkUOvHjbzMtwmhlYgj71" IsHidden="true" />
         <Link Id="HWYMNhBgHQbPUyaeHKUdU6" Ids="KDJ1Jd7Pd3uOM5amiVzycG,FlTMDrHHOB5Pgzs1iHZnwz" IsHidden="true" />
         <Link Id="N0MUKiVe2obLblvjN74x2Y" Ids="BZlkdhdwMG1Oinlx9VM21E,FrJGFNIoe9vQcGGugujkJS" />
@@ -213,8 +225,8 @@
         <Link Id="OVLvgiUNUDiLpftYvEdnQR" Ids="IwG8OSmVuCUONiMjeoB43X,TxCWnxamHQ0OV6a5iA2iDI" />
         <Link Id="Bq522qtAyF4PRqaf0bIIqy" Ids="QeW0XC495NsPo28jhCxslI,CcKA6g3zKT0Ns21LQafTCV" />
         <Link Id="DOPR3lhZDiQPZXKCpO9N1O" Ids="SzCOkQNwwFGLlQ5bGXnjPb,AUwU0RSNtUhNrYIHuzfHtc" />
-        <Link Id="ELX6rIU8XgJPHi0zAp45BL" Ids="L7a9eGWrZXPNjAgrAFErxi,UgeD4Yx9ddmP7zharwkUGn,CxDxM505yLBNfZVmc3NB4l" />
         <Link Id="IFEX0aMh4vTOeyQjO27r4P" Ids="NBHCLneCotPMIRz9DCcWkD,It1sdMwLnV1OrAt9pXQHO0" />
+        <Link Id="H4wkyeTon5yPvOc9EXc7dJ" Ids="L7a9eGWrZXPNjAgrAFErxi,CxDxM505yLBNfZVmc3NB4l" />
       </Patch>
     </Node>
   </Patch>
