@@ -58,6 +58,8 @@ namespace VL.NewAudio
         private Decimator[] decimators;
         private float[] oversampleBuffer;
         private float[] oversampleBuffer2;
+        private int inputChannels;
+        private AudioSampleBuffer input;
 
         public AudioSampleBuffer Update(
             bool reset,
@@ -68,12 +70,26 @@ namespace VL.NewAudio
             if (reset || state == null)
             {
                 state = create(sampleClock);
-                AudioEngine.Log("AudioSampleLoop: Created");
+                AudioEngine.Log($"AudioSampleLoop: Created {state}");
+            }
+
+            if (this.input != input || (this.input?.WaveFormat?.Channels != input?.WaveFormat.Channels))
+            {
+                AudioEngine.Log(
+                    $"AudioSampleLoop: {state} input changed {inputChannels} to {input?.WaveFormat?.Channels ?? 0}");
+                this.input = input;
+                inputChannels = input?.WaveFormat?.Channels ?? 0;
+                reset = true;
             }
 
             if (buffer.WaveFormat.Channels != outputChannels)
             {
-                AudioEngine.Log($"AudioSampleLoop: outputChannels changed {outputChannels}");
+                AudioEngine.Log($"AudioSampleLoop: {state} outputChannels changed {outputChannels}");
+                if (buffer != null)
+                {
+                    buffer.Update = (floats, i, arg3) => { };
+                }
+
                 buffer = new AudioSampleBuffer(
                     WaveFormat.CreateIeeeFloatWaveFormat(WaveOutput.InternalFormat.SampleRate, outputChannels));
                 this.oversample = 0;
@@ -84,7 +100,7 @@ namespace VL.NewAudio
                 this.oversample = oversample;
                 if (oversample > 1)
                 {
-                    AudioEngine.Log($"AudioSampleLoop: oversampling enabled {oversample}");
+                    AudioEngine.Log($"AudioSampleLoop: {state} oversampling enabled {oversample}");
                     decimators = new Decimator[outputChannels];
                     oversampleBuffer = new float[oversample * outputChannels];
                     oversampleBuffer2 = new float[oversample];
@@ -95,32 +111,31 @@ namespace VL.NewAudio
                 }
                 else
                 {
-                    AudioEngine.Log("AudioSampleLoop: oversampling disabled");
+                    AudioEngine.Log($"AudioSampleLoop: {state} oversampling disabled");
                 }
             }
 
-            if (update != updateFunction)
+            if (update != updateFunction || reset)
             {
                 buffer.Update = (b, offset, count) =>
                 {
                     try
                     {
-                        if (input != null)
+                        if (this.input != null)
                         {
-                            var inputSamples = count * input.WaveFormat.Channels / outputChannels;
+                            var inputSamples = count * inputChannels / outputChannels;
 
                             if (inputBuffer == null || inputBuffer.Length != inputSamples)
                             {
                                 inputBuffer = new float[inputSamples];
                             }
 
-                            input.Read(inputBuffer, offset, inputSamples);
+                            this.input.Read(inputBuffer, offset, inputSamples);
                         }
 
                         if (oversample == 1)
                         {
                             var increment = 1.0 / WaveOutput.InternalFormat.SampleRate;
-                            var inputChannels = input?.WaveFormat?.Channels ?? 0;
                             for (int i = 0; i < count / outputChannels; i++)
                             {
                                 state = update(state, inputBuffer, i * inputChannels, b, i * outputChannels);
@@ -130,7 +145,6 @@ namespace VL.NewAudio
                         else
                         {
                             var increment = 1.0 / WaveOutput.InternalFormat.SampleRate / oversample;
-                            var inputChannels = input?.WaveFormat?.Channels ?? 0;
                             for (int i = 0; i < count / outputChannels; i++)
                             {
                                 for (int j = 0; j < oversample; j++)

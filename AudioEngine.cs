@@ -7,9 +7,14 @@ namespace VL.NewAudio
     {
         public static float PI = (float) Math.PI;
 
+        public static float[] cons(params float[] items)
+        {
+            return items;
+        }
+
         public static float GetSample(float[] buffer, int index, int channel = 0)
         {
-            return buffer?[channel + index] ?? 0;
+            return buffer?[index + channel] ?? 0;
         }
 
         public static void SetSample(float[] buffer, int index, float sample, int channel = 0)
@@ -49,6 +54,7 @@ namespace VL.NewAudio
         {
             log.WriteLine(line);
             log.Flush();
+            log.AutoFlush = true;
         }
     }
 }

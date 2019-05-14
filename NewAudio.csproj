@@ -85,7 +85,9 @@
     <ItemGroup>
         <Compile Include="AudioEngine.cs" />
         <Compile Include="AudioMixer.cs"/>
+        <Compile Include="AudioSampleAccessor.cs"/>
         <Compile Include="AudioSampleBuffer.cs" />
+        <Compile Include="AudioSampleHistoryBuffer.cs"/>
         <Compile Include="AudioSampleLoop.cs" />
         <Compile Include="Decimator.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs" />

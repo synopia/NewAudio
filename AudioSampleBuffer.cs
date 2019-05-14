@@ -22,10 +22,12 @@ namespace VL.NewAudio
         public static AudioSampleBuffer Silence()
         {
             var buffer = new AudioSampleBuffer(WaveOutput.SingleChannelFormat);
-            buffer.Update = (b, o, l) => { };
+            buffer.Update = (b, o, l) => { Array.Clear(b, o, l); };
+            buffer.IsSilence = true;
             return buffer;
         }
 
         public WaveFormat WaveFormat { get; set; }
+        public bool IsSilence;
     }
 }

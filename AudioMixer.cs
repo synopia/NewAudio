@@ -16,7 +16,12 @@ namespace VL.NewAudio
         {
             if (inputs == null || outputMap == null)
             {
-                return null;
+                if (output != null)
+                {
+                    output.Update = (floats, i, arg3) => { };
+                }
+
+                return output;
             }
 
             if (HasChanged(inputs, outputMap))
@@ -25,6 +30,13 @@ namespace VL.NewAudio
                 inputs.CopyTo(0, this.inputs, 0, inputs.Count);
                 this.outputMap = new int[outputMap.Count];
                 outputMap.CopyTo(0, this.outputMap, 0, outputMap.Count);
+                for (int i = 0; i < this.inputs.Length; i++)
+                {
+                    if (this.inputs[i] == null)
+                    {
+                        this.inputs[i] = AudioSampleBuffer.Silence();
+                    }
+                }
 
                 Build();
             }
@@ -38,7 +50,7 @@ namespace VL.NewAudio
                 return true;
             if (outputMap.Count != this.outputMap.Length)
                 return true;
-            if (this.inputs.Where((t, i) => inputs[i] != t).Any())
+            if (this.inputs.Where((t, i) => inputs[i] != t && !(inputs[i] == null && t.IsSilence)).Any())
             {
                 return true;
             }
@@ -59,6 +71,7 @@ namespace VL.NewAudio
             {
                 var input = outputMap[i];
                 multiplexer.ConnectInputToOutput(input, i);
+                AudioEngine.Log($" ch: {input} ==> {i}");
             }
 
             output = new AudioSampleBuffer(multiplexer.WaveFormat);
