@@ -30,26 +30,23 @@ Takes a Spread of AudioSampleBuffers (with any number of channels) and a Spread 
 
 A custom region, that loops over an AudioSampleBuffer in the sound render thread.
 
-Inputs per iteration are:
-* 0-InBuffer: Reference to the input AudioSampleBuffer (float[])
-* 1-InIndex: Position in the input buffer for the current iteration
-* 2-OutBuffer: Reference to the output AudioSampleBuffer (float[])
-* 3-OutIndex: Position in the output buffer for the current iteration
-
-To access the sample(s) for the current iteration, you may use Get/SetSample.
+In each iteration you have access to an AudioSampleAccessor. Use this with the Get/SetSample Operations to access samples per input/output channel.
 
 If you want to use any time related VL Nodes, connect the supplied clock to your nodes. This clock ticks on sample base.
 
-#### Get/SetSample
+#### Get/SetSamples
 
-Small helper to access a single sample. Only useful inside an AudioSampleLoop.
+Operations to gain access to samples per channel in AudioSampleLoop. 
 
-* GetSample needs the InBuffer, InIndex and the channel to read from
-* SetSample needs the OutBuffer, OutIndex and the channel to write to
+#### FFT
+
+Provides FFT data in raw format (real and imaginary part). See example for conversion to bins.
 
 #### VCV
 
-For some advance examples, check out the NewAudio.CV example.
+For some advance examples, check out Sample.CV for some crazy control voltage like machines.
+
+Currently there are some remakes of a VCO, VCF, LFO and a Delay.
 
 ![Sample2](help/vcv.png)
 
