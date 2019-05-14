@@ -29,7 +29,7 @@
             <Pin Id="H25Baq8WfIIQBJKL5YqvLU" Name="Wave Format" Kind="OutputPin" />
           </Node>
           <Pad Id="Ave5xSo1izONyRLoS1oo4x" Comment="Device" Bounds="407,227,405,15" ShowValueBox="true" isIOBox="true" Value="Wasapi Loopback: Audio 2 DJ (Ch B, Out 3|4) (Audio 2 DJ WDM Audio)">
-            <p:TypeAnnotation LastCategoryFullName="Main.VL.NewAudioApplication" LastSymbolSource="VL.NewAudio.vl">
+            <p:TypeAnnotation LastCategoryFullName="VL.NewAudio" LastSymbolSource="NewAudio.dll">
               <Choice Kind="TypeFlag" Name="WaveInputDevice" />
             </p:TypeAnnotation>
             <p:ValueBoxSettings />
@@ -51,7 +51,7 @@
             <Pin Id="NBHCLneCotPMIRz9DCcWkD" Name="Cpu Usage" Kind="OutputPin" />
           </Node>
           <Pad Id="Mm6zRNJzIpiPLWBirt9Fu5" Comment="Device" Bounds="312,770,348,16" ShowValueBox="true" isIOBox="true" Value="ASIO: Audio 2 DJ">
-            <p:TypeAnnotation LastCategoryFullName="Main.VL.NewAudioApplication" LastSymbolSource="VL.NewAudio.vl">
+            <p:TypeAnnotation LastCategoryFullName="VL.NewAudio" LastSymbolSource="NewAudio.dll">
               <Choice Kind="TypeFlag" Name="WaveOutputDevice" />
             </p:TypeAnnotation>
             <p:ValueBoxSettings />
@@ -160,13 +160,14 @@
                 <Pin Id="SzCOkQNwwFGLlQ5bGXnjPb" Name="Output" Kind="OutputPin" />
               </Node>
               <Node Bounds="367,576,95,19" Id="PScplMYwmapNw9AtH6UUMy">
-                <p:NodeReference LastCategoryFullName="Main.AudioSampleAccessor" LastSymbolSource="VL.NewAudio.vl">
+                <p:NodeReference LastCategoryFullName="VL.NewAudio.AudioSampleAccessor" LastSymbolSource="NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <Choice Kind="OperationCallFlag" Name="SetSamples" />
                 </p:NodeReference>
                 <Pin Id="CcKA6g3zKT0Ns21LQafTCV" Name="Input" Kind="StateInputPin" />
-                <Pin Id="AUwU0RSNtUhNrYIHuzfHtc" Name="Samples" Kind="InputPin" />
+                <Pin Id="Md5ZjqWej7DNvBp6cjqd76" Name="Inp" Kind="InputPin" />
                 <Pin Id="BUYsJWWtliFQSSpKobXXFy" Name="Output" Kind="StateOutputPin" />
+                <Pin Id="AUwU0RSNtUhNrYIHuzfHtc" Name="Samples" Kind="InputPin" />
               </Node>
             </Patch>
           </Node>
@@ -231,5 +232,5 @@
     </Node>
   </Patch>
   <NugetDependency Id="BEVE3AtDi2yLhfOqaiZthl" Location="VL.Skia" Version="2019.1.0-0318-g91ff9a39a4" />
-  <NugetDependency Id="UTEaSMTkxeyNdNEX4vdvGx" Location="VL.NewAudio" Version="0.1.10-alpha" />
+  <NugetDependency Id="UTEaSMTkxeyNdNEX4vdvGx" Location="VL.NewAudio" Version="0.1.31-alpha" />
 </Document>
