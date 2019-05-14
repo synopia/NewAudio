@@ -26,7 +26,7 @@ namespace VL.NewAudio
         public float GetSample(float time)
         {
             int index = (int) (time * WaveOutput.InternalFormat.SampleRate);
-            int readPos = writePos - index;
+            int readPos = writePos - index - 8;
             if (readPos < 0)
             {
                 readPos += size;

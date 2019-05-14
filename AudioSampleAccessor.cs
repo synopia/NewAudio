@@ -4,21 +4,52 @@ namespace VL.NewAudio
 {
     public class AudioSampleAccessor
     {
-        private float[] tempBuffer;
+        private float[] tempInputBuffer;
 
-        public float[] GetSamples(float[] buffer, int index, int channels = 1)
+        private float[] currentInputBuffer;
+        private float[] currentOutputBuffer;
+        private int currentOutputChannels;
+        private int currentInputChannels;
+        private int currentIndex;
+
+        public void Update(float[] outputBuffer, float[] inputBuffer, int outputChannels = 1, int inputChannels = 1)
         {
-            if (tempBuffer == null || channels != tempBuffer.Length)
+            currentInputBuffer = inputBuffer;
+            currentOutputBuffer = outputBuffer;
+            currentOutputChannels = outputChannels;
+
+            if (inputChannels != currentInputChannels)
             {
-                tempBuffer = new float[channels];
+                currentInputChannels = inputChannels;
+                tempInputBuffer = new float[inputChannels];
+            }
+        }
+
+        public void UpdateLoop(int inputIndex, int outputIndex)
+        {
+            if (currentInputBuffer != null)
+            {
+                Array.Copy(currentInputBuffer, inputIndex * currentInputChannels, tempInputBuffer, 0,
+                    currentInputChannels);
             }
 
-            if (buffer != null && index + channels <= buffer.Length)
-            {
-                Array.Copy(buffer, index, tempBuffer, 0, channels);
-            }
+            currentIndex = outputIndex;
+        }
 
-            return tempBuffer;
+        public float[] GetSamples()
+        {
+            return tempInputBuffer;
+        }
+
+        public void SetSamples(float[] inp)
+        {
+            if (inp != null)
+            {
+                for (int i = 0; i < currentOutputChannels; i++)
+                {
+                    currentOutputBuffer[currentIndex * currentOutputChannels + i] = inp[i % inp.Length];
+                }
+            }
         }
     }
 }

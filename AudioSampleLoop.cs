@@ -52,7 +52,7 @@ namespace VL.NewAudio
         private TState state;
         private readonly AudioSampleFrameClock sampleClock = new AudioSampleFrameClock();
         private AudioSampleBuffer buffer = new AudioSampleBuffer(WaveOutput.SingleChannelFormat);
-        private Func<TState, float[], int, float[], int, TState> updateFunction;
+        private Func<TState, AudioSampleAccessor, TState> updateFunction;
         private float[] inputBuffer;
         private int oversample;
         private Decimator[] decimators;
@@ -61,10 +61,12 @@ namespace VL.NewAudio
         private int inputChannels;
         private AudioSampleBuffer input;
 
+        private AudioSampleAccessor accessor = new AudioSampleAccessor();
+
         public AudioSampleBuffer Update(
             bool reset,
             AudioSampleBuffer input,
-            Func<IFrameClock, TState> create, Func<TState, float[], int, float[], int, TState> update,
+            Func<IFrameClock, TState> create, Func<TState, AudioSampleAccessor, TState> update,
             int outputChannels = 1, int oversample = 1)
         {
             if (reset || state == null)
@@ -133,12 +135,16 @@ namespace VL.NewAudio
                             this.input.Read(inputBuffer, offset, inputSamples);
                         }
 
+                        accessor.Update(b, inputBuffer, outputChannels, inputChannels);
+
                         if (oversample == 1)
                         {
                             var increment = 1.0 / WaveOutput.InternalFormat.SampleRate;
                             for (int i = 0; i < count / outputChannels; i++)
                             {
-                                state = update(state, inputBuffer, i * inputChannels, b, i * outputChannels);
+                                accessor.UpdateLoop(i, i);
+//                                state = update(state, inputBuffer, i * inputChannels, b, i * outputChannels);
+                                state = update(state, accessor);
                                 sampleClock.IncrementTime(increment);
                             }
                         }
@@ -147,10 +153,12 @@ namespace VL.NewAudio
                             var increment = 1.0 / WaveOutput.InternalFormat.SampleRate / oversample;
                             for (int i = 0; i < count / outputChannels; i++)
                             {
+                                accessor.Update(b, oversampleBuffer, outputChannels, inputChannels);
                                 for (int j = 0; j < oversample; j++)
                                 {
-                                    state = update(state, inputBuffer, i * inputChannels, oversampleBuffer,
-                                        j * outputChannels);
+                                    accessor.UpdateLoop(i, j);
+//                                    state = update(state, inputBuffer, i * inputChannels, oversampleBuffer,
+//                                        j * outputChannels);
                                     sampleClock.IncrementTime(increment);
                                 }
 

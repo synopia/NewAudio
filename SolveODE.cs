@@ -20,8 +20,9 @@ namespace VL.NewAudio
         private float[] k3;
         private float[] k4;
         private float[] yi;
-        private Func<TState, float, float[], float[], TState> updateFunction;
+        private Func<TState, float, ArrayAccessor, TState> updateFunction;
         private IFrameClock clock;
+        private ArrayAccessor accessor = new ArrayAccessor();
 
         public SolveODE(IFrameClock clock)
         {
@@ -29,7 +30,7 @@ namespace VL.NewAudio
         }
 
         public float[] Update(Func<TState> create, float t, int len, ODESolverType type, bool reset,
-            Func<TState, float, float[], float[], TState> update)
+            Func<TState, float, ArrayAccessor, TState> update)
         {
             if (reset || x == null || k == null || updateFunction == null)
             {
@@ -62,7 +63,8 @@ namespace VL.NewAudio
 
         private void euler(float t)
         {
-            state = updateFunction(state, t, x, k);
+            accessor.Update(k, x);
+            state = updateFunction(state, t, accessor);
 
             for (int i = 0; i < length; i++)
             {
@@ -78,13 +80,15 @@ namespace VL.NewAudio
                 yi = new float[length];
             }
 
-            state = updateFunction(state, t, x, k);
+            accessor.Update(k, x);
+            state = updateFunction(state, t, accessor);
             for (int i = 0; i < length; i++)
             {
                 yi[i] = x[i] + k[i] * (float) clock.TimeDifference / 2;
             }
 
-            state = updateFunction(state, t + (float) clock.TimeDifference / 2, yi, k2);
+            accessor.Update(k2, yi);
+            state = updateFunction(state, t + (float) clock.TimeDifference / 2, accessor);
             for (int i = 0; i < length; i++)
             {
                 x[i] += k2[i] * (float) clock.TimeDifference;
@@ -101,25 +105,29 @@ namespace VL.NewAudio
                 yi = new float[length];
             }
 
-            state = updateFunction(state, t, x, k);
+            accessor.Update(k, x);
+            state = updateFunction(state, t, accessor);
             for (int i = 0; i < length; i++)
             {
                 yi[i] = x[i] + k[i] * (float) clock.TimeDifference / 2;
             }
 
-            state = updateFunction(state, t + (float) clock.TimeDifference / 2, yi, k2);
+            accessor.Update(k2, yi);
+            state = updateFunction(state, t + (float) clock.TimeDifference / 2, accessor);
             for (int i = 0; i < length; i++)
             {
                 yi[i] = x[i] + k2[i] * (float) clock.TimeDifference / 2;
             }
 
-            state = updateFunction(state, t + (float) clock.TimeDifference / 2, yi, k3);
+            accessor.Update(k3, yi);
+            state = updateFunction(state, t + (float) clock.TimeDifference / 2, accessor);
             for (int i = 0; i < length; i++)
             {
                 yi[i] = x[i] + k3[i] * (float) clock.TimeDifference;
             }
 
-            state = updateFunction(state, t + (float) clock.TimeDifference, yi, k4);
+            accessor.Update(k4, yi);
+            state = updateFunction(state, t + (float) clock.TimeDifference, accessor);
             for (int i = 0; i < length; i++)
             {
                 x[i] += (float) clock.TimeDifference * (k[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) / 6;
