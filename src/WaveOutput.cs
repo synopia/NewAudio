@@ -118,7 +118,8 @@ namespace VL.NewAudio
                                     catch (Exception e)
                                     {
                                         this.bufferUnderruns++;
-//                                        AudioEngine.Log(e.StackTrace);
+                                        AudioEngine.Log(e.Message);
+                                        AudioEngine.Log(e.StackTrace);
                                     }
                                 }
                             }
@@ -132,6 +133,7 @@ namespace VL.NewAudio
                     }
                     catch (Exception e)
                     {
+                        AudioEngine.Log(e.Message);
                         AudioEngine.Log(e.ToString());
                         errorOut = e.Message;
                         waveOut = null;

@@ -33,6 +33,23 @@ namespace VL.NewAudio
             return SinF(v) / v;
         }
 
+        public static bool ArrayEquals(int[] first, int[] second)
+        {
+            if (first == second)
+                return true;
+            if (first == null || second == null)
+                return false;
+            if (first.Length != second.Length)
+                return false;
+            for (var i = 0; i < first.Length; i++)
+            {
+                if (first[i] != second[i])
+                    return false;
+            }
+
+            return true;
+        }
+
         private static StreamWriter log = File.CreateText("out.log");
 
         public static void Log(string line)

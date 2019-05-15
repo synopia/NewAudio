@@ -17,7 +17,7 @@
         <DebugSymbols>true</DebugSymbols>
         <DebugType>full</DebugType>
         <Optimize>false</Optimize>
-        <OutputPath>C:\Users\synopia\Documents\vvvv\gamma-preview\Packages\VL.NewAudio.0.1.36-alpha\lib\naudio173</OutputPath>
+        <OutputPath>C:\Users\synopia\Documents\vvvv\gamma-preview\Packages\VL.NewAudio.0.1.38-alpha\lib\naudio173</OutputPath>
         <DefineConstants>DEBUG;TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
@@ -92,6 +92,7 @@
         <Compile Include="src\AudioSampleHistoryBuffer.cs"/>
         <Compile Include="src\AudioSampleLoop.cs"/>
         <Compile Include="src\AudioSplitter.cs"/>
+        <Compile Include="src\CircularSampleBuffer.cs"/>
         <Compile Include="src\Decimator.cs"/>
         <Compile Include="src\FFT.cs"/>
         <Compile Include="src\SolveODE.cs"/>
