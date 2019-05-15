@@ -38,7 +38,7 @@ build:
 
 
 after_build:
-  - nuget pack VL.NewAudio.nuspec -Version "$env:nugetVersion"
+  - ps: nuget pack VL.NewAudio.nuspec -version "$env:nugetVersion"
 
 artifacts:
   - path: '*.nupkg'
