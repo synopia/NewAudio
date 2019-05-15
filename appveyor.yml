@@ -1,6 +1,6 @@
 configuration: Release
 environment:
-  packageVersion: 0.2.1
+  packageVersion: 0.2.0
 
 pull_requests:
   do_not_increment_build_number: true
@@ -40,6 +40,9 @@ build:
 after_build:
   - ps: nuget pack VL.NewAudio.nuspec -version "$env:nugetVersion"
 
+test_script:
+  - ps: vstest.console /Logger:Appveyor /InIsolation /Platform:x64 test\Bin\Release\NewAudioTest.dll
+    
 artifacts:
   - path: '*.nupkg'
     name: NewAudio
