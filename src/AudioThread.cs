@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace VL.NewAudio
 {
-    public class AudioThread
+    public class AudioThread : IDisposable
     {
         private AudioSampleBuffer input;
         private AudioSampleBuffer output;
@@ -89,6 +89,16 @@ namespace VL.NewAudio
                 }
 
                 Thread.Sleep(1);
+            }
+        }
+
+        public void Dispose()
+        {
+            running = false;
+            Thread.Sleep(100);
+            if (playThread.IsAlive)
+            {
+                playThread.Abort();
             }
         }
     }
