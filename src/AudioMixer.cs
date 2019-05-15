@@ -6,44 +6,30 @@ namespace VL.NewAudio
 {
     public class AudioMixer
     {
-        private struct Configuration
-        {
-            public AudioSampleBuffer[] Inputs;
-            public int[] OutputMap;
-            public bool HasChanges;
-
-            public void Update(Spread<AudioSampleBuffer> inputs, Spread<int> outputMap)
-            {
-                var arrayInputs = inputs?.ToArray();
-                var arrayMap = outputMap?.ToArray();
-                HasChanges = !AudioEngine.ArrayEquals(Inputs, arrayInputs) ||
-                             !AudioEngine.ArrayEquals(OutputMap, arrayMap);
-
-                Inputs = arrayInputs;
-                OutputMap = arrayMap;
-            }
-
-            public bool IsValid()
-            {
-                return Inputs != null && Inputs.Length > 0;
-            }
-        }
-
-        private Configuration config = new Configuration();
-        private MultiplexingSampleProvider multiplexer;
+        public AudioSampleBuffer[] Inputs;
+        public int[] OutputMap;
+        public bool HasChanges;
         private AudioSampleBuffer output;
+        private AudioMixerProcessor processor;
 
         public AudioSampleBuffer Update(Spread<AudioSampleBuffer> inputs, Spread<int> outputMap)
         {
-            config.Update(inputs, outputMap);
+            var arrayInputs = inputs?.ToArray();
+            var arrayMap = outputMap?.ToArray();
+            HasChanges = !AudioEngine.ArrayEquals(Inputs, arrayInputs) ||
+                         !AudioEngine.ArrayEquals(OutputMap, arrayMap);
 
-            if (config.HasChanges)
+            Inputs = arrayInputs;
+            OutputMap = arrayMap;
+
+            if (HasChanges)
             {
                 AudioEngine.Log($"AudioMixer: configuration changed");
 
-                if (config.IsValid())
+                if (IsValid())
                 {
-                    Build();
+                    processor = new AudioMixerProcessor(Inputs, OutputMap);
+                    output = processor.Build();
                 }
                 else
                 {
@@ -55,44 +41,62 @@ namespace VL.NewAudio
             return output;
         }
 
-        private void Build()
+        private bool IsValid()
         {
-            var list = config.Inputs.Select(input =>
-            {
-                if (input != null)
-                {
-                    return input;
-                }
-
-                return AudioSampleBuffer.Silence();
-            }).ToArray();
-
-            var outputMap = GetOutputMap(list);
-
-            multiplexer = new MultiplexingSampleProvider(list, outputMap.Length);
-            for (int i = 0; i < outputMap.Length; i++)
-            {
-                var input = outputMap[i];
-                multiplexer.ConnectInputToOutput(input, i);
-                AudioEngine.Log($" ch: {input} ==> {i}");
-            }
-
-            output = new AudioSampleBuffer(multiplexer.WaveFormat);
-            output.Update = (b, o, c) => multiplexer.Read(b, o, c);
+            return Inputs != null && Inputs.Length > 0;
         }
 
-        private int[] GetOutputMap(AudioSampleBuffer[] list)
+        private class AudioMixerProcessor : IAudioProcessor
         {
-            var outputMap = config.OutputMap;
-            if (outputMap == null || outputMap.Length == 0)
+            private readonly AudioSampleBuffer[] inputs;
+            private int[] outputMap;
+            private MultiplexingSampleProvider multiplexer;
+
+            public AudioMixerProcessor(AudioSampleBuffer[] inputs, int[] outputMap)
             {
-                var totalChannels = list.Select(b => b.WaveFormat.Channels).Sum();
-                outputMap = new int[totalChannels];
-                for (var i = 0; i < totalChannels; i++)
-                    outputMap[i] = i;
+                this.inputs = inputs;
+                this.outputMap = outputMap;
+                this.inputs = inputs.Select(input =>
+                {
+                    if (input != null)
+                    {
+                        return input;
+                    }
+
+                    return AudioSampleBuffer.Silence();
+                }).ToArray();
             }
 
-            return outputMap;
+            public int Read(float[] buffer, int offset, int count)
+            {
+                return multiplexer.Read(buffer, offset, count);
+            }
+
+            public AudioSampleBuffer Build()
+            {
+                BuildOutputMap();
+
+                multiplexer = new MultiplexingSampleProvider(inputs, outputMap.Length);
+                for (int i = 0; i < outputMap.Length; i++)
+                {
+                    var input = outputMap[i];
+                    multiplexer.ConnectInputToOutput(input, i);
+                    AudioEngine.Log($" ch: {input} ==> {i}");
+                }
+
+                return new AudioSampleBuffer(multiplexer.WaveFormat) {Processor = this};
+            }
+
+            private void BuildOutputMap()
+            {
+                if (outputMap == null || outputMap.Length == 0)
+                {
+                    var totalChannels = inputs.Select(b => b.WaveFormat.Channels).Sum();
+                    outputMap = new int[totalChannels];
+                    for (var i = 0; i < totalChannels; i++)
+                        outputMap[i] = i;
+                }
+            }
         }
     }
 }

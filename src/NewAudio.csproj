@@ -83,17 +83,17 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="ArrayAccessor.cs"/>
         <Compile Include="AudioEngine.cs"/>
         <Compile Include="AudioMixer.cs"/>
-        <Compile Include="AudioSampleAccessor.cs"/>
         <Compile Include="AudioSampleBuffer.cs"/>
         <Compile Include="AudioSampleHistoryBuffer.cs"/>
         <Compile Include="AudioSampleLoop.cs"/>
         <Compile Include="AudioSplitter.cs"/>
-        <Compile Include="CircularSampleBuffer.cs"/>
-        <Compile Include="Decimator.cs"/>
         <Compile Include="FFT.cs"/>
+        <Compile Include="Internal\ArrayAccessor.cs"/>
+        <Compile Include="Internal\AudioSampleAccessor.cs"/>
+        <Compile Include="Internal\CircularSampleBuffer.cs"/>
+        <Compile Include="Internal\Decimator.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="Silence.cs"/>
         <Compile Include="SolveODE.cs"/>

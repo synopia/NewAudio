@@ -21,17 +21,7 @@ namespace VL.NewAudio
             if (this.source != source)
             {
                 this.source = source;
-                output = new AudioSampleBuffer(source.WaveFormat);
-                output.Update = (b, o, len) =>
-                {
-                    var l = source.Read(b, o, len);
-                    for (int i = 0; i < l; i += output.WaveFormat.Channels)
-                    {
-                        Add(b[o + i]);
-                    }
-
-                    return l;
-                };
+                output = new FFTProcessor(source, this).Build();
             }
 
             if (this.fftLength != fftLength)
@@ -79,6 +69,37 @@ namespace VL.NewAudio
 
                     spread = spreadBuilder.ToSpread();
                 }
+            }
+        }
+
+        private class FFTProcessor : IAudioProcessor
+        {
+            private AudioSampleBuffer source;
+            private FFT fft;
+
+            public FFTProcessor(AudioSampleBuffer source, FFT fft)
+            {
+                this.source = source;
+                this.fft = fft;
+            }
+
+            public AudioSampleBuffer Build()
+            {
+                return new AudioSampleBuffer(source.WaveFormat)
+                {
+                    Processor = this
+                };
+            }
+
+            public int Read(float[] buffer, int offset, int count)
+            {
+                var l = source.Read(buffer, offset, count);
+                for (int i = 0; i < l; i += source.WaveFormat.Channels)
+                {
+                    fft.Add(buffer[offset + i]);
+                }
+
+                return l;
             }
         }
     }

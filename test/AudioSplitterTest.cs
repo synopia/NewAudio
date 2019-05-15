@@ -42,17 +42,35 @@ namespace NewAudioTest
 
         private AudioSampleBuffer Silence(float level)
         {
-            var buf = new AudioSampleBuffer(WaveOutput.SingleChannelFormat);
-            buf.Update = (b, o, len) =>
+            return new LevelProcessor(level).Build();
+        }
+
+        private class LevelProcessor : IAudioProcessor
+        {
+            private readonly float level;
+
+            public LevelProcessor(float level)
             {
-                for (int i = 0; i < len; i++)
+                this.level = level;
+            }
+
+            public AudioSampleBuffer Build()
+            {
+                return new AudioSampleBuffer(WaveOutput.SingleChannelFormat)
                 {
-                    b[i] = level;
+                    Processor = this
+                };
+            }
+
+            public int Read(float[] buffer, int offset, int count)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    buffer[i] = level;
                 }
 
-                return len;
-            };
-            return buf;
+                return count;
+            }
         }
     }
 }

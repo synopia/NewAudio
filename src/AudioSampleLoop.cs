@@ -25,53 +25,17 @@ namespace VL.NewAudio
 
     public class AudioSampleLoop<TState> where TState : class
     {
-        private struct Configuration
-        {
-            public bool Reset;
-            public AudioSampleBuffer Input;
-            public Func<IFrameClock, TState> CreateFunc;
-            public Func<TState, AudioSampleAccessor, TState> UpdateFunc;
-            public int OutputChannels;
-            public int InputChannels => Input?.WaveFormat?.Channels ?? 0;
-            public int Oversampling;
-            public bool HasChanges;
-
-            public void Update(
-                bool reset,
-                AudioSampleBuffer input,
-                Func<IFrameClock, TState> create,
-                Func<TState, AudioSampleAccessor, TState> update,
-                int outputChannels,
-                int oversampling)
-            {
-                HasChanges = reset != Reset
-                             || input?.GetHashCode() != Input?.GetHashCode()
-                             || outputChannels != OutputChannels
-                             || oversampling != Oversampling;
-
-                Reset = reset;
-                Input = input;
-                CreateFunc = create;
-                UpdateFunc = update;
-                OutputChannels = outputChannels;
-                Oversampling = oversampling;
-            }
-
-            public bool IsValid()
-            {
-                return CreateFunc != null && UpdateFunc != null && Input != null;
-            }
-        }
+        private bool reset;
+        private AudioSampleBuffer input;
+        private Func<IFrameClock, TState> createFunc;
+        private Func<TState, AudioSampleAccessor, TState> updateFunc;
+        private int outputChannels;
+        private int oversampling;
+        private bool hasChanges;
 
         private TState state;
         private readonly AudioSampleFrameClock sampleClock = new AudioSampleFrameClock();
-        private AudioSampleBuffer buffer = new AudioSampleBuffer(WaveOutput.SingleChannelFormat);
-        private float[] inputBuffer;
-        private Decimator[] decimators;
-        private float[] oversampleBuffer;
-        private float[] oversampleBuffer2;
-        private Configuration config = new Configuration();
-        private AudioSampleAccessor accessor = new AudioSampleAccessor();
+        private AudioSampleBuffer output = new AudioSampleBuffer(WaveOutput.SingleChannelFormat);
 
         public AudioSampleBuffer Update(
             bool reset,
@@ -87,51 +51,95 @@ namespace VL.NewAudio
                 AudioEngine.Log($"AudioSampleLoop: Created {state}");
             }
 
-            config.Update(reset, input, create, update, outputChannels, oversample);
+            hasChanges = reset != this.reset
+                         || input?.GetHashCode() != this.input?.GetHashCode()
+                         || outputChannels != this.outputChannels
+                         || oversample != oversampling;
 
-            if (config.HasChanges)
+            this.reset = reset;
+            this.input = input;
+            createFunc = create;
+            updateFunc = update;
+            this.outputChannels = outputChannels;
+            oversampling = oversample;
+
+            if (hasChanges)
             {
                 AudioEngine.Log(
                     $"AudioSampleLoop configuration changed outChannels={outputChannels}, oversampling={oversample}");
 
-                if (config.IsValid())
+                if (IsValid())
                 {
-                    if (config.Oversampling > 1)
-                    {
-                        BuildOversampling();
-                    }
-
-                    Build();
+                    output = new AudioSampleLoopProcessor(state, input, sampleClock, update, outputChannels, oversample)
+                        .Build();
                 }
                 else
                 {
-                    buffer?.Dispose();
-                    buffer = null;
+                    output?.Dispose();
+                    output = null;
                 }
             }
 
-            return buffer;
+            return output;
         }
 
-        private void Build()
+        private bool IsValid()
         {
-            var outputChannels = config.OutputChannels;
-            var inputChannels = config.InputChannels;
-            buffer = new AudioSampleBuffer(
-                WaveFormat.CreateIeeeFloatWaveFormat(WaveOutput.InternalFormat.SampleRate, outputChannels));
-            buffer.Update = (b, offset, count) =>
+            return createFunc != null && updateFunc != null && input != null;
+        }
+
+        private class AudioSampleLoopProcessor : IAudioProcessor
+        {
+            private TState state;
+            private readonly AudioSampleBuffer input;
+            private readonly Func<TState, AudioSampleAccessor, TState> updateFunc;
+            private readonly int outputChannels;
+            private int InputChannels => input?.WaveFormat?.Channels ?? 0;
+            private readonly int oversampling;
+            private float[] inputBuffer;
+            private readonly AudioSampleAccessor accessor = new AudioSampleAccessor();
+            private Decimator[] decimators;
+            private float[] oversampleBuffer;
+            private float[] oversampleBuffer2;
+            private readonly AudioSampleFrameClock sampleClock;
+
+            public AudioSampleLoopProcessor(TState state, AudioSampleBuffer input, AudioSampleFrameClock sampleClock,
+                Func<TState, AudioSampleAccessor, TState> updateFunc, int outputChannels, int oversampling)
+            {
+                this.state = state;
+                this.input = input;
+                this.updateFunc = updateFunc;
+                this.outputChannels = outputChannels;
+                this.oversampling = oversampling;
+                this.sampleClock = sampleClock;
+                if (oversampling > 1)
+                {
+                    BuildOversampling();
+                }
+            }
+
+            public AudioSampleBuffer Build()
+            {
+                return new AudioSampleBuffer(
+                    WaveFormat.CreateIeeeFloatWaveFormat(WaveOutput.InternalFormat.SampleRate, outputChannels))
+                {
+                    Processor = this
+                };
+            }
+
+            public int Read(float[] buffer, int offset, int count)
             {
                 try
                 {
-                    if (config.Input != null)
+                    if (input != null)
                     {
-                        var inputSamples = count * inputChannels / outputChannels;
+                        var inputSamples = count * InputChannels / outputChannels;
                         if (inputBuffer == null || inputBuffer.Length != inputSamples)
                         {
                             inputBuffer = new float[inputSamples];
                         }
 
-                        config.Input.Read(inputBuffer, offset, inputSamples);
+                        input.Read(inputBuffer, offset, inputSamples);
                     }
                     else
                     {
@@ -139,13 +147,13 @@ namespace VL.NewAudio
                     }
 
 
-                    if (config.Oversampling <= 1)
+                    if (oversampling <= 1)
                     {
-                        LoopNormal(b, count);
+                        LoopNormal(buffer, count);
                     }
                     else
                     {
-                        LoopOversampling(b, count);
+                        LoopOversampling(buffer, count);
                     }
                 }
                 catch (Exception e)
@@ -155,64 +163,62 @@ namespace VL.NewAudio
                 }
 
                 return count;
-            };
-        }
+            }
 
-        private void LoopOversampling(float[] b, int count)
-        {
-            var outputChannels = config.OutputChannels;
-
-            var increment = 1.0 / WaveOutput.InternalFormat.SampleRate / config.Oversampling;
-            for (int i = 0; i < count / outputChannels; i++)
+            private void LoopOversampling(float[] b, int count)
             {
-                accessor.Update(oversampleBuffer, inputBuffer, outputChannels, config.InputChannels);
-                for (int j = 0; j < config.Oversampling; j++)
+                var increment = 1.0 / WaveOutput.InternalFormat.SampleRate / oversampling;
+                for (int i = 0; i < count / outputChannels; i++)
                 {
-                    accessor.UpdateLoop(i, j);
-                    state = config.UpdateFunc(state, accessor);
-                    sampleClock.IncrementTime(increment);
-                }
-
-                if (outputChannels == 1)
-                {
-                    b[i * outputChannels] = decimators[0].Process(oversampleBuffer);
-                }
-                else
-                {
-                    for (int j = 0; j < outputChannels; j++)
+                    accessor.Update(oversampleBuffer, inputBuffer, outputChannels, InputChannels);
+                    for (int j = 0; j < oversampling; j++)
                     {
-                        for (int k = 0; k < config.Oversampling; k++)
-                        {
-                            oversampleBuffer2[k] = oversampleBuffer[k * outputChannels + j];
-                        }
+                        accessor.UpdateLoop(i, j);
+                        state = updateFunc(state, accessor);
+                        sampleClock.IncrementTime(increment);
+                    }
 
-                        b[i * outputChannels + j] = decimators[j].Process(oversampleBuffer2);
+                    if (outputChannels == 1)
+                    {
+                        b[i * outputChannels] = decimators[0].Process(oversampleBuffer);
+                    }
+                    else
+                    {
+                        for (int j = 0; j < outputChannels; j++)
+                        {
+                            for (int k = 0; k < oversampling; k++)
+                            {
+                                oversampleBuffer2[k] = oversampleBuffer[k * outputChannels + j];
+                            }
+
+                            b[i * outputChannels + j] = decimators[j].Process(oversampleBuffer2);
+                        }
                     }
                 }
             }
-        }
 
-        private void LoopNormal(float[] b, int count)
-        {
-            accessor.Update(b, inputBuffer, config.OutputChannels, config.InputChannels);
-            var increment = 1.0 / WaveOutput.InternalFormat.SampleRate;
-            for (int i = 0; i < count / config.OutputChannels; i++)
+            private void LoopNormal(float[] b, int count)
             {
-                accessor.UpdateLoop(i, i);
-                state = config.UpdateFunc(state, accessor);
-                sampleClock.IncrementTime(increment);
+                accessor.Update(b, inputBuffer, outputChannels, InputChannels);
+                var increment = 1.0 / WaveOutput.InternalFormat.SampleRate;
+                for (int i = 0; i < count / outputChannels; i++)
+                {
+                    accessor.UpdateLoop(i, i);
+                    state = updateFunc(state, accessor);
+                    sampleClock.IncrementTime(increment);
+                }
             }
-        }
 
-        private void BuildOversampling()
-        {
-            AudioEngine.Log($"AudioSampleLoop: {state} oversampling enabled {config.Oversampling}");
-            decimators = new Decimator[config.OutputChannels];
-            oversampleBuffer = new float[config.Oversampling * config.OutputChannels];
-            oversampleBuffer2 = new float[config.Oversampling];
-            for (int i = 0; i < config.OutputChannels; i++)
+            private void BuildOversampling()
             {
-                decimators[i] = new Decimator(config.Oversampling, config.Oversampling);
+                AudioEngine.Log($"AudioSampleLoop: {state} oversampling enabled {oversampling}");
+                decimators = new Decimator[outputChannels];
+                oversampleBuffer = new float[oversampling * outputChannels];
+                oversampleBuffer2 = new float[oversampling];
+                for (int i = 0; i < outputChannels; i++)
+                {
+                    decimators[i] = new Decimator(oversampling, oversampling);
+                }
             }
         }
     }

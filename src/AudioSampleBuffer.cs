@@ -5,8 +5,7 @@ namespace VL.NewAudio
 {
     public class AudioSampleBuffer : ISampleProvider, IDisposable
     {
-        public Func<float[], int, int, int> Update;
-        private bool isSilence;
+        public IAudioProcessor Processor;
 
         public AudioSampleBuffer(WaveFormat format)
         {
@@ -16,9 +15,9 @@ namespace VL.NewAudio
 
         public int Read(float[] buffer, int offset, int count)
         {
-            if (Update != null)
+            if (Processor != null)
             {
-                return Update.Invoke(buffer, offset, count);
+                return Processor.Read(buffer, offset, count);
             }
 
             Array.Clear(buffer, offset, count);
@@ -28,25 +27,31 @@ namespace VL.NewAudio
         public void Dispose()
         {
             AudioEngine.Log($"AudioSampleBuffer({GetHashCode()}): Disposed ");
-            Update = null;
+            Processor = null;
         }
 
         public static AudioSampleBuffer Silence()
         {
-            var buffer = new AudioSampleBuffer(WaveOutput.SingleChannelFormat)
+            return new SilenceProcessor().Build();
+        }
+
+        public class SilenceProcessor : IAudioProcessor
+        {
+            public AudioSampleBuffer Build()
             {
-                Update = (b, o, c) =>
+                return new AudioSampleBuffer(WaveOutput.SingleChannelFormat)
                 {
-                    Array.Clear(b, o, c);
-                    return c;
-                },
-                isSilence = true
-            };
-            return buffer;
+                    Processor = this
+                };
+            }
+
+            public int Read(float[] buffer, int offset, int count)
+            {
+                Array.Clear(buffer, offset, count);
+                return count;
+            }
         }
 
         public WaveFormat WaveFormat { get; }
-
-        public bool IsSilence => isSilence;
     }
 }

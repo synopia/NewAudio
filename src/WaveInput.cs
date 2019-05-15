@@ -50,8 +50,7 @@ namespace VL.NewAudio
                         waveIn.StartRecording();
                         AudioEngine.Log("WaveInput: Started");
 
-                        inputBridge = new AudioSampleBuffer(sampleProvider.WaveFormat);
-                        inputBridge.Update = (b, o, l) => sampleProvider.Read(b, o, l);
+                        inputBridge = new WaveInputProcessor(sampleProvider).Build();
                     }
                     catch (Exception e)
                     {
@@ -72,6 +71,29 @@ namespace VL.NewAudio
         {
             waveIn.StopRecording();
             waveIn.Dispose();
+        }
+
+        private class WaveInputProcessor : IAudioProcessor
+        {
+            private readonly WaveToSampleProvider sampleProvider;
+
+            public WaveInputProcessor(WaveToSampleProvider sampleProvider)
+            {
+                this.sampleProvider = sampleProvider;
+            }
+
+            public AudioSampleBuffer Build()
+            {
+                return new AudioSampleBuffer(sampleProvider.WaveFormat)
+                {
+                    Processor = this
+                };
+            }
+
+            public int Read(float[] buffer, int offset, int count)
+            {
+                return sampleProvider.Read(buffer, offset, count);
+            }
         }
     }
 }

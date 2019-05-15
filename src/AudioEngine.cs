@@ -1,8 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace VL.NewAudio
 {
+    public interface IAudioProcessor
+    {
+        int Read(float[] buffer, int offset, int count);
+    }
+
     public static class AudioEngine
     {
         public static float PI = (float) Math.PI;
@@ -31,6 +38,17 @@ namespace VL.NewAudio
 
             v *= PI;
             return SinF(v) / v;
+        }
+
+        public static bool SequenceEquals<T>(IEnumerable<T> first, IEnumerable<T> second)
+        {
+            if (first == second)
+                return true;
+            if (first == null && second == null)
+                return true;
+            if (first == null || second == null)
+                return false;
+            return first.SequenceEqual(second);
         }
 
         public static bool ArrayEquals<T>(T[] first, T[] second)
