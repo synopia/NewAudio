@@ -1,8 +1,9 @@
 configuration: Release
 environment:
   packageVersion: 0.2.1
+
 pull_requests:
-  do_not_increment_build_version: true
+  do_not_increment_build_number: true
 
 init:
   - ps: $env:IsPrerelease = ($env:APPVEYOR_REPO_TAG -eq $False) -or ($env:APPVEYOR_REPO_BRANCH -ne "master")
