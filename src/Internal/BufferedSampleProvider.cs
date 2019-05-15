@@ -10,8 +10,8 @@ namespace VL.NewAudio
 
         public TimeSpan BufferDuration
         {
-            get => TimeSpan.FromSeconds(BufferLength / (double) WaveFormat.AverageBytesPerSecond);
-            set => BufferLength = (int) (value.TotalSeconds * WaveFormat.AverageBytesPerSecond);
+            get { return TimeSpan.FromSeconds(BufferLength / (double) WaveFormat.AverageBytesPerSecond); }
+            set { BufferLength = (int) (value.TotalSeconds * WaveFormat.AverageBytesPerSecond); }
         }
 
         public bool IsValid => WaveFormat != null && BufferLength > 0;
