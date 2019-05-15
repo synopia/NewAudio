@@ -1157,6 +1157,6 @@
     </Node>
   </Patch>
   <NugetDependency Id="NE8q14WhE4QNreOSZ6fJPX" Location="VL.Skia" Version="2019.1.0-0318-g91ff9a39a4" />
-  <NugetDependency Id="ElSLuvqZekaO6ZTetCcCga" Location="VL.NewAudio" Version="0.1.31-alpha" />
+  <NugetDependency Id="ElSLuvqZekaO6ZTetCcCga" Location="VL.NewAudio" Version="0.2.0" />
   <NugetDependency Id="VwFyb96csj2QWVQKSuiwkM" Location="VL.2D.Polyline" Version="2019.1.0-0318-g91ff9a39a4" />
 </Document>
