@@ -3,20 +3,32 @@ using NAudio.Wave;
 
 namespace VL.NewAudio
 {
-    public class AudioSampleBuffer : ISampleProvider
+    public class AudioSampleBuffer : ISampleProvider, IDisposable
     {
         public Func<float[], int, int, int> Update;
         private bool isSilence;
 
         public AudioSampleBuffer(WaveFormat format)
         {
-            AudioEngine.Log($"AudioSampleBuffer: Created {format}");
+            AudioEngine.Log($"AudioSampleBuffer({GetHashCode()}): Created {format}");
             WaveFormat = format;
         }
 
         public int Read(float[] buffer, int offset, int count)
         {
-            return Update?.Invoke(buffer, offset, count) ?? count;
+            if (Update != null)
+            {
+                return Update.Invoke(buffer, offset, count);
+            }
+
+            Array.Clear(buffer, offset, count);
+            return count;
+        }
+
+        public void Dispose()
+        {
+            AudioEngine.Log($"AudioSampleBuffer({GetHashCode()}): Disposed ");
+            Update = null;
         }
 
         public static AudioSampleBuffer Silence()

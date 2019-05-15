@@ -48,7 +48,14 @@ namespace VL.NewAudio
                 }
                 else
                 {
-                    output = Spread<AudioSampleBuffer>.Empty;
+                    foreach (var buffer in outputs)
+                    {
+                        buffer.Dispose();
+                    }
+
+                    // Send nulls to update connected pins
+                    var results = outputs.Select(o => (AudioSampleBuffer) null);
+                    return results.ToSpread();
                 }
             }
 

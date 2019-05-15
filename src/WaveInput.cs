@@ -44,6 +44,7 @@ namespace VL.NewAudio
 
                         waveIn.DataAvailable += (s, a) => { bufferedWave.AddSamples(a.Buffer, 0, a.BytesRecorded); };
                         bufferedWave = new BufferedWaveProvider(waveIn.WaveFormat);
+                        bufferedWave.DiscardOnBufferOverflow = true;
                         var sampleProvider = new WaveToSampleProvider(bufferedWave);
                         inputFormat = sampleProvider.WaveFormat;
                         waveIn.StartRecording();
@@ -51,7 +52,6 @@ namespace VL.NewAudio
 
                         inputBridge = new AudioSampleBuffer(sampleProvider.WaveFormat);
                         inputBridge.Update = (b, o, l) => sampleProvider.Read(b, o, l);
-                        ;
                     }
                     catch (Exception e)
                     {

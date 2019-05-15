@@ -47,6 +47,7 @@ namespace VL.NewAudio
                 }
                 else
                 {
+                    output?.Dispose();
                     output = null;
                 }
             }

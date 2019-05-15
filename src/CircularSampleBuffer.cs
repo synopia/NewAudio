@@ -49,10 +49,13 @@ namespace VL.NewAudio
 
         public void Add(float value)
         {
-            buffer[writePosition] = value;
-            writePosition++;
-            writePosition %= buffer.Length;
-            sampleCount++;
+            if (sampleCount < buffer.Length)
+            {
+                buffer[writePosition] = value;
+                writePosition++;
+                writePosition %= buffer.Length;
+                sampleCount++;
+            }
         }
 
         /// <summary>Read from the buffer</summary>
