@@ -1,10 +1,26 @@
 configuration: Release
-version: 0.1.{build}
+environment:
+  packageVersion: 0.2.1
+pull_requests:
+  do_not_increment_build_version: true
+
+init:
+  - ps: $env:IsPrerelease = ($env:APPVEYOR_REPO_TAG -eq $False) -or ($env:APPVEYOR_REPO_BRANCH -ne "master")
+  - ps: $env:buildVersion = if ($env:IsPrerelease -eq $False) {"$env:packageVersion"} else {"$env:packageVersion.$env:appveyor_build_number"}
+  - ps: $env:nugetVersion = if ($env:APPVEYOR_REPO_BRANCH -eq "master") {"$env:buildVersion" }  else {"$env:packageVersion-$env:APPVEYOR_REPO_BRANCH$env:appveyor_build_number" }
+  # send version back
+  - ps: Update-AppveyorBuild -Version $env:buildVersion
+  - ps: echo "PreRelease = $env:IsPrerelease"
+  - ps: echo "BuildVersion = $env:buildVersion"
+  - ps: echo "nugetVersion = $env:nugetVersion"
+
 assembly_info:
   patch: true
   file: AssemblyInfo.*
-  assembly_version: "0.1.{build}-alpha"
-  assembly_file_version: "{version}"
+  assembly_version: '$(buildVersion)'
+  assembly_file_version: '$(buildVersion)'
+  assembly_informational_version: '$(nugetVersion)'
+
 install:
   - appveyor DownloadFile https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 
@@ -21,12 +37,12 @@ build:
 
 
 after_build:
-  - nuget pack VL.NewAudio.nuspec -Version %APPVEYOR_BUILD_VERSION%-alpha
+  - nuget pack VL.NewAudio.nuspec -Version "$env:nugetVersion"
 
 artifacts:
   - path: '*.nupkg'
-    type: NuGetPackage
     name: NewAudio
+    type: NuGetPackage
 
 deploy:
   - provider: NuGet
