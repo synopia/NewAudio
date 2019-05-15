@@ -89,7 +89,7 @@ namespace VL.NewAudio
                 AudioEngine.Log($"AudioSampleLoop: {state} outputChannels changed {outputChannels}");
                 if (buffer != null)
                 {
-                    buffer.Update = (floats, i, arg3) => { };
+                    buffer.Update = (floats, i, arg3) => arg3;
                 }
 
                 buffer = new AudioSampleBuffer(
@@ -186,6 +186,8 @@ namespace VL.NewAudio
                         AudioEngine.Log(e.Message);
                         AudioEngine.Log(e.StackTrace);
                     }
+
+                    return count;
                 };
 
                 updateFunction = update;

@@ -24,11 +24,13 @@ namespace VL.NewAudio
                 output = new AudioSampleBuffer(source.WaveFormat);
                 output.Update = (b, o, len) =>
                 {
-                    source.Read(b, o, len);
-                    for (int i = 0; i < len; i += output.WaveFormat.Channels)
+                    var l = source.Read(b, o, len);
+                    for (int i = 0; i < l; i += output.WaveFormat.Channels)
                     {
                         Add(b[o + i]);
                     }
+
+                    return l;
                 };
             }
 

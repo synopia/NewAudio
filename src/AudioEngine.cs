@@ -33,7 +33,7 @@ namespace VL.NewAudio
             return SinF(v) / v;
         }
 
-        public static bool ArrayEquals(int[] first, int[] second)
+        public static bool ArrayEquals<T>(T[] first, T[] second)
         {
             if (first == second)
                 return true;
@@ -43,7 +43,7 @@ namespace VL.NewAudio
                 return false;
             for (var i = 0; i < first.Length; i++)
             {
-                if (first[i] != second[i])
+                if (first[i]?.GetHashCode() != second[i]?.GetHashCode())
                     return false;
             }
 

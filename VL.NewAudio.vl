@@ -229,6 +229,7 @@
                   <Pin Id="RdAO7ETks7FM5bOhpn3M53" Name="Wave Format Out" Kind="OutputPin" />
                   <Pin Id="ISc6h6QUSCrNl0mnRDs3JA" Name="Latency" Kind="OutputPin" />
                   <Pin Id="Mm1I8hGRcdSLPSOcyNUQvi" Name="Cpu Usage" Kind="OutputPin" />
+                  <Pin Id="GFh4L07ORCOLygguDdpcu0" Name="Buffer Underruns" Kind="OutputPin" />
                 </Node>
                 <Pin Id="P15Fx9Ih5TwQaur13u5nIx" Name="Input" Kind="InputPin" />
                 <Pin Id="IS7AsCvdlUbMWJoC0LM3Lp" Name="Reset" Kind="InputPin" />
@@ -242,6 +243,7 @@
                 <Pin Id="OlfOpnOlefxNpC7WRrj3SB" Name="Wave Format Out" Kind="OutputPin" />
                 <Pin Id="F99lplYtoSTNm7WKhoP5J1" Name="Latency" Kind="OutputPin" />
                 <Pin Id="KY9T7lwYAefPyIPUOq2m3u" Name="Cpu Usage" Kind="OutputPin" />
+                <Pin Id="FO82DtgDjbnMi18xlgEZXy" Name="Buffer Underruns" Kind="OutputPin" />
               </Patch>
             </Node>
           </Canvas>
@@ -272,62 +274,62 @@
     ************************ Create ************************
 
 -->
-            <Node Name="Create" Bounds="271,212,80,80" Id="ELj4sjzMgiVL4cIb1ZgK6V">
+            <Node Name="Create" Bounds="296,181,80,80" Id="Pan8TlD975jPJvERSpugTW">
               <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="Builtin">
                 <Choice Kind="OperationDefinition" Name="Operation" />
               </p:NodeReference>
-              <Patch Id="RunEFhTOCu4NHtba402BiT" IsGeneric="true">
-                <Node Bounds="304,250" AutoConnect="true" Id="MG7ZttVkU0TMRmNwerXncC">
+              <Patch Id="AuHXcu4tpTvLP1liaTDp7B">
+                <Node Bounds="333,224" AutoConnect="true" Id="QqfJnPboSuHNN0LpqqE9fh">
                   <p:NodeReference LastCategoryFullName="VL.NewAudio.AudioMixer" LastSymbolSource="NewAudio.dll">
                     <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                     <CategoryReference Kind="AssemblyCategory" Name="AudioMixer" />
                     <Choice Kind="OperationCallFlag" Name="Create" />
                   </p:NodeReference>
-                  <Pin Id="Qil0CPGUvZkL4KjP17JJcH" Name="Output" Kind="StateOutputPin" />
+                  <Pin Id="TIaXN4Vg2N7OgBBP2Uow0J" Name="Output" Kind="StateOutputPin" />
                 </Node>
-                <Pin Id="THCUz7z4EaYMUQaZnecXXG" Name="Output" Kind="OutputPin" />
+                <Pin Id="DT2zxpvcOu9P1bax4dzxRT" Name="Output" Kind="OutputPin" />
               </Patch>
             </Node>
             <!--
 
-    ************************ Mixer ************************
+    ************************ Update ************************
 
 -->
-            <Node Name="Mixer" Bounds="362,379,84,79" Id="UIZCxPuKfxCM2yNErM9770">
+            <Node Name="Update" Bounds="384,361,80,80" Id="Qs1K2I9JbsyO4S93pk2WBc">
               <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="Builtin">
                 <Choice Kind="OperationDefinition" Name="Operation" />
               </p:NodeReference>
-              <Patch Id="EAnEae7Tg5cO3gNMyj3Weg" IsGeneric="true">
-                <Node Bounds="374,412,57,26" AutoConnect="true" Id="DwI376rb24LQMZT8aonRt0">
+              <Patch Id="QPy2cQmxGV6OFLGTvl9aYH">
+                <Node Bounds="402,382" AutoConnect="true" Id="TdeNZQljiwgNRiu7xU9J0r">
                   <p:NodeReference LastCategoryFullName="VL.NewAudio.AudioMixer" LastSymbolSource="NewAudio.dll">
                     <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                     <CategoryReference Kind="AssemblyCategory" Name="AudioMixer" />
-                    <Choice Kind="OperationCallFlag" Name="Mixer" />
+                    <Choice Kind="OperationCallFlag" Name="Update" />
                   </p:NodeReference>
-                  <Pin Id="G1PSKhbWF5JPy7ALxWvzZR" Name="Input" Kind="StateInputPin" />
-                  <Pin Id="IU1cotdnYtQNQzSQdszPUn" Name="Inputs" Kind="InputPin" />
-                  <Pin Id="VOR2qn5msrpLSlmkkiTFqo" Name="Output Map" Kind="InputPin" />
-                  <Pin Id="JKvwvThKpa7LR0rIsc17Kf" Name="Output" Kind="StateOutputPin" />
-                  <Pin Id="CmDofY8BsRDLX2edzGF9t0" Name="Result" Kind="OutputPin" />
+                  <Pin Id="F0fmmn5BCtuLR4BXO6ZV2t" Name="Input" Kind="StateInputPin" />
+                  <Pin Id="RS6nk23puTLPpd9sYQ4jvJ" Name="Inputs" Kind="InputPin" />
+                  <Pin Id="KDzojJH4512NTsH4LWYoAX" Name="Output Map" Kind="InputPin" />
+                  <Pin Id="FTvDKJ3uIiEQDDhiJpJpXj" Name="Output" Kind="StateOutputPin" />
+                  <Pin Id="ID3UXOoTxO7NQq5m8cFdXO" Name="Result" Kind="OutputPin" />
                 </Node>
-                <ControlPoint Id="RwnPBokvXzRM2zHs1UJwhx" Bounds="394,397" />
-                <Link Id="DDpKAqJ5vtjP21STgzapCk" Ids="QfXgSBvDv3GNWMVUMndZyy,RwnPBokvXzRM2zHs1UJwhx" IsHidden="true" />
-                <Link Id="DM06tJIBUzEMwVlTfHr19U" Ids="RwnPBokvXzRM2zHs1UJwhx,IU1cotdnYtQNQzSQdszPUn" />
-                <Pin Id="GFiYWJYqRKLLKk7cl6lH8b" Name="Input" Kind="InputPin" />
-                <Pin Id="VIDUjeRnNufPsmKRlLbeBT" Name="Output Map" Kind="InputPin" />
-                <Pin Id="HGOzAuQgpUTOjhnMDSyhLT" Name="Result" Kind="OutputPin" />
-                <Pin Id="RATdUx7QPGLPedleLGrIUL" Name="Output" Kind="OutputPin" />
-                <Pin Id="QfXgSBvDv3GNWMVUMndZyy" Name="Inputs" Kind="InputPin" IsPinGroup="true">
+                <Pin Id="LxLtP1xVlPRP9rpHTgyJts" Name="Input" Kind="InputPin" />
+                <Pin Id="OSGLkd1t2CoO8hCBonRQKw" Name="Output Map" Kind="InputPin" />
+                <Pin Id="VszKHsDCgWYNN5ouVXjw72" Name="Output" Kind="OutputPin" />
+                <Pin Id="EeFqhlC4MtqLm0YXe8yMQR" Name="Result" Kind="OutputPin" />
+                <Pin Id="LrSyRxMbT1dMQOGz6YGxMe" Name="Inputs" Kind="InputPin" IsPinGroup="true">
                   <p:TypeAnnotation>
                     <Choice Kind="TypeFlag" Name="Spread" />
                   </p:TypeAnnotation>
                 </Pin>
+                <ControlPoint Id="OxlszzdeRTtLQHhU3JsQrk" Bounds="418,367" />
+                <Link Id="Kc4b2PNftnkNnSqmOqbhhk" Ids="LrSyRxMbT1dMQOGz6YGxMe,OxlszzdeRTtLQHhU3JsQrk" IsHidden="true" />
+                <Link Id="A3mKiysYFcrMebfWkj0pVd" Ids="OxlszzdeRTtLQHhU3JsQrk,RS6nk23puTLPpd9sYQ4jvJ" />
               </Patch>
             </Node>
           </Canvas>
           <ProcessDefinition Id="R6Yucd0ROYoQCVfLRAKoPX">
-            <Fragment Id="UiApWpEk9JgQDPQpgd9CUy" Patch="ELj4sjzMgiVL4cIb1ZgK6V" Enabled="true" />
-            <Fragment Id="VoXGxkgrK0bMVTdeJhZvgQ" Patch="UIZCxPuKfxCM2yNErM9770" Enabled="true" />
+            <Fragment Id="SE70bMbHKWUN53Su9Nd1kt" Patch="Pan8TlD975jPJvERSpugTW" Enabled="true" />
+            <Fragment Id="LcTtPwPWidzLMCzvnpFt82" Patch="Qs1K2I9JbsyO4S93pk2WBc" Enabled="true" />
           </ProcessDefinition>
         </Patch>
       </Node>
@@ -415,6 +417,7 @@
         <p:TypeAnnotation LastCategoryFullName="VL.NewAudio" LastSymbolSource="NewAudio.dll">
           <Choice Kind="ClassType" Name="AudioSampleBuffer" />
         </p:TypeAnnotation>
+        <p:ForwardAllNodesOfTypeDefinition p:Type="Boolean">false</p:ForwardAllNodesOfTypeDefinition>
         <Patch Id="Ah3dsvupgvrQBfUQhVP4Ry">
           <Canvas Id="SzLZ4FsvEx2NdQ2k8NzT69" CanvasType="Group" />
           <ProcessDefinition Id="TYW0KGvfZAvODxUwOMhrWR" IsHidden="true" />
@@ -1069,13 +1072,12 @@
             <Node Bounds="466,366,69,19" Id="PuJwpTJuL6IO918MhcNPUY">
               <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                <Choice Kind="ProcessAppFlag" Name="AudioMixer" />
+                <Choice Kind="ProcessNode" Name="AudioMixer" />
               </p:NodeReference>
               <Pin Id="LFLTKGx13oULFtXvKouFgi" Name="Output Map" Kind="InputPin" />
               <Pin Id="N0CQVCbzl0CNITu66AoeGE" Name="Inputs" Kind="InputPin" />
               <Pin Id="MNPdiArpNn3QaO6fSVJ4Fi" Name="Inputs 2" Kind="InputPin" />
               <Pin Id="IAx8k6b1u0uQQu8syL3yj6" Name="Result" Kind="OutputPin" />
-              <Pin Id="JTsDgTOHmcfNXv1fCbtJqZ" Name="Output" Kind="OutputPin" />
             </Node>
             <Pad Id="OcUieMM1mr0NfM80EtdxUy" Comment="" Bounds="441,311,36,49" ShowValueBox="true" isIOBox="true" Value="0, 1">
               <p:TypeAnnotation LastCategoryFullName="Collections" LastSymbolSource="VL.Collections.vl">
@@ -1836,7 +1838,7 @@
             <Node Bounds="232,124,85,19" Id="UImOIUGtP8JLVnQ2x0duFK">
               <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                <Choice Kind="ProcessAppFlag" Name="AudioMixer" />
+                <Choice Kind="ProcessNode" Name="AudioMixer" />
               </p:NodeReference>
               <Pin Id="A4Grw5NcxE1PHymyz9Prpb" Name="Output Map" Kind="InputPin" />
               <Pin Id="KIghLkIYQ74OZh9n3cyQq8" Name="Inputs" Kind="InputPin" />
@@ -1844,7 +1846,6 @@
               <Pin Id="IEnkpoHkcqYN7sPDucZW1a" Name="Inputs 3" Kind="InputPin" />
               <Pin Id="T8mSaXAUoftPA5uXgjtShw" Name="Inputs 4" Kind="InputPin" />
               <Pin Id="Lh3oDGtGVBSNdDV09JOKVp" Name="Result" Kind="OutputPin" />
-              <Pin Id="Ec4UZjAcH6aObuyBufWOGt" Name="Output" Kind="OutputPin" />
             </Node>
             <Pad Id="PIZgH2PvtM1K91E5wGUb2z" Comment="Output Map" Bounds="238,35,35,80" ShowValueBox="true" isIOBox="true" Value="0, 1, 2, 3">
               <p:TypeAnnotation LastCategoryFullName="Collections" LastSymbolSource="VL.Collections.vl">
@@ -2599,14 +2600,13 @@
             <Node Bounds="284,266,85,19" Id="C5STEmCWoOOPQvHBvdghu4">
               <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                <Choice Kind="ProcessAppFlag" Name="AudioMixer" />
+                <Choice Kind="ProcessNode" Name="AudioMixer" />
               </p:NodeReference>
               <Pin Id="UodrvCNUhXHOrcbeaadJyv" Name="Output Map" Kind="InputPin" />
               <Pin Id="JzQiDXEERtlPNqS4J7cARi" Name="Inputs" Kind="InputPin" />
               <Pin Id="AQgu5dgdFzoMf5fSSzks8D" Name="Inputs 2" Kind="InputPin" />
               <Pin Id="GWUFIkozvLAMH6pkkcs1oI" Name="Inputs 3" Kind="InputPin" />
               <Pin Id="HyAD4IMfaGcOaqnXuaiKO9" Name="Result" Kind="OutputPin" />
-              <Pin Id="FDxVP5AMOyxPY7xoNtRtql" Name="Output" Kind="OutputPin" />
             </Node>
             <ControlPoint Id="MvljcdKgV3gMQGnl1Gb0DI" Bounds="187,642" />
             <!--
@@ -4160,7 +4160,7 @@
             <Node Bounds="237,203,125,19" Id="SccaRaHd5HnOXVSoLF2n3m">
               <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                <Choice Kind="ProcessAppFlag" Name="AudioMixer" />
+                <Choice Kind="ProcessNode" Name="AudioMixer" />
               </p:NodeReference>
               <Pin Id="V1PkP9uHXp7OvJOV7TYnqo" Name="Output Map" Kind="InputPin" />
               <Pin Id="E5d03KKPX2qQPGl6PaBcSd" Name="Inputs" Kind="InputPin" />
@@ -4169,7 +4169,6 @@
               <Pin Id="UCZatI5GROFO1aaK91nFpe" Name="Inputs 4" Kind="InputPin" />
               <Pin Id="Td7hGdJ8cgDPbnbA2aRms9" Name="Inputs 5" Kind="InputPin" />
               <Pin Id="SH46YZKXoDsOsZTcTb0vGL" Name="Result" Kind="OutputPin" />
-              <Pin Id="RI37Cm9d0ywMfoaZwiUsqC" Name="Output" Kind="OutputPin" />
             </Node>
             <Pad Id="T1AeTu722vUPLgDJzNQ3ah" Comment="Result" Bounds="244,92,39,95" ShowValueBox="true" isIOBox="true" Value="0, 1, 2, 3, 4">
               <p:TypeAnnotation LastCategoryFullName="Collections" LastSymbolSource="VL.Collections.vl">
@@ -4743,6 +4742,153 @@
           <ProcessDefinition Id="SutLcrGyBaJMQbQb9XpZDa">
             <Fragment Id="DeVmQzI2uEmPXvzKVH7L4P" Patch="Dcz3XYPTKviNdwhh8Befk9" Enabled="true" />
             <Fragment Id="L2BOtrGHpz6NvIdqiEcK0G" Patch="G602KIXr4gJLi9aT3e7WmO" Enabled="true" />
+          </ProcessDefinition>
+        </Patch>
+      </Node>
+      <!--
+
+    ************************ AudioSplitter ************************
+
+-->
+      <Node Name="AudioSplitter" Bounds="830,200" Id="PAOod2ss6a7LkrBivXMRdn">
+        <p:NodeReference>
+          <Choice Kind="ForwardDefinition" Name="Forward" />
+          <FullNameCategoryReference ID="Primitive" />
+        </p:NodeReference>
+        <p:TypeAnnotation LastCategoryFullName="VL.NewAudio" LastSymbolSource="NewAudio.dll">
+          <Choice Kind="ClassType" Name="AudioSplitter" />
+        </p:TypeAnnotation>
+        <Patch Id="RXAxHO0UrawPYLazXE80Q9">
+          <Canvas Id="Rbma97jp9z1ORecys3ZX70" CanvasType="Group">
+            <!--
+
+    ************************ Create ************************
+
+-->
+            <Node Name="Create" Bounds="402,258,80,80" Id="LCvuAUC1VIFPMkn5tDMlwh">
+              <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="Builtin">
+                <Choice Kind="OperationDefinition" Name="Operation" />
+              </p:NodeReference>
+              <Patch Id="BeuKEE0U8h8QTXeoRARoIA" IsGeneric="true">
+                <Node Bounds="419,286" AutoConnect="true" Id="GZTvxZEcHI1MTWeI3j7v7W">
+                  <p:NodeReference LastCategoryFullName="VL.NewAudio.AudioSplitter" LastSymbolSource="NewAudio.dll">
+                    <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                    <CategoryReference Kind="AssemblyCategory" Name="AudioSplitter" />
+                    <Choice Kind="OperationCallFlag" Name="Create" />
+                  </p:NodeReference>
+                  <Pin Id="UUQ85NJmEVfOXhnnHkhgrY" Name="Output" Kind="StateOutputPin" />
+                </Node>
+                <Pin Id="BnskETYFxKgPfQ6uBFUJR0" Name="Output" Kind="OutputPin" />
+              </Patch>
+            </Node>
+            <!--
+
+    ************************ Update ************************
+
+-->
+            <Node Name="Update" Bounds="447,384,80,80" Id="TNPKSUeuoVjM3Hv2CMWIMy">
+              <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="Builtin">
+                <Choice Kind="OperationDefinition" Name="Operation" />
+              </p:NodeReference>
+              <Patch Id="IofBvDbDpl1MmXje4UJC2X" IsGeneric="true">
+                <Node Bounds="467,411" AutoConnect="true" Id="UahubYkC7ixOYMdulAxRS2">
+                  <p:NodeReference LastCategoryFullName="VL.NewAudio.AudioSplitter" LastSymbolSource="NewAudio.dll">
+                    <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                    <CategoryReference Kind="AssemblyCategory" Name="AudioSplitter" />
+                    <Choice Kind="OperationCallFlag" Name="Update" />
+                  </p:NodeReference>
+                  <Pin Id="MDtDq9sR5DTOBmEnJSSt1D" Name="Input (this)" Kind="StateInputPin" />
+                  <Pin Id="S6D7lu1saUXPF7b77fts5m" Name="Input" Kind="InputPin" />
+                  <Pin Id="Pl5BQFa1vXpLf16TNjDhAj" Name="Channel Map" Kind="InputPin" />
+                  <Pin Id="OOCa9hw4hikMjnxv1105IZ" Name="Output" Kind="StateOutputPin" />
+                  <Pin Id="NdMfN6rdOoeMcGE2pEEZuK" Name="Result" Kind="OutputPin" />
+                </Node>
+                <ControlPoint Id="GPxVegWYdduLtdaj08IwKa" Bounds="499,450" />
+                <Link Id="QkNqXqaYFDYOU6s9mKM1vJ" Ids="GPxVegWYdduLtdaj08IwKa,B72n9MeAxzPPI420euNLDb" IsHidden="true" />
+                <Link Id="A3tAVMvwFELLO8GXG7Y50o" Ids="NdMfN6rdOoeMcGE2pEEZuK,GPxVegWYdduLtdaj08IwKa" />
+                <Pin Id="GVbgzdDkf0CPkpHxlB2X7N" Name="Input (this)" Kind="InputPin" />
+                <Pin Id="RIZrG737sN0PU1VT0t2eKO" Name="Input" Kind="InputPin" />
+                <Pin Id="FOJlCq5ciBOOYz0qcQuOya" Name="Channel Map" Kind="InputPin" />
+                <Pin Id="GvSoT1oxnGdQbwXAk9zM3d" Name="Output" Kind="OutputPin" />
+                <Pin Id="B72n9MeAxzPPI420euNLDb" Name="Result" Kind="OutputPin" IsPinGroup="true">
+                  <p:TypeAnnotation>
+                    <Choice Kind="TypeFlag" Name="Spread" />
+                  </p:TypeAnnotation>
+                </Pin>
+              </Patch>
+            </Node>
+          </Canvas>
+          <ProcessDefinition Id="Eal5fhga3VANiiXnbnviLi">
+            <Fragment Id="O0VFuPYgIbDQdlvHfv5aNh" Patch="LCvuAUC1VIFPMkn5tDMlwh" Enabled="true" />
+            <Fragment Id="VAMwD1Ld9eiLwzfMDa5v29" Patch="TNPKSUeuoVjM3Hv2CMWIMy" Enabled="true" />
+          </ProcessDefinition>
+        </Patch>
+      </Node>
+      <!--
+
+    ************************ Silence ************************
+
+-->
+      <Node Name="Silence" Category="NewAudio" Bounds="580,244" Id="QNkJVPnSp9hMEcDKgQxHB6">
+        <p:NodeReference>
+          <Choice Kind="ForwardDefinition" Name="Forward" />
+          <FullNameCategoryReference ID="Primitive" />
+        </p:NodeReference>
+        <p:TypeAnnotation LastCategoryFullName="VL.NewAudio" LastSymbolSource="NewAudio.dll">
+          <Choice Kind="ClassType" Name="Silence" />
+        </p:TypeAnnotation>
+        <Patch Id="J1ZY1qMRIxQN7y63AHxNAG">
+          <Canvas Id="SqkYWhwQSyEO3wspdVeLso" CanvasType="Group">
+            <!--
+
+    ************************ Create ************************
+
+-->
+            <Node Name="Create" Bounds="291,190,80,80" Id="L5YNYzqQH9mPmpsFxRbcAg">
+              <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="Builtin">
+                <Choice Kind="OperationDefinition" Name="Operation" />
+              </p:NodeReference>
+              <Patch Id="UkK1JxBrGUAQKk1QUuo8K9" IsGeneric="true">
+                <Node Bounds="332,227" AutoConnect="true" Id="HNi7Ph1S28DOcKPBqnaVYu">
+                  <p:NodeReference LastCategoryFullName="VL.NewAudio.Silence" LastSymbolSource="NewAudio.dll">
+                    <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                    <CategoryReference Kind="AssemblyCategory" Name="Silence" />
+                    <Choice Kind="OperationCallFlag" Name="Create" />
+                  </p:NodeReference>
+                  <Pin Id="KhKcSUI2ocSLXeOXPfj6CT" Name="Output" Kind="StateOutputPin" />
+                </Node>
+                <Pin Id="TfnOVHd4cOENSWTxkGTzQ4" Name="Output" Kind="OutputPin" />
+              </Patch>
+            </Node>
+            <!--
+
+    ************************ Update ************************
+
+-->
+            <Node Name="Update" Bounds="385,358,80,80" Id="IfVQj4Xt0sCOaYfymdXZmh">
+              <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="Builtin">
+                <Choice Kind="OperationDefinition" Name="Operation" />
+              </p:NodeReference>
+              <Patch Id="IBI0HS5coavOaQ75nbCjFy" IsGeneric="true">
+                <Node Bounds="414,386" AutoConnect="true" Id="CzmDOc2umyjNa9I8q76bqD">
+                  <p:NodeReference LastCategoryFullName="VL.NewAudio.Silence" LastSymbolSource="NewAudio.dll">
+                    <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                    <CategoryReference Kind="AssemblyCategory" Name="Silence" />
+                    <Choice Kind="OperationCallFlag" Name="Update" />
+                  </p:NodeReference>
+                  <Pin Id="BhidkmeNEpKPWcTtOM84tB" Name="Input" Kind="StateInputPin" />
+                  <Pin Id="Uv6dt6xFpE9PPVaFf07ttU" Name="Output" Kind="StateOutputPin" />
+                  <Pin Id="JESH9UCV9KsNeU18ApXyxM" Name="Result" Kind="OutputPin" />
+                </Node>
+                <Pin Id="TCMObox8qXbN8fLj5t1QGE" Name="Input" Kind="InputPin" />
+                <Pin Id="FRfzWTGfhThPfZeAqHHBqx" Name="Output" Kind="OutputPin" />
+                <Pin Id="HMCvevAYnBGOOJ2YoYbwZu" Name="Result" Kind="OutputPin" />
+              </Patch>
+            </Node>
+          </Canvas>
+          <ProcessDefinition Id="HPqSZPUmliPMPbeb1UNkow">
+            <Fragment Id="EeEVvgFQojXMGMDbiehj6c" Patch="L5YNYzqQH9mPmpsFxRbcAg" Enabled="true" />
+            <Fragment Id="F61rkDHpXXXM4rJ0nhUSxY" Patch="IfVQj4Xt0sCOaYfymdXZmh" Enabled="true" />
           </ProcessDefinition>
         </Patch>
       </Node>

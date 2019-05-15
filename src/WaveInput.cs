@@ -50,7 +50,8 @@ namespace VL.NewAudio
                         AudioEngine.Log("WaveInput: Started");
 
                         inputBridge = new AudioSampleBuffer(sampleProvider.WaveFormat);
-                        inputBridge.Update = (b, o, l) => { sampleProvider.Read(b, o, l); };
+                        inputBridge.Update = (b, o, l) => sampleProvider.Read(b, o, l);
+                        ;
                     }
                     catch (Exception e)
                     {

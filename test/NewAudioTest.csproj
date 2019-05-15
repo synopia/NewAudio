@@ -42,6 +42,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="AudioSplitterTest.cs"/>
         <Compile Include="Tests.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
     </ItemGroup>
@@ -50,6 +51,15 @@
             <Project>{2c04a167-39a3-44f0-87d3-f677acd1227e}</Project>
             <Name>NewAudio</Name>
         </ProjectReference>
+        <Reference Include="NAudio, Version=1.7.3.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\packages\NAudio.1.7.3\lib\net35\NAudio.dll</HintPath>
+            <Private>True</Private>
+        </Reference>
+        <Reference Include="VL.Core, Version=0.95.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\packages\VL.Core.0.95.37-g8f06687fc6\lib\net46\VL.Core.dll</HintPath>
+            <Private>True</Private>
+        </Reference>
+
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -260,6 +260,7 @@
             <Pin Id="MUtsLRlgmTtOOEfjz47cDn" Name="Wave Format Out" Kind="OutputPin" />
             <Pin Id="Laa9TqX1FitNDbwuCwIn0K" Name="Latency" Kind="OutputPin" />
             <Pin Id="NBHCLneCotPMIRz9DCcWkD" Name="Cpu Usage" Kind="OutputPin" />
+            <Pin Id="Meygm4PUjcrPgeqf4LPt5O" Name="Buffer Underruns" Kind="OutputPin" />
           </Node>
           <Pad Id="Mm6zRNJzIpiPLWBirt9Fu5" Comment="Device" Bounds="318,906,348,16" ShowValueBox="true" isIOBox="true" Value="ASIO: Audio 2 DJ">
             <p:TypeAnnotation LastCategoryFullName="Main.VL.NewAudioApplication" LastSymbolSource="VL.NewAudio.vl">
@@ -283,7 +284,6 @@
             <Pin Id="Hlj3PrXPg5hLBPE2LOFUSD" Name="Output Map" Kind="InputPin" />
             <Pin Id="CxDxM505yLBNfZVmc3NB4l" Name="Inputs" Kind="InputPin" />
             <Pin Id="EpyYtQrCfMJMGL2Hn46XMK" Name="Result" Kind="OutputPin" />
-            <Pin Id="NCso4obwzNgM6L7uNJSx6f" Name="Output" Kind="OutputPin" />
           </Node>
           <Pad Id="TkGFMEFTRmULMWVQFS484F" Comment="Output Map" Bounds="375,789,35,42" ShowValueBox="true" isIOBox="true" Value="0, 1">
             <p:TypeAnnotation LastCategoryFullName="Collections" LastSymbolSource="VL.Collections.vl">
@@ -339,7 +339,7 @@
                 <Pin Id="SzCOkQNwwFGLlQ5bGXnjPb" Name="Output" Kind="OutputPin" />
               </Node>
               <Node Bounds="366,600,150,26" Id="PScplMYwmapNw9AtH6UUMy">
-                <p:NodeReference LastCategoryFullName="Main.AudioSampleAccessor" LastSymbolSource="VL.NewAudio.vl">
+                <p:NodeReference LastCategoryFullName="NewAudio.AudioSampleAccessor" LastSymbolSource="VL.NewAudio.vl">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <Choice Kind="OperationCallFlag" Name="SetSamples" />
                 </p:NodeReference>
@@ -703,7 +703,7 @@
             </p:ValueBoxSettings>
           </Pad>
           <Node Bounds="539,670,32,19" Id="SUKztCfjtudQIctkecTADu">
-            <p:NodeReference LastCategoryFullName="Main" LastSymbolSource="VL.NewAudio.vl">
+            <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
               <Choice Kind="ProcessAppFlag" Name="FFT" />
             </p:NodeReference>

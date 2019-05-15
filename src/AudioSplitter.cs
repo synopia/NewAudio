@@ -6,74 +6,129 @@ namespace VL.NewAudio
 {
     public class AudioSplitter
     {
-        private AudioSampleBuffer currentInput;
-        private int[] currentOutputMap;
+        private struct Configuration
+        {
+            public AudioSampleBuffer Input;
+            public int[] ChannelMap;
+            public bool HasChanges;
+
+            public void Update(AudioSampleBuffer input, Spread<int> channelMap)
+            {
+                var arrayMap = channelMap?.ToArray();
+                HasChanges = input != Input || !AudioEngine.ArrayEquals(ChannelMap, arrayMap);
+
+                Input = input;
+                ChannelMap = arrayMap;
+            }
+
+            public bool IsValid()
+            {
+                return Input != null;
+            }
+        }
+
+        private Configuration config = new Configuration();
         private AudioSampleBuffer[] outputs;
         private CircularSampleBuffer[] buffers;
         private float[] tempBuffer;
-        private float[] tempBuffer2;
 
         private Spread<AudioSampleBuffer> output;
 
-        public Spread<AudioSampleBuffer> Update(AudioSampleBuffer input, Spread<int> outputMap)
+        public Spread<AudioSampleBuffer> Update(AudioSampleBuffer input, Spread<int> channelMap)
         {
-            var array = outputMap?.ToArray();
-            if (input != currentInput || !AudioEngine.ArrayEquals(array, currentOutputMap))
+            config.Update(input, channelMap);
+
+            if (config.HasChanges)
             {
-                currentInput = input;
-                currentOutputMap = array;
                 AudioEngine.Log($"AudioSplitter configuration changed!");
 
-                if (input != null && array != null && array.Length > 0)
+                if (config.IsValid())
                 {
-                    var outputBuffers = array.Length;
-
-                    outputs = new AudioSampleBuffer[outputBuffers];
-                    buffers = new CircularSampleBuffer[outputBuffers];
-
-                    for (int i = 0; i < outputBuffers; i++)
-                    {
-                        var reader = i;
-                        buffers[i] = new CircularSampleBuffer(4096);
-
-                        var outputBuffer =
-                            new AudioSampleBuffer(WaveFormat.CreateIeeeFloatWaveFormat(input.WaveFormat.SampleRate, 1));
-                        outputBuffer.Update = (b, o, len) =>
-                        {
-                            if (buffers[reader].Count < len)
-                            {
-                                if (tempBuffer == null || tempBuffer.Length < len || tempBuffer2 == null ||
-                                    tempBuffer2.Length < len)
-                                {
-                                    tempBuffer = new float[len];
-                                    tempBuffer2 = new float[len];
-                                }
-
-                                for (int j = 0; j < outputBuffers; j++)
-                                {
-                                    input.Read(tempBuffer, o, len);
-                                    for (int l = 0; l < outputBuffers; l++)
-                                    {
-                                        for (int k = 0; k < len / outputBuffers; k++)
-                                        {
-                                            tempBuffer2[k] = tempBuffer[k * outputBuffers + l];
-                                        }
-
-                                        buffers[l].Write(tempBuffer2, o, len / outputBuffers);
-                                    }
-                                }
-                            }
-
-                            buffers[reader].Read(b, o, len);
-                        };
-                        outputs[i] = outputBuffer;
-                    }
-
-                    output = outputs.ToSpread();
+                    Build();
+                }
+                else
+                {
+                    output = Spread<AudioSampleBuffer>.Empty;
                 }
             }
 
             return output;
+        }
+
+        private void Build()
+        {
+            var channelMap = GetChannelMap();
+
+            var outputBuffers = channelMap.Length;
+            var outputChannels = channelMap.Sum();
+
+            outputs = new AudioSampleBuffer[outputBuffers];
+            buffers = new CircularSampleBuffer[outputBuffers];
+            var buffersMapped = new CircularSampleBuffer[outputChannels];
+
+            var input = config.Input;
+            var inputChannels = input.WaveFormat.Channels;
+            var index = 0;
+            for (var i = 0; i < outputBuffers; i++)
+            {
+                buffers[i] = new CircularSampleBuffer(4096);
+                for (var j = 0; j < channelMap[i]; j++)
+                {
+                    buffersMapped[index] = buffers[i];
+                    index++;
+                }
+            }
+
+            for (var i = 0; i < outputBuffers; i++)
+            {
+                var reader = i;
+
+                var outputBuffer =
+                    new AudioSampleBuffer(
+                        WaveFormat.CreateIeeeFloatWaveFormat(input.WaveFormat.SampleRate, channelMap[i]));
+                outputBuffer.Update = (b, o, len) =>
+                {
+                    var samplesToRead = len / channelMap[reader];
+
+                    while (buffers[reader].Count < samplesToRead * channelMap[reader])
+                    {
+                        if (tempBuffer == null || tempBuffer.Length < samplesToRead * inputChannels)
+                        {
+                            tempBuffer = new float[samplesToRead * inputChannels];
+                        }
+
+                        var dataRead = input.Read(tempBuffer, o, samplesToRead * inputChannels);
+                        int outputIndex = 0;
+                        for (int j = 0; j < dataRead; j++)
+                        {
+                            buffersMapped[outputIndex].Add(tempBuffer[j]);
+                            outputIndex++;
+                            outputIndex %= outputChannels;
+                        }
+                    }
+
+                    return buffers[reader].Read(b, o, len);
+                };
+                outputs[i] = outputBuffer;
+            }
+
+            output = outputs.ToSpread();
+        }
+
+        private int[] GetChannelMap()
+        {
+            var channelMap = config.ChannelMap;
+            if (channelMap == null || channelMap.Length == 0)
+            {
+                var channels = config.Input.WaveFormat.Channels;
+                channelMap = new int[channels];
+                for (int i = 0; i < channels; i++)
+                {
+                    channelMap[i] = 1;
+                }
+            }
+
+            return channelMap;
         }
     }
 }

@@ -47,6 +47,14 @@ namespace VL.NewAudio
             }
         }
 
+        public void Add(float value)
+        {
+            buffer[writePosition] = value;
+            writePosition++;
+            writePosition %= buffer.Length;
+            sampleCount++;
+        }
+
         /// <summary>Read from the buffer</summary>
         /// <param name="data">Buffer to read into</param>
         /// <param name="offset">Offset into read buffer</param>

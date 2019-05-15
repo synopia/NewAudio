@@ -5,7 +5,8 @@ namespace VL.NewAudio
 {
     public class AudioSampleBuffer : ISampleProvider
     {
-        public Action<float[], int, int> Update;
+        public Func<float[], int, int, int> Update;
+        private bool isSilence;
 
         public AudioSampleBuffer(WaveFormat format)
         {
@@ -15,19 +16,25 @@ namespace VL.NewAudio
 
         public int Read(float[] buffer, int offset, int count)
         {
-            Update?.Invoke(buffer, offset, count);
-            return count;
+            return Update?.Invoke(buffer, offset, count) ?? count;
         }
 
         public static AudioSampleBuffer Silence()
         {
-            var buffer = new AudioSampleBuffer(WaveOutput.SingleChannelFormat);
-            buffer.Update = (b, o, l) => { Array.Clear(b, o, l); };
-            buffer.IsSilence = true;
+            var buffer = new AudioSampleBuffer(WaveOutput.SingleChannelFormat)
+            {
+                Update = (b, o, c) =>
+                {
+                    Array.Clear(b, o, c);
+                    return c;
+                },
+                isSilence = true
+            };
             return buffer;
         }
 
-        public WaveFormat WaveFormat { get; set; }
-        public bool IsSilence;
+        public WaveFormat WaveFormat { get; }
+
+        public bool IsSilence => isSilence;
     }
 }
