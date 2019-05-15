@@ -41,7 +41,7 @@ after_build:
   - ps: nuget pack VL.NewAudio.nuspec -version "$env:nugetVersion"
 
 test_script:
-  - ps: nunit3-console test\Bin\Release\NewAudioTest.dll --result=testresults.xml;format=AppVeyor
+  - nunit3-console test\Bin\Release\NewAudioTest.dll --result=testresults.xml
 
 artifacts:
   - path: '*.nupkg'
