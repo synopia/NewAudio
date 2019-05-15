@@ -1075,7 +1075,7 @@
           </Node>
           <ControlPoint Id="Fgu9wSafKdyOz9oPEO9mB2" Bounds="95,910" />
           <Node Bounds="417,129,75,19" Id="Onz2iAasTymPj2svRUORzF">
-            <p:NodeReference LastCategoryFullName="Main" LastSymbolSource="VL.NewAudio.vl">
+            <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
               <Choice Kind="ProcessAppFlag" Name="AudioSplitter" />
             </p:NodeReference>
@@ -1087,7 +1087,7 @@
             <Pin Id="Q18aBmbQ09DNeJODXpr7oE" Name="Result 4" Kind="OutputPin" />
           </Node>
           <Node Bounds="122,502,75,19" Id="HZUw7443HXUL90IALnVywe">
-            <p:NodeReference LastCategoryFullName="Main" LastSymbolSource="VL.NewAudio.vl">
+            <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
               <Choice Kind="ProcessAppFlag" Name="AudioSplitter" />
             </p:NodeReference>
@@ -1098,9 +1098,8 @@
             <Pin Id="ISsatu7uYAsMO2BLKmnDck" Name="Result 3" Kind="OutputPin" />
             <Pin Id="JQ7HHcOtiSqMnVwE3Osrri" Name="Result 4" Kind="OutputPin" />
           </Node>
-          <ControlPoint Id="JKoNpoma0I3MMp2QJzPpiN" Bounds="122,481" />
           <Node Bounds="311,733,75,19" Id="IFzjK3LCgQmLZdbc73iPzH">
-            <p:NodeReference LastCategoryFullName="Main" LastSymbolSource="VL.NewAudio.vl">
+            <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
               <Choice Kind="ProcessAppFlag" Name="AudioSplitter" />
             </p:NodeReference>
@@ -1109,6 +1108,12 @@
             <Pin Id="T7mif5vspKOMjfr0KbY1dw" Name="Result" Kind="OutputPin" />
             <Pin Id="Ilo4hW2pInjOSvMtjHoyzU" Name="Result 2" Kind="OutputPin" />
           </Node>
+          <Pad Id="VzvuahgVDKWQazWoyL1vtT" Comment="Oversample" Bounds="705,414,35,15" ShowValueBox="true" isIOBox="true" Value="1">
+            <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
+              <Choice Kind="TypeFlag" Name="Integer32" />
+            </p:TypeAnnotation>
+            <p:ValueBoxSettings />
+          </Pad>
         </Canvas>
         <Patch Id="CmrBCVU5AF1PBtqJFjrfOK" Name="Create" />
         <Patch Id="QeiqzQJkt7VPcUoz4hGlRw" Name="Update" />
@@ -1143,10 +1148,11 @@
         <Link Id="VxRpVvoZ5T3NI2M3bQnpz3" Ids="P3CwEKxpA87NaOKASrCXod,Fgu9wSafKdyOz9oPEO9mB2,Svc7oUOIduLMixIWyAanLW" />
         <Link Id="GXVZnQHSDZSMRhBFFysN50" Ids="KL0386eJMVvOjEEW94XmhA,UiRwFMGSeNWOAeVpXANzD2" />
         <Link Id="OSS0MPno3M0PMRNf4DHvKI" Ids="LeMFM0rpZnEPZvJ4yIzPOm,JHIWMDE63qvLr6r5pS1J4Q" />
-        <Link Id="TSS3ZctXsiFLrefhk3XcK2" Ids="TfkUxGei6MuLNIOpMGawUm,JKoNpoma0I3MMp2QJzPpiN,CQk06mAUjv2NJvGD1tsLro" />
         <Link Id="K0uJGe62E1yOPFd06ZvqGb" Ids="ISsatu7uYAsMO2BLKmnDck,GMpTHSZ0RMsL35XGlosmey" />
         <Link Id="KkDkWQmV7hfMn72D46HoRc" Ids="PQ1MW8hdlOiPE4IbQoZgzo,BgVQocH6viyOsaAFtIux7A" />
         <Link Id="TkKYCAxRkbiOb41wNeUBa6" Ids="T7mif5vspKOMjfr0KbY1dw,QKVSZipHEooOn2RF1NK9Oo" />
+        <Link Id="SOZZi33oMkWPBz9PlyNWFo" Ids="VzvuahgVDKWQazWoyL1vtT,OYqMbOCTz9sN1qAXapgz8Y" />
+        <Link Id="Ty7S4L3R5w7MzcX27CxIQi" Ids="TfkUxGei6MuLNIOpMGawUm,CQk06mAUjv2NJvGD1tsLro" />
       </Patch>
     </Node>
   </Patch>

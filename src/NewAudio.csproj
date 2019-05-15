@@ -89,9 +89,11 @@
         <Compile Include="AudioSampleHistoryBuffer.cs"/>
         <Compile Include="AudioSampleLoop.cs"/>
         <Compile Include="AudioSplitter.cs"/>
+        <Compile Include="AudioThread.cs"/>
         <Compile Include="FFT.cs"/>
         <Compile Include="Internal\ArrayAccessor.cs"/>
         <Compile Include="Internal\AudioSampleAccessor.cs"/>
+        <Compile Include="Internal\BufferedSampleProvider.cs"/>
         <Compile Include="Internal\CircularSampleBuffer.cs"/>
         <Compile Include="Internal\Decimator.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs" />

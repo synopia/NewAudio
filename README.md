@@ -19,12 +19,9 @@ Any Windows sound output device (WaveOut, DirectSound, Wasapi or ASIO). Takes an
 * Wasapi: This gives good performance and work with low latency (~45m)
 * ASIO: Use this if possible, latency is below 20ms
 
-#### AudioMixer
+#### AudioSampleBuffer
 
-AudioSampleBuffers may use any number of channels (most commonly, 2 channels for stereo).
-
-To mix multiple AudioSampleBuffers into exactly one output Buffer, you can use the AudioMixer.
-Takes a Spread of AudioSampleBuffers (with any number of channels) and a Spread of Integers, to map input to output channels.
+The data type, that flows through the VL patch. Contains a small portion of sound data in 32 bit float precision. May contain multiple channels in interleaved format (ch0, ch1, ch2, ch0, ch1, ...).
 
 #### AudioSampleLoop
 
@@ -36,7 +33,16 @@ If you want to use any time related VL Nodes, connect the supplied clock to your
 
 #### Get/SetSamples
 
-Operations to gain access to samples per channel in AudioSampleLoop. 
+Operations to gain access to samples per channel in AudioSampleLoop.
+
+#### AudioSplitter
+
+Splits one incoming multichannel AudioSampleBuffer into several single channel buffers. 
+
+#### AudioMixer
+
+To mix multiple AudioSampleBuffers into exactly one output Buffer, you can use the AudioMixer.
+Takes a Spread of AudioSampleBuffers (with any number of channels) and a Spread of Integers, to map input to output channels.
 
 #### FFT
 
