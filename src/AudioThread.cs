@@ -9,21 +9,24 @@ namespace VL.NewAudio
     {
         public AudioSampleBuffer Input;
         public AudioSampleBuffer Output;
-        public int RequestedLatency;
+        public int InternalLatency;
+        public int BufferSize;
 
         private AudioThreadProcessor processor;
 
         public AudioSampleBuffer Update(AudioSampleBuffer input, out int latency,
-            out float cpuUsage, out int bufferUnderRuns, int requestedLatency = 100, bool reset = false)
+            out float cpuUsage, out int bufferUnderRuns, int internalLatency = 100, int bufferSize = 512,
+            bool reset = false)
         {
             bool hasChanges = Input != input
-                              || RequestedLatency != requestedLatency
+                              || InternalLatency != internalLatency
                               || reset;
 
             Input = input;
-            RequestedLatency = requestedLatency;
+            InternalLatency = internalLatency;
+            BufferSize = bufferSize;
 
-            if (reset)
+            if (reset || BufferSize != bufferSize)
             {
                 processor?.Dispose();
                 processor = null;
@@ -31,15 +34,15 @@ namespace VL.NewAudio
 
             if (processor == null)
             {
-                processor = new AudioThreadProcessor();
+                processor = new AudioThreadProcessor(BufferSize);
             }
 
             processor.EnsureThreadIsRunning();
 
             if (hasChanges)
             {
-                processor.RequestedLatency = RequestedLatency;
                 processor.Input = input;
+                processor.RequestedLatency = InternalLatency;
                 if (input != null)
                 {
                     processor.Input = input;
@@ -73,6 +76,12 @@ namespace VL.NewAudio
 
             private BufferedSampleProvider playBuffer = new BufferedSampleProvider();
             private Thread playThread;
+            private int bufferSize;
+
+            public AudioThreadProcessor(int bufferSize)
+            {
+                this.bufferSize = bufferSize;
+            }
 
             public WaveFormat WaveFormat
             {
@@ -107,7 +116,7 @@ namespace VL.NewAudio
 
             private void RunInThread()
             {
-                float[] buffer = new float[512];
+                float[] buffer = new float[bufferSize];
                 var stopWatch = Stopwatch.StartNew();
                 AudioEngine.Log("Starting AudioThread...");
                 while (Running)

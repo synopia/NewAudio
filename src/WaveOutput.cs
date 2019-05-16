@@ -13,7 +13,10 @@ namespace VL.NewAudio
 
         public WaveOutputDevice Device;
         public AudioSampleBuffer Input;
-        public int RequestedLatency;
+        public int DriverLatency;
+        public int InternalLatency;
+        public int BufferSize;
+
         public int SampleRate;
         public WaveFormat OutputFormat;
 
@@ -22,17 +25,21 @@ namespace VL.NewAudio
         public void Update(WaveOutputDevice device, AudioSampleBuffer input, out string status,
             out WaveFormat waveFormat, out int latency, out float cpuUsage,
             out int bufferUnderRuns, int sampleRate = 44100,
-            int requestedLatency = 300, bool reset = false)
+            int driverLatency = 200, int internalLatency = 300, int bufferSize = 512, bool reset = false)
         {
-            bool hasDeviceChanges = device?.Value != Device?.Value
+            bool hasDeviceChanged = device?.Value != Device?.Value
                                     || sampleRate != SampleRate
+                                    || driverLatency != DriverLatency
+                                    || bufferSize != BufferSize
                                     || reset;
             Device = device;
             Input = input;
             SampleRate = sampleRate;
-            RequestedLatency = requestedLatency;
+            InternalLatency = internalLatency;
+            DriverLatency = driverLatency;
+            BufferSize = bufferSize;
 
-            if (reset)
+            if (reset || hasDeviceChanged)
             {
                 if (waveOut != null)
                 {
@@ -47,26 +54,26 @@ namespace VL.NewAudio
 
             if (processor == null)
             {
-                processor = new AudioThread.AudioThreadProcessor();
+                processor = new AudioThread.AudioThreadProcessor(BufferSize);
             }
 
             processor.EnsureThreadIsRunning();
 
-            if (hasDeviceChanges)
+            if (hasDeviceChanged)
             {
                 InternalFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 2);
                 SingleChannelFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 1);
 
-                processor.RequestedLatency = RequestedLatency;
+                processor.RequestedLatency = InternalLatency;
                 processor.WaveFormat = InternalFormat;
 
                 if (device != null)
                 {
                     AudioEngine.Log(
-                        $"WaveOutput: Configuration changed, device={device.Value}, sampleRate={sampleRate}, requested latency={RequestedLatency}");
+                        $"WaveOutput: Configuration changed, device={device.Value}, sampleRate={sampleRate}, latency={InternalLatency}");
                     try
                     {
-                        waveOut = ((IWaveOutputFactory) device.Tag).Create(requestedLatency);
+                        waveOut = ((IWaveOutputFactory) device.Tag).Create(DriverLatency);
                         var wave16 = new SampleToWaveProvider16(processor);
                         waveOut.Init(wave16);
                         waveOut.Play();
@@ -81,7 +88,7 @@ namespace VL.NewAudio
             }
 
             processor.Input = Input;
-            processor.RequestedLatency = RequestedLatency;
+            processor.RequestedLatency = InternalLatency;
 
             status = waveOut != null ? waveOut.PlaybackState.ToString() : "Uninitialized";
             waveFormat = OutputFormat;
