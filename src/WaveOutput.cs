@@ -4,7 +4,7 @@ using NAudio.Wave.SampleProviders;
 
 namespace VL.NewAudio
 {
-    public class WaveOutput : IDisposable
+    public class WaveOutput : BaseAudioNode, IDisposable
     {
         public static WaveFormat InternalFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
         public static WaveFormat SingleChannelFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);

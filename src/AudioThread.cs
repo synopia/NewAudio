@@ -76,7 +76,7 @@ namespace VL.NewAudio
 
             public WaveFormat WaveFormat
             {
-                get => playBuffer.WaveFormat;
+                get { return playBuffer.WaveFormat; }
                 set
                 {
                     playBuffer.WaveFormat = value;
