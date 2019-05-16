@@ -1,104 +1,163 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
+using NAudio.Wave;
 
 namespace VL.NewAudio
 {
     public class AudioThread : IDisposable
     {
-        private AudioSampleBuffer input;
-        private AudioSampleBuffer output;
+        public AudioSampleBuffer Input;
+        public AudioSampleBuffer Output;
+        public int RequestedLatency;
 
-        private int requestedLatency;
-        private BufferedSampleProvider playBuffer;
-        private Thread playThread;
+        private AudioThreadProcessor processor;
 
-        private int latency;
-        private float cpuUsage;
-
-        private bool running;
-
-        public AudioSampleBuffer Update(AudioSampleBuffer input, int requestedLatency, out int latency,
-            out float cpuUsage, out int bufferUnderRuns)
+        public AudioSampleBuffer Update(AudioSampleBuffer input, out int latency,
+            out float cpuUsage, out int bufferUnderRuns, int requestedLatency = 100, bool reset = false)
         {
-            bool hasChanges = this.input != input || this.requestedLatency != requestedLatency;
+            bool hasChanges = Input != input
+                              || RequestedLatency != requestedLatency
+                              || reset;
 
-            if (playThread == null || !playThread.IsAlive)
+            Input = input;
+            RequestedLatency = requestedLatency;
+
+            if (reset)
             {
-                playThread?.Abort();
-                running = true;
-                playThread = new Thread(runInThread);
-                playThread.Start();
-                playBuffer = new BufferedSampleProvider();
+                processor?.Dispose();
+                processor = null;
             }
+
+            if (processor == null)
+            {
+                processor = new AudioThreadProcessor();
+            }
+
+            processor.EnsureThreadIsRunning();
 
             if (hasChanges)
             {
-                this.input = input;
-                this.requestedLatency = requestedLatency;
+                processor.RequestedLatency = RequestedLatency;
+                processor.Input = input;
                 if (input != null)
                 {
-                    playBuffer.WaveFormat = input.WaveFormat;
-                    if (playBuffer.BufferDuration.Milliseconds < requestedLatency * 4)
+                    processor.Input = input;
+                    processor.WaveFormat = input.WaveFormat;
+                    Output = new AudioSampleBuffer(input.WaveFormat)
                     {
-                        playBuffer.BufferDuration = TimeSpan.FromMilliseconds(requestedLatency * 5);
-                        playBuffer.ClearBuffer();
-                    }
-
-                    output = new AudioSampleBuffer(input.WaveFormat)
-                    {
-                        Processor = playBuffer
+                        Processor = processor
                     };
                 }
             }
 
-            latency = this.latency;
-            bufferUnderRuns = playBuffer.Overflows;
-            cpuUsage = this.cpuUsage;
-            return output;
-        }
-
-        private void runInThread()
-        {
-            float[] buffer = new float[128];
-            while (running)
-            {
-                if (playBuffer.IsValid)
-                {
-                    if (playBuffer.BufferedDuration.Milliseconds < requestedLatency)
-                    {
-                        try
-                        {
-                            while (playBuffer.BufferedDuration.Milliseconds < requestedLatency)
-                            {
-                                input.Read(buffer, 0, buffer.Length);
-                                playBuffer.AddSamples(buffer, 0, buffer.Length);
-                            }
-
-                            latency = playBuffer.BufferedDuration.Milliseconds;
-                        }
-                        catch (Exception e)
-                        {
-                            AudioEngine.Log(e.Message);
-                            AudioEngine.Log(e.StackTrace);
-                        }
-                    }
-                }
-                else
-                {
-                    Thread.Sleep(100);
-                }
-
-                Thread.Sleep(1);
-            }
+            latency = processor.Latency;
+            bufferUnderRuns = processor.BufferUnderRuns;
+            cpuUsage = processor.CpuUsage;
+            return Output;
         }
 
         public void Dispose()
         {
-            running = false;
-            Thread.Sleep(100);
-            if (playThread.IsAlive)
+            processor.Dispose();
+        }
+
+        public class AudioThreadProcessor : IAudioProcessor, IDisposable, ISampleProvider
+        {
+            public AudioSampleBuffer Input;
+            public int RequestedLatency;
+            public bool Running;
+            public int Latency;
+            public int BufferUnderRuns => playBuffer.UnderRuns;
+            public float CpuUsage;
+
+            private BufferedSampleProvider playBuffer = new BufferedSampleProvider();
+            private Thread playThread;
+
+            public WaveFormat WaveFormat
             {
-                playThread.Abort();
+                get => playBuffer.WaveFormat;
+                set
+                {
+                    playBuffer.WaveFormat = value;
+                    if (playBuffer.BufferDuration.Milliseconds < RequestedLatency * 4)
+                    {
+                        playBuffer.BufferDuration = TimeSpan.FromMilliseconds(RequestedLatency * 50);
+                        playBuffer.ClearBuffer();
+                    }
+                }
+            }
+
+            public void EnsureThreadIsRunning()
+            {
+                if (playThread == null || !playThread.IsAlive)
+                {
+                    playThread?.Abort();
+                    Running = true;
+                    playThread = new Thread(RunInThread);
+                    playThread.Start();
+                    playBuffer = new BufferedSampleProvider();
+                }
+            }
+
+            public int Read(float[] buffer, int offset, int count)
+            {
+                return playBuffer.Read(buffer, offset, count);
+            }
+
+            private void RunInThread()
+            {
+                float[] buffer = new float[128];
+                var stopWatch = Stopwatch.StartNew();
+                AudioEngine.Log("Starting AudioThread...");
+                while (Running)
+                {
+                    if (playBuffer.IsValid && Input != null)
+                    {
+                        if (playBuffer.BufferedDuration.Milliseconds < RequestedLatency)
+                        {
+                            try
+                            {
+                                stopWatch.Stop();
+                                var idleTime = stopWatch.ElapsedTicks;
+                                stopWatch.Restart();
+
+                                while (playBuffer.BufferedDuration.Milliseconds < RequestedLatency)
+                                {
+                                    Input.Read(buffer, 0, buffer.Length);
+                                    playBuffer.AddSamples(buffer, 0, buffer.Length);
+                                }
+
+                                Latency = playBuffer.BufferedDuration.Milliseconds;
+                                stopWatch.Stop();
+                                var calcTime = stopWatch.ElapsedTicks;
+                                stopWatch.Restart();
+
+                                CpuUsage = (float) calcTime / (idleTime + calcTime);
+                            }
+                            catch (Exception e)
+                            {
+                                AudioEngine.Log(e);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Thread.Sleep(100);
+                    }
+                }
+
+                AudioEngine.Log("AudioThread terminated");
+            }
+
+            public void Dispose()
+            {
+                Running = false;
+                Thread.Sleep(100);
+                if (playThread.IsAlive)
+                {
+                    playThread.Abort();
+                }
             }
         }
     }

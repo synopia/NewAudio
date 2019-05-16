@@ -23,7 +23,7 @@ namespace VL.NewAudio
         }
     }
 
-    public class AudioSampleLoop<TState> where TState : class
+    public class AudioSampleLoop<TState> : BaseAudioNode where TState : class
     {
         private bool reset;
         private AudioSampleBuffer input;
@@ -36,6 +36,7 @@ namespace VL.NewAudio
         private TState state;
         private readonly AudioSampleFrameClock sampleClock = new AudioSampleFrameClock();
         private AudioSampleBuffer output = new AudioSampleBuffer(WaveOutput.SingleChannelFormat);
+        private AudioSampleLoopProcessor processor;
 
         public AudioSampleBuffer Update(
             bool reset,
@@ -52,7 +53,7 @@ namespace VL.NewAudio
             }
 
             hasChanges = reset != this.reset
-                         || input?.GetHashCode() != this.input?.GetHashCode()
+                         || input != this.input
                          || outputChannels != this.outputChannels
                          || oversample != oversampling;
 
@@ -63,36 +64,42 @@ namespace VL.NewAudio
             this.outputChannels = outputChannels;
             oversampling = oversample;
 
-            if (hasChanges)
+            if (hasChanges || reset || HotSwapped)
             {
                 AudioEngine.Log(
-                    $"AudioSampleLoop configuration changed outChannels={outputChannels}, oversampling={oversample}");
+                    $"AudioSampleLoop({state}) configuration changed outChannels={outputChannels}, oversampling={oversample}");
 
                 if (IsValid())
                 {
-                    output = new AudioSampleLoopProcessor(state, input, sampleClock, update, outputChannels, oversample)
-                        .Build();
+                    processor = new AudioSampleLoopProcessor(state, input, sampleClock, update, outputChannels,
+                        oversample);
+                    output = processor.Build();
                 }
                 else
                 {
                     output?.Dispose();
                     output = null;
                 }
+
+                HotSwapped = false;
             }
+
+            processor.updateFunc = update;
 
             return output;
         }
 
+
         private bool IsValid()
         {
-            return createFunc != null && updateFunc != null && input != null;
+            return createFunc != null && updateFunc != null;
         }
 
         private class AudioSampleLoopProcessor : IAudioProcessor
         {
-            private TState state;
+            public TState state;
             private readonly AudioSampleBuffer input;
-            private readonly Func<TState, AudioSampleAccessor, TState> updateFunc;
+            public Func<TState, AudioSampleAccessor, TState> updateFunc;
             private readonly int outputChannels;
             private int InputChannels => input?.WaveFormat?.Channels ?? 0;
             private readonly int oversampling;
@@ -129,37 +136,29 @@ namespace VL.NewAudio
 
             public int Read(float[] buffer, int offset, int count)
             {
-                try
+                if (input != null)
                 {
-                    if (input != null)
+                    var inputSamples = count * InputChannels / outputChannels;
+                    if (inputBuffer == null || inputBuffer.Length != inputSamples)
                     {
-                        var inputSamples = count * InputChannels / outputChannels;
-                        if (inputBuffer == null || inputBuffer.Length != inputSamples)
-                        {
-                            inputBuffer = new float[inputSamples];
-                        }
-
-                        input.Read(inputBuffer, offset, inputSamples);
-                    }
-                    else
-                    {
-                        inputBuffer = null;
+                        inputBuffer = new float[inputSamples];
                     }
 
-
-                    if (oversampling <= 1)
-                    {
-                        LoopNormal(buffer, count);
-                    }
-                    else
-                    {
-                        LoopOversampling(buffer, count);
-                    }
+                    input.Read(inputBuffer, offset, inputSamples);
                 }
-                catch (Exception e)
+                else
                 {
-                    AudioEngine.Log(e.Message);
-                    AudioEngine.Log(e.StackTrace);
+                    inputBuffer = null;
+                }
+
+
+                if (oversampling <= 1)
+                {
+                    LoopNormal(buffer, count);
+                }
+                else
+                {
+                    LoopOversampling(buffer, count);
                 }
 
                 return count;

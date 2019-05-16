@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 using VL.Lib.Collections;
 using VL.NewAudio;
@@ -10,6 +11,11 @@ namespace NewAudioTest
         [Test]
         public void TestSplitter()
         {
+            var s = new[] {1, 2, 3}.ToSpread();
+            Console.WriteLine($"{s.Count}");
+            Console.WriteLine($"{s[0]}");
+            Console.WriteLine($"{s[1]}");
+            Console.WriteLine($"{s[2]}");
             var splitter = new AudioSplitter();
             var mixer = new AudioMixer();
 

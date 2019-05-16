@@ -14,7 +14,7 @@ namespace VL.NewAudio
         private int m;
 
         private SpreadBuilder<float> spreadBuilder;
-        private Spread<float> spread;
+        private Spread<float> spread = Spread<float>.Empty;
 
         public AudioSampleBuffer Update(AudioSampleBuffer source, int fftLength, out Spread<float> spread)
         {

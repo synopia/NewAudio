@@ -2,12 +2,32 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using VL.Core;
 
 namespace VL.NewAudio
 {
     public interface IAudioProcessor
     {
         int Read(float[] buffer, int offset, int count);
+    }
+
+    public abstract class BaseAudioNode : INotifyHotSwapped
+    {
+        public bool HotSwapped;
+
+        public void Swapped(object newInstance)
+        {
+            try
+            {
+                var s = RuntimeReflectionExtensions.GetRuntimeField(newInstance.GetType(), "HotSwapped");
+                s.SetValue(newInstance, true);
+            }
+            catch (Exception e)
+            {
+                AudioEngine.Log(e.Message);
+            }
+        }
     }
 
     public static class AudioEngine
@@ -69,12 +89,21 @@ namespace VL.NewAudio
         }
 
         private static StreamWriter log = File.CreateText("out.log");
+        private static string lastEntry;
+
+        public static void Log(Exception e)
+        {
+            Log($"{e.Message}\n{e.StackTrace}");
+        }
 
         public static void Log(string line)
         {
-            log.WriteLine(line);
-            log.Flush();
-            log.AutoFlush = true;
+            if (line != lastEntry)
+            {
+                log.WriteLine(line);
+                log.Flush();
+                lastEntry = line;
+            }
         }
     }
 }

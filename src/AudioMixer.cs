@@ -4,7 +4,7 @@ using VL.Lib.Collections;
 
 namespace VL.NewAudio
 {
-    public class AudioMixer
+    public class AudioMixer : BaseAudioNode
     {
         public AudioSampleBuffer[] Inputs;
         public int[] OutputMap;
@@ -22,7 +22,7 @@ namespace VL.NewAudio
             Inputs = arrayInputs;
             OutputMap = arrayMap;
 
-            if (HasChanges)
+            if (HasChanges || HotSwapped)
             {
                 AudioEngine.Log($"AudioMixer: configuration changed");
 
@@ -36,6 +36,8 @@ namespace VL.NewAudio
                     output?.Dispose();
                     output = null;
                 }
+
+                HotSwapped = false;
             }
 
             return output;

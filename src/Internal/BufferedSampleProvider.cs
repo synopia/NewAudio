@@ -16,6 +16,7 @@ namespace VL.NewAudio
 
         public bool IsValid => WaveFormat != null && BufferLength > 0;
         public int Overflows;
+        public int UnderRuns;
 
         public int BufferedSamples
         {
@@ -46,7 +47,11 @@ namespace VL.NewAudio
             if (circularBuffer != null)
                 num = circularBuffer.Read(buffer, offset, count);
             if (num < count)
+            {
                 Array.Clear(buffer, offset + num, count - num);
+                UnderRuns++;
+            }
+
             return count;
         }
 
