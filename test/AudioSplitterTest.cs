@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using NAudio.Wave;
 using NUnit.Framework;
 using VL.Lib.Collections;
 using VL.NewAudio;
@@ -8,6 +10,13 @@ namespace NewAudioTest
     [TestFixture]
     public class AudioSplitterTest
     {
+        [Test]
+        public void test()
+        {
+            var asioOut = new AsioOut(AsioOut.GetDriverNames().First());
+            Console.WriteLine($"{asioOut}");
+        }
+
         [Test]
         public void TestSplitter()
         {

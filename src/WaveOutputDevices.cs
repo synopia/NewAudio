@@ -82,6 +82,15 @@ namespace VL.NewAudio
         public IWavePlayer Create(int latency)
         {
             var asioOut = new AsioOut(driverName);
+            AudioEngine.Log($"{asioOut.DriverInputChannelCount}");
+            AudioEngine.Log($"{asioOut.DriverOutputChannelCount}");
+            AudioEngine.Log($"{asioOut.PlaybackLatency}");
+            AudioEngine.Log($"{asioOut.NumberOfInputChannels}");
+            AudioEngine.Log($"{asioOut.NumberOfOutputChannels}");
+            AudioEngine.Log($"{asioOut.ChannelOffset}");
+            AudioEngine.Log($"{asioOut.InputChannelOffset}");
+//            AudioEngine.Log($"{asioOut.}");
+//            AudioEngine.Log($"{asioOut.}");
             return asioOut;
         }
     }

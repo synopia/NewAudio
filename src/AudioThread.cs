@@ -107,7 +107,7 @@ namespace VL.NewAudio
 
             private void RunInThread()
             {
-                float[] buffer = new float[128];
+                float[] buffer = new float[512];
                 var stopWatch = Stopwatch.StartNew();
                 AudioEngine.Log("Starting AudioThread...");
                 while (Running)
