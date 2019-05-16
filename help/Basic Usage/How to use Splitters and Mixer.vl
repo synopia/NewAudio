@@ -39,25 +39,27 @@
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
               <Choice Kind="ProcessAppFlag" Name="WaveOutput" />
             </p:NodeReference>
+            <Pin Id="JcWgpirOXftPIadAiakYS2" Name="Device" Kind="InputPin" />
+            <Pin Id="P2q9QmoMMNMNOfo4yAyCIf" Name="Input" Kind="InputPin" />
+            <Pin Id="V7cXSprnAcjPoj6Ec6d1nK" Name="Sample Rate" Kind="InputPin" />
             <Pin Id="G1HFQQrkdLbPQ8iaZwGf7F" Name="Reset" Kind="InputPin" DefaultValue="False">
               <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
                 <Choice Kind="TypeFlag" Name="Boolean" />
               </p:TypeAnnotation>
             </Pin>
-            <Pin Id="JcWgpirOXftPIadAiakYS2" Name="Device" Kind="InputPin" />
-            <Pin Id="UmjjEZ8z5w6PBWigtiSe65" Name="Output" Kind="InputPin" />
-            <Pin Id="V7cXSprnAcjPoj6Ec6d1nK" Name="Sample Rate" Kind="InputPin" />
+            <Pin Id="MldhktyXFIBMZQNQmTxfNj" Name="Driver Latency" Kind="InputPin" />
+            <Pin Id="I6Zivy6FvKnMR6fRS9k3fU" Name="Internal Latency" Kind="InputPin" />
+            <Pin Id="EhA3iVsOvDbL5anKOnSiZs" Name="Buffer Size" Kind="InputPin" />
+            <Pin Id="JC039qQtHdQLhBAMA6IXyJ" Name="Status" Kind="OutputPin" />
+            <Pin Id="MLWwhpK7E24OJXCWEWB8dc" Name="Wave Format" Kind="OutputPin" />
+            <Pin Id="Laa9TqX1FitNDbwuCwIn0K" Name="Latency" Kind="OutputPin" />
+            <Pin Id="NBHCLneCotPMIRz9DCcWkD" Name="Cpu Usage" Kind="OutputPin" />
+            <Pin Id="IJNJmNvewVYM44qA9AhGX7" Name="Buffer Under Runs" Kind="OutputPin" />
             <Pin Id="TqxzPT4t6zKQGrUBa8Xnos" Name="Requested Latency" Kind="InputPin" DefaultValue="152">
               <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
                 <Choice Kind="TypeFlag" Name="Integer32" />
               </p:TypeAnnotation>
             </Pin>
-            <Pin Id="JC039qQtHdQLhBAMA6IXyJ" Name="Status" Kind="OutputPin" />
-            <Pin Id="UK2MbnfiS2kLGPjSGl65iG" Name="Error" Kind="OutputPin" />
-            <Pin Id="MUtsLRlgmTtOOEfjz47cDn" Name="Wave Format Out" Kind="OutputPin" />
-            <Pin Id="Laa9TqX1FitNDbwuCwIn0K" Name="Latency" Kind="OutputPin" />
-            <Pin Id="NBHCLneCotPMIRz9DCcWkD" Name="Cpu Usage" Kind="OutputPin" />
-            <Pin Id="FGogTcgxycEQUnWS5vIP2G" Name="Buffer Underruns" Kind="OutputPin" />
           </Node>
           <Pad Id="Mm6zRNJzIpiPLWBirt9Fu5" Comment="Device" Bounds="312,770,348,16" ShowValueBox="true" isIOBox="true" Value="ASIO: Audio 2 DJ">
             <p:TypeAnnotation LastCategoryFullName="VL.NewAudio" LastSymbolSource="NewAudio.dll">
@@ -206,6 +208,7 @@
             </p:TypeAnnotation>
             <p:ValueBoxSettings />
           </Pad>
+          <ControlPoint Id="NaEq5TkLKJmNuOJG5x266r" Bounds="255,798" />
         </Canvas>
         <Patch Id="JdAy5MF5KDhNtNuNEZgjhT" Name="Create" />
         <Patch Id="NG4NXUivOn9LivaheS2qoP" Name="Update" />
@@ -216,7 +219,6 @@
         <Link Id="OLAuEHOZvy8P7AX0Qrijyj" Ids="Ave5xSo1izONyRLoS1oo4x,FwX4DaZRI0PPoWI4GqCh7g" />
         <Link Id="QNXYH52gsr1MVhxM9UyESj" Ids="Mm6zRNJzIpiPLWBirt9Fu5,JcWgpirOXftPIadAiakYS2" />
         <Link Id="MGbpAbeJ1weLCXSJCNSxJ7" Ids="GDqWMLEml5wMabWeIGXr5a,JAjf2aGOXJOMq9NaqcOrrX,TkzcItvjiKYObp6aEA66pf" />
-        <Link Id="BxQxywVJGl2QTo8T0sh2H7" Ids="EpyYtQrCfMJMGL2Hn46XMK,UmjjEZ8z5w6PBWigtiSe65" />
         <Link Id="LRbXIyc4PDSOl1YOlixP6l" Ids="TkGFMEFTRmULMWVQFS484F,Hlj3PrXPg5hLBPE2LOFUSD" />
         <Link Id="MmUHkMxZWn6MWm06Mu877b" Ids="OLAdPsWxi2TPAREbspeM2l,T0MkUOvHjbzMtwmhlYgj71" IsHidden="true" />
         <Link Id="HWYMNhBgHQbPUyaeHKUdU6" Ids="KDJ1Jd7Pd3uOM5amiVzycG,FlTMDrHHOB5Pgzs1iHZnwz" IsHidden="true" />
@@ -227,13 +229,14 @@
         <Link Id="DOPR3lhZDiQPZXKCpO9N1O" Ids="SzCOkQNwwFGLlQ5bGXnjPb,AUwU0RSNtUhNrYIHuzfHtc" />
         <Link Id="IFEX0aMh4vTOeyQjO27r4P" Ids="NBHCLneCotPMIRz9DCcWkD,It1sdMwLnV1OrAt9pXQHO0" />
         <Link Id="PkpubLv7VzkQLoa0QC6lbA" Ids="OrxrEO8087mP2DsFP6pkpd,IvelIsST39bO0ZC68PCXxY" />
-        <Link Id="NE6l9xWdXgTMd0N876BEjr" Ids="GDqWMLEml5wMabWeIGXr5a,G1HFQQrkdLbPQ8iaZwGf7F" />
+        <Link Id="NE6l9xWdXgTMd0N876BEjr" Ids="GDqWMLEml5wMabWeIGXr5a,NaEq5TkLKJmNuOJG5x266r,G1HFQQrkdLbPQ8iaZwGf7F" />
         <Link Id="Maqbz3dAUHPOKcR3zFt566" Ids="FyTq25JImUlOnne4m65ksu,FrJGFNIoe9vQcGGugujkJS" />
         <Link Id="O44tySJY7oVLUQvqfJ91q2" Ids="TFZ2X8UuSYlNcJXOZBZpc4,N3o8ylWYpREN9M3gmTcXHr" />
         <Link Id="G4R73VEVcjeQW9TfxbybUe" Ids="L7a9eGWrZXPNjAgrAFErxi,CxDxM505yLBNfZVmc3NB4l" />
+        <Link Id="GsS2dWMUJW2QEmzuGKUqtC" Ids="EpyYtQrCfMJMGL2Hn46XMK,P2q9QmoMMNMNOfo4yAyCIf" />
       </Patch>
     </Node>
   </Patch>
   <NugetDependency Id="BEVE3AtDi2yLhfOqaiZthl" Location="VL.Skia" Version="2019.1.0-0318-g91ff9a39a4" />
-  <NugetDependency Id="UTEaSMTkxeyNdNEX4vdvGx" Location="VL.NewAudio" Version="0.2.0" />
+  <NugetDependency Id="UTEaSMTkxeyNdNEX4vdvGx" Location="VL.NewAudio" Version="0.2.1" />
 </Document>

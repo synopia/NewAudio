@@ -181,75 +181,73 @@
     ************************ Create ************************
 
 -->
-            <Node Name="Create" Bounds="441,172,80,80" Id="HGqiiljUV8APO3jLbdM80l">
+            <Node Name="Create" Bounds="416,392,80,80" Id="QCmuRASKCVSLHUhFrfVBro">
               <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="Builtin">
                 <Choice Kind="OperationDefinition" Name="Operation" />
               </p:NodeReference>
-              <Patch Id="E4NaXWGEmSaPivIirQPLmT" IsGeneric="true">
-                <Node Bounds="478,210" AutoConnect="true" Id="P6vVZrujPkuLk4GFVgGJG0">
+              <Patch Id="Au3AZhPmI64PmlpFt7CK5V" IsGeneric="true">
+                <Node Bounds="440,423" AutoConnect="true" Id="RUVUh8YcRO4OzWcmN3Qkcf">
                   <p:NodeReference LastCategoryFullName="VL.NewAudio.WaveOutput" LastSymbolSource="NewAudio.dll">
                     <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                     <CategoryReference Kind="AssemblyCategory" Name="WaveOutput" />
                     <Choice Kind="OperationCallFlag" Name="Create" />
                   </p:NodeReference>
-                  <Pin Id="BaebziWdBLePEQHLsBLh5r" Name="Output" Kind="StateOutputPin" />
+                  <Pin Id="UXvXnzNVk4mObtd3BjDXo1" Name="Output" Kind="StateOutputPin" />
                 </Node>
-                <Pin Id="CY4kDcqEQV4QAFKPGduP7b" Name="Output" Kind="OutputPin" />
+                <Pin Id="LGTomG9jOGlOWicAwLg0Qt" Name="Output" Kind="OutputPin" />
               </Patch>
             </Node>
             <!--
 
-    ************************ Update ************************
+    ************************ Ipdate ************************
 
 -->
-            <Node Name="Update" Bounds="424,295,80,80" Id="ITMBfii00QVQQfo0uIkoc8">
+            <Node Name="Ipdate" Bounds="421,549,80,80" Id="T4nVnabzQ5cNhbJlM4keea">
               <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="Builtin">
                 <Choice Kind="OperationDefinition" Name="Operation" />
               </p:NodeReference>
-              <Patch Id="JPYUBMEtHbJOGu0VMLRVz2">
-                <Node Bounds="448,315" AutoConnect="true" Id="Gdgc3dfqtHcP7hjXfLZC0K">
+              <Patch Id="J2xiKYmmUmOOjy4s05zxxI" IsGeneric="true">
+                <Node Bounds="453,579" AutoConnect="true" Id="EkdkzF4gCO0NMjubtGV1YB">
                   <p:NodeReference LastCategoryFullName="VL.NewAudio.WaveOutput" LastSymbolSource="NewAudio.dll">
                     <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                     <CategoryReference Kind="AssemblyCategory" Name="WaveOutput" />
                     <Choice Kind="OperationCallFlag" Name="Update" />
                   </p:NodeReference>
-                  <Pin Id="ReAcxQsbdwGPlVotzQhTnb" Name="Input" Kind="StateInputPin" />
-                  <Pin Id="Cp2oMjUuQ8SOqmPheEGbLp" Name="Device" Kind="InputPin" />
-                  <Pin Id="OF0b5vWqFqSNhtqctQJ0u0" Name="Output" Kind="InputPin" />
-                  <Pin Id="LIiRSQV97g0P6v1aUYVbkq" Name="Sample Rate" Kind="InputPin" />
-                  <Pin Id="LAHlzBG9ehyLvakI8jfJWC" Name="Requested Latency" Kind="InputPin" />
-                  <Pin Id="StcDUgvQlPlO3WpB8zv6VK" Name="Reset" Kind="InputPin" DefaultValue="True">
-                    <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
-                      <Choice Kind="TypeFlag" Name="Boolean" />
-                    </p:TypeAnnotation>
-                  </Pin>
-                  <Pin Id="J66jyRcEeqiLOQokWdoUL5" Name="Output" Kind="StateOutputPin" />
-                  <Pin Id="ARr6ZjO9ec3Lwhw8mfUEwX" Name="Status" Kind="OutputPin" />
-                  <Pin Id="RfZMQXvii0jOXEhSybeyW0" Name="Error" Kind="OutputPin" />
-                  <Pin Id="RdAO7ETks7FM5bOhpn3M53" Name="Wave Format Out" Kind="OutputPin" />
-                  <Pin Id="ISc6h6QUSCrNl0mnRDs3JA" Name="Latency" Kind="OutputPin" />
-                  <Pin Id="Mm1I8hGRcdSLPSOcyNUQvi" Name="Cpu Usage" Kind="OutputPin" />
-                  <Pin Id="GFh4L07ORCOLygguDdpcu0" Name="Buffer Underruns" Kind="OutputPin" />
+                  <Pin Id="IGTAcXSPe6CLLSrlswjc2W" Name="Input (this)" Kind="StateInputPin" />
+                  <Pin Id="OzAwlDhhqj5LQMkmD4XAdm" Name="Device" Kind="InputPin" />
+                  <Pin Id="UkdDcmF6bKsMNIS1i3SksO" Name="Input" Kind="InputPin" />
+                  <Pin Id="D1OgRM0Mdh2QZKNwnpa2Zd" Name="Sample Rate" Kind="InputPin" />
+                  <Pin Id="ToQtYStuwkqNVCWjTaf3g8" Name="Driver Latency" Kind="InputPin" />
+                  <Pin Id="FhMYgcUOiBqMlebqeqfNOE" Name="Internal Latency" Kind="InputPin" />
+                  <Pin Id="IhlHswgB6QDMkcniOzFiV1" Name="Buffer Size" Kind="InputPin" />
+                  <Pin Id="MTxTWXFpWTtN1yDlwSetS2" Name="Reset" Kind="InputPin" />
+                  <Pin Id="StGErDEk9syLdyBodVX9Uo" Name="Output" Kind="StateOutputPin" />
+                  <Pin Id="HZ0DS2KcVcrP8AoRVPq6AH" Name="Status" Kind="OutputPin" />
+                  <Pin Id="Udk7FMsAxWoLV8s3d5zz7C" Name="Wave Format" Kind="OutputPin" />
+                  <Pin Id="SdRhBlUznYONV05iDEIUgt" Name="Latency" Kind="OutputPin" />
+                  <Pin Id="ECruh8jn1sQOCl2JT7uEDc" Name="Cpu Usage" Kind="OutputPin" />
+                  <Pin Id="EnFdbta5pNJMRBIwlUvVX1" Name="Buffer Under Runs" Kind="OutputPin" />
                 </Node>
-                <Pin Id="P15Fx9Ih5TwQaur13u5nIx" Name="Input" Kind="InputPin" />
-                <Pin Id="IS7AsCvdlUbMWJoC0LM3Lp" Name="Reset" Kind="InputPin" />
-                <Pin Id="OyzeRcU6oSYOEN568f3fnP" Name="Device" Kind="InputPin" />
-                <Pin Id="GnAZGylyDLOL9t1IpClvfP" Name="Output" Kind="InputPin" />
-                <Pin Id="KswhM2iyTbcNF14r3wrSV9" Name="Sample Rate" Kind="InputPin" />
-                <Pin Id="AYMGlKPhq4sNbUySGYuM69" Name="Requested Latency" Kind="InputPin" />
-                <Pin Id="A2hnWoePIoXOl1752GniqM" Name="Output" Kind="OutputPin" />
-                <Pin Id="C2tvVMyA2EdMivG6BfOGxi" Name="Status" Kind="OutputPin" />
-                <Pin Id="U043PGRxKhYMHSalebizXR" Name="Error" Kind="OutputPin" />
-                <Pin Id="OlfOpnOlefxNpC7WRrj3SB" Name="Wave Format Out" Kind="OutputPin" />
-                <Pin Id="F99lplYtoSTNm7WKhoP5J1" Name="Latency" Kind="OutputPin" />
-                <Pin Id="KY9T7lwYAefPyIPUOq2m3u" Name="Cpu Usage" Kind="OutputPin" />
-                <Pin Id="FO82DtgDjbnMi18xlgEZXy" Name="Buffer Underruns" Kind="OutputPin" />
+                <Pin Id="VD7vu34AzcOOFabmyKWrnL" Name="Input (this)" Kind="InputPin" />
+                <Pin Id="NNHuJ1PxeHTQGTlcPq0aTk" Name="Device" Kind="InputPin" />
+                <Pin Id="DHof8PUiBe0NFpn8BuSL5d" Name="Input" Kind="InputPin" />
+                <Pin Id="KIEctOjLUK0LJjaEnHqozC" Name="Sample Rate" Kind="InputPin" />
+                <Pin Id="QAfwqGGZBxMO030dXjjOjd" Name="Reset" Kind="InputPin" />
+                <Pin Id="Pd0pqWQplXwNMQTq1gLigm" Name="Driver Latency" Kind="InputPin" />
+                <Pin Id="U7MXzxtRmqVPLSwY5vGMFJ" Name="Internal Latency" Kind="InputPin" />
+                <Pin Id="Lk74nf878OvMjWMLAxihVr" Name="Buffer Size" Kind="InputPin" />
+                <Pin Id="QPA5FM0r9uOOVNQGWUSrqx" Name="Output" Kind="OutputPin" />
+                <Pin Id="BZU8c6OrajiM1gqLtKXPII" Name="Status" Kind="OutputPin" />
+                <Pin Id="MPRiPRlAYpPNY2rcZFAnHP" Name="Wave Format" Kind="OutputPin" />
+                <Pin Id="TDzwfywAQOpO8sLe7UYEQh" Name="Latency" Kind="OutputPin" />
+                <Pin Id="KzPmycDIeUNQVRopy3mOag" Name="Cpu Usage" Kind="OutputPin" />
+                <Pin Id="Kq54kLBUhXeNe50SYxDV2q" Name="Buffer Under Runs" Kind="OutputPin" />
               </Patch>
             </Node>
           </Canvas>
           <ProcessDefinition Id="PUWNegPXKo1PxgHDnTd78b">
-            <Fragment Id="EW6vPDgOnZvP23d1lvrr14" Patch="HGqiiljUV8APO3jLbdM80l" Enabled="true" />
-            <Fragment Id="AiyYRmUr8crMt6mg2JsL6j" Patch="ITMBfii00QVQQfo0uIkoc8" Enabled="true" />
+            <Fragment Id="GqtTaBOsfWWPxQo7FfW2ic" Patch="QCmuRASKCVSLHUhFrfVBro" Enabled="true" />
+            <Fragment Id="NUS3MDGvREINEWcPEUEXRh" Patch="T4nVnabzQ5cNhbJlM4keea" Enabled="true" />
           </ProcessDefinition>
         </Patch>
       </Node>
@@ -4947,7 +4945,10 @@
                   </p:NodeReference>
                   <Pin Id="MSYjsY9DV0jOVTREPpWnbn" Name="Input (this)" Kind="StateInputPin" />
                   <Pin Id="HqOdG2bfmsOPNl8GnmWzgF" Name="Input" Kind="InputPin" />
-                  <Pin Id="GAc6eidZOLYMN2ur6wOy1H" Name="Requested Latency" Kind="InputPin" />
+                  <Pin Id="TYjKl8S6lfdM82hWw7JjRe" Name="Run Without Output" Kind="InputPin" />
+                  <Pin Id="FJauS4kkDbWMo7LpOjUD0G" Name="Internal Latency" Kind="InputPin" />
+                  <Pin Id="EWFHekqLMurQd9x74U4Hnm" Name="Buffer Size" Kind="InputPin" />
+                  <Pin Id="RG8XCdRtEJEOJwdnsMFHin" Name="Reset" Kind="InputPin" />
                   <Pin Id="EE44kpcDOKcLMcg8eD5Bo0" Name="Output" Kind="StateOutputPin" />
                   <Pin Id="M9NULZlg0jQPWHqpTlvDIC" Name="Result" Kind="OutputPin" />
                   <Pin Id="KbRty4ZRBVoLRkIwnmF3Tv" Name="Latency" Kind="OutputPin" />
@@ -4956,7 +4957,10 @@
                 </Node>
                 <Pin Id="BNJO6Pq3DCxQIG2ZolDvlr" Name="Input (this)" Kind="InputPin" />
                 <Pin Id="Roh78TzhPsULngxOsKn5Bz" Name="Input" Kind="InputPin" />
-                <Pin Id="SqSeSaJ5rngP9Og7O5Daw5" Name="Requested Latency" Kind="InputPin" />
+                <Pin Id="E8szjQAcZrSN6SuuVJPhkp" Name="Reset" Kind="InputPin" />
+                <Pin Id="EhqlRD7zu2FMurjiwMitNt" Name="Internal Latency" Kind="InputPin" />
+                <Pin Id="T4lMbjdF6aTOopPOn9SIPY" Name="Buffer Size" Kind="InputPin" />
+                <Pin Id="Ir14Md1u92HP324tg1WOBB" Name="Run Without Output" Kind="InputPin" />
                 <Pin Id="C06gvTs6WGmQHupXGi5SGU" Name="Output" Kind="OutputPin" />
                 <Pin Id="MRzPFT3bL2NO0twOUkYX1T" Name="Result" Kind="OutputPin" />
                 <Pin Id="Opx0qsAEc90OifVsW1MmFH" Name="Latency" Kind="OutputPin" />

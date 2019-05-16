@@ -13,18 +13,22 @@ namespace VL.NewAudio
         public int BufferSize;
 
         private AudioThreadProcessor processor;
+        private bool RunWithoutOutput;
 
         public AudioSampleBuffer Update(AudioSampleBuffer input, out int latency,
-            out float cpuUsage, out int bufferUnderRuns, int internalLatency = 100, int bufferSize = 512,
+            out float cpuUsage, out int bufferUnderRuns, bool runWithoutOutput, int internalLatency = 100,
+            int bufferSize = 512,
             bool reset = false)
         {
             bool hasChanges = Input != input
                               || InternalLatency != internalLatency
+                              || RunWithoutOutput != runWithoutOutput
                               || reset;
 
             Input = input;
             InternalLatency = internalLatency;
             BufferSize = bufferSize;
+            RunWithoutOutput = runWithoutOutput;
 
             if (reset || BufferSize != bufferSize)
             {
@@ -43,6 +47,7 @@ namespace VL.NewAudio
             {
                 processor.Input = input;
                 processor.RequestedLatency = InternalLatency;
+                processor.RunWithoutOutput = RunWithoutOutput;
                 if (input != null)
                 {
                     processor.Input = input;
@@ -73,6 +78,7 @@ namespace VL.NewAudio
             public int Latency;
             public int BufferUnderRuns => playBuffer.UnderRuns;
             public float CpuUsage;
+            public bool RunWithoutOutput;
 
             private BufferedSampleProvider playBuffer = new BufferedSampleProvider();
             private Thread playThread;
@@ -119,6 +125,7 @@ namespace VL.NewAudio
                 float[] buffer = new float[bufferSize];
                 var stopWatch = Stopwatch.StartNew();
                 AudioEngine.Log("Starting AudioThread...");
+
                 while (Running)
                 {
                     if (playBuffer.IsValid && Input != null)
@@ -133,7 +140,7 @@ namespace VL.NewAudio
 
                                 while (playBuffer.BufferedDuration.Milliseconds < RequestedLatency)
                                 {
-                                    Input.Read(buffer, 0, buffer.Length);
+                                    Input?.Read(buffer, 0, buffer.Length);
                                     playBuffer.AddSamples(buffer, 0, buffer.Length);
                                 }
 
@@ -147,6 +154,14 @@ namespace VL.NewAudio
                             catch (Exception e)
                             {
                                 AudioEngine.Log(e);
+                            }
+                        }
+                        else
+                        {
+                            if (RunWithoutOutput)
+                            {
+                                playBuffer.Advance(TimeSpan.FromMilliseconds(RequestedLatency / 2));
+                                Thread.Sleep(RequestedLatency / 2);
                             }
                         }
                     }

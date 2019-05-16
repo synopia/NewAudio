@@ -31,6 +31,11 @@ namespace VL.NewAudio
         public TimeSpan BufferedDuration =>
             TimeSpan.FromSeconds(BufferedSamples / (double) WaveFormat.AverageBytesPerSecond);
 
+        public void Advance(TimeSpan timeSpan)
+        {
+            circularBuffer.Advance((int) (timeSpan.TotalSeconds * WaveFormat.AverageBytesPerSecond));
+        }
+
         public WaveFormat WaveFormat { get; set; }
 
         public void AddSamples(float[] buffer, int offset, int count)
