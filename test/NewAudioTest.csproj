@@ -116,7 +116,6 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="AudioSplitterTest.cs"/>
-        <Compile Include="TestFFT.cs"/>
         <Compile Include="Tests.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
     </ItemGroup>

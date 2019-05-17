@@ -13,6 +13,7 @@
         <tags>VL, audio, naudio</tags>
         <dependencies>
             <dependency id="NAudio" version="[1.7.3]"/>
+            <dependency id="FFTW.NET" version="[1.0.1]"/>
         </dependencies>
     </metadata>
     <files>
