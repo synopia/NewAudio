@@ -39,17 +39,17 @@ namespace VL.NewAudio
             DriverLatency = driverLatency;
             BufferSize = bufferSize;
 
-            if (reset || hasDeviceChanged)
+            if (hasDeviceChanged)
             {
+                processor?.Dispose();
+                processor = null;
+
                 if (waveOut != null)
                 {
                     AudioEngine.Log("Stopping WaveOut...");
                     waveOut.Stop();
                     waveOut.Dispose();
                 }
-
-                processor?.Dispose();
-                processor = null;
             }
 
             if (processor == null)
@@ -58,19 +58,19 @@ namespace VL.NewAudio
             }
 
             processor.EnsureThreadIsRunning();
+            processor.RequestedLatency = InternalLatency;
 
             if (hasDeviceChanged)
             {
                 InternalFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 2);
                 SingleChannelFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 1);
 
-                processor.RequestedLatency = InternalLatency;
                 processor.WaveFormat = InternalFormat;
 
                 if (device != null)
                 {
                     AudioEngine.Log(
-                        $"WaveOutput: Configuration changed, device={device.Value}, sampleRate={sampleRate}, latency={InternalLatency}");
+                        $"WaveOutput: Configuration changed, device={device.Value}, sampleRate={sampleRate}, latency={InternalLatency} {HotSwapped} ");
                     try
                     {
                         waveOut = ((IWaveOutputFactory) device.Tag).Create(DriverLatency);
@@ -83,12 +83,12 @@ namespace VL.NewAudio
                     catch (Exception e)
                     {
                         AudioEngine.Log(e);
+                        waveOut = null;
                     }
                 }
             }
 
             processor.Input = Input;
-            processor.RequestedLatency = InternalLatency;
 
             status = waveOut != null ? waveOut.PlaybackState.ToString() : "Uninitialized";
             waveFormat = OutputFormat;
@@ -99,9 +99,9 @@ namespace VL.NewAudio
 
         public void Dispose()
         {
+            processor?.Dispose();
             waveOut?.Stop();
             waveOut?.Dispose();
-            processor?.Dispose();
         }
     }
 }

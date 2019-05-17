@@ -10,8 +10,8 @@ namespace VL.NewAudio
 
         public TimeSpan BufferDuration
         {
-            get { return TimeSpan.FromSeconds(BufferLength / (double) WaveFormat.AverageBytesPerSecond); }
-            set { BufferLength = (int) (value.TotalSeconds * WaveFormat.AverageBytesPerSecond); }
+            get { return TimeSpan.FromSeconds(BufferLength / (double) WaveFormat.AverageBytesPerSecond * 4); }
+            set { BufferLength = (int) (value.TotalSeconds * WaveFormat.AverageBytesPerSecond / 4); }
         }
 
         public bool IsValid => WaveFormat != null && BufferLength > 0;
@@ -29,11 +29,11 @@ namespace VL.NewAudio
         }
 
         public TimeSpan BufferedDuration =>
-            TimeSpan.FromSeconds(BufferedSamples / (double) WaveFormat.AverageBytesPerSecond);
+            TimeSpan.FromSeconds(BufferedSamples / (double) WaveFormat.AverageBytesPerSecond * 4);
 
         public void Advance(TimeSpan timeSpan)
         {
-            circularBuffer.Advance((int) (timeSpan.TotalSeconds * WaveFormat.AverageBytesPerSecond));
+            circularBuffer?.Advance((int) (timeSpan.TotalSeconds * WaveFormat.AverageBytesPerSecond / 4));
         }
 
         public WaveFormat WaveFormat { get; set; }

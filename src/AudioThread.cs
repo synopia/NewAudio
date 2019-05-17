@@ -21,6 +21,7 @@ namespace VL.NewAudio
             bool reset = false)
         {
             bool hasChanges = Input != input
+                              || BufferSize != bufferSize
                               || InternalLatency != internalLatency
                               || RunWithoutOutput != runWithoutOutput
                               || reset;
@@ -72,7 +73,7 @@ namespace VL.NewAudio
 
         public class AudioThreadProcessor : IAudioProcessor, IDisposable, ISampleProvider
         {
-            public AudioSampleBuffer Input;
+            public ISampleProvider Input;
             public int RequestedLatency;
             public bool Running;
             public int Latency;
@@ -105,13 +106,13 @@ namespace VL.NewAudio
 
             public void EnsureThreadIsRunning()
             {
-                if (playThread == null || !playThread.IsAlive)
+                if (playThread == null)
                 {
                     playThread?.Abort();
                     Running = true;
                     playThread = new Thread(RunInThread);
-                    playThread.Start();
                     playBuffer = new BufferedSampleProvider();
+                    playThread.Start();
                 }
             }
 
@@ -124,60 +125,70 @@ namespace VL.NewAudio
             {
                 float[] buffer = new float[bufferSize];
                 var stopWatch = Stopwatch.StartNew();
-                AudioEngine.Log("Starting AudioThread...");
-
-                while (Running)
+                var clock = Stopwatch.StartNew();
+                var lastElapsed = 0.0;
+                AudioEngine.Log($"Starting AudioThread {GetHashCode()}...");
+                try
                 {
-                    if (playBuffer.IsValid && Input != null)
+                    while (Running)
                     {
-                        if (playBuffer.BufferedDuration.Milliseconds < RequestedLatency)
+                        if (playBuffer.IsValid && Input != null)
                         {
-                            try
+                            if (playBuffer.BufferedDuration.Milliseconds < RequestedLatency)
                             {
-                                stopWatch.Stop();
-                                var idleTime = stopWatch.ElapsedTicks;
-                                stopWatch.Restart();
-
-                                while (playBuffer.BufferedDuration.Milliseconds < RequestedLatency)
+                                try
                                 {
-                                    Input?.Read(buffer, 0, buffer.Length);
-                                    playBuffer.AddSamples(buffer, 0, buffer.Length);
+                                    stopWatch.Stop();
+                                    var idleTime = stopWatch.ElapsedTicks;
+                                    stopWatch.Restart();
+
+                                    while (playBuffer.BufferedDuration.Milliseconds < RequestedLatency)
+                                    {
+                                        Input?.Read(buffer, 0, buffer.Length);
+                                        playBuffer.AddSamples(buffer, 0, buffer.Length);
+                                    }
+
+                                    Latency = playBuffer.BufferedDuration.Milliseconds;
+                                    stopWatch.Stop();
+                                    var calcTime = stopWatch.ElapsedTicks;
+                                    stopWatch.Restart();
+
+                                    CpuUsage = (float) calcTime / (idleTime + calcTime);
                                 }
-
-                                Latency = playBuffer.BufferedDuration.Milliseconds;
-                                stopWatch.Stop();
-                                var calcTime = stopWatch.ElapsedTicks;
-                                stopWatch.Restart();
-
-                                CpuUsage = (float) calcTime / (idleTime + calcTime);
+                                catch (Exception e)
+                                {
+                                    AudioEngine.Log(e);
+                                }
                             }
-                            catch (Exception e)
+                            else
                             {
-                                AudioEngine.Log(e);
+                                if (RunWithoutOutput)
+                                {
+                                    var elapsed = clock.Elapsed.TotalSeconds;
+                                    var delta = elapsed - lastElapsed;
+                                    lastElapsed = elapsed;
+                                    playBuffer.Advance(TimeSpan.FromSeconds(delta));
+                                    Thread.Sleep(RequestedLatency);
+                                }
                             }
                         }
                         else
                         {
-                            if (RunWithoutOutput)
-                            {
-                                playBuffer.Advance(TimeSpan.FromMilliseconds(RequestedLatency / 2));
-                                Thread.Sleep(RequestedLatency / 2);
-                            }
+                            Thread.Sleep(100);
                         }
                     }
-                    else
-                    {
-                        Thread.Sleep(100);
-                    }
+                }
+                catch (Exception e)
+                {
+                    AudioEngine.Log(e);
                 }
 
-                AudioEngine.Log("AudioThread terminated");
+                AudioEngine.Log($"AudioThread {GetHashCode()} terminated");
             }
 
             public void Dispose()
             {
                 Running = false;
-                Thread.Sleep(100);
                 if (playThread.IsAlive)
                 {
                     playThread.Abort();
