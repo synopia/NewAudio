@@ -1,47 +1,49 @@
 using System;
+using FFTW.NET;
 using NAudio.Dsp;
 using VL.Lib.Collections;
+using Complex = System.Numerics.Complex;
 
 namespace VL.NewAudio
 {
     public class FFT
     {
-        private int fftLength;
-        private AudioSampleBuffer source;
-        private AudioSampleBuffer output;
-        private Complex[] fftBuffer;
-        private int fftPos;
-        private int m;
+        public int FftLength;
+        public AudioSampleBuffer Input;
+        public AudioSampleBuffer Output;
 
-        private SpreadBuilder<float> spreadBuilder;
-        private Spread<float> spread = Spread<float>.Empty;
+        private FftProcessor processor;
 
-        public AudioSampleBuffer Update(AudioSampleBuffer source, int fftLength, out Spread<float> spread)
+        public AudioSampleBuffer Update(AudioSampleBuffer input, int fftLength, out Spread<float> spread)
         {
-            if (this.source != source)
-            {
-                this.source = source;
-                output = new FFTProcessor(source, this).Build();
-            }
+            bool hasChanges = fftLength != FftLength;
 
-            if (this.fftLength != fftLength)
+            FftLength = fftLength;
+
+            if (hasChanges)
             {
-                this.fftLength = fftLength;
+                processor?.Dispose();
+                processor = null;
+
                 if (IsPowerOfTwo(fftLength))
                 {
-                    m = (int) Math.Log(fftLength, 2.0);
-                    fftBuffer = new Complex[fftLength];
-                    fftPos = 0;
-                    spreadBuilder = new SpreadBuilder<float>(fftLength * 2);
-                }
-                else
-                {
-                    fftBuffer = null;
+                    processor = new FftProcessor(fftLength);
+                    processor.Input = input;
+
+                    if (input != null)
+                    {
+                        Output = processor.Build();
+                    }
                 }
             }
 
-            spread = this.spread;
-            return output;
+            if (processor != null)
+            {
+                processor.Input = input;
+            }
+
+            spread = processor?.Spread ?? Spread<float>.Empty;
+            return Output;
         }
 
         public static bool IsPowerOfTwo(int x)
@@ -49,57 +51,80 @@ namespace VL.NewAudio
             return (x & (x - 1)) == 0;
         }
 
-        private void Add(float value)
+        private class FftProcessor : IAudioProcessor, IDisposable
         {
-            if (fftBuffer != null)
+            public AudioSampleBuffer Input;
+
+            private int fftLength;
+            private int fftPos;
+            private int m;
+            private Complex[] input;
+            private Complex[] output;
+            private PinnedArray<Complex> pinIn;
+            private PinnedArray<Complex> pinOut;
+            private SpreadBuilder<float> spreadBuilder;
+            public Spread<float> Spread;
+
+            public FftProcessor(int fftLength)
             {
-                fftBuffer[fftPos].X = (float) (value * FastFourierTransform.HammingWindow(fftPos, fftLength));
-                fftBuffer[fftPos].Y = 0;
-                fftPos++;
-                if (fftPos >= fftLength)
-                {
-                    fftPos = 0;
-                    FastFourierTransform.FFT(true, m, fftBuffer);
-                    spreadBuilder.Clear();
-                    for (int i = 0; i < fftLength; i++)
-                    {
-                        spreadBuilder.Add(fftBuffer[i].X);
-                        spreadBuilder.Add(fftBuffer[i].Y);
-                    }
-
-                    spread = spreadBuilder.ToSpread();
-                }
-            }
-        }
-
-        private class FFTProcessor : IAudioProcessor
-        {
-            private AudioSampleBuffer source;
-            private FFT fft;
-
-            public FFTProcessor(AudioSampleBuffer source, FFT fft)
-            {
-                this.source = source;
-                this.fft = fft;
+                this.fftLength = fftLength;
+                m = (int) Math.Log(fftLength, 2.0);
+                input = new Complex[fftLength];
+                output = new Complex[fftLength];
+                pinIn = new PinnedArray<Complex>(input);
+                pinOut = new PinnedArray<Complex>(output);
+                fftPos = 0;
+                spreadBuilder = new SpreadBuilder<float>(fftLength / 2);
             }
 
             public AudioSampleBuffer Build()
             {
-                return new AudioSampleBuffer(source.WaveFormat)
+                return new AudioSampleBuffer(Input.WaveFormat)
                 {
                     Processor = this
                 };
             }
 
+
+            private void Add(float value)
+            {
+                input[fftPos] = value * FastFourierTransform.HammingWindow(fftPos, fftLength);
+                fftPos++;
+                if (fftPos >= fftLength)
+                {
+                    fftPos = 0;
+                    DFT.FFT(pinIn, pinOut);
+                    spreadBuilder.Clear();
+                    for (int i = 1; i < fftLength / 2; i++)
+                    {
+                        spreadBuilder.Add((float) (2.0 * pinOut[i].Magnitude * i / fftLength));
+                    }
+
+                    Spread = spreadBuilder.ToSpread();
+                }
+            }
+
             public int Read(float[] buffer, int offset, int count)
             {
-                var l = source.Read(buffer, offset, count);
-                for (int i = 0; i < l; i += source.WaveFormat.Channels)
+                if (Input != null)
                 {
-                    fft.Add(buffer[offset + i]);
+                    var l = Input.Read(buffer, offset, count);
+                    for (int i = 0; i < l; i += Input.WaveFormat.Channels)
+                    {
+                        Add(buffer[offset + i]);
+                    }
+
+                    return l;
                 }
 
-                return l;
+                Spread = null;
+                return count;
+            }
+
+            public void Dispose()
+            {
+                pinIn.Dispose();
+                pinOut.Dispose();
             }
         }
     }

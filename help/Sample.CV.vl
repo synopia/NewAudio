@@ -828,7 +828,7 @@
             </p:TypeAnnotation>
             <p:ValueBoxSettings />
           </Pad>
-          <Pad Id="HJJemIL85lZNYpVpJYRS34" Comment="Freq" Bounds="303,231,43,105" ShowValueBox="true" isIOBox="true" Value="0.4">
+          <Pad Id="HJJemIL85lZNYpVpJYRS34" Comment="Freq" Bounds="303,231,43,105" ShowValueBox="true" isIOBox="true" Value="-11.6">
             <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
               <Choice Kind="TypeFlag" Name="Float32" />
             </p:TypeAnnotation>
@@ -1074,7 +1074,6 @@
             <Pin Id="SRmqqLn83XrNTOxdQmqY1Y" Name="Mix" Kind="InputPin" />
             <Pin Id="P3CwEKxpA87NaOKASrCXod" Name="Output" Kind="OutputPin" />
           </Node>
-          <ControlPoint Id="Fgu9wSafKdyOz9oPEO9mB2" Bounds="95,910" />
           <Node Bounds="417,129,75,19" Id="Onz2iAasTymPj2svRUORzF">
             <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
@@ -1144,7 +1143,6 @@
         <Link Id="ITgGlbjT6xLPKTq2gbpNLX" Ids="Nibb0XCzKc1M0UqZoHy4gn,UyBHFgK0QBOOCUc5D6ElW3" />
         <Link Id="JE6UHheXfQkOcjpNlg6iIY" Ids="BkkJb0zHGOVNF8pjJtO02Q,URHTUpgeieFMqskFTEaTAO" />
         <Link Id="GOPurmwXNX5Qcc0YO5zrCw" Ids="BkkJb0zHGOVNF8pjJtO02Q,VoTeiNA58d6QWZ493gkaH4" />
-        <Link Id="VxRpVvoZ5T3NI2M3bQnpz3" Ids="P3CwEKxpA87NaOKASrCXod,Fgu9wSafKdyOz9oPEO9mB2,Svc7oUOIduLMixIWyAanLW" />
         <Link Id="GXVZnQHSDZSMRhBFFysN50" Ids="KL0386eJMVvOjEEW94XmhA,UiRwFMGSeNWOAeVpXANzD2" />
         <Link Id="KkDkWQmV7hfMn72D46HoRc" Ids="PQ1MW8hdlOiPE4IbQoZgzo,BgVQocH6viyOsaAFtIux7A" />
         <Link Id="TkKYCAxRkbiOb41wNeUBa6" Ids="T7mif5vspKOMjfr0KbY1dw,QKVSZipHEooOn2RF1NK9Oo" />
@@ -1153,7 +1151,7 @@
         <Link Id="CwHXrR4Ir63PgmMNmmVeOi" Ids="JEWx21RNBubM76Z4njlhR1,GMpTHSZ0RMsL35XGlosmey" />
         <Link Id="LIQbtm1HGIqPK9xDD05w3O" Ids="UzWs6A8vB3nNM3keXJYbyv,D2ZopQchgPsQRvE6ZfDRB5" />
         <Link Id="OLMTaSJa41XMeKwW8yzhGC" Ids="LeMFM0rpZnEPZvJ4yIzPOm,JHIWMDE63qvLr6r5pS1J4Q" />
-        <Link Id="OCGga30vxAVPBxfTkR1PKs" Ids="JHIWMDE63qvLr6r5pS1J4Q,D5ApijywKxEMuVBklc6nGo" />
+        <Link Id="Uxh3ivTeth6M0JfRrXSBN5" Ids="TfkUxGei6MuLNIOpMGawUm,Svc7oUOIduLMixIWyAanLW" />
       </Patch>
     </Node>
   </Patch>

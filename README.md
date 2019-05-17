@@ -2,7 +2,7 @@
 
 Implementation of a modular audio engine for [VL](https://vvvv.org/documentation/vl) written from scratch.
 
-![Sample1](help/stereosample.png)
+![Sample1](help/additivesynth.png)
 
 There are a few important VL Nodes:
 

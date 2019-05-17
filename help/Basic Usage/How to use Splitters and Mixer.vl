@@ -22,11 +22,15 @@
             </p:NodeReference>
             <Pin Id="TkzcItvjiKYObp6aEA66pf" Name="Reset" Kind="InputPin" />
             <Pin Id="FwX4DaZRI0PPoWI4GqCh7g" Name="Device" Kind="InputPin" />
-            <Pin Id="Iq4JpmrtY8eO7dN9HxVe5r" Name="Latency" Kind="InputPin" />
+            <Pin Id="H2PVLYhtAimQPOfCM4wZWs" Name="Driver Latency" Kind="InputPin" />
+            <Pin Id="HZ8kzdqTZoOMuflq9hvOvw" Name="Internal Latency" Kind="InputPin" />
+            <Pin Id="PZE9DL5TcMVNNq8IcNnDmH" Name="Buffer Size" Kind="InputPin" />
             <Pin Id="TFZ2X8UuSYlNcJXOZBZpc4" Name="Result" Kind="OutputPin" />
             <Pin Id="TLQLgJdlBViNpBCQQA1RFt" Name="Status" Kind="OutputPin" />
-            <Pin Id="JSdJZ1oFKwGNhiMZTANMjG" Name="Error" Kind="OutputPin" />
             <Pin Id="H25Baq8WfIIQBJKL5YqvLU" Name="Wave Format" Kind="OutputPin" />
+            <Pin Id="STCO3qImdIbLiWjLhYCl2q" Name="Latency" Kind="OutputPin" />
+            <Pin Id="FZnjbhFbsUsLr8ds3IiHhe" Name="Cpu Usage" Kind="OutputPin" />
+            <Pin Id="PVOAdYLnaZcO39Qza8J2Co" Name="Buffer Under Runs" Kind="OutputPin" />
           </Node>
           <Pad Id="Ave5xSo1izONyRLoS1oo4x" Comment="Device" Bounds="407,227,405,15" ShowValueBox="true" isIOBox="true" Value="Wasapi Loopback: Audio 2 DJ (Ch B, Out 3|4) (Audio 2 DJ WDM Audio)">
             <p:TypeAnnotation LastCategoryFullName="VL.NewAudio" LastSymbolSource="NewAudio.dll">
