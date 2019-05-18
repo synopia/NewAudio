@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace VL.NewAudio
 {
     public class AudioSampler
@@ -27,6 +29,11 @@ namespace VL.NewAudio
             public float Input;
 
             private float lastInput;
+
+            public List<AudioSampleBuffer> GetInputs()
+            {
+                return AudioSampleBuffer.EmptyList;
+            }
 
             public int Read(float[] buffer, int offset, int count)
             {

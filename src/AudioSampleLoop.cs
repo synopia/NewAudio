@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using NAudio.Wave;
 using VL.Lib.Animation;
 
@@ -123,6 +124,11 @@ namespace VL.NewAudio
                 {
                     BuildOversampling();
                 }
+            }
+
+            public List<AudioSampleBuffer> GetInputs()
+            {
+                return new List<AudioSampleBuffer> {input};
             }
 
             public AudioSampleBuffer Build()

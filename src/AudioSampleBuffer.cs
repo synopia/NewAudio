@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using NAudio.Wave;
 
 namespace VL.NewAudio
 {
     public class AudioSampleBuffer : ISampleProvider, IDisposable
     {
+        public static List<AudioSampleBuffer> EmptyList = new List<AudioSampleBuffer>();
+
         public IAudioProcessor Processor;
 
         public AudioSampleBuffer(WaveFormat format)
@@ -37,6 +40,11 @@ namespace VL.NewAudio
 
         public class SilenceProcessor : IAudioProcessor
         {
+            public List<AudioSampleBuffer> GetInputs()
+            {
+                return EmptyList;
+            }
+
             public AudioSampleBuffer Build()
             {
                 return new AudioSampleBuffer(WaveOutput.SingleChannelFormat)

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using VL.Lib.Collections;
 using VL.NewAudio;
@@ -52,6 +53,11 @@ namespace NewAudioTest
             public LevelProcessor(float level)
             {
                 this.level = level;
+            }
+
+            public List<AudioSampleBuffer> GetInputs()
+            {
+                return AudioSampleBuffer.EmptyList;
             }
 
             public AudioSampleBuffer Build()

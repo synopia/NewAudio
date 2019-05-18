@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using NAudio.Wave;
 using VL.Lib.Collections;
@@ -135,6 +136,11 @@ namespace VL.NewAudio
                 this.buffer = buffer;
                 this.buffersMapped = buffersMapped;
                 this.tempBuffer = tempBuffer;
+            }
+
+            public List<AudioSampleBuffer> GetInputs()
+            {
+                return new List<AudioSampleBuffer> {input};
             }
 
             public AudioSampleBuffer Build()

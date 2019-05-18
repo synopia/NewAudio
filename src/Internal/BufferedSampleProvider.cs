@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using NAudio.Wave;
 
 namespace VL.NewAudio
@@ -30,6 +31,11 @@ namespace VL.NewAudio
 
         public TimeSpan BufferedDuration =>
             TimeSpan.FromSeconds(BufferedSamples / (double) WaveFormat.AverageBytesPerSecond * 4);
+
+        public List<AudioSampleBuffer> GetInputs()
+        {
+            return AudioSampleBuffer.EmptyList;
+        }
 
         public void Advance(TimeSpan timeSpan)
         {

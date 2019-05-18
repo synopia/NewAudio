@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using NAudio.Wave;
@@ -102,6 +103,16 @@ namespace VL.NewAudio
                         playBuffer.ClearBuffer();
                     }
                 }
+            }
+
+            public List<AudioSampleBuffer> GetInputs()
+            {
+                if (Input is AudioSampleBuffer)
+                {
+                    return new List<AudioSampleBuffer> {(AudioSampleBuffer) Input};
+                }
+
+                return AudioSampleBuffer.EmptyList;
             }
 
             public void EnsureThreadIsRunning()

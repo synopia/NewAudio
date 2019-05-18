@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using FFTW.NET;
 using NAudio.Dsp;
 using VL.Lib.Collections;
@@ -75,6 +76,11 @@ namespace VL.NewAudio
                 pinOut = new PinnedArray<Complex>(output);
                 fftPos = 0;
                 spreadBuilder = new SpreadBuilder<float>(fftLength / 2);
+            }
+
+            public List<AudioSampleBuffer> GetInputs()
+            {
+                return new List<AudioSampleBuffer> {Input};
             }
 
             public AudioSampleBuffer Build()

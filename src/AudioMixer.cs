@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using NAudio.Wave.SampleProviders;
 using VL.Lib.Collections;
@@ -6,7 +7,7 @@ namespace VL.NewAudio
 {
     public class AudioMixer : BaseAudioNode
     {
-        public AudioSampleBuffer[] Inputs;
+        public List<AudioSampleBuffer> Inputs;
         public int[] OutputMap;
         public bool HasChanges;
         private AudioSampleBuffer output;
@@ -14,9 +15,9 @@ namespace VL.NewAudio
 
         public AudioSampleBuffer Update(Spread<AudioSampleBuffer> inputs, Spread<int> outputMap)
         {
-            var arrayInputs = inputs?.ToArray();
+            var arrayInputs = inputs?.ToList();
             var arrayMap = outputMap?.ToArray();
-            HasChanges = !AudioEngine.ArrayEquals(Inputs, arrayInputs) ||
+            HasChanges = !AudioEngine.SequenceEquals(Inputs, arrayInputs) ||
                          !AudioEngine.ArrayEquals(OutputMap, arrayMap);
 
             Inputs = arrayInputs;
@@ -45,16 +46,16 @@ namespace VL.NewAudio
 
         private bool IsValid()
         {
-            return Inputs != null && Inputs.Length > 0;
+            return Inputs != null && Inputs.Count > 0;
         }
 
         private class AudioMixerProcessor : IAudioProcessor
         {
-            private readonly AudioSampleBuffer[] inputs;
+            private readonly List<AudioSampleBuffer> inputs;
             private int[] outputMap;
             private MultiplexingSampleProvider multiplexer;
 
-            public AudioMixerProcessor(AudioSampleBuffer[] inputs, int[] outputMap)
+            public AudioMixerProcessor(List<AudioSampleBuffer> inputs, int[] outputMap)
             {
                 this.inputs = inputs;
                 this.outputMap = outputMap;
@@ -66,7 +67,12 @@ namespace VL.NewAudio
                     }
 
                     return AudioSampleBuffer.Silence();
-                }).ToArray();
+                }).ToList();
+            }
+
+            public List<AudioSampleBuffer> GetInputs()
+            {
+                return inputs;
             }
 
             public int Read(float[] buffer, int offset, int count)

@@ -9,6 +9,7 @@ namespace VL.NewAudio
 {
     public interface IAudioProcessor
     {
+        List<AudioSampleBuffer> GetInputs();
         int Read(float[] buffer, int offset, int count);
     }
 
@@ -74,6 +75,8 @@ namespace VL.NewAudio
         public static bool ArrayEquals<T>(T[] first, T[] second)
         {
             if (first == second)
+                return true;
+            if (first == null && second == null)
                 return true;
             if (first == null || second == null)
                 return false;
