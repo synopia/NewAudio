@@ -17,7 +17,7 @@ namespace VL.NewAudio
 
         public AudioSampleBuffer Update(AudioSampleBuffer input, int fftLength, out Spread<float> spread)
         {
-            bool hasChanges = fftLength != FftLength || input != Input;
+            bool hasChanges = fftLength != FftLength;
 
             FftLength = fftLength;
             Input = input;
@@ -58,10 +58,13 @@ namespace VL.NewAudio
 
             private int fftLength;
             private int fftPos;
+            private int fftPos2;
             private int m;
             private Complex[] input;
+            private Complex[] input2;
             private Complex[] output;
             private PinnedArray<Complex> pinIn;
+            private PinnedArray<Complex> pinIn2;
             private PinnedArray<Complex> pinOut;
             private SpreadBuilder<float> spreadBuilder;
             public Spread<float> Spread;
@@ -71,10 +74,13 @@ namespace VL.NewAudio
                 this.fftLength = fftLength;
                 m = (int) Math.Log(fftLength, 2.0);
                 input = new Complex[fftLength];
+                input2 = new Complex[fftLength];
                 output = new Complex[fftLength];
                 pinIn = new PinnedArray<Complex>(input);
+                pinIn2 = new PinnedArray<Complex>(input2);
                 pinOut = new PinnedArray<Complex>(output);
                 fftPos = 0;
+                fftPos2 = fftLength / 2;
                 spreadBuilder = new SpreadBuilder<float>(fftLength / 2);
             }
 
@@ -94,20 +100,74 @@ namespace VL.NewAudio
 
             private void Add(float value)
             {
-                input[fftPos] = value * FastFourierTransform.HammingWindow(fftPos, fftLength);
+                input[fftPos] = value * FastFourierTransform.HannWindow(fftPos, fftLength);
+                input2[fftPos2] = value * FastFourierTransform.HannWindow(fftPos2, fftLength);
                 fftPos++;
-                if (fftPos >= fftLength)
+                fftPos2++;
+
+                if (fftPos >= fftLength || fftPos2 >= fftLength)
                 {
-                    fftPos = 0;
-                    DFT.FFT(pinIn, pinOut);
-                    spreadBuilder.Clear();
-                    for (int i = 1; i < fftLength / 2; i++)
+                    var pin = pinIn;
+                    if (fftPos2 >= fftLength)
                     {
-//                        spreadBuilder.Add((float) (2.0 * pinOut[i].Magnitude * i / fftLength));
-                        spreadBuilder.Add((float) (pinOut[i].Real * pinOut[i].Real +
-                                                   pinOut[i].Imaginary * pinOut[i].Imaginary)); //* i / fftLength));
+                        pin = pinIn2;
+                        fftPos2 = 0;
+                    }
+                    else
+                    {
+                        fftPos = 0;
                     }
 
+
+                    DFT.FFT(pin, pinOut);
+                    var sum = 0.0f;
+                    var rms = 0.0;
+                    for (int i = 1; i < fftLength / 2; i++)
+                    {
+                        var real = (float) pinOut[i].Real;
+                        var img = (float) pinOut[i].Imaginary;
+
+                        var newValue = (float) (Math.Sqrt(real * real + img * img) / fftLength / (2 * 44100));
+                        rms += newValue * newValue / fftLength / 2;
+//                        if (newValue > 1.0f)
+//                        {
+//                            newValue = 1.0f;
+//                        }
+
+                        sum += newValue;
+                        if (i < spreadBuilder.Count)
+                        {
+//                            if (spreadBuilder[i] < newValue)
+//                            {
+                            spreadBuilder[i] = newValue;
+//                            }
+//                            else
+//                            {
+//                                spreadBuilder[i] -= 0.015f;
+//                            }
+                        }
+                        else
+                        {
+                            spreadBuilder.Add(newValue);
+                        }
+                    }
+
+//                    sum /= fftLength / 2 - 1;
+//                    if (rms > 0.5f * 0.5f)
+//                    {
+//                        gain *= 0.85f;
+//                    }
+//                    else if( rms<0.3f*0.3f)
+//                    {
+//                        if (gain < 2)
+//                        {
+//                            gain *= 1.1f;
+//                        }
+//                    }
+//                    for (int i = 0; i < fftLength / 2 - 1; i++)
+//                    {
+//                        spreadBuilder[i] /= sum;
+//                    }
                     Spread = spreadBuilder.ToSpread();
                 }
             }
@@ -132,6 +192,7 @@ namespace VL.NewAudio
             public void Dispose()
             {
                 pinIn.Dispose();
+                pinIn2.Dispose();
                 pinOut.Dispose();
             }
         }
