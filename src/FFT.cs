@@ -17,10 +17,10 @@ namespace VL.NewAudio
 
         public AudioSampleBuffer Update(AudioSampleBuffer input, int fftLength, out Spread<float> spread)
         {
-            bool hasChanges = fftLength != FftLength;
+            bool hasChanges = fftLength != FftLength || input != Input;
 
             FftLength = fftLength;
-
+            Input = input;
             if (hasChanges)
             {
                 processor?.Dispose();
@@ -103,7 +103,9 @@ namespace VL.NewAudio
                     spreadBuilder.Clear();
                     for (int i = 1; i < fftLength / 2; i++)
                     {
-                        spreadBuilder.Add((float) (2.0 * pinOut[i].Magnitude * i / fftLength));
+//                        spreadBuilder.Add((float) (2.0 * pinOut[i].Magnitude * i / fftLength));
+                        spreadBuilder.Add((float) (pinOut[i].Real * pinOut[i].Real +
+                                                   pinOut[i].Imaginary * pinOut[i].Imaginary)); //* i / fftLength));
                     }
 
                     Spread = spreadBuilder.ToSpread();

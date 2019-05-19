@@ -50,6 +50,11 @@ namespace VL.NewAudio
             return (float) Math.Cos(v);
         }
 
+        public static float SinH(float v)
+        {
+            return (float) Math.Sinh(v);
+        }
+
         public static float SinC(float v)
         {
             if (Math.Abs(v) < 0.0000001f)
