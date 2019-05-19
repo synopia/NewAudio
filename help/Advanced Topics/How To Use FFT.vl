@@ -41,7 +41,7 @@
               </p:TypeAnnotation>
             </Pin>
           </Node>
-          <Pad Id="EJFKyJMTkyUPxffUHD4x53" Comment="Device" Bounds="1780,1110,405,15" ShowValueBox="true" isIOBox="true" Value="Wasapi Loopback: Audio 2 DJ (Ch B, Out 3|4) (Audio 2 DJ WDM Audio)">
+          <Pad Id="EJFKyJMTkyUPxffUHD4x53" Comment="Device" Bounds="1780,1110,405,15" ShowValueBox="true" isIOBox="true" Value="Wasapi Loopback: Audio 2 DJ (Ch A, Out 1|2) (Audio 2 DJ WDM Audio)">
             <p:TypeAnnotation LastCategoryFullName="Main.VL.NewAudioApplication" LastSymbolSource="VL.NewAudio.vl">
               <Choice Kind="TypeFlag" Name="WaveInputDevice" />
             </p:TypeAnnotation>
