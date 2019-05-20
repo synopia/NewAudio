@@ -7,18 +7,7 @@ namespace NewAudioTest
     [TestFixture]
     public class Tests
     {
-        [Test]
-        public void TestThreads()
-        {
-            var a = new AudioThread();
-            var latency = 10;
-            var cpuUsage = 1.0f;
-            var underRuns = 1;
-
-            a.Update(null, out latency, out cpuUsage, out underRuns, true);
-            Thread.Sleep(200);
-            a.Dispose();
-        }
+       
         [Test]
         public void TestArrayEquals()
         {

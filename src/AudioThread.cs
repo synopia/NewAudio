@@ -16,6 +16,8 @@ namespace VL.NewAudio
         private AudioThreadProcessor processor;
         private bool RunWithoutOutput;
 
+        public BufferedSampleProvider PlayBuffer => processor?.PlayBuffer;
+
         public AudioSampleBuffer Update(AudioSampleBuffer input, out int latency,
             out float cpuUsage, out int bufferUnderRuns, bool runWithoutOutput, int internalLatency = 100,
             int bufferSize = 512,
@@ -66,6 +68,10 @@ namespace VL.NewAudio
                         Output = null;
                     }
                 }
+                else
+                {
+                    processor.ClearBuffer();
+                }
             }
 
             latency = processor.Latency;
@@ -93,6 +99,7 @@ namespace VL.NewAudio
             private Thread playThread;
             private int bufferSize;
 
+            public BufferedSampleProvider PlayBuffer => playBuffer;
             public AudioThreadProcessor(int bufferSize)
             {
                 this.bufferSize = bufferSize;
@@ -112,6 +119,10 @@ namespace VL.NewAudio
                 }
             }
 
+            public void ClearBuffer()
+            {
+                playBuffer?.ClearBuffer();
+            }
             public List<AudioSampleBuffer> GetInputs()
             {
                 if (Input is AudioSampleBuffer)
