@@ -120,54 +120,21 @@ namespace VL.NewAudio
 
 
                     DFT.FFT(pin, pinOut);
-                    var sum = 0.0f;
-                    var rms = 0.0;
                     for (int i = 1; i < fftLength / 2; i++)
                     {
                         var real = (float) pinOut[i].Real;
                         var img = (float) pinOut[i].Imaginary;
 
                         var newValue = (float) (Math.Sqrt(real * real + img * img) / fftLength / (2 * 44100));
-                        rms += newValue * newValue / fftLength / 2;
-//                        if (newValue > 1.0f)
-//                        {
-//                            newValue = 1.0f;
-//                        }
-
-                        sum += newValue;
                         if (i < spreadBuilder.Count)
                         {
-//                            if (spreadBuilder[i] < newValue)
-//                            {
                             spreadBuilder[i] = newValue;
-//                            }
-//                            else
-//                            {
-//                                spreadBuilder[i] -= 0.015f;
-//                            }
                         }
                         else
                         {
                             spreadBuilder.Add(newValue);
                         }
                     }
-
-//                    sum /= fftLength / 2 - 1;
-//                    if (rms > 0.5f * 0.5f)
-//                    {
-//                        gain *= 0.85f;
-//                    }
-//                    else if( rms<0.3f*0.3f)
-//                    {
-//                        if (gain < 2)
-//                        {
-//                            gain *= 1.1f;
-//                        }
-//                    }
-//                    for (int i = 0; i < fftLength / 2 - 1; i++)
-//                    {
-//                        spreadBuilder[i] /= sum;
-//                    }
                     Spread = spreadBuilder.ToSpread();
                 }
             }

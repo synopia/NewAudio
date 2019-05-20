@@ -18,7 +18,7 @@
         <DebugSymbols>true</DebugSymbols>
         <DebugType>full</DebugType>
         <Optimize>false</Optimize>
-        <OutputPath>C:\Users\synopia\Documents\vvvv\gamma-preview\Packages\VL.NewAudio.0.2.2.71\lib\naudio173</OutputPath>
+        <OutputPath>C:\Users\synopia\Documents\vvvv\gamma-preview\Packages\VL.NewAudio.0.2.2\lib\naudio173</OutputPath>
         <DefineConstants>DEBUG;TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
