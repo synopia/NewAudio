@@ -50,7 +50,7 @@
               </p:TypeAnnotation>
             </Pin>
           </Node>
-          <Pad Id="Mm6zRNJzIpiPLWBirt9Fu5" Comment="Device" Bounds="205,791,353,15" ShowValueBox="true" isIOBox="true" Value="DS: VoiceMeeter Input (VB-Audio VoiceMeeter VAIO)">
+          <Pad Id="Mm6zRNJzIpiPLWBirt9Fu5" Comment="Device" Bounds="205,791,353,15" ShowValueBox="true" isIOBox="true" Value="Wasapi: Kopfhörer (Razer Kraken 7.1 V2)">
             <p:TypeAnnotation LastCategoryFullName="Main.VL.NewAudioApplication" LastSymbolSource="VL.NewAudio.vl">
               <Choice Kind="TypeFlag" Name="WaveOutputDevice" />
             </p:TypeAnnotation>
@@ -669,6 +669,33 @@
             </Pin>
             <Pin Id="C5FKMFiYEzZN8Qi1RIBRd9" Name="Output" Kind="OutputPin" />
           </Node>
+          <Node Bounds="687,888,85,19" Id="TFb5lBF9SlCNp4Pw9EBzHH">
+            <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
+              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+              <Choice Kind="ProcessAppFlag" Name="AudioThread" />
+            </p:NodeReference>
+            <Pin Id="J5Uk14zsaDVLT5gQhwy0T4" Name="Input" Kind="InputPin" />
+            <Pin Id="ODwVzBRQCW5MMS6ltgqg3A" Name="Reset" Kind="InputPin">
+              <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
+                <Choice Kind="TypeFlag" Name="Boolean" />
+              </p:TypeAnnotation>
+            </Pin>
+            <Pin Id="OJ46sHCw4GvNitFEKn7Q7l" Name="Internal Latency" Kind="InputPin" DefaultValue="78">
+              <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
+                <Choice Kind="TypeFlag" Name="Integer32" />
+              </p:TypeAnnotation>
+            </Pin>
+            <Pin Id="Lar6E5AGUiOOPOTZe7fIWh" Name="Buffer Size" Kind="InputPin" />
+            <Pin Id="Oy3Q5C1SeIaMp8uWmKRQFH" Name="Run Without Output" Kind="InputPin">
+              <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
+                <Choice Kind="TypeFlag" Name="Boolean" />
+              </p:TypeAnnotation>
+            </Pin>
+            <Pin Id="UDAIXE1VzfKLfBls9PcidL" Name="Result" Kind="OutputPin" />
+            <Pin Id="KkACgqb0vPXOoqbbQ2yRCm" Name="Latency" Kind="OutputPin" />
+            <Pin Id="BzCc7ULvIfvL6qQGUYmv5n" Name="Cpu Usage" Kind="OutputPin" />
+            <Pin Id="Cl6pmtQwNydMWadQeDBiE2" Name="Buffer Under Runs" Kind="OutputPin" />
+          </Node>
         </Canvas>
         <Patch Id="JdAy5MF5KDhNtNuNEZgjhT" Name="Create" />
         <Patch Id="NG4NXUivOn9LivaheS2qoP" Name="Update" ParticipatingElements="DFOGv1hh3yuLTze6EQSJFH" />
@@ -738,9 +765,11 @@
         <Link Id="O533ZemepuWNDMA0h2nm6Y" Ids="CMlhUtI8UrJP8TsIuGOMqs,Fo740X8u5UcNSfLDO5VK3F" />
         <Link Id="CXfHNxq6mReOu98hIobiAI" Ids="PG2XLmrNP2xOr08BlcrQB6,BJlf8rocdpsQWFRKlxysfH" />
         <Link Id="BvYegalJaIkMsufse4OF3y" Ids="MiIFWHqRTX1LGzbrvGtehQ,FpcGMsYShiTLNEb5HOCGQU" />
-        <Link Id="AtOMLLVZwCeOLBJmAUrRyI" Ids="LUy7ggngOAaM88u8HdXqVY,FlDfBo9dYVkMM6zkZ8bQqY" />
-        <Link Id="Jl8yXf9wKD8PFHdxSq4pN1" Ids="FEgYvKfMKInOUd6wt3bEDV,P2q9QmoMMNMNOfo4yAyCIf" />
         <Link Id="KlT74mOeRiUP9X1Ofgot4j" Ids="SFPTgodwdhCNlKrV129XpE,VPTeTFYYEWKQUQ6JJNT8Uj" />
+        <Link Id="FYqXFq3h0KrMOi3ajs03F4" Ids="FEgYvKfMKInOUd6wt3bEDV,J5Uk14zsaDVLT5gQhwy0T4" />
+        <Link Id="Vxlg1WulEtUL9MjyzWkqse" Ids="EpyYtQrCfMJMGL2Hn46XMK,P2q9QmoMMNMNOfo4yAyCIf" />
+        <Link Id="Va91oCRxDGAOVnffQpRoVC" Ids="LUy7ggngOAaM88u8HdXqVY,FlDfBo9dYVkMM6zkZ8bQqY" />
+        <Link Id="UjVxevmhqdiPnlgtAWiJg5" Ids="UDAIXE1VzfKLfBls9PcidL,CxDxM505yLBNfZVmc3NB4l" />
       </Patch>
     </Node>
   </Patch>

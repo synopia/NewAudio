@@ -107,10 +107,8 @@ namespace VL.NewAudio
         /// <param name="count">Bytes to advance</param>
         public void Advance(int count)
         {
-            AudioEngine.Log($"Advancing {count} samples");
             if (count >= sampleCount)
             {
-                AudioEngine.Log($"All consumed");
                 Reset();
             }
             else

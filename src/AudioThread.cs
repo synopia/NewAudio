@@ -54,10 +54,17 @@ namespace VL.NewAudio
                 {
                     processor.Input = input;
                     processor.WaveFormat = input.WaveFormat;
-                    Output = new AudioSampleBuffer(input.WaveFormat)
+                    if (!RunWithoutOutput)
                     {
-                        Processor = processor
-                    };
+                        Output = new AudioSampleBuffer(input.WaveFormat)
+                        {
+                            Processor = processor
+                        };
+                    }
+                    else
+                    {
+                        Output = null;
+                    }
                 }
             }
 
