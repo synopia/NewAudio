@@ -28,7 +28,7 @@ jobs:
         run: msbuild.exe src\VL.NewAudio.sln /p:platform="Any CPU" /p:configuration="Release"
         
       - name: Run Tests
-        run: packages\NUnit.ConsoleRunner.3.12.0\tools\nunit3-console.exe lib-test\net472\VL.NewAudio.Test.dll
+        run: nunit3-console.exe lib-test\net472\VL.NewAudio.Test.dll
 
       - name: Publish VL Nuget
         uses: vvvv/PublishVLNuget@1.0.29
