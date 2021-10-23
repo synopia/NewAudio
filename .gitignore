@@ -4,3 +4,13 @@ obj/
 packages/
 *.DotSettings.user
 *.log
+/lib/
+/lib-test/
+/old/
+/args.txt
+/backup.vl
+/test.vl
+/text.log
+/vl.old.vl
+/.vl/
+/*.nupkg
