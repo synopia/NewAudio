@@ -21,6 +21,15 @@ jobs:
       - name: Setup Nuget.exe
         uses: nuget/setup-nuget@v1
 
+      - name: Restore Packages
+        run: nuget restore src\VL.NewAudio.sln
+        
+      - name: Build Solution
+        run: msbuild.exe src\VL.NewAudio.sln /p:platform="Any CPU" /p:configuration="Release"
+        
+      - name: Run Tests
+        run: vstest.console.exe .\lib-test\net472\win-x64\VL.NewAudio.Test.dll
+
       - name: Publish VL Nuget
         uses: vvvv/PublishVLNuget@1.0.29
         with:
