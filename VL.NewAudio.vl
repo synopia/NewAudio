@@ -364,7 +364,7 @@
           <Canvas Id="UWJMBuUx2ZuLtTijO0dgV5" CanvasType="Group">
             <ControlPoint Id="Qdhhs0DCfftOZp6vuUeOF1" Bounds="683,738" />
             <Pad Id="Se7lKlko0VBMwNQgCMxJpg" Bounds="513,255" />
-            <Node Bounds="872,144,79,19" Id="MDw3zRkzZ6QOPGHWuuyWwW">
+            <Node Bounds="846,139,79,19" Id="MDw3zRkzZ6QOPGHWuuyWwW">
               <p:NodeReference LastCategoryFullName="NewAudio.LogFactory" LastSymbolSource="VL.NewAudio.vl">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                 <CategoryReference Kind="Category" Name="LogFactory" />
@@ -483,7 +483,7 @@
                 <p:pathtype p:Assembly="VL.Core" p:Type="VL.Core.PathType">File</p:pathtype>
               </p:ValueBoxSettings>
             </Pad>
-            <Node Bounds="542,179,54,19" Id="JYC3Dy4ErA1P6A0LgydKTw">
+            <Node Bounds="510,153,54,19" Id="JYC3Dy4ErA1P6A0LgydKTw">
               <p:NodeReference LastCategoryFullName="NewAudio.AudioCore" LastSymbolSource="VL.NewAudio.dll">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                 <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
@@ -990,6 +990,123 @@
           <Canvas Id="DwRHpMWzkjzQUp5BFR8dDg" CanvasType="Group" />
           <ProcessDefinition Id="OJ9t5FHHzEoO55s3sDNYLU" IsHidden="true" />
         </Patch>
+      </Node>
+      <!--
+
+    ************************ AudioGenerator ************************
+
+-->
+      <Node Name="AudioGenerator" Bounds="200,400" Id="HGC7pUB1htxM3RKEtCpWOH">
+        <p:NodeReference>
+          <Choice Kind="ContainerDefinition" Name="Process" />
+          <FullNameCategoryReference ID="Primitive" />
+        </p:NodeReference>
+        <Patch Id="VwFF8ohKmrDMd7H7wjzdgB">
+          <Canvas Id="SYVTDjsZ6GbK9yRUE9nPbP" CanvasType="Group">
+            <Node Bounds="466,259,94,26" Id="V7chU1LlmRrM9bLTxoG0zz">
+              <p:NodeReference LastCategoryFullName="NewAudio.AudioBufferGenerator" LastSymbolSource="VL.NewAudio.dll">
+                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
+                <CategoryReference Kind="AssemblyCategory" Name="AudioBufferGenerator" />
+                <Choice Kind="OperationCallFlag" Name="Create" />
+              </p:NodeReference>
+              <Pin Id="NzC9pWloRMKQEQNfHNum99" Name="Output" Kind="StateOutputPin" />
+            </Node>
+            <Pad Id="BRkmokPAwQ4OQWYyFQTDMn" Bounds="465,361" />
+            <Node Bounds="557,398,211,132" Id="AyYP3fBRyfTQRVgNAyOuzq">
+              <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="VL.CoreLib.dll">
+                <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
+                <Choice Kind="ProcessStatefulRegion" Name="Cache" />
+                <CategoryReference Kind="Category" Name="Primitive" />
+              </p:NodeReference>
+              <Pin Id="ShVUk37D4TYOFtjP2IjoLN" Name="Force" Kind="InputPin" />
+              <Pin Id="IoarCIQhs8aLHrOsnehHDQ" Name="Dispose Cached Outputs" Kind="InputPin" />
+              <Pin Id="Ec7BwYrkYs3NgLY1m2K3eH" Name="Has Changed" Kind="OutputPin" />
+              <ControlPoint Id="IfyNGjW5QT1OcxnjoWKndM" Bounds="569,404" Alignment="Top" />
+              <ControlPoint Id="A5yxmcV9FywN14U86DWSaf" Bounds="619,404" Alignment="Top" />
+              <ControlPoint Id="HzknEVeJYSVOSSFYvgKUYu" Bounds="657,404" Alignment="Top" />
+              <ControlPoint Id="Tm6I7JsJX5IOY7oetefIsa" Bounds="706,404" Alignment="Top" />
+              <ControlPoint Id="MQMGd7tWzzaLDJlCcgWjoh" Bounds="744,523" Alignment="Bottom" />
+              <Patch Id="MNKM3ACL7HpMXK7ETq9eI3" ManuallySortedPins="true">
+                <Patch Id="DuFptSH4ibFMFt4UFuS9hK" Name="Create" ManuallySortedPins="true" />
+                <Patch Id="U3d0Z17tpDINnaM6DfSo2i" Name="Then" ManuallySortedPins="true" />
+                <Node Bounds="570,465,178,26" Id="D66eiZEePicPYMufk0plNC">
+                  <p:NodeReference LastCategoryFullName="NewAudio.AudioBufferGenerator" LastSymbolSource="VL.NewAudio.dll">
+                    <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                    <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
+                    <CategoryReference Kind="AssemblyCategory" Name="AudioBufferGenerator" />
+                    <Choice Kind="OperationCallFlag" Name="ChangeSettings" />
+                  </p:NodeReference>
+                  <Pin Id="URx6wawiUV4MsCZGscUhe2" Name="Input" Kind="StateInputPin" />
+                  <Pin Id="GwQfYVx5AAdMVfWUzDvRMT" Name="Sample Rate" Kind="InputPin" />
+                  <Pin Id="UXNkaCO0LGoMXUvinkZlMs" Name="Channels" Kind="InputPin" />
+                  <Pin Id="KeTZEvRL2lmMgxovG0l8yD" Name="Buffer Size" Kind="InputPin" />
+                  <Pin Id="U8Vlw03jeawNP8mwBKtzxf" Name="Block Count" Kind="InputPin" />
+                  <Pin Id="Saxy2wairGaPDOpstwcjHg" Name="Output" Kind="StateOutputPin" />
+                  <Pin Id="Nov6ohKmUK8M0EqQ90CPlt" Name="Result" Kind="OutputPin" />
+                </Node>
+              </Patch>
+              <ControlPoint Id="Pi3m7w0s347Mu1w6m68Es0" Bounds="752,404" Alignment="Top" />
+            </Node>
+            <ControlPoint Id="F2jv75mKma4QYhfKpZ6gko" Bounds="617,212" />
+            <ControlPoint Id="D6xALxccCb5OTdyOdqjmiK" Bounds="661,232" />
+            <ControlPoint Id="CO9AOB0ZD3RNMMLSFrGsJN" Bounds="707,248" />
+            <ControlPoint Id="SjlmWTGj1IUMSxNHR05JZf" Bounds="743,673" />
+            <ControlPoint Id="VKJMTlX7dZUPbpkWrT2WJH" Bounds="561,345" />
+            <Node Bounds="369,410" Id="GlGJcArvOmmQaKNSYm5IoY">
+              <p:NodeReference LastCategoryFullName="NewAudio.AudioBufferGenerator" LastSymbolSource="VL.NewAudio.dll">
+                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
+                <CategoryReference Kind="AssemblyCategory" Name="AudioBufferGenerator" />
+                <Choice Kind="OperationCallFlag" Name="Dispose" />
+              </p:NodeReference>
+              <Pin Id="RDNF5Z6C86bOEYRCJXiyG5" Name="Input" Kind="StateInputPin" />
+              <Pin Id="BbfWJselkZ4NZTE3fUZwOP" Name="Output" Kind="StateOutputPin" />
+            </Node>
+            <ControlPoint Id="SAz6DAnOX6bNKrisYbHs4O" Bounds="755,267" />
+          </Canvas>
+          <ProcessDefinition Id="QvncULpUcNpN4b5DyJSGGA">
+            <Fragment Id="Drz1PmcZ9ggM5dViZ0Hw7m" Patch="Qy6cf9YkPa5O1QHrFMfSzm" Enabled="true" />
+            <Fragment Id="L7D5OQcTJD8PY7lD0ZBJL3" Patch="GlMSVxcnYJKOHqi7lZuDTc" Enabled="true" />
+          </ProcessDefinition>
+          <Link Id="UD8lEK3qQCsNv9hxkzJZkq" Ids="NzC9pWloRMKQEQNfHNum99,BRkmokPAwQ4OQWYyFQTDMn" />
+          <Link Id="AWGUEvql4slONen9psTqFq" Ids="BRkmokPAwQ4OQWYyFQTDMn,IfyNGjW5QT1OcxnjoWKndM" />
+          <Link Id="VtyULtLD5K9QU5153qmWRu" Ids="IfyNGjW5QT1OcxnjoWKndM,URx6wawiUV4MsCZGscUhe2" />
+          <Link Id="Rsj8gHkGtmzOfyCODBJd1Y" Ids="A5yxmcV9FywN14U86DWSaf,GwQfYVx5AAdMVfWUzDvRMT" />
+          <Link Id="MgJecw2nGEJN9FLzTISuFM" Ids="RoxsAVRJ4VjPrWgDPLEcgf,F2jv75mKma4QYhfKpZ6gko" IsHidden="true" />
+          <Link Id="I15BPhVs6qdNax4V22sqhm" Ids="F2jv75mKma4QYhfKpZ6gko,A5yxmcV9FywN14U86DWSaf" />
+          <Link Id="Jm40MABrhMrMZKtLBMIHp3" Ids="HzknEVeJYSVOSSFYvgKUYu,UXNkaCO0LGoMXUvinkZlMs" />
+          <Link Id="BakfSpmTwDfP1a0Y7mKabr" Ids="UDY5A5WenknMD3UeuVhYta,D6xALxccCb5OTdyOdqjmiK" IsHidden="true" />
+          <Link Id="EvyTc9PD9jaP0e0heT5sMZ" Ids="D6xALxccCb5OTdyOdqjmiK,HzknEVeJYSVOSSFYvgKUYu" />
+          <Link Id="Fr7Hvn0wz3HOpNmRE0WzYi" Ids="Tm6I7JsJX5IOY7oetefIsa,KeTZEvRL2lmMgxovG0l8yD" />
+          <Link Id="Q0BrXJ7CoxDMkIsXYvmw9R" Ids="EDZWWJ0ztSuOMlBMwTALgn,CO9AOB0ZD3RNMMLSFrGsJN" IsHidden="true" />
+          <Link Id="RW83fWx5LBWNhw7R13chpM" Ids="CO9AOB0ZD3RNMMLSFrGsJN,Tm6I7JsJX5IOY7oetefIsa" />
+          <Link Id="Kcd0NsnZ013LoFCNqjTYuS" Ids="Nov6ohKmUK8M0EqQ90CPlt,MQMGd7tWzzaLDJlCcgWjoh" />
+          <Link Id="Odt2h0fJ7cyQbj8fiUDx2q" Ids="SjlmWTGj1IUMSxNHR05JZf,HFysKBpvg7FPjfyDEGkvJk" IsHidden="true" />
+          <Link Id="QlaQHRHhUYmMsYshBuy3j4" Ids="MQMGd7tWzzaLDJlCcgWjoh,SjlmWTGj1IUMSxNHR05JZf" />
+          <Link Id="DFw4iZrHcxpMs9mSANNs9t" Ids="LxNHcGZQRl8Meb2uZucpb8,VKJMTlX7dZUPbpkWrT2WJH" IsHidden="true" />
+          <Link Id="CUk1tjtnKAlMn8XDAEADXc" Ids="VKJMTlX7dZUPbpkWrT2WJH,ShVUk37D4TYOFtjP2IjoLN" />
+          <Patch Id="Qy6cf9YkPa5O1QHrFMfSzm" Name="Create" ParticipatingElements="V7chU1LlmRrM9bLTxoG0zz" />
+          <Patch Id="GlMSVxcnYJKOHqi7lZuDTc" Name="Update">
+            <Pin Id="LxNHcGZQRl8Meb2uZucpb8" Name="Reset" Kind="InputPin" />
+            <Pin Id="RoxsAVRJ4VjPrWgDPLEcgf" Name="Sample Rate" Kind="InputPin" />
+            <Pin Id="UDY5A5WenknMD3UeuVhYta" Name="Channels" Kind="InputPin" />
+            <Pin Id="EDZWWJ0ztSuOMlBMwTALgn" Name="Buffer Size" Kind="InputPin" />
+            <Pin Id="HFysKBpvg7FPjfyDEGkvJk" Name="Output" Kind="OutputPin" />
+            <Pin Id="G6lOgE3ZH97LIluDRrvx81" Name="Block Count" Kind="InputPin" />
+          </Patch>
+          <Patch Id="RIH6edCvnZVMPUPfZ9Tuo0" Name="Dispose" ParticipatingElements="GlGJcArvOmmQaKNSYm5IoY" />
+          <Link Id="GxKGujSXFC3QVrsnqvQ5WQ" Ids="BRkmokPAwQ4OQWYyFQTDMn,RDNF5Z6C86bOEYRCJXiyG5" />
+          <Link Id="Ra86z1coPJ6PhtBAu49BYp" Ids="Pi3m7w0s347Mu1w6m68Es0,U8Vlw03jeawNP8mwBKtzxf" />
+          <Link Id="Abxwc9Ff74aPZ3LoJ0YQBt" Ids="G6lOgE3ZH97LIluDRrvx81,SAz6DAnOX6bNKrisYbHs4O" IsHidden="true" />
+          <Link Id="C179DcSFGvWOqIZzLQXzZZ" Ids="SAz6DAnOX6bNKrisYbHs4O,Pi3m7w0s347Mu1w6m68Es0" />
+        </Patch>
+      </Node>
+      <Node Bounds="293,533" Id="CdGxEEcO6pcPJpgjUvhwCk">
+        <p:NodeReference>
+          <Choice Kind="ProcessNode" Name="AudioGenerator" />
+        </p:NodeReference>
+        <Pin Id="AkF5EBc96I3N3tpsF1gO6F" Name="Update" Kind="ApplyPin" />
       </Node>
     </Canvas>
     <!--

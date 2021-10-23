@@ -34,6 +34,7 @@ namespace NewAudio
             _lastInputs = inputs.ToArray();
             _lastOutputMap = outputMap.ToArray();
             
+            /*
             _inputs = inputs.Select(input =>
             {
                 if (input != null)
@@ -43,6 +44,7 @@ namespace NewAudio
 
                 return AudioCore.Instance.CreateStream(new SilenceProvider());
             }).ToList();
+            */
             // _inputChannels = _inputs.Sum(i => i.WaveFormat.Channels);
             if (outputMap.Count == 0)
             {

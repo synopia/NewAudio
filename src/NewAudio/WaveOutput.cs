@@ -51,8 +51,7 @@ namespace NewAudio
             {
                 _waveOut = ((IWaveOutputFactory)device.Tag).Create(driverLatency);
                 _cancellation = new CancellationTokenSource();
-                // var wave16 = new SampleToWaveProvider16(new BlockingSampleProvider(input.Format, _buffer.Buffer, _cancellation));
-                var wave16 = new SampleToWaveProvider16(_buffer.Buffer);
+                var wave16 = new SampleToWaveProvider16(new BlockingSampleProvider(input.Format, _buffer));
                 var asio = (AsioOut)_waveOut;
                 asio.InitRecordAndPlayback(wave16, 0, 0);//new SampleToWaveProvider(_buffer.Buffer), 0, 0);
                 asio.Play();

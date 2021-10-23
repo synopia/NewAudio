@@ -30,11 +30,11 @@ namespace NewAudio
             });
             var target = new ActionBlock<AudioBuffer>(input =>
             {
-                // if (_buffer.FreeSpace >= input.Size)
-                // {
+                if (_buffer.FreeSpace >= input.Size)
+                {
                     _buffer.AddSamples(input.Data, 0, input.Size);
                     input.Owner?.Release(input);
-                // }
+                }
 
                 while (sendBuffers && _buffer.BufferedSamples >= bufferSize)
                 {

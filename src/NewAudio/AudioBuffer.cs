@@ -44,6 +44,13 @@ namespace  NewAudio
                 _buffers.Clear();
             }
         }
+
+        public AudioBuffer FromSampleProvider(ISampleProvider provider, int count)
+        {
+            AudioBuffer buffer = GetBuffer(count);
+            provider.Read(buffer.Data, 0, count);
+            return buffer;
+        }
         public AudioBuffer FromByteBuffer(WaveFormat format, byte[] bytes, int bytesRecorded)
         {
             AudioBuffer buffer;

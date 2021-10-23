@@ -138,7 +138,7 @@
               <FullNameCategoryReference ID="Primitive" />
             </p:TypeAnnotation>
           </Pad>
-          <Pad Id="EOHVwzngHO7LAjAcAAe1Es" Comment="Gain" Bounds="484,504,35,15" ShowValueBox="true" isIOBox="true" Value="0.56">
+          <Pad Id="EOHVwzngHO7LAjAcAAe1Es" Comment="Gain" Bounds="484,504,35,15" ShowValueBox="true" isIOBox="true" Value="0.96">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Float32" />
               <FullNameCategoryReference ID="Primitive" />

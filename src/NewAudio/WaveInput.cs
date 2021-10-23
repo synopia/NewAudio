@@ -90,9 +90,6 @@ namespace NewAudio
         {
             Stop();
             AudioCore.Instance.RemoveInput(this);
-            _link?.Dispose();
-            _waveIn?.Dispose();
-            _buffer.Dispose();
             _audioBufferFactory.Dispose();
             base.Dispose();
         }

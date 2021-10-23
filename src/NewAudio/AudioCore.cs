@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
 using VL.Lib.Collections;
 using VL.NewAudio;
@@ -119,6 +120,7 @@ namespace NewAudio
         private readonly List<AudioLink> _links = new List<AudioLink>();
         private readonly List<AudioNodeSink> _sinks = new List<AudioNodeSink>();
         private readonly List<AudioNodeInput> _inputs = new List<AudioNodeInput>();
+        public readonly BufferBlock<int> Requests = new BufferBlock<int>();
         
         public void Init()
         {

@@ -5,13 +5,9 @@ namespace NewAudio.Internal
 {
     public class SilenceProvider: ISampleProvider
     {
-        public SilenceProvider()
+        public SilenceProvider(WaveFormat format)
         {
-            // WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(AudioCore.Instance.Settings.SampleRate, 1);
-            // AudioCore.Instance.Settings.ObsSampleRate.Subscribe(sr =>
-            // {
-                // WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat((int)sr, 1);
-            // });
+            WaveFormat = format;
         }
 
         public int Read(float[] buffer, int offset, int count)
