@@ -5,7 +5,8 @@
         <LangVersion>8.0</LangVersion>
         <Platforms>AnyCPU</Platforms>
         <IsPackable>false</IsPackable>
-        <TargetFramework>net472</TargetFramework>        
+        <TargetFramework>net472</TargetFramework>
+        <OutputType>Exe</OutputType>        
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <OutputPath>..\..\lib-test\</OutputPath>
@@ -20,12 +21,10 @@
     <ItemGroup>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="NUnit" Version="3.12.0" />
-        <PackageReference Include="NUnit.Console" Version="3.12.0" />
-        <PackageReference Include="NUnit.ConsoleRunner" Version="3.12.0" />
-        <PackageReference Include="NUnit3TestAdapter" Version="3.16.1" />
+        <PackageReference Include="NUnit" Version="3.13.2" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
         <ProjectReference Include="..\NewAudio\VL.NewAudio.csproj" />
+        <PackageReference Include="NUnitLite" Version="3.13.2" />
         <PackageReference Include="System.Threading.Tasks.Dataflow" Version="5.0.0" />
         <PackageReference Include="VL.Core" Version="2021.3.2" />
         <PackageReference Include="NAudio" Version="2.0.1" />
