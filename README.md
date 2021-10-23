@@ -1,5 +1,7 @@
 ### VL.NewAudio
 
+[![push_nuget](https://github.com/synopia/NewAudio/actions/workflows/main.yml/badge.svg)](https://github.com/synopia/NewAudio/actions/workflows/main.yml)
+
 Implementation of a modular audio engine for [VL](https://vvvv.org/documentation/vl) written from scratch.
 
 ![Sample1](help/additivesynth.png)
