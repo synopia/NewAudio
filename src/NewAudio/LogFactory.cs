@@ -72,7 +72,7 @@ namespace NewAudio
         private static int id = 0;
 
         public static LogFactory Instance => _instance ??= new LogFactory();
-        readonly StreamWriter _writer = File.CreateText("c:\\Users\\paulf\\RiderProjects\\NewAudio\\text.log");
+        readonly StreamWriter _writer = File.CreateText("VL.NewAudio.log");
         public LogFactory()
         {
             _writer.AutoFlush = true;
