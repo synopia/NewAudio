@@ -67,20 +67,26 @@ namespace NewAudio
 
             if (_link == null && input != null)
             {
-                var inputChannels = input?.WaveFormat.Channels ?? 0;
+                var inputChannels = input.WaveFormat.Channels;
                 if (outputChannels == 0)
                 {
                     outputChannels = inputChannels;
                 }
-
-                _logger.Info($"Creating Buffer & Processor for Loop {input?.Format}");
-                var samples = input.Format.BufferSize / inputChannels;
+                var outputFormat = input.Format.WithChannels(outputChannels);
+                
+                _logger.Info($"Creating Buffer & Processor for Loop {input.Format} => {outputFormat}");
+                var samples = input.Format.SampleCount;
                 var inputSamples = input.Format.BufferSize;
-                var outputSamples = samples * outputChannels;
+                var outputSamples = outputFormat.BufferSize;
 
                 var transformer = new TransformBlock<AudioBuffer, AudioBuffer>(inp =>
                 {
-                    float[] output = new float[outputSamples];
+                    if (inp.Count != inputSamples)
+                    {
+                        _logger.Error($"Expected Input size: {inputSamples}, actual: {inp.Count}");
+                        return inp;
+                    }
+                    var output = AudioCore.Instance.BufferFactory.GetBuffer(outputSamples);
                     TState state = _state;
                     if (state == null)
                     {
@@ -89,8 +95,7 @@ namespace NewAudio
 
                     if (state != null && _updateFunc != null)
                     {
-                        // input?.Read(output, 0, inputSamples);
-                        _sampleAccessor.Update(output, inp.Data, outputChannels, inputChannels);
+                        _sampleAccessor.Update(output.Data, inp.Data, outputChannels, inputChannels);
                         var increment = 1.0 / input.Format.SampleRate;
                         for (int i = 0; i < samples; i++)
                         {
@@ -108,7 +113,7 @@ namespace NewAudio
 
                     _state = default(TState);
 
-                    return new AudioBuffer(null, output, outputSamples);
+                    return output;
                 }, new ExecutionDataflowBlockOptions()
                 {
                 });
@@ -125,6 +130,7 @@ namespace NewAudio
         private void Stop(bool shouldRun)
         {
             _link?.Dispose();
+            _link = null;
         }
 
         public override void Dispose()

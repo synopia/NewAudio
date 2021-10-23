@@ -38,7 +38,6 @@
             <Pin Id="FLAzfAFBvY7Na4akVhS5tp" Name="Overflows" Kind="OutputPin" />
             <Pin Id="MpxUEu8VHT0PnPB4qWFcrN" Name="Underruns" Kind="OutputPin" />
             <Pin Id="Rj8zRpIIXEMLuJTOWzQIQ5" Name="Buffered Samples" Kind="OutputPin" />
-            <Pin Id="M2EasVG8apSOAMqnQwH683" Name="Audio Buffer Cache" Kind="OutputPin" />
           </Node>
           <Node Bounds="619,231,407,19" Id="LX996V0GSnZM8yIppsXvXq">
             <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
@@ -59,7 +58,6 @@
             <Pin Id="MGo7CdxxicXPBqxT7FpI86" Name="Overflows" Kind="OutputPin" />
             <Pin Id="VYJ6iq5blkIP1sYnSjKcqX" Name="Underruns" Kind="OutputPin" />
             <Pin Id="AAAibIEVX4DPjYTOeQtMQx" Name="Buffered Samples" Kind="OutputPin" />
-            <Pin Id="PgaQ6sglL2rOw0kpYDTmrB" Name="Audio Buffer Cache" Kind="OutputPin" />
           </Node>
           <Pad Id="GFwl9B5fgz8LPacpuwpC2S" Comment="reset" Bounds="577,191,35,35" ShowValueBox="true" isIOBox="true" Value="False">
             <p:TypeAnnotation>
@@ -171,6 +169,8 @@
               <CategoryReference Kind="Category" Name="NewAudio" />
               <Choice Kind="ProcessAppFlag" Name="AudioEngine" />
             </p:NodeReference>
+            <Pin Id="Iw15gJdTHfMMAPFqLlvipN" Name="Reset" Kind="InputPin" />
+            <Pin Id="J8XUAryrTfSP8XyWHJFdsy" Name="Buffer Cache Size" Kind="OutputPin" />
             <Pin Id="BFTiiOwaiHaP7g87atXMog" Name="Logs" Kind="OutputPin" />
           </Node>
           <Node Bounds="658,416,62,26" Id="QVeKOLluGdtOPpYFJTSXmI">

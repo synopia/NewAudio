@@ -41,11 +41,12 @@ namespace NewAudio
         }
 
         private IDisposable _link;
-        public float[] OutBuffer;
+        public float[] OutBuffer = new float[1];
         private ActionBlock<AudioBuffer> _action;
         private int _pos = 0;
         public float[] GetSamples(int count=0)
         {
+            /*
             _pos = 0;
             if (_action == null)
             {
@@ -58,7 +59,7 @@ namespace NewAudio
                 {
                     if (_pos < count)
                     {
-                        Array.Copy(input.Data, 0, OutBuffer, _pos, input.Data.Length);
+                        Array.Copy(input.Data, 0, OutBuffer, _pos, Math.Min(input.Data.Length, OutBuffer.Length));
                         _pos += input.Data.Length;
                     }
                 }, new ExecutionDataflowBlockOptions()
@@ -69,10 +70,11 @@ namespace NewAudio
             if (_link == null && SourceBlock!=null )
             {
                 _logger.Info($"Setting link {SourceBlock}");
-                _link = BroadcastBlock.LinkTo(_action);
+                // _link = BroadcastBlock.LinkTo(_action);
                 _logger.Info($"Link: {_link}");
             }
 
+            */
             return OutBuffer;
         }
 

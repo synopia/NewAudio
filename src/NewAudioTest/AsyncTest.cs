@@ -117,7 +117,7 @@ namespace NewAudioTest
             while (await sourceBlock.OutputAvailableAsync())
             {
                 AudioBuffer buf = await sourceBlock.ReceiveAsync();
-                Console.WriteLine($"l={buf.Size}");
+                Console.WriteLine($"l={buf.Count}");
                 for (int i = 0; i < 170; i++)
                 {
                     Assert.AreEqual(value++, buf.Data[i]);
@@ -134,9 +134,9 @@ namespace NewAudioTest
         public async Task Run2()
         {
             var producer = new BufferBlock<AudioBuffer>();
-
-            var splitter = new AudioFlowBuffer(2000, 64);
-            var combiner = new AudioFlowBuffer(2000, 170);
+            var format = new AudioFormat(1, 44100, 512);
+            var splitter = new AudioFlowBuffer(format, 2000, 64);
+            var combiner = new AudioFlowBuffer(format, 2000, 170);
 
             producer.LinkTo(splitter);
             splitter.LinkTo(combiner);

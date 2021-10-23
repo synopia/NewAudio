@@ -15,7 +15,7 @@
       </p:NodeReference>
       <Patch Id="NFffYA24UcLOofxAFTuMmA">
         <Canvas Id="RqGQSjV7ytGLSqra8c3MMc" CanvasType="Group">
-          <Pad Id="Nagssm8q9r1MZ4lgwOrEcA" Comment="Freq" Bounds="484,271,106,112" ShowValueBox="true" isIOBox="true" Value="900.0001">
+          <Pad Id="Nagssm8q9r1MZ4lgwOrEcA" Comment="Freq" Bounds="484,271,106,112" ShowValueBox="true" isIOBox="true" Value="800">
             <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
               <Choice Kind="TypeFlag" Name="Float32" />
             </p:TypeAnnotation>
@@ -346,6 +346,8 @@
               <CategoryReference Kind="Category" Name="NewAudio" />
               <Choice Kind="ProcessAppFlag" Name="AudioEngine" />
             </p:NodeReference>
+            <Pin Id="Q9wbKByKd2SL3RP2zdlsrX" Name="Reset" Kind="InputPin" />
+            <Pin Id="Mc9uheZ0Gb1MY2etDEfuZN" Name="Buffer Cache Size" Kind="OutputPin" />
             <Pin Id="K1jfdPm6IoMNjOFhufxunB" Name="Logs" Kind="OutputPin" />
           </Node>
           <Pad Id="DhUlYMeg4vfPqhULEN4C7T" Bounds="149,797,259,-8" ShowValueBox="true" isIOBox="true" Value="ASIO: ASIO4ALL v2">
@@ -365,7 +367,6 @@
             <Pin Id="PbEQ64rrt0iN6uC5bYQZAC" Name="Overflows" Kind="OutputPin" />
             <Pin Id="LOaaI6dYYQ4QGGJN0nOorT" Name="Underruns" Kind="OutputPin" />
             <Pin Id="TansxdvPR5XOkxszgDEGEx" Name="Buffered Samples" Kind="OutputPin" />
-            <Pin Id="DOn49yCgEtuNhSMus2WJO8" Name="Audio Buffer Cache" Kind="OutputPin" />
           </Node>
           <Pad Id="PpnbUeZWPekOQtShclSeya" Comment="Driver Latency" Bounds="218,833,35,15" ShowValueBox="true" isIOBox="true" Value="150">
             <p:TypeAnnotation>
@@ -507,7 +508,7 @@
               <FullNameCategoryReference ID="Primitive" />
             </p:TypeAnnotation>
           </Pad>
-          <Pad Id="KhTveutycmnLp55IsUBFso" Comment="Underruns" Bounds="141,950,35,15" ShowValueBox="true" isIOBox="true" Value="0">
+          <Pad Id="KhTveutycmnLp55IsUBFso" Comment="Underruns" Bounds="162,947,35,15" ShowValueBox="true" isIOBox="true" Value="0">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Integer32" />
               <FullNameCategoryReference ID="Primitive" />
@@ -520,12 +521,6 @@
             </p:TypeAnnotation>
           </Pad>
           <Pad Id="MNZpBJHsmABQAKc0vu0wPY" Comment="Block Count" Bounds="354,212,35,15" ShowValueBox="true" isIOBox="true" Value="64">
-            <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="Integer32" />
-              <FullNameCategoryReference ID="Primitive" />
-            </p:TypeAnnotation>
-          </Pad>
-          <Pad Id="CyGrtuGS7vqMGnggx2P7WX" Comment="Audio Buffer Cache" Bounds="214,923,35,15" ShowValueBox="true" isIOBox="true" Value="0">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Integer32" />
               <FullNameCategoryReference ID="Primitive" />
@@ -625,11 +620,11 @@
         <Link Id="HpUIpKfNVehLalQcYsbUWD" Ids="LOaaI6dYYQ4QGGJN0nOorT,KhTveutycmnLp55IsUBFso" />
         <Link Id="BY5MYY7YexGMsGH0JEBUYf" Ids="PbEQ64rrt0iN6uC5bYQZAC,KPpzoDGFlJnL7d9BReYB5R" />
         <Link Id="IO1zCHhkg8xOmNvZTRTYRf" Ids="MNZpBJHsmABQAKc0vu0wPY,D1Jyi24rZpHNvMeXx2MZeS" />
-        <Link Id="QC1e6yfbFkrQG6L2mktUeO" Ids="DOn49yCgEtuNhSMus2WJO8,CyGrtuGS7vqMGnggx2P7WX" />
         <Link Id="DGi03bHNylbP6wHHpmENFo" Ids="LI1eCbcQkWJPHxe1C5OORW,SPfPinHwckKOPi8ZWAlzB1" />
         <Link Id="UeycTQXzKfIMZ91zi7Z6hB" Ids="Oyb9EnrzMWIO1DZ5u3m7jO,TKvFeClURS7NNMskHVl2Be" />
         <Link Id="RGiV6NP4yckMctUGzXDxkf" Ids="MiUnH4jY8bgLKEhEBUMV4t,SO0TOzGPZ3NMCGb7YqjsHo" />
         <Link Id="UnKzZ3KLaoDLybBhkIqLPb" Ids="Tb4FV73YEZfPsvmD57ecM4,Jc1nowiCmt1NTyYlHoAbAi" />
+        <Link Id="DLyR4ITHdzHOXT5cQBN28q" Ids="TWVk4JEvB0HOnpbGUzTbIC,Q9wbKByKd2SL3RP2zdlsrX" />
       </Patch>
     </Node>
   </Patch>

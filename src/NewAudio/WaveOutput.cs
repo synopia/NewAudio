@@ -23,15 +23,14 @@ namespace NewAudio
             AudioCore.Instance.AddSink(this);
         }
 
-        public void Update(out int overflows, out int underruns, out int bufferedSamples, out int audioBufferCache)
+        public void Update(out int overflows, out int underruns, out int bufferedSamples)
         {
             overflows = _buffer.Buffer.Overflows;
             underruns = _buffer.Buffer.UnderRuns;
-            audioBufferCache = _buffer.CachedBuffers;
             bufferedSamples = _buffer.Buffer.BufferedSamples;
         }
 
-        public void ChangeSettings(WaveOutputDevice device, AudioLink input, int driverLatency = 200)
+        public void ChangeSettings(WaveOutputDevice device, AudioLink input, int blockCount = 64, int driverLatency = 200)
         {
             _logger.Info(
                 $"WaveOutput: Configuration changed, Device: {device?.Value}, Input connected: {input != null}, Driver latency: {driverLatency}");
@@ -43,7 +42,7 @@ namespace NewAudio
             }
 
             Connect(input);
-            _buffer = new AudioFlowBuffer(input.Format.BufferSize, input.Format.BlockCount);
+            _buffer = new AudioFlowBuffer(input.Format, input.Format.SampleCount*blockCount);
             _buffer.Buffer.WaveFormat = input.WaveFormat;
             _link = input.SourceBlock.LinkTo(_buffer);
 
@@ -51,6 +50,7 @@ namespace NewAudio
             {
                 _waveOut = ((IWaveOutputFactory)device.Tag).Create(driverLatency);
                 _cancellation = new CancellationTokenSource();
+                _logger.Warn($"FORMAT: {input.Format} ");
                 var wave16 = new SampleToWaveProvider16(new BlockingSampleProvider(input.Format, _buffer));
                 var asio = (AsioOut)_waveOut;
                 asio.InitRecordAndPlayback(wave16, 0, 0);//new SampleToWaveProvider(_buffer.Buffer), 0, 0);

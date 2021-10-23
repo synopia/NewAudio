@@ -6,10 +6,9 @@ using NewAudio.Internal;
 
 namespace NewAudio
 {
-    public class AudioBufferGenerator: AudioNodeProducer
+    public class AudioGenerator: AudioNodeProducer
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("AudioBufferGenerator");
-        private readonly AudioBufferFactory _audioBufferFactory = new AudioBufferFactory();
+        private readonly Logger _logger = LogFactory.Instance.Create("AudioGenerator");
         
         private AudioFlowBuffer _buffer;
         private IDisposable _link;
@@ -24,7 +23,7 @@ namespace NewAudio
 
         private ActionBlock<int> _worker;
 
-        public AudioBufferGenerator()
+        public AudioGenerator()
         {
         }
 
@@ -32,19 +31,19 @@ namespace NewAudio
             int channels = 2, int bufferSize = 512, int blockCount = 16)
         {
             Stop();
-            _buffer = new AudioFlowBuffer(bufferSize, blockCount, true);
-            _audioBufferFactory.Clear();
+            var format = new AudioFormat(channels, (int)sampleRate, bufferSize);
+            _buffer = new AudioFlowBuffer(format, bufferSize*blockCount, bufferSize);
 
             _link = _bufferIn.LinkTo(_buffer);
             Output.SourceBlock = _buffer;
-            Output.Format = new AudioFormat(channels, (int)sampleRate, bufferSize, blockCount);
+            Output.Format = format; 
             
             _logger.Info($"Started generating, format: {Output.Format}");
             var silence = new SilenceProvider(Output.WaveFormat);
 
             _worker = new ActionBlock<int>(count =>
             {
-                var buffer = _audioBufferFactory.FromSampleProvider(silence, count);
+                var buffer = AudioCore.Instance.BufferFactory.FromSampleProvider(silence, count);
                 _bufferIn.Post(buffer);
             });
             _requestLink = AudioCore.Instance.Requests.LinkTo(_worker);
@@ -65,7 +64,6 @@ namespace NewAudio
         public override void Dispose()
         {
             Stop();
-            _audioBufferFactory.Dispose();
             base.Dispose();
         }
     }

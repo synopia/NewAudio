@@ -10,6 +10,7 @@ namespace NewAudio.Internal
         private readonly Logger _logger = LogFactory.Instance.Create("CircularBuffer");
         private CircularSampleBuffer _circularBuffer;
         public float[] Data => _circularBuffer.Data;
+        public WaveFormat WaveFormat { get; set; }
 
         public int BufferLength
         {
@@ -44,7 +45,6 @@ namespace NewAudio.Internal
             _circularBuffer?.Advance(samples);
         }
 
-        public WaveFormat WaveFormat { get; set; }
         public void AddSamples(float[] buffer, int offset, int count)
         {
             var added = _circularBuffer.Write(buffer, offset, count);

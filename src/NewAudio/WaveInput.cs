@@ -28,20 +28,19 @@ namespace NewAudio
             AudioCore.Instance.AddInput(this);
         }
 
-        public void Update(out AudioFormat format, out int overflows, out int underruns, out int bufferedSamples, out int audioBufferCache)
+        public void Update(out AudioFormat format, out int overflows, out int underruns, out int bufferedSamples)
         {
             overflows = _buffer.Buffer.Overflows;
             underruns = _buffer.Buffer.UnderRuns;
             bufferedSamples = _buffer.Buffer.BufferedSamples;
-            audioBufferCache = _buffer.CachedBuffers;
             format = Output.Format;
         }
 
         public void ChangeSettings(WaveInputDevice device, AudioSampleRate sampleRate = AudioSampleRate.Hz44100,
-            int channelOffset = 0, int channels = 2, int bufferSize = 512, int blockCount = 16, int driverLatency = 200)
+            int channelOffset = 0, int channels = 2, int bufferSize = 256, int blockCount = 64, int driverLatency = 200)
         {
             _logger.Info(
-                $"WaveInput: Configuration changed, Device: {device?.Value}, SampleRate: {(int)sampleRate}, Channel offset: {channelOffset}, Channels: {channels}, Buffer size: {bufferSize}, Input buffers: {blockCount}, Driver latency: {driverLatency}");
+                $"WaveInput: Configuration changed, Device: {device?.Value}, SampleRate: {(int)sampleRate}, Channel offset: {channelOffset}, Channels: {channels}, Buffer size: {bufferSize}, Internal buffer size: {bufferSize*blockCount}, Driver latency: {driverLatency}");
 
             Stop();
             if (device == null)
@@ -49,10 +48,10 @@ namespace NewAudio
                 return;
             }
     
-            _buffer = new AudioFlowBuffer(bufferSize, blockCount, true);
+            var outputFormat = new AudioFormat(channels, (int)sampleRate, bufferSize);
+            _buffer = new AudioFlowBuffer(outputFormat, bufferSize*blockCount, channels*bufferSize);
             _audioBufferFactory.Clear();
             var waveFormat = new WaveFormat((int)sampleRate, 16, channels);
-            var outputFormat = new AudioFormat(channels, (int)sampleRate, bufferSize, blockCount);
             _link = _bufferIn.LinkTo(_buffer);
             Output.SourceBlock = _buffer;
             try

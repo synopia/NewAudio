@@ -357,7 +357,7 @@
               <Pin Id="NHiU8bHdCllP9d7yIGoGjB" Name="Output" Kind="StateOutputPin" />
             </Node>
             <Pad Id="TZBkLTtAebZMvH05ivMKFZ" Bounds="705,407" />
-            <Pad Id="A9rSoGZr29sLxKZkyQbPSA" Comment="Buffer Size" Bounds="834,427,35,15" ShowValueBox="true" isIOBox="true" Value="1024">
+            <Pad Id="A9rSoGZr29sLxKZkyQbPSA" Comment="Buffer Size" Bounds="834,427,35,15" ShowValueBox="true" isIOBox="true" Value="512">
               <p:TypeAnnotation>
                 <Choice Kind="TypeFlag" Name="Integer32" />
                 <FullNameCategoryReference ID="Primitive" />

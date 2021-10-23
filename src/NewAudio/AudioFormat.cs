@@ -6,17 +6,16 @@ namespace NewAudio
     {
         public readonly int Channels;
         public readonly int SampleRate;
-        public readonly int BufferSize;
-        public readonly int BlockCount;
+        public readonly int SampleCount;
+        public readonly int BufferSize => SampleCount*Channels;
 
         public readonly WaveFormat WaveFormat;
 
-        public AudioFormat(int channels, int sampleRate, int bufferSize, int blockCount) : this()
+        public AudioFormat(int channels, int sampleRate, int sampleCount) : this()
         {
             Channels = channels;
             SampleRate = sampleRate;
-            BufferSize = bufferSize;
-            BlockCount = blockCount;
+            SampleCount = sampleCount;
             WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, channels);
         }
 
@@ -26,7 +25,7 @@ namespace NewAudio
             {
                 return this;
             }
-            return new AudioFormat(channels, SampleRate, BufferSize, BlockCount);
+            return new AudioFormat(channels, SampleRate, SampleCount);
         }
 
         public AudioFormat WithSampleRate(int sampleRate)
@@ -35,7 +34,7 @@ namespace NewAudio
             {
                 return this;
             }
-            return new AudioFormat(Channels, sampleRate, BufferSize, BlockCount);
+            return new AudioFormat(Channels, sampleRate, BufferSize);
             
         }
         public AudioFormat WithBufferSize(int bufferSize)
@@ -44,15 +43,15 @@ namespace NewAudio
             {
                 return this;
             }
-            return new AudioFormat(Channels, SampleRate, bufferSize, BlockCount);
+            return new AudioFormat(Channels, SampleRate, bufferSize/Channels);
         }
-        public AudioFormat WithBlockCount(int blockCount)
+        public AudioFormat WithSampleCount(int sampleCount)
         {
-            if (blockCount == BlockCount)
+            if (sampleCount != SampleCount)
             {
                 return this;
             }
-            return new AudioFormat(Channels, SampleRate, BufferSize, blockCount);
+            return new AudioFormat(Channels, SampleRate, sampleCount);
         }
 
         public AudioFormat Update(WaveFormat waveFormat)
@@ -62,7 +61,7 @@ namespace NewAudio
 
         public override string ToString()
         {
-            return $"{SampleRate}Hz, {Channels}Ch {WaveFormat.BitsPerSample}Bit {BufferSize} samples";
+            return $"{SampleRate}Hz, {Channels}Ch {WaveFormat.BitsPerSample}Bit {SampleCount} samples";
         }
     }
 }

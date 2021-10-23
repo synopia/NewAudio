@@ -5,37 +5,45 @@ using System.Linq;
 using NAudio.Wave;
 using VL.Lib.Collections;
 
-namespace  NewAudio
+namespace NewAudio
 {
     public interface IAudioBufferOwner
     {
         public void Release(AudioBuffer buffer);
     }
+
     public readonly struct AudioBuffer
     {
         public readonly IAudioBufferOwner Owner;
         public readonly float[] Data;
-        public readonly int Size; 
+        public readonly int Count;
 
-        public AudioBuffer(IAudioBufferOwner owner, float[] data, int size)
+        public AudioBuffer(IAudioBufferOwner owner, float[] data, int count)
         {
-            Size = size;
+            Count = count;
             Owner = owner;
             Data = data;
         }
-        public AudioBuffer(IAudioBufferOwner owner, int size):this(owner, new float[size], size)
-        {
-        }
 
-        public Spread<float> GetSampleData(Spread<int> channels)
+        public AudioBuffer(IAudioBufferOwner owner, int count) : this(owner, new float[count], count)
         {
-            return Spread<float>.Empty;
         }
     }
 
     public class AudioBufferFactory : IAudioBufferOwner, IDisposable
     {
         private readonly List<AudioBuffer> _buffers = new List<AudioBuffer>();
+
+        public int Count
+        {
+            get
+            {
+                lock (_buffers)
+                {
+                    return _buffers.Count;
+                }
+            }
+        }
 
         public void Clear()
         {
@@ -45,12 +53,13 @@ namespace  NewAudio
             }
         }
 
-        public AudioBuffer FromSampleProvider(ISampleProvider provider, int count)
+        public AudioBuffer FromSampleProvider(ISampleProvider provider, int bufferSize)
         {
-            AudioBuffer buffer = GetBuffer(count);
-            provider.Read(buffer.Data, 0, count);
+            AudioBuffer buffer = GetBuffer(bufferSize);
+            provider.Read(buffer.Data, 0, bufferSize);
             return buffer;
         }
+
         public AudioBuffer FromByteBuffer(WaveFormat format, byte[] bytes, int bytesRecorded)
         {
             AudioBuffer buffer;
@@ -59,17 +68,17 @@ namespace  NewAudio
                 buffer = GetBuffer(bytesRecorded / 4);
                 for (int i = 0; i < bytesRecorded / 4; i++)
                 {
-                    buffer.Data[i] = BitConverter.ToSingle(bytes, i*4);
+                    buffer.Data[i] = BitConverter.ToSingle(bytes, i * 4);
                 }
-                
-            }else if (format.BitsPerSample == 32)
+            }
+            else if (format.BitsPerSample == 32)
             {
                 buffer = GetBuffer(bytesRecorded / 4);
                 for (int i = 0; i < bytesRecorded / 4; i++)
                 {
-                    buffer.Data[i] = BitConverter.ToInt32(bytes, i*4) / (float)int.MaxValue;
+                    buffer.Data[i] = BitConverter.ToInt32(bytes, i * 4) / (float)int.MaxValue;
                 }
-            } 
+            }
             else if (format.BitsPerSample == 16)
             {
                 buffer = GetBuffer(bytesRecorded / 2);
@@ -94,24 +103,23 @@ namespace  NewAudio
             }
         }
 
-        private AudioBuffer GetBuffer(int length)
+        public AudioBuffer GetBuffer(int length)
         {
             lock (_buffers)
             {
                 var result = _buffers.FindIndex(b => b.Data.Length == length);
-                if (result>=0)
+                if (result >= 0)
                 {
                     return _buffers[result];
-                }                
+                }
             }
-            
+
 
             return new AudioBuffer(this, length);
         }
 
         public void Dispose()
         {
-            
         }
     }
 }
