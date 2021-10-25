@@ -30,6 +30,7 @@ namespace NewAudio
 
         public AudioFlowBuffer(AudioFormat format, int internalBufferSize, int sendBufferSize=0)
         {
+            _buffer.Name = _logger.Category;
             _logger.Info($"Starting flow buffer internal size: {internalBufferSize}, sending size: {sendBufferSize}");
             var source = new BufferBlock<AudioBuffer>(new DataflowBlockOptions()
             {
@@ -39,7 +40,7 @@ namespace NewAudio
                 // TODO
                 // if (_buffer.FreeSpace >= input.Count)
                 // {
-                    _buffer.AddSamples(input.Data, 0, input.Count);
+                    _buffer.AddSamples(input.Time, input.Data, 0, input.Count);
                     // input.Owner?.Release(input);
                 // }
 
@@ -71,7 +72,7 @@ namespace NewAudio
             {
                 throw new ArgumentException("Send buffer size is 0!");
             }
-            var buf = AudioCore.Instance.BufferFactory.GetBuffer(_sendBufferSize);
+            var buf = AudioCore.Instance.BufferFactory.GetBuffer(_buffer.ReadTime, _sendBufferSize);
             _buffer.Read(buf.Data, 0, _sendBufferSize);
             _source.Post(buf);
         }

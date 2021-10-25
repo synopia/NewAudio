@@ -74,7 +74,7 @@ namespace NewAudio
 
     public class AsioOutFactory : IWaveOutputFactory
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("WasapiOutFactory");
+        private readonly Logger _logger = LogFactory.Instance.Create("AsioOutFactory");
         private string driverName;
 
         public AsioOutFactory(string driverName)

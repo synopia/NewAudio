@@ -1,31 +1,32 @@
-﻿using NAudio.Wave;
-using System;
-using System.Collections.Generic;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System;
 using System.Threading.Tasks.Dataflow;
-using VL.Lib.Collections;
+using NAudio.Wave;
 
 namespace NewAudio
 {
+    /// <summary>
+    /// Represents an output pin, where audio data is sent to.
+    /// Internally uses a BroadcastBlock, to dispatch incoming audio to multiple targets. 
+    /// </summary>
     public class AudioLink : IDisposable, ISampleProvider
     {
         private readonly Logger _logger = LogFactory.Instance.Create("AudioLink");
         public WaveFormat WaveFormat => Format.WaveFormat;
-        public BroadcastBlock<AudioBuffer> BroadcastBlock = new BroadcastBlock<AudioBuffer>(i=>i, new GroupingDataflowBlockOptions()
+
+        private readonly BroadcastBlock<AudioBuffer> _broadcastBlock = new BroadcastBlock<AudioBuffer>(i=>i, new GroupingDataflowBlockOptions()
         {
         });
 
-        private ISourceBlock<AudioBuffer> _sourceBlock; 
+        private ISourceBlock<AudioBuffer> _sourceBlock;
+        private IDisposable _outputLink;
         public ISourceBlock<AudioBuffer> SourceBlock
         {
-            get=>BroadcastBlock;
+            get=>_broadcastBlock;
             set
             {
+                _outputLink?.Dispose();
                 _sourceBlock = value;
-                _sourceBlock.LinkTo(BroadcastBlock);
+                _outputLink = _sourceBlock.LinkTo(_broadcastBlock);
             }
         }
         public AudioFormat Format;
@@ -39,44 +40,8 @@ namespace NewAudio
         {
             throw new NotImplementedException();
         }
-
-        private IDisposable _link;
-        public float[] OutBuffer = new float[1];
-        private ActionBlock<AudioBuffer> _action;
-        private int _pos = 0;
-        public float[] GetSamples(int count=0)
-        {
-            /*
-            _pos = 0;
-            if (_action == null)
-            {
-                _logger.Info($"Getting samples {count}");
-                if (OutBuffer==null || count != OutBuffer.Length)
-                {
-                    OutBuffer = new float[count];
-                }
-                _action = new ActionBlock<AudioBuffer>(input =>
-                {
-                    if (_pos < count)
-                    {
-                        Array.Copy(input.Data, 0, OutBuffer, _pos, Math.Min(input.Data.Length, OutBuffer.Length));
-                        _pos += input.Data.Length;
-                    }
-                }, new ExecutionDataflowBlockOptions()
-                {
-                });
-            }
-
-            if (_link == null && SourceBlock!=null )
-            {
-                _logger.Info($"Setting link {SourceBlock}");
-                // _link = BroadcastBlock.LinkTo(_action);
-                _logger.Info($"Link: {_link}");
-            }
-
-            */
-            return OutBuffer;
-        }
+        
+        
 
         public void Dispose()
         {

@@ -61,6 +61,7 @@
               <CategoryReference Kind="Category" Name="NewAudio" />
               <Choice Kind="ProcessAppFlag" Name="AudioEngine" />
             </p:NodeReference>
+            <Pin Id="EuSt1sWRc0pOgnKILUSW0M" Name="Play" Kind="InputPin" />
             <Pin Id="SmAfHxfgBA1M4KIMn2V1Px" Name="Reset" Kind="InputPin" />
             <Pin Id="Nw5ulEx3WUEMPT9hYARb8v" Name="Buffer Cache Size" Kind="OutputPin" />
             <Pin Id="OOoxWKN0WhDM4qQrFhJS1k" Name="Logs" Kind="OutputPin" />
@@ -84,17 +85,10 @@
             <Pin Id="C4zPGddpwO3OUyjGMdoFZQ" Name="Device" Kind="InputPin" />
             <Pin Id="O35LHOTZUlZMPxnq3zJhFo" Name="Input" Kind="InputPin" />
             <Pin Id="Qa91UrXW2jXMEdvSNX7gC6" Name="Block Count" Kind="InputPin" />
-            <Pin Id="Nxt5kE1ml8HM3gGOgJTXT6" Name="Driver Latency" Kind="InputPin" />
             <Pin Id="CXyffoSzJ3MNpAAcHRavtE" Name="Overflows" Kind="OutputPin" />
             <Pin Id="SoKUc0fgl2vMrLYImHmcBh" Name="Underruns" Kind="OutputPin" />
             <Pin Id="PQldWDVPux5NtDDuE9nvAz" Name="Buffered Samples" Kind="OutputPin" />
           </Node>
-          <Pad Id="GQaVjWvy5SgOB5g53rpEbQ" Comment="Driver Latency" Bounds="720,1087,35,15" ShowValueBox="true" isIOBox="true" Value="150">
-            <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="Integer32" />
-              <FullNameCategoryReference ID="Primitive" />
-            </p:TypeAnnotation>
-          </Pad>
           <Node Bounds="402,237,48,19" Id="NU4QT7kf7oAM2O2gWR9BDt">
             <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
@@ -108,19 +102,11 @@
             <Pin Id="UdxMPSSzMleLzsNcA3VsPc" Name="Channels" Kind="InputPin" />
             <Pin Id="AV0M2IYaNklO31cEiFNLy7" Name="Buffer Size" Kind="InputPin" />
             <Pin Id="VOYQ24F1ySAMlm4UJxon1G" Name="Block Count" Kind="InputPin" />
-            <Pin Id="Dns0ufOw8idLMyOWxyyU3z" Name="Driver Latency" Kind="InputPin" />
             <Pin Id="AaNoO9y5fvwPo7cztnyM6P" Name="Output" Kind="OutputPin" />
-            <Pin Id="FbUHzhVXq1XN7PecF1L7HO" Name="Format" Kind="OutputPin" />
             <Pin Id="D1JZm3Nh9vFMFFO1pPlQ2U" Name="Overflows" Kind="OutputPin" />
             <Pin Id="QGDxQKOa2lxO0DG3ZWSaCK" Name="Underruns" Kind="OutputPin" />
             <Pin Id="JqEHWP0xvbiPQsfNCbTsCb" Name="Buffered Samples" Kind="OutputPin" />
           </Node>
-          <Pad Id="Jxr9kM9omEgLDw9whQ3EOq" Comment="Driver Latency" Bounds="546,218,35,15" ShowValueBox="true" isIOBox="true" Value="154">
-            <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="Integer32" />
-              <FullNameCategoryReference ID="Primitive" />
-            </p:TypeAnnotation>
-          </Pad>
           <Pad Id="JyVUEguk3nyNljWzZsRor2" Comment="Logs" Bounds="67,1018,181,205" ShowValueBox="true">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Spread" />
@@ -240,17 +226,6 @@
               </Node>
             </Patch>
           </Node>
-          <Node Bounds="463,269,52,26" Id="P5pzKgDEoCUOMgOfADCWEx">
-            <p:NodeReference LastCategoryFullName="NewAudio.AudioLink" LastSymbolSource="VL.NewAudio.vl">
-              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-              <CategoryReference Kind="Category" Name="NewAudio" />
-              <CategoryReference Kind="ClassType" Name="AudioLink" />
-              <Choice Kind="OperationCallFlag" Name="Format" />
-            </p:NodeReference>
-            <Pin Id="GBhmSf4YO8nM3NaHGX5h3G" Name="Input" Kind="StateInputPin" />
-            <Pin Id="EYDkOf1ryxPPP0zGyx1K64" Name="Output" Kind="StateOutputPin" />
-            <Pin Id="LrdRVt0AD5POysM9regwo3" Name="Format" Kind="OutputPin" />
-          </Node>
           <Pad Id="MSx9q916V6EQEQcIdhCaKn" Comment="Output Channels" Bounds="533,473,35,15" ShowValueBox="true" isIOBox="true" Value="1">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Integer32" />
@@ -273,16 +248,6 @@
             <Pin Id="GSQL4InmysaL7EA0Ac3qRA" Name="Two" Kind="InputPin" />
             <Pin Id="QbXGPu2lM9fMNq4uqOJiPD" Name="Output" Kind="OutputPin" />
           </Node>
-          <Node Bounds="522,271,62,26" Id="Qomf8z3P2uzLTOdwJUe9Qx">
-            <p:NodeReference LastCategoryFullName="NewAudio.AudioFormat" LastSymbolSource="VL.NewAudio.vl">
-              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-              <CategoryReference Kind="Category" Name="NewAudio" />
-              <CategoryReference Kind="RecordType" Name="AudioFormat" />
-              <Choice Kind="OperationCallFlag" Name="Channels" />
-            </p:NodeReference>
-            <Pin Id="CCIcAKiqMbFNcy4YcGK5Lj" Name="Input" Kind="StateInputPin" />
-            <Pin Id="EN29WO7qfRUNYS63UYHdMY" Name="Channels" Kind="OutputPin" />
-          </Node>
           <Pad Id="P4B54N3fVfgLPf0MKLVXiZ" Comment="Channels" Bounds="472,309,35,15" ShowValueBox="true" isIOBox="true" Value="0">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Integer32" />
@@ -290,28 +255,7 @@
             </p:TypeAnnotation>
           </Pad>
           <ControlPoint Id="AoSyn1P4kaaPSRVo2j6158" Bounds="668,258" />
-          <Node Bounds="398,712,52,26" Id="IJtVg2ClqYWMkBEL07cO16">
-            <p:NodeReference LastCategoryFullName="NewAudio.AudioLink" LastSymbolSource="VL.NewAudio.vl">
-              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-              <CategoryReference Kind="Category" Name="NewAudio" />
-              <CategoryReference Kind="ClassType" Name="AudioLink" />
-              <Choice Kind="OperationCallFlag" Name="Format" />
-            </p:NodeReference>
-            <Pin Id="HAoHKMGP158MQZx3tkxPdn" Name="Input" Kind="StateInputPin" />
-            <Pin Id="RrxMvOmx10HMG8TCTeKgWG" Name="Output" Kind="StateOutputPin" />
-            <Pin Id="G0TcI4UN04MO5TM2x0kNRU" Name="Format" Kind="OutputPin" />
-          </Node>
-          <Node Bounds="457,714,62,26" Id="FNiJvIOBt7qPlbqvzN0KTQ">
-            <p:NodeReference LastCategoryFullName="NewAudio.AudioFormat" LastSymbolSource="VL.NewAudio.vl">
-              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-              <CategoryReference Kind="Category" Name="NewAudio" />
-              <CategoryReference Kind="RecordType" Name="AudioFormat" />
-              <Choice Kind="OperationCallFlag" Name="Channels" />
-            </p:NodeReference>
-            <Pin Id="K7AbHn4Sa8DMOlybZDoPXL" Name="Input" Kind="StateInputPin" />
-            <Pin Id="ThFp1XjH6fINms9QfKgOha" Name="Channels" Kind="OutputPin" />
-          </Node>
-          <Pad Id="KowTdQ2kmPQNwKLWFYVJ4C" Comment="Channels" Bounds="407,752,35,15" ShowValueBox="true" isIOBox="true" Value="0">
+          <Pad Id="KowTdQ2kmPQNwKLWFYVJ4C" Comment="Channels" Bounds="378,737,35,15" ShowValueBox="true" isIOBox="true" Value="0">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Integer32" />
               <FullNameCategoryReference ID="Primitive" />
@@ -320,32 +264,68 @@
           <ControlPoint Id="VeduJJozf9CNawAv5tcGAb" Bounds="597,831" />
           <ControlPoint Id="No64WZKD18JPVcdbe9xztj" Bounds="334,829" />
           <ControlPoint Id="CVUV7n0Sj4WMcKtBZdz6Tg" Bounds="408,1102" />
-          <Node Bounds="418,922,52,26" Id="A8jQUOkmOkLM3NtUUnX9DO">
-            <p:NodeReference LastCategoryFullName="NewAudio.AudioLink" LastSymbolSource="VL.NewAudio.vl">
-              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-              <CategoryReference Kind="Category" Name="NewAudio" />
-              <CategoryReference Kind="ClassType" Name="AudioLink" />
-              <Choice Kind="OperationCallFlag" Name="Format" />
-            </p:NodeReference>
-            <Pin Id="S3enBakTr3fM4wqwIQFOiI" Name="Input" Kind="StateInputPin" />
-            <Pin Id="BapkNayulYuNXSFZF0p0NO" Name="Output" Kind="StateOutputPin" />
-            <Pin Id="RBvh6b1imkWOqt1InidD6V" Name="Format" Kind="OutputPin" />
-          </Node>
-          <Node Bounds="477,924,62,26" Id="IeHhGeVaaElMW6sFCnUpVQ">
-            <p:NodeReference LastCategoryFullName="NewAudio.AudioFormat" LastSymbolSource="VL.NewAudio.vl">
-              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-              <CategoryReference Kind="Category" Name="NewAudio" />
-              <CategoryReference Kind="RecordType" Name="AudioFormat" />
-              <Choice Kind="OperationCallFlag" Name="Channels" />
-            </p:NodeReference>
-            <Pin Id="KVyQZ7B1D1ePqCJCF4O9ow" Name="Input" Kind="StateInputPin" />
-            <Pin Id="CGStLPanFacMBe4nGAtxxA" Name="Channels" Kind="OutputPin" />
-          </Node>
           <Pad Id="TMkw69EuGe0QOFaeJSx3xG" Comment="Channels" Bounds="427,962,35,15" ShowValueBox="true" isIOBox="true" Value="0">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Integer32" />
               <FullNameCategoryReference ID="Primitive" />
             </p:TypeAnnotation>
+          </Pad>
+          <Node Bounds="451,267,145,19" Id="JSjEXup6iQdPkuX58eBEWX">
+            <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
+              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+              <CategoryReference Kind="Category" Name="NewAudio" />
+              <Choice Kind="ProcessAppFlag" Name="AudioFormat" />
+            </p:NodeReference>
+            <Pin Id="GhAF3AcZ9EhMkw7Arb8CUX" Name="Input" Kind="InputPin" />
+            <Pin Id="K9nL015RpsVMq2HSUElCt8" Name="Buffer Size" Kind="OutputPin" />
+            <Pin Id="QJmuu5dk9d7MPyPJrMRPfd" Name="Channels" Kind="OutputPin" />
+            <Pin Id="MWoGCouN8eZOIsrUSyrqwF" Name="Sample Count" Kind="OutputPin" />
+            <Pin Id="Ez5hYEA3siZL2V47VXYOKV" Name="Sample Rate" Kind="OutputPin" />
+            <Pin Id="Q4SfFpfQeX0L992BtMksuj" Name="As String" Kind="OutputPin" />
+            <Pin Id="UDAVR8KxquhO6zSxuDeqZu" Name="Bits Per Sample" Kind="OutputPin" />
+            <Pin Id="O36FhCHNlAoPKNPqt7XrYB" Name="Average Bytes Per Second" Kind="OutputPin" />
+            <Pin Id="D35DkKfegKiLMfsFc0gv05" Name="Encoding" Kind="OutputPin" />
+          </Node>
+          <Node Bounds="404,927,145,19" Id="M3qqK3C0xiiPxyK4CCcMpc">
+            <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
+              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+              <CategoryReference Kind="Category" Name="NewAudio" />
+              <Choice Kind="ProcessAppFlag" Name="AudioFormat" />
+            </p:NodeReference>
+            <Pin Id="VVnkelDE8inMgzIi5FmLa9" Name="Input" Kind="InputPin" />
+            <Pin Id="GBhc5TsqxJCMjfYLT3BiQf" Name="Buffer Size" Kind="OutputPin" />
+            <Pin Id="Vbm4hOiYjLqNArf6OcjVlY" Name="Channels" Kind="OutputPin" />
+            <Pin Id="UWVleAxkRVALzEtKx42VDA" Name="Sample Count" Kind="OutputPin" />
+            <Pin Id="AGFyuIEXOlMOYdybhPku08" Name="Sample Rate" Kind="OutputPin" />
+            <Pin Id="TB4lNV31DqjO01SQPXQopr" Name="As String" Kind="OutputPin" />
+            <Pin Id="Tii8rMb8JEiP7hCnSP9P6i" Name="Bits Per Sample" Kind="OutputPin" />
+            <Pin Id="B3amuSlOLEDMCm5XZsFnqm" Name="Average Bytes Per Second" Kind="OutputPin" />
+            <Pin Id="RsPflRWoJBmLyyXOgEOfbK" Name="Encoding" Kind="OutputPin" />
+          </Node>
+          <Node Bounds="357,692,145,19" Id="CfUicC47BUENWCKkg0ngiv">
+            <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
+              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+              <CategoryReference Kind="Category" Name="NewAudio" />
+              <Choice Kind="ProcessAppFlag" Name="AudioFormat" />
+            </p:NodeReference>
+            <Pin Id="ACse8ZxPqdhOVGcrBre5km" Name="Input" Kind="InputPin" />
+            <Pin Id="TnbjUi7UlaZOGWQBpVKVbb" Name="Buffer Size" Kind="OutputPin" />
+            <Pin Id="S6xRM8O9qCtMT8UztmUOEc" Name="Channels" Kind="OutputPin" />
+            <Pin Id="H4Z5V3Z7E8SOxHA3rndqvb" Name="Sample Count" Kind="OutputPin" />
+            <Pin Id="ChTFt0gdNwhLQegFq8nuri" Name="Sample Rate" Kind="OutputPin" />
+            <Pin Id="TRphbiq4mgLNeAtnVmIP0A" Name="As String" Kind="OutputPin" />
+            <Pin Id="PzRDNmQJtw6ODTVcH3qrU2" Name="Bits Per Sample" Kind="OutputPin" />
+            <Pin Id="B4wfkuxlRzFQUVi0RKkfer" Name="Average Bytes Per Second" Kind="OutputPin" />
+            <Pin Id="VSuAeaLQnVkPzDpkhhanDB" Name="Encoding" Kind="OutputPin" />
+          </Node>
+          <Pad Id="M0Hi9YDaCXHLlb8A2yY3cQ" Comment="Play" Bounds="65,838,67,69" ShowValueBox="true" isIOBox="true" Value="False">
+            <p:TypeAnnotation>
+              <Choice Kind="TypeFlag" Name="Boolean" />
+              <FullNameCategoryReference ID="Primitive" />
+            </p:TypeAnnotation>
+            <p:ValueBoxSettings>
+              <p:buttonmode p:Assembly="VL.UI.Forms" p:Type="VL.HDE.PatchEditor.Editors.ButtonModeEnum">Toggle</p:buttonmode>
+            </p:ValueBoxSettings>
           </Pad>
         </Canvas>
         <Patch Id="JdAy5MF5KDhNtNuNEZgjhT" Name="Create" />
@@ -355,9 +335,7 @@
           <Fragment Id="IKQCVTXKas4NtEbTzbyK2p" Patch="NG4NXUivOn9LivaheS2qoP" Enabled="true" />
         </ProcessDefinition>
         <Link Id="SRvf5TnGUu5PHG6R6TY5Mt" Ids="O5qMnpHJ9fOL3o7pc1eiio,C4zPGddpwO3OUyjGMdoFZQ" />
-        <Link Id="MnFrTBw81E1OZfamFHqDDq" Ids="GQaVjWvy5SgOB5g53rpEbQ,Nxt5kE1ml8HM3gGOgJTXT6" />
         <Link Id="VinW01hpXXtLnQ4z1AmLfr" Ids="Ave5xSo1izONyRLoS1oo4x,FTtq7hDVWcDLBa9JJ8TAoh" />
-        <Link Id="L4jRGfltXw9NZFOlRmV0or" Ids="Jxr9kM9omEgLDw9whQ3EOq,Dns0ufOw8idLMyOWxyyU3z" />
         <Link Id="EGnEz97IGCqQUd9M2gp3U2" Ids="OOoxWKN0WhDM4qQrFhJS1k,JyVUEguk3nyNljWzZsRor2" />
         <Link Id="ByL58aOvdJCNTBEU0pBSr8" Ids="LgEXEouR04QLbBrF9YgMLW,VOYQ24F1ySAMlm4UJxon1G" />
         <Link Id="OC8ikN8g5mPM6Ug0XfXBB7" Ids="ISGYtzgDtcLLkLnCqpGX3Y,AV0M2IYaNklO31cEiFNLy7" />
@@ -375,7 +353,6 @@
         <Link Id="FFyvGx0U15oN2ZpJP2TigK" Ids="NCsw4A79RdvNbxhcymeIXz,McaNIXTR0yMPfc0nu2jIVe" />
         <Link Id="VxzNJiJCwGPLhxd8TYXn8l" Ids="NCsw4A79RdvNbxhcymeIXz,Vr3102Zhm3XOJ1ULth1Q4U" />
         <Link Id="Bccq1ssGGDiNlBRr1Mbw5K" Ids="ICGgT57VoYwNa8OJGjKsaj,OvgAUAgRmNTMBuX7NzwwG0" />
-        <Link Id="IFZXuaRODxALXN8sv0kiRH" Ids="AaNoO9y5fvwPo7cztnyM6P,GBhmSf4YO8nM3NaHGX5h3G" />
         <Link Id="EAvgRGbN3faM4UH9VDsx5d" Ids="MSx9q916V6EQEQcIdhCaKn,JPIKnZ90gIJLvtuC2p4EOg" />
         <Link Id="MUbfBy9p3WSPDIUYMkb6R9" Ids="MSx9q916V6EQEQcIdhCaKn,BfuQJ2ZfRksMRzwBT84Rg9" />
         <Link Id="TNFjL692preMaWQWuQxfQ4" Ids="AaNoO9y5fvwPo7cztnyM6P,AoSyn1P4kaaPSRVo2j6158,ByVpuAcScLEO0qrxw4l1bJ" />
@@ -384,14 +361,13 @@
         <Link Id="FIyZcLQhymsMXw54iwCi24" Ids="QbXGPu2lM9fMNq4uqOJiPD,CVUV7n0Sj4WMcKtBZdz6Tg,O35LHOTZUlZMPxnq3zJhFo" />
         <Link Id="JXaLTA8rReUNF5vq6E3Cnz" Ids="H2bF31U2K1dLPcC0Yj9yZq,No64WZKD18JPVcdbe9xztj,CbOUQDZzjAqNTvcta6mI26" />
         <Link Id="G0CrFHjv0UGO6Wn2KCxzi8" Ids="E2VFuXjeAL7PmUIZ3nCVZJ,VeduJJozf9CNawAv5tcGAb,GSQL4InmysaL7EA0Ac3qRA" />
-        <Link Id="BVS7LSqAwYTPT6x7b9QLbo" Ids="LrdRVt0AD5POysM9regwo3,CCIcAKiqMbFNcy4YcGK5Lj" />
-        <Link Id="NNv3sWXcabGPVu65Xp8BVH" Ids="EN29WO7qfRUNYS63UYHdMY,P4B54N3fVfgLPf0MKLVXiZ" />
-        <Link Id="FleAxDazTMrMtrytEEb7jr" Ids="G0TcI4UN04MO5TM2x0kNRU,K7AbHn4Sa8DMOlybZDoPXL" />
-        <Link Id="N6EEkLZFtnXOD3SUe2IsSj" Ids="ThFp1XjH6fINms9QfKgOha,KowTdQ2kmPQNwKLWFYVJ4C" />
-        <Link Id="LEBwhHiKeClQNQlzUTpucg" Ids="H2bF31U2K1dLPcC0Yj9yZq,HAoHKMGP158MQZx3tkxPdn" />
-        <Link Id="OISgWR23agWLNCikYKsPGi" Ids="RBvh6b1imkWOqt1InidD6V,KVyQZ7B1D1ePqCJCF4O9ow" />
-        <Link Id="A6x830fEhPMLLyykOX8UrI" Ids="CGStLPanFacMBe4nGAtxxA,TMkw69EuGe0QOFaeJSx3xG" />
-        <Link Id="H9PeSAWXKgzMbC59vhg5T2" Ids="QbXGPu2lM9fMNq4uqOJiPD,S3enBakTr3fM4wqwIQFOiI" />
+        <Link Id="GHmvJpyxjviPdm2oaeAvU5" Ids="QJmuu5dk9d7MPyPJrMRPfd,P4B54N3fVfgLPf0MKLVXiZ" />
+        <Link Id="PUCqu5zeqdAP1xXOJqFDIY" Ids="AaNoO9y5fvwPo7cztnyM6P,GhAF3AcZ9EhMkw7Arb8CUX" />
+        <Link Id="TZWw91a6jyoQSZeBjhjOV4" Ids="H2bF31U2K1dLPcC0Yj9yZq,ACse8ZxPqdhOVGcrBre5km" />
+        <Link Id="SAD7WXblKBzNHbwCwCWZFE" Ids="S6xRM8O9qCtMT8UztmUOEc,KowTdQ2kmPQNwKLWFYVJ4C" />
+        <Link Id="RHQXBhAMGtQLdfumyiwmi6" Ids="QbXGPu2lM9fMNq4uqOJiPD,VVnkelDE8inMgzIi5FmLa9" />
+        <Link Id="EHZJ4cplBUDP4VOMuaMXo5" Ids="Vbm4hOiYjLqNArf6OcjVlY,TMkw69EuGe0QOFaeJSx3xG" />
+        <Link Id="AdGfN1epJepQWsZEydC8D2" Ids="M0Hi9YDaCXHLlb8A2yY3cQ,EuSt1sWRc0pOgnKILUSW0M" />
       </Patch>
     </Node>
   </Patch>

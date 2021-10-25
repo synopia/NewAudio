@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks.Dataflow;
 using VL.Lib.Animation;
 using VL.NewAudio;
@@ -81,43 +82,54 @@ namespace NewAudio
 
                 var transformer = new TransformBlock<AudioBuffer, AudioBuffer>(inp =>
                 {
-                    if (inp.Count != inputSamples)
+                    try
                     {
-                        _logger.Error($"Expected Input size: {inputSamples}, actual: {inp.Count}");
-                        return inp;
-                    }
-                    var output = AudioCore.Instance.BufferFactory.GetBuffer(outputSamples);
-                    TState state = _state;
-                    if (state == null)
-                    {
-                        state = _createFunc?.Invoke(SampleClock);
-                    }
-
-                    if (state != null && _updateFunc != null)
-                    {
-                        _sampleAccessor.Update(output.Data, inp.Data, outputChannels, inputChannels);
-                        var increment = 1.0 / input.Format.SampleRate;
-                        for (int i = 0; i < samples; i++)
+                        if (inp.Count != inputSamples)
                         {
-                            _sampleAccessor.UpdateLoop(i, i);
-                            state = _updateFunc(state, _sampleAccessor);
-                            SampleClock.IncrementTime(increment);
+                            throw new Exception($"Expected Input size: {inputSamples}, actual: {inp.Count}");
                         }
-                    }
+                        var output = AudioCore.Instance.BufferFactory.GetBuffer(inp.Time, outputSamples);
+                        TState state = _state;
+                        if (state == null)
+                        {
+                            state = _createFunc?.Invoke(SampleClock);
+                        }
 
-                    _state = state;
-                    if (_state is IDisposable fState)
+                        if (state != null && _updateFunc != null)
+                        {
+                            _sampleAccessor.Update(output.Data, inp.Data, outputChannels, inputChannels);
+                            var increment = 1.0 / input.Format.SampleRate;
+                            for (int i = 0; i < samples; i++)
+                            {
+                                _sampleAccessor.UpdateLoop(i, i);
+                                state = _updateFunc(state, _sampleAccessor);
+                                SampleClock.IncrementTime(increment);
+                            }
+                        }
+
+                        _state = state;
+                        if (_state is IDisposable fState)
+                        {
+                            fState.Dispose();
+                        }
+
+                        _state = default(TState);
+
+                        return output;
+                    }
+                    catch (Exception e)
                     {
-                        fState.Dispose();
+                        _logger.Error(e);
+                        throw;
                     }
-
-                    _state = default(TState);
-
-                    return output;
                 }, new ExecutionDataflowBlockOptions()
                 {
+                    
                 });
-                _link = input.SourceBlock.LinkTo(transformer);
+                _link = input.SourceBlock.LinkTo(transformer, new DataflowLinkOptions()
+                {
+                    PropagateCompletion = true
+                });
                 Output.SourceBlock = transformer;
                 Output.Format = input.Format.WithChannels(outputChannels);
             }

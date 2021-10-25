@@ -29,17 +29,29 @@ namespace NewAudio
         public static AudioCore Instance => _instance ??= new AudioCore();
 
         public readonly AudioBufferFactory BufferFactory = new AudioBufferFactory();
+        public readonly DeviceManager Devices = new DeviceManager();
         
         private readonly List<AudioLink> _links = new List<AudioLink>();
         private readonly List<AudioNodeSink> _sinks = new List<AudioNodeSink>();
         private readonly List<AudioNodeInput> _inputs = new List<AudioNodeInput>();
         public readonly BufferBlock<int> Requests = new BufferBlock<int>();
-
         public void Init()
         {
             _logger.Info($"AudioEngine started links: {_links.Count}, sinks: {_sinks.Count}, sources: {_inputs.Count}");
         }
 
+        public void ChangeSettings(bool playing = false)
+        {
+            if (playing)
+            {
+                Devices.Start();
+            }
+            else
+            {
+                Devices.Stop();
+            }
+        }
+        
         public void AddAudioLink(AudioLink audioLink)
         {
             if (!_links.Contains(audioLink))
@@ -87,31 +99,6 @@ namespace NewAudio
             }
 
             bufferCacheSize = BufferFactory.Count;
-        }
-
-        private int Read(int offset, int count)
-        {
-            foreach (var sample in _links)
-            {
-            }
-
-            // foreach (var output in _sources)
-            // {
-            // output.Read(offset, count);
-            // }
-
-            float[] buffer = new float[count];
-            var total = 0;
-            foreach (var sink in _sinks)
-            {
-                // total = sink.Read(buffer, offset, count);
-            }
-
-            foreach (var sample in _links)
-            {
-            }
-
-            return total;
         }
 
     }

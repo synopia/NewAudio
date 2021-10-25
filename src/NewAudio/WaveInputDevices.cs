@@ -14,12 +14,20 @@ namespace NewAudio
         {
         }
 
-        public static WaveInputDevice CreateDefault() => CreateDefaultBase("No audio input device found");
+        public static WaveInputDevice CreateDefault() => CreateDefaultBase("Audio Generator");
     }
 
     public interface IWaveInputFactory
     {
         IWaveIn Create(WaveFormat format, int latency);
+    }
+
+    public class AudioGeneratorFactory : IWaveInputFactory
+    {
+        public IWaveIn Create(WaveFormat format, int latency)
+        {
+            return new AudioGenerator(format, latency);
+        }
     }
 
     public class WaveInFactory : IWaveInputFactory
@@ -33,7 +41,7 @@ namespace NewAudio
 
         public IWaveIn Create(WaveFormat format, int latency)
         {
-            var waveIn = new WaveInEvent {WaveFormat = format, DeviceNumber = deviceId, BufferMilliseconds = latency};
+            var waveIn = new WaveInEvent { WaveFormat = format, DeviceNumber = deviceId, BufferMilliseconds = latency };
             return waveIn;
         }
     }
@@ -50,7 +58,7 @@ namespace NewAudio
         public IWaveIn Create(WaveFormat format, int latency)
         {
             var device = new MMDeviceEnumerator().GetDevice(deviceId);
-            var wasapi = new WasapiCapture(device){WaveFormat = format};
+            var wasapi = new WasapiCapture(device) { WaveFormat = format };
             return wasapi;
         }
     }
@@ -77,8 +85,12 @@ namespace NewAudio
     {
         protected override IReadOnlyDictionary<string, object> GetEntries()
         {
-            Dictionary<string, object> devices = new Dictionary<string, object>();
-           for (int i = 0; i < WaveIn.DeviceCount; i++)
+            Dictionary<string, object> devices = new Dictionary<string, object>
+            {
+                ["Audio Generator"] = new AudioGeneratorFactory()
+            };
+
+            for (int i = 0; i < WaveIn.DeviceCount; i++)
             {
                 var caps = WaveIn.GetCapabilities(i);
                 var name = caps.ProductName;

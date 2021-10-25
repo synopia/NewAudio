@@ -6,6 +6,7 @@ using System.Reflection;
 using NAudio.Wave;
 using VL.Core;
 using VL.Lib.Collections;
+using FFTW.NET;
 
 namespace NewAudio
 {

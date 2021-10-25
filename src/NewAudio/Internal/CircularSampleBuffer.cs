@@ -5,17 +5,21 @@ namespace NewAudio.Internal
 {
     public class CircularSampleBuffer
     {
+        private readonly Logger _logger = LogFactory.Instance.Create("CB");
         private readonly float[] _buffer;
         public float[] Data => _buffer;
         private readonly object _lockObject;
         private int _writePosition;
         private int _readPosition;
         private int _sampleCount;
+
+        public Action<float[]> BufferFilled;
         
         /// <summary>Create a new circular buffer</summary>
         /// <param name="size">Max buffer size in samples</param>
-        public CircularSampleBuffer(int size)
+        public CircularSampleBuffer(string name, int size)
         {
+            _logger.Category = name;
             _buffer = new float[size];
             _lockObject = new object();
         }
@@ -36,6 +40,12 @@ namespace NewAudio.Internal
                 int length = Math.Min(_buffer.Length - _writePosition, count);
                 Array.Copy(data, offset, _buffer, _writePosition, length);
                 _writePosition += length;
+
+                if (_writePosition>=_buffer.Length && BufferFilled != null)
+                {
+                    BufferFilled(_buffer);
+                }
+
                 _writePosition %= _buffer.Length;
                 int num2 = num1 + length;
                 if (num2 < count)
@@ -57,6 +67,10 @@ namespace NewAudio.Internal
                 _buffer[_writePosition] = value;
                 _writePosition++;
                 _writePosition %= _buffer.Length;
+                if (_writePosition == 0 && BufferFilled!=null )
+                {
+                    BufferFilled(_buffer);
+                }
                 _sampleCount++;
             }
         }

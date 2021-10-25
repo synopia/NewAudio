@@ -21,7 +21,7 @@ namespace NewAudioTest
 
         public Producer(int size)
         {
-            _circularSampleBuffer = new CircularSampleBuffer(size);
+            _circularSampleBuffer = new CircularSampleBuffer("CSB", size);
 
             Task.Run(async () =>
             {
@@ -97,7 +97,7 @@ namespace NewAudioTest
             var value = 0;
             while (count > 0)
             {
-                var buf = new AudioBuffer(null, 200);
+                var buf = new AudioBuffer(null,0,  200);
                 for (int i = 0; i < 200; i++)
                 {
                     buf.Data[i] = value++;

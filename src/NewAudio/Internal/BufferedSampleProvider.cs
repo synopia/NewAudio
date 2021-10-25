@@ -15,7 +15,7 @@ namespace NewAudio.Internal
         public int BufferLength
         {
             get=>_circularBuffer?.MaxLength ?? 0;
-            set => _circularBuffer = new CircularSampleBuffer(value);
+            set => _circularBuffer = new CircularSampleBuffer(_logger.Category, value);
         }
 
         public int FreeSpace => _circularBuffer?.FreeSpace ?? 0;
@@ -35,6 +35,15 @@ namespace NewAudio.Internal
         public TimeSpan BufferedDuration =>
             TimeSpan.FromSeconds(BufferedSamples / (double)WaveFormat.AverageBytesPerSecond * 4);
 
+        public string Name
+        {
+            get => _logger.Category;
+            set => _logger.Category = value;
+        }
+
+        private int _writeTime;
+        private int _readTime;
+        public int ReadTime => _readTime;
         public void Advance(TimeSpan timeSpan)
         {
             _circularBuffer?.Advance((int)(timeSpan.TotalSeconds * WaveFormat.AverageBytesPerSecond / 4));
@@ -45,9 +54,11 @@ namespace NewAudio.Internal
             _circularBuffer?.Advance(samples);
         }
 
-        public void AddSamples(float[] buffer, int offset, int count)
+        public void AddSamples(int time, float[] buffer, int offset, int count)
         {
             var added = _circularBuffer.Write(buffer, offset, count);
+            _writeTime = time + added/WaveFormat.Channels;
+            
             if (added < count)
             {
                 Overflows++;
@@ -70,6 +81,7 @@ namespace NewAudio.Internal
                     $"Read {num}, tried: {count}, underrun: {num<count} total: {BufferedSamples} len: {BufferLength}");
             }
 
+            _readTime += num / WaveFormat.Channels;
 
             return count;
         }

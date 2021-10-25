@@ -14,18 +14,19 @@ namespace NewAudio
 
     public readonly struct AudioBuffer
     {
+        public readonly int Time;
         public readonly IAudioBufferOwner Owner;
         public readonly float[] Data;
-        public readonly int Count;
+        public int Count => Data?.Length ?? 0;
 
-        public AudioBuffer(IAudioBufferOwner owner, float[] data, int count)
+        public AudioBuffer(IAudioBufferOwner owner, int time, float[] data)
         {
-            Count = count;
+            Time = time;
             Owner = owner;
             Data = data;
         }
 
-        public AudioBuffer(IAudioBufferOwner owner, int count) : this(owner, new float[count], count)
+        public AudioBuffer(IAudioBufferOwner owner, int time, int count) : this(owner, time, new float[count])
         {
         }
     }
@@ -53,19 +54,19 @@ namespace NewAudio
             }
         }
 
-        public AudioBuffer FromSampleProvider(ISampleProvider provider, int bufferSize)
+        public AudioBuffer FromSampleProvider(int time, ISampleProvider provider, int bufferSize)
         {
-            AudioBuffer buffer = GetBuffer(bufferSize);
+            AudioBuffer buffer = GetBuffer(time, bufferSize);
             provider.Read(buffer.Data, 0, bufferSize);
             return buffer;
         }
 
-        public AudioBuffer FromByteBuffer(WaveFormat format, byte[] bytes, int bytesRecorded)
+        public AudioBuffer FromByteBuffer(int time, WaveFormat format, byte[] bytes, int bytesRecorded)
         {
             AudioBuffer buffer;
             if (format.Encoding == WaveFormatEncoding.IeeeFloat)
             {
-                buffer = GetBuffer(bytesRecorded / 4);
+                buffer = GetBuffer(time, bytesRecorded / 4);
                 for (int i = 0; i < bytesRecorded / 4; i++)
                 {
                     buffer.Data[i] = BitConverter.ToSingle(bytes, i * 4);
@@ -73,15 +74,7 @@ namespace NewAudio
             }
             else if (format.BitsPerSample == 32)
             {
-                buffer = GetBuffer(bytesRecorded / 4);
-                for (int i = 0; i < bytesRecorded / 4; i++)
-                {
-                    buffer.Data[i] = BitConverter.ToInt32(bytes, i * 4) / (float)int.MaxValue;
-                }
-            }
-            else if (format.BitsPerSample == 16)
-            {
-                buffer = GetBuffer(bytesRecorded / 2);
+                buffer = GetBuffer(time, bytesRecorded / 2);
                 for (int i = 0; i < bytesRecorded / 2; i++)
                 {
                     buffer.Data[i] = BitConverter.ToInt16(bytes, i) / 32768f;
@@ -103,7 +96,7 @@ namespace NewAudio
             }
         }
 
-        public AudioBuffer GetBuffer(int length)
+        public AudioBuffer GetBuffer(int time, int length)
         {
             lock (_buffers)
             {
@@ -115,7 +108,7 @@ namespace NewAudio
             }
 
 
-            return new AudioBuffer(this, length);
+            return new AudioBuffer(this, time, length);
         }
 
         public void Dispose()

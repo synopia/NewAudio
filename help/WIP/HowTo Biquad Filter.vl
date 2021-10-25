@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="KmAyiLLcXQdMpaub7RNY4E" LanguageVersion="2019.1.0-0344-gd5eabf23a7" Version="0.128">
-  <NugetDependency Id="Hb9C78g1kMyMFLO02PiqLd" Location="VL.CoreLib" Version="2019.1.0-318" />
+<Document xmlns:p="property" Id="KmAyiLLcXQdMpaub7RNY4E" LanguageVersion="2021.4.0.526" Version="0.128">
+  <NugetDependency Id="Hb9C78g1kMyMFLO02PiqLd" Location="VL.CoreLib" Version="2021.4.0-0526-gd606d93626" />
   <Patch Id="Nq8YmeVPxUTOnzjPHaQg0N">
     <Canvas Id="UVodregYOV1O409KaBJP5r" DefaultCategory="Main" CanvasType="FullCategory" />
     <!--
@@ -54,7 +54,6 @@
             <p:TypeAnnotation LastCategoryFullName="Main.VL.NewAudioApplication" LastSymbolSource="VL.NewAudio.vl">
               <Choice Kind="TypeFlag" Name="WaveOutputDevice" />
             </p:TypeAnnotation>
-            <p:ValueBoxSettings />
           </Pad>
           <Pad Id="GDqWMLEml5wMabWeIGXr5a" Comment="Reset" Bounds="250,194,35,35" ShowValueBox="true" isIOBox="true" Value="False">
             <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
@@ -86,9 +85,7 @@
               <p:showentryindex p:Type="Boolean">true</p:showentryindex>
             </p:ValueBoxSettings>
           </Pad>
-          <Pad Id="It1sdMwLnV1OrAt9pXQHO0" Comment="Cpu Usage" Bounds="378,871,40,15" ShowValueBox="true" isIOBox="true">
-            <p:ValueBoxSettings />
-          </Pad>
+          <Pad Id="It1sdMwLnV1OrAt9pXQHO0" Comment="Cpu Usage" Bounds="378,871,40,15" ShowValueBox="true" isIOBox="true" />
           <ControlPoint Id="NaEq5TkLKJmNuOJG5x266r" Bounds="252,818,5,0" />
           <Pad Id="KZYn8dHR5XOPuMAKDDRW3K" Comment="Gain" Bounds="630,357,35,62" ShowValueBox="true" isIOBox="true" Value="5.509999">
             <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
@@ -124,7 +121,6 @@
             <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
               <Choice Kind="TypeFlag" Name="Float32" />
             </p:TypeAnnotation>
-            <p:ValueBoxSettings />
           </Pad>
           <Pad Id="K15FjzKDcrDLx7IgGZKdpc" Comment="Q" Bounds="606,282,35,62" ShowValueBox="true" isIOBox="true" Value="6.780005">
             <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
@@ -260,7 +256,6 @@
                 <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
                   <Choice Kind="TypeFlag" Name="Float32" />
                 </p:TypeAnnotation>
-                <p:ValueBoxSettings />
               </Pad>
             </Patch>
           </Node>
@@ -269,7 +264,7 @@
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
               <Choice Kind="ProcessAppFlag" Name="Renderer" />
             </p:NodeReference>
-            <Pin Id="EPrvQuLPisgQIjQAIfffZt" Name="Bounds" Kind="InputPin" DefaultValue="1139, 238, 600, 400">
+            <Pin Id="EPrvQuLPisgQIjQAIfffZt" Name="Bounds" Kind="InputPin" DefaultValue="1252, 582, 600, 400">
               <p:TypeAnnotation LastCategoryFullName="System.Drawing" LastSymbolSource="System.Drawing.dll">
                 <Choice Kind="TypeFlag" Name="Rectangle" />
               </p:TypeAnnotation>
@@ -283,6 +278,8 @@
             <Pin Id="NMEhzmLNGSQLJFt28PXKuq" Name="Color" Kind="InputPin" />
             <Pin Id="I9AL556AyRcObWFJF6SsZT" Name="Clear" Kind="InputPin" />
             <Pin Id="FSgS0g4irE7NT9ymiBDTt7" Name="Space" Kind="InputPin" />
+            <Pin Id="BimsZGS44WyPDLr6dR4atf" Name="Show Cursor" Kind="InputPin" />
+            <Pin Id="H005rG55mSFLIWFu4iB6Di" Name="VSync" Kind="InputPin" />
             <Pin Id="TXNd1DtPEavMAWIpcROmBk" Name="Enabled" Kind="InputPin" />
             <Pin Id="PuWc0h6FD1MP8G3lJjLHja" Name="Form" Kind="OutputPin" />
             <Pin Id="LH3O0HqQgWvPrG2gvDhgUH" Name="ClientBounds" Kind="OutputPin" />
@@ -347,6 +344,8 @@
                 <Choice Kind="TypeFlag" Name="Float32" />
               </p:TypeAnnotation>
             </Pin>
+            <Pin Id="T0GPeT6RXA0Mzm4f5QRka0" Name="Alignment" Kind="InputPin" />
+            <Pin Id="OXtV7RBE3zJPgCeTzmRjgW" Name="Phase" Kind="InputPin" />
             <Pin Id="NC4Iula2JifLgWLHJEDfYa" Name="Count" Kind="InputPin" />
             <Pin Id="NTL0pGnFwLbPHzeETcsatE" Name="Output" Kind="OutputPin" />
           </Node>
@@ -373,10 +372,9 @@
             <p:TypeAnnotation LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
               <Choice Kind="TypeFlag" Name="Integer32" />
             </p:TypeAnnotation>
-            <p:ValueBoxSettings />
           </Pad>
           <Node Bounds="1178,1077,244,280" Id="HdZ0odKgEA0NgfiXnF7AhM">
-            <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
+            <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="VL.CoreLib.dll">
               <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
               <Choice Kind="ApplicationStatefulRegion" Name="ForEach" />
               <CategoryReference Kind="Category" Name="Primitive" />
@@ -488,12 +486,12 @@
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
               <Choice Kind="ProcessAppFlag" Name="PerfMeter" />
             </p:NodeReference>
-            <Pin Id="CenkpzE4557LTKZCGd9XYQ" Name="Enabled" Kind="InputPin" />
             <Pin Id="Gq45haT4LyLMnMdXFBEBs3" Name="Transformation" Kind="InputPin" />
             <Pin Id="HvuIb6rAwV9LY4OgjeQ7ie" Name="Color" Kind="InputPin" />
             <Pin Id="OHwonv8pQ8sME5cF439be8" Name="Clock" Kind="InputPin" />
             <Pin Id="FAr23Hg1iKWMOMExsLMGL4" Name="Render Time" Kind="InputPin" />
             <Pin Id="DP5sogmcjRgLcFdTHzBs3T" Name="Additional Info Layer" Kind="InputPin" />
+            <Pin Id="CenkpzE4557LTKZCGd9XYQ" Name="Enabled" Kind="InputPin" />
             <Pin Id="HjGM0oqYYETP3revh1XBgt" Name="Output" Kind="OutputPin" />
           </Node>
           <Node Bounds="1102,1640,44,19" Id="B3Tp5YtIlq6LB1nY9iNvOR">
@@ -506,7 +504,7 @@
             <Pin Id="KDHOvKGJedzM8N6hdvHqm6" Name="Output" Kind="OutputPin" />
           </Node>
           <Node Bounds="1018,1307,177,180" Id="G0OLGpGY1xWMqwUeauf1y6">
-            <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="CoreLibBasics.vl">
+            <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="VL.CoreLib.dll">
               <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
               <Choice Kind="ApplicationStatefulRegion" Name="ForEach" />
               <CategoryReference Kind="Category" Name="Primitive" />
@@ -615,6 +613,10 @@
             </p:NodeReference>
             <Pin Id="FlDfBo9dYVkMM6zkZ8bQqY" Name="Input" Kind="InputPin" />
             <Pin Id="CBbHiJfiM7TPYavszj9V7B" Name="Fft Length" Kind="InputPin" />
+            <Pin Id="VolDuqYaDLbNQ6QWNDLHDd" Name="Window Function" Kind="InputPin" />
+            <Pin Id="N1gIvlODFupP6RqfEWUpm8" Name="Fft Direction" Kind="InputPin" />
+            <Pin Id="HqiariU4ShBQR04wwihRLg" Name="Output Type" Kind="InputPin" />
+            <Pin Id="C9gUUU7LuC0MyVGDM5F8DE" Name="Output" Kind="OutputPin" />
             <Pin Id="FEgYvKfMKInOUd6wt3bEDV" Name="Result" Kind="OutputPin" />
             <Pin Id="Ot1dFz037rINgIbpUjEWwS" Name="Spread" Kind="OutputPin" />
           </Node>
@@ -773,6 +775,6 @@
       </Patch>
     </Node>
   </Patch>
-  <NugetDependency Id="BEVE3AtDi2yLhfOqaiZthl" Location="VL.Skia" Version="2019.1.0-0318-g91ff9a39a4" />
-  <NugetDependency Id="UTEaSMTkxeyNdNEX4vdvGx" Location="VL.NewAudio" Version="0.2.1" />
+  <NugetDependency Id="BEVE3AtDi2yLhfOqaiZthl" Location="VL.Skia" Version="2021.4.0-0526-gd606d93626" />
+  <NugetDependency Id="UTEaSMTkxeyNdNEX4vdvGx" Location="VL.NewAudio" Version="0.3.0-alpha" />
 </Document>

@@ -61,7 +61,7 @@ namespace NewAudio
 
         public override string ToString()
         {
-            return $"{SampleRate}Hz, {Channels}Ch {WaveFormat.BitsPerSample}Bit {SampleCount} samples";
+            return $"{SampleRate}Hz, {Channels}Ch {WaveFormat?.BitsPerSample}Bit {SampleCount} samples";
         }
     }
 }

@@ -65,7 +65,14 @@ namespace NewAudio
                 {
                     _logger.Error($"Expected Input size: {sampleCount*channels2}, actual: {input.Item2.Count}");
                 }
-                var buf = AudioCore.Instance.BufferFactory.GetBuffer(channels * sampleCount);
+
+                var time1 = input.Item1.Time;
+                var time2 = input.Item2.Time;
+                if (time1 != time2)
+                {
+                    _logger.Warn($"TIME DIFF {time1}!={time2}");
+                }
+                var buf = AudioCore.Instance.BufferFactory.GetBuffer(Math.Max(time1, time2), channels * sampleCount);
                 for (int i = 0; i < sampleCount; i++)
                 {
                     for (int c = 0; c < channels1; c++)
