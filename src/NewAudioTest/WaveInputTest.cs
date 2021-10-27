@@ -55,6 +55,7 @@ namespace NewAudioTest
             Thread.Sleep(1);
 
         }
+        /*
         [Test] 
         public void TestChangeDevice()
         {
@@ -100,6 +101,7 @@ namespace NewAudioTest
             AssertBuffer(bufFilled, actual);
            
         }
+        */
         [Test] 
         public void TestReconnect()
         {
