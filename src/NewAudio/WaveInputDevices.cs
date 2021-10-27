@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
+using Serilog;
 using VL.Lib;
 using VL.Lib.Collections;
 
@@ -72,7 +73,7 @@ namespace NewAudio
 
     public class WasapiLoopbackFactory : IWaveInputFactory
     {
-        // private readonly Logger _logger = LogFactory.Instance.Create("WasapiLoopbackFactory");
+        private readonly ILogger _logger = Log.ForContext<WasapiLoopbackFactory>();
         private string deviceId;
 
         public WasapiLoopbackFactory(string deviceId)

@@ -2,13 +2,14 @@ using System;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using Serilog;
 using Stride.Core;
 
 namespace NewAudio
 {
     public class WaveInput : AudioNodeInput
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("WaveInput");
+        private readonly ILogger _logger = Log.ForContext<WaveInput>();
 
         private InputDevice _device;
         public InputDevice Device => _device;
@@ -56,7 +57,7 @@ namespace NewAudio
                 _device = AudioCore.Instance.Devices.GetInputDevice(device);
                 Output.Format = _device.Format;
                 Output.SourceBlock = _device.OutputBuffer;
-                _logger.Info($"Changed device to {device.Value}");
+                _logger.Information("Changed device to {device}", device.Value);
                 IsPlaying = wasPlaying;
             }
             else

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave.SampleProviders;
+using Serilog;
 
 namespace NewAudio
 {
@@ -12,8 +13,6 @@ namespace NewAudio
 
         public WdlResampling(AudioFormat format, int internalBufferSize) : base(format, internalBufferSize)
         {
-            Logger.Category += ".WdlResampling";
-
             _wdl = new WdlResamplingSampleProvider(Buffer, format.SampleRate);
         }
 
@@ -36,13 +35,13 @@ namespace NewAudio
             }
             catch (Exception e)
             {
-                Logger.Error(e);
+                Logger.Error("{e}",e);
             }
         }
     }
     public class AudioResampling: AudioNodeTransformer
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("AudioResampling");
+        private readonly ILogger _logger = Log.ForContext<AudioResampling>();
         public int InternalBufferSize { get; private set; }
         public int NewSampleRate { get; private set; }
         
@@ -70,7 +69,7 @@ namespace NewAudio
                         InternalBufferSize = internalBufferSize;
                         NewSampleRate = newSampleRate;
                         var format = input.Format.WithSampleRate(newSampleRate);
-                        _logger.Info($"Creating new wdl resampler {input.Format} => {format}, buffer: {input.Format.SampleCount*internalBufferSize}");
+                        _logger.Information("Creating new wdl resampler {@InputFormat} => {@OutputFormat}, buffer: {size}", input.Format, format, input.Format.SampleCount*internalBufferSize);
                         Source = new WdlResampling(format, input.Format.SampleCount*internalBufferSize);
 
                         _link = input.SourceBlock.LinkTo(Source);
@@ -79,7 +78,7 @@ namespace NewAudio
                     }
                     catch (Exception e)
                     {
-                        _logger.Error(e);
+                        _logger.Error("{exception}", e);
                     }
                 }
             }

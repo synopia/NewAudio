@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
+using Serilog;
 
 namespace NewAudio
 {
@@ -10,7 +11,7 @@ namespace NewAudio
     /// </summary>
     public class AudioLink : IDisposable, ISampleProvider
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("AudioLink");
+        private readonly ILogger _logger = Log.ForContext<AudioLink>();
         public WaveFormat WaveFormat => Format.WaveFormat;
 
         private readonly BroadcastBlock<AudioBuffer> _broadcastBlock = new BroadcastBlock<AudioBuffer>(i=>i, new GroupingDataflowBlockOptions()

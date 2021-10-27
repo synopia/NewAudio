@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using Serilog;
 using VL.Lib.Collections;
 using SilenceProvider = NewAudio.Internal.SilenceProvider;
 
@@ -14,7 +15,7 @@ namespace NewAudio
     /// 
     public class JoinAudioLinks : AudioNodeTransformer
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("Multiplexer");
+        private readonly ILogger _logger = Log.ForContext<JoinAudioLinks>();
         private IDisposable _link1;
         private IDisposable _link2;
 
@@ -56,18 +57,18 @@ namespace NewAudio
             {
                 if (input.Item1.Count != sampleCount*channels1)
                 {
-                    _logger.Error($"Expected Input size: {sampleCount*channels1}, actual: {input.Item1.Count}");
+                    _logger.Error("Expected Input size: {inputSize}, actual: {actualSize}", sampleCount*channels1, input.Item1.Count);
                 }
                 if (input.Item2.Count != sampleCount*channels2)
                 {
-                    _logger.Error($"Expected Input size: {sampleCount*channels2}, actual: {input.Item2.Count}");
+                    _logger.Error("Expected Input size: {inputSize}, actual: {actualSize}", sampleCount*channels2, input.Item2.Count);
                 }
 
                 var time1 = input.Item1.Time;
                 var time2 = input.Item2.Time;
                 if (time1 != time2)
                 {
-                    _logger.Warn($"TIME DIFF {time1}!={time2}");
+                    _logger.Warning("TIME DIFF {time1}!={time2}", time1, time2);
                 }
                 var buf = AudioCore.Instance.BufferFactory.GetBuffer(channels * sampleCount);
                 buf.Time = Math.Max(time1, time2);

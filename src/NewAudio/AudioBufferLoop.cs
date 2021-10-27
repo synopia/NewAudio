@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks.Dataflow;
+using Serilog;
 using VL.Lib.Animation;
 using VL.NewAudio;
 
@@ -37,7 +38,7 @@ namespace NewAudio
 
     public class AudioBufferLoop<TState> : AudioNodeTransformer where TState : class
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("AudioBufferLoop");
+        private readonly ILogger _logger = Log.Logger;
         private Func<IFrameClock, TState> _createFunc;
         private Func<TState, AudioSampleAccessor, TState> _updateFunc;
         private IDisposable _link;
@@ -74,7 +75,7 @@ namespace NewAudio
 
                     var outputFormat = input.Format.WithChannels(outputChannels);
 
-                    _logger.Info($"Creating Buffer & Processor for Loop {input.Format} => {outputFormat}");
+                    _logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}", input.Format, outputFormat);
                     var samples = input.Format.SampleCount;
                     var inputBufferSize = input.Format.BufferSize;
                     var outputBufferSize = outputFormat.BufferSize;
@@ -86,8 +87,8 @@ namespace NewAudio
 
                         try
                         {
-                            _logger.Trace(
-                                $"ID={Thread.CurrentThread.GetHashCode()} Received Data {inp.Count} Time={inp.Time}");
+                            _logger.Verbose(
+                                "Received Data {count} Time={time}", inp.Count, inp.Time);
                             if (inp.Count != inputBufferSize)
                             {
                                 throw new Exception($"Expected Input size: {inputBufferSize}, actual: {inp.Count}");
@@ -116,7 +117,7 @@ namespace NewAudio
                         }
                         catch (Exception e)
                         {
-                            _logger.Error(e);
+                            _logger.Error(e.StackTrace);
                             throw;
                         }
                     }, new ExecutionDataflowBlockOptions()

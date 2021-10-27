@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
 using NewAudio.Internal;
+using Serilog;
 
 namespace NewAudio
 {
     public class BlockingSampleProvider : ISampleProvider, IDisposable
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("BlockingSampleProvider");
+        private readonly ILogger _logger = Log.ForContext<BlockingSampleProvider>();
         public AudioFormat Format;
         public WaveFormat WaveFormat => Format.WaveFormat;
         private BufferedSampleProvider _sampleProvider;
@@ -47,7 +48,7 @@ namespace NewAudio
         {
             Format = format;
             _sampleProvider = provider;
-            _logger.Info($"Created: Format: {Format}");
+            _logger.Information("Created: Format: {@Format}", Format);
         }
 
         private bool _startUp = true;
@@ -56,13 +57,13 @@ namespace NewAudio
         private int _requestBuffer = 4*512;
         public int Read(float[] buffer, int offset, int count)
         {
-            _logger.Trace($"READ {offset} {count}, buffer: {_sampleProvider.BufferedSamples}, w={_sampleProvider.WritePos}, r={_sampleProvider.ReadPos}");
+            _logger.Verbose("READ {offset} {count}, buffer: {buffered}", offset, count, _sampleProvider.BufferedSamples);
             if (_startUp)
             {
                 if (_requestBuffer > 0)
                 {
                     AudioCore.Instance.Requests.Post(_requestBuffer+count);
-                    _logger.Info($"Startup phase, requested additional {_requestBuffer} samples");
+                    _logger.Information("Startup phase, requested additional {_requestBuffer} samples", _requestBuffer);
                     _requestBuffer = 0;
                 }
                 if (_sampleProvider.BufferedSamples<_bufferSize+count )
@@ -70,7 +71,7 @@ namespace NewAudio
                     return count;
                 }
 
-                _logger.Info($"End startup, Samples in buffer: {_sampleProvider.BufferedSamples}");
+                _logger.Information("End startup, Samples in buffer: {BufferedSamples}", _sampleProvider.BufferedSamples);
                 _startUp = false;
             }
             if (!_requested)
@@ -91,7 +92,7 @@ namespace NewAudio
                 _startUp = true;
                 // _bufferSize += count;
                 // _requestBuffer = _bufferSize;
-                _logger.Warn($"Underrun, requested {count}, actual {_sampleProvider.BufferedSamples}");
+                _logger.Warning("Underrun, requested {count}, actual {BufferedSamples}", count, _sampleProvider.BufferedSamples);
                 Array.Clear(buffer, offset, count);
                 return count;
             }

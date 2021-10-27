@@ -4,13 +4,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Internal;
+using Serilog;
 using VL.Lib.Collections;
 
 namespace NewAudio
 {
     public class AudioBufferOut: AudioNodeConsumer
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("AudioBufferOut");
+        private readonly ILogger _logger = Log.ForContext<AudioBufferOut>();
         
         private IDisposable _link;
         private float[] _outBuffer;
@@ -37,7 +38,7 @@ namespace NewAudio
 
             if (_outBuffer==null || _sampleBuffer==null || _sampleBuffer.MaxLength != count)
             {
-                _sampleBuffer = new CircularSampleBuffer(_logger.Category, count)
+                _sampleBuffer = new CircularSampleBuffer(count)
                 {
                     BufferFilled = data =>
                     {
@@ -49,7 +50,7 @@ namespace NewAudio
             
             if (_action == null)
             {
-                _logger.Info($"Getting samples {count}");
+                _logger.Information("Getting samples {count}", count);
                 _action = new ActionBlock<AudioBuffer>(inp =>
                 {
                     var written = _sampleBuffer.Write(inp.Data, 0, Math.Min(inp.Count, count));
@@ -59,7 +60,7 @@ namespace NewAudio
 
             if (_link == null )
             {
-                _logger.Info($"Setting link {input}");
+                _logger.Information("Setting link {input}", input);
                 _link = input.SourceBlock.LinkTo(_action);
             }
         }

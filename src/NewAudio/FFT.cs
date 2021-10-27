@@ -5,6 +5,7 @@ using FFTW.NET;
 using NAudio.Dsp;
 using NAudio.Utils;
 using NewAudio.Internal;
+using Serilog;
 using VL.Lib.Collections;
 using Complex = System.Numerics.Complex;
 
@@ -32,7 +33,7 @@ namespace NewAudio
 
     public class FFT : AudioNodeTransformer
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("FFT");
+        private readonly ILogger _logger = Log.ForContext<FFT>();
         private int _fftLength;
         private WindowFunction _windowFunction;
         private FFTDirection _fftDirection;
@@ -78,8 +79,8 @@ namespace NewAudio
 
             if (_link == null && input != null && _fftLength > 0)
             {
-                _logger.Info(
-                    $"Config Changed: format: {input.Format}, len: {fftLength}, Window: {WindowFunction}, Direction: {fftDirection}, Output: {outputType}");
+                _logger.Information(
+                    "Config Changed: format: {InputFormat}, len: {fftLength}, Window: {WindowFunction}, Direction: {fftDirection}, Output: {outputType}", input.Format, fftLength, windowFunction, fftDirection, outputType);
                 if (input.Format.Channels == 1)
                 {
                     _inputType = FFTType.Real;
@@ -90,7 +91,7 @@ namespace NewAudio
                 }
                 else
                 {
-                    _logger.Error($"Input must have 1 or 2 channels, actual: {input.Format.Channels}!");
+                    _logger.Error("Input must have 1 or 2 channels, actual: {channels}!", input.Format.Channels);
                     Stop();
                     return;
                 }
@@ -129,7 +130,7 @@ namespace NewAudio
                     }
                     catch (Exception e)
                     {
-                        _logger.Error(e);
+                        _logger.Error("{e}",e);
                     }
                 });
                 if (fftDirection == FFTDirection.Forwards)
@@ -162,7 +163,7 @@ namespace NewAudio
                 _inputBufferReal = new double[_fftLength];
             }
 
-            _logger.Trace($"input: {_inputBufferReal.Length}, data: {input.Data.Length}, window: {_window.Length}");
+            _logger.Verbose("input: {inputLen}, data: {dataLen}, window: {windowLen}", _inputBufferReal.Length, input.Data.Length, _window.Length);
             for (int i = 0; i < _fftLength; i++)
             {
                 _inputBufferReal[i] = input.Data[i] * _window[i];
@@ -175,7 +176,7 @@ namespace NewAudio
             {
                 _inputBufferComplex = new Complex[(_fftLength-1)/2+1];
             }
-            _logger.Info($"{input.Data.Length} {_fftLength} {_window.Length} {_inputBufferComplex.Length}");
+            _logger.Verbose("{inputLen} {_fftLength} {windowLength} {inputBufferComplexLength}", input.Data.Length, _fftLength, _window.Length, _inputBufferComplex.Length);
 
             for (int i = 0; i < (_fftLength-1)/2+1; i++)
             {

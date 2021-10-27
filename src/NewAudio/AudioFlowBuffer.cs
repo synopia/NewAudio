@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
 using NewAudio.Internal;
+using Serilog;
 
 namespace NewAudio
 {
@@ -18,7 +19,7 @@ namespace NewAudio
     /// </summary>
     public abstract  class AudioFlowBuffer : IPropagatorBlock<AudioBuffer, AudioBuffer>, IReceivableSourceBlock<AudioBuffer>, IDisposable, ISampleProvider
     {
-        protected readonly Logger Logger = LogFactory.Instance.Create("AudioFlowBuffer");
+        protected readonly ILogger Logger = Log.ForContext<AudioFlowBuffer>();
         private readonly BufferedSampleProvider _buffer = new BufferedSampleProvider();
         protected readonly BufferBlock<AudioBuffer> Source;
         private readonly ITargetBlock<AudioBuffer> _target;
@@ -33,7 +34,6 @@ namespace NewAudio
 
         public AudioFlowBuffer(AudioFormat format, int internalBufferSize)
         {
-            _buffer.Name = Logger.Category;
             var source = new BufferBlock<AudioBuffer>(new DataflowBlockOptions()
             {
                 // BoundedCapacity = 1,
@@ -42,7 +42,7 @@ namespace NewAudio
             });
             var target = new ActionBlock<AudioBuffer>(input =>
             {
-                Logger.Trace($"receiving {input.Count} {input.Time}, buffered: {Source?.Count}");
+                Logger.Verbose("receiving {count} at {time}, buffered: {SourceCount}", input.Count, input.Time, Source?.Count);
                 _buffer.AddSamples( input.Data, 0, input.Count);
                 AudioCore.Instance.BufferFactory.Release(input);
 
@@ -83,37 +83,37 @@ namespace NewAudio
 
         public bool TryReceive(Predicate<AudioBuffer> filter, out AudioBuffer item)
         {
-            Logger.Trace($"TryReceive");
+            Logger.Verbose("TryReceive");
             return Source.TryReceive(filter, out item);
         }
 
         public bool TryReceiveAll(out IList<AudioBuffer> items)
         {
-            Logger.Trace($"TryReceiveAll");
+            Logger.Verbose("TryReceiveAll");
             return Source.TryReceiveAll(out items);
         }
 
         public IDisposable LinkTo(ITargetBlock<AudioBuffer> target, DataflowLinkOptions linkOptions)
         {
-            Logger.Trace($"LinkTo {target}");
+            Logger.Verbose("LinkTo {target}", target);
             return Source.LinkTo(target, linkOptions);
         }
 
         public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<AudioBuffer> target)
         {
-            Logger.Trace($"Reserve Message {messageHeader.Id}");
+            Logger.Verbose("Reserve Message {messageHeaderId}", messageHeader.Id);
             return ((IReceivableSourceBlock<AudioBuffer>)Source).ReserveMessage(messageHeader, target);
         }
 
         public AudioBuffer ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<AudioBuffer> target, out bool messageConsumed)
         {
-            Logger.Trace($"Consume Message {messageHeader.Id}");
+            Logger.Verbose("Consume Message {messageHeaderId}", messageHeader.Id);
             return ((IReceivableSourceBlock<AudioBuffer>)Source).ConsumeMessage(messageHeader, target, out messageConsumed);
         }
 
         public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<AudioBuffer> target)
         {
-            Logger.Trace($"Release Message {messageHeader.Id}");
+            Logger.Verbose("Release Message {messageHeaderId}", messageHeader.Id);
             ((IReceivableSourceBlock<AudioBuffer>)Source).ReleaseReservation(messageHeader, target);
         }
 
@@ -122,12 +122,12 @@ namespace NewAudio
         {
             if (messageValue.Count > _buffer.FreeSpace)
             {
-                Logger.Warn(" FULL!");
+                Logger.Warning(" FULL!");
                 return DataflowMessageStatus.Postponed;
             }
 
             var status = _target.OfferMessage(messageHeader, messageValue, source, consumeToAccept);
-            Logger.Trace($"Offer Message {messageHeader.Id}, {consumeToAccept} -> {status}");
+            Logger.Verbose("Offer Message {messageHeaderId}, {consumeToAccept} -> {status}", messageHeader.Id, consumeToAccept, status);
             return status;
         }
 
@@ -155,14 +155,13 @@ namespace NewAudio
         
         public AudioFlowSource(AudioFormat format, int internalBufferSize) : base(format, internalBufferSize)
         {
-            Logger.Category += ".AudioFlowSource";
         }
 
         protected override void OnDataReceived(int time, int count)
         {
             while (Buffer.BufferedSamples >= Format.BufferSize)
             {
-                Logger.Trace($"OnDataReceived {count} at {_time}");
+                Logger.Verbose("OnDataReceived {count} at {_time}", count, _time);
                 var buf = AudioCore.Instance.BufferFactory.GetBuffer(Format.BufferSize);
 
                 Buffer.Read(buf.Data, 0, Format.BufferSize);
@@ -180,15 +179,14 @@ namespace NewAudio
         private int _time;
         public AudioFlowSink(AudioFormat format, int internalBufferSize) : base(format, internalBufferSize)
         {
-            Logger.Category += ".AudioFlowSink";
         }
 
         protected override void OnDataReceived(int time, int count)
         {
-            Logger.Trace($"Received {count} at {time}, buf w={Buffer.WritePos} r={Buffer.ReadPos}    source count {Source.Count}");
+            Logger.Verbose("Received {count} at {time}, buf={Buffer}  source count {SourceCount}", count, time, Buffer.BufferedSamples, Source.Count);
             if (time != _time)
             {
-                Logger.Warn($" TIME MISMATCH received: {time} should be:{_time}");
+                Logger.Warning("TIME MISMATCH received: {time} should be:{_time}", time, _time);
                 _time = time;
             }
 

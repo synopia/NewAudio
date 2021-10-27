@@ -21,7 +21,7 @@ namespace NewAudioTest
 
         public Producer(int size)
         {
-            _circularSampleBuffer = new CircularSampleBuffer("CSB", size);
+            _circularSampleBuffer = new CircularSampleBuffer( size);
 
             Task.Run(async () =>
             {

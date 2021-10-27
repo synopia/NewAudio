@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
+using Serilog;
 
 namespace NewAudio
 {
@@ -24,7 +25,6 @@ namespace NewAudio
 
     public class AudioCore
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("AudioEngine");
         private static AudioCore _instance;
 
         public static AudioCore Instance => _instance ??= new AudioCore();
@@ -37,9 +37,16 @@ namespace NewAudio
         
         public AudioCore()
         {
+            var log = new LoggerConfiguration()
+                .Enrich.WithThreadId()
+                .WriteTo.Seq("http://localhost:5341")
+                .WriteTo.File("VL.NewAudio.log", outputTemplate:"{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties}{NewLine}{Exception}")
+                .MinimumLevel.Debug()
+                .CreateLogger();
+            Log.Logger = log;
             Requests = new BroadcastBlock<int>(i=>
             {
-                _logger.Trace($"CC Received Request for {i} samples");
+                Log.Logger.Verbose("CC Received Request for {Samples} samples", i);
                 return i;
             });
         }
@@ -53,7 +60,7 @@ namespace NewAudio
 
         public void Init()
         {
-            _logger.Info($"AudioEngine started links: {AudioGraph}");
+            Log.Logger.Information("AudioEngine started links: {AudioGraph}", AudioGraph);
         }
 
         public bool IsPlaying { get; private set; }

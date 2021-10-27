@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Internal;
+using Serilog;
 using Stride.Core;
 
 namespace NewAudio
@@ -16,7 +17,7 @@ namespace NewAudio
 
     public class DeviceManager 
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("DeviceManager");
+        private readonly ILogger _logger = Log.ForContext<DeviceManager>();
         
         private readonly Dictionary<WaveOutputDevice, OutputDevice> _outputDevices = new Dictionary<WaveOutputDevice, OutputDevice>();
         private readonly Dictionary<WaveInputDevice, InputDevice> _inputDevices = new Dictionary<WaveInputDevice, InputDevice>();
@@ -79,7 +80,7 @@ namespace NewAudio
 
         public void Start()
         {
-            _logger.Info("Starting all active devices");
+            _logger.Information("Starting all active devices");
             foreach (var inputDevice in _inputDevices.Values)
             {
                 inputDevice.Start();
@@ -93,7 +94,7 @@ namespace NewAudio
 
         public void Stop()
         {
-            _logger.Info("Stopping all active devices");
+            _logger.Information("Stopping all active devices");
             foreach (var inputDevice in _inputDevices.Values)
             {
                 inputDevice.Stop();

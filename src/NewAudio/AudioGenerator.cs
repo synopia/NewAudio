@@ -3,13 +3,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
+using Serilog;
 using SilenceProvider = NewAudio.Internal.SilenceProvider;
 
 namespace NewAudio
 {
     public class AudioGenerator : IWaveIn
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("AudioGenerator");
+        private readonly ILogger _logger = Log.ForContext<AudioGenerator>();
 
         private ActionBlock<int> _worker;
         private IDisposable _requestLink;
@@ -19,11 +20,11 @@ namespace NewAudio
         {
             WaveFormat = format;
 
-            _logger.Info($"Started generating, format: {WaveFormat}");
+            _logger.Information("Started generating, format: {@WaveFormat}", WaveFormat);
 
             _worker = new ActionBlock<int>(count =>
             {
-                _logger.Trace($"Received Request for {count} samples");
+                _logger.Verbose("Received Request for {count} samples", count);
                 var bytes = count * 4;
                 if (bytes > buf.Length)
                 {
@@ -60,7 +61,7 @@ namespace NewAudio
     
     public class AudioTestGenerator : IWaveIn
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("AudioTestGenerator");
+        private readonly ILogger _logger = Log.ForContext<AudioTestGenerator>();
 
         private ActionBlock<int> _worker;
         private IDisposable _requestLink;
@@ -70,11 +71,11 @@ namespace NewAudio
         {
             WaveFormat = format;
 
-            _logger.Info($"Started generating, format: {WaveFormat}");
+            _logger.Information("Started generating, format: {@WaveFormat}", WaveFormat);
 
             _worker = new ActionBlock<int>(count =>
             {
-                _logger.Trace($"Received Request for {count} samples");
+                _logger.Verbose("Received Request for {count} samples", count);
                 var bytes = count * 4;
                 if (bytes > buf.Length)
                 {

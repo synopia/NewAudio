@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks.Dataflow;
+using Serilog;
 
 namespace NewAudio
 {
     public class SinGen : AudioNodeTransformer
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("SinGen");
+        private readonly ILogger _logger = Log.ForContext<SinGen>();
         private int _frequency;
         private bool _useIntTime;
         private IDisposable _link;
@@ -29,7 +30,7 @@ namespace NewAudio
 
                     _t = new TransformBlock<AudioBuffer, AudioBuffer>(inp =>
                     {
-                        _logger.Trace($"Received {inp.Count} at {inp.Time}  in={_t.InputCount} out={_t.OutputCount}");
+                        _logger.Verbose("Received {size} at {time}  in={inBuffers} out={outBuffers}", inp.Count, inp.Time, _t.InputCount, _t.OutputCount);
                         var target = AudioCore.Instance.BufferFactory.GetBuffer(inp.Count);
                         target.Time = inp.Time;
                         target.DTime = inp.DTime;

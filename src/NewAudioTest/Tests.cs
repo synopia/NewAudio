@@ -27,7 +27,7 @@ namespace NewAudioTest
         [Test]
         public void TestCircularSampleBuffer()
         {
-            var x = new CircularSampleBuffer("CSB", 4000);
+            var x = new CircularSampleBuffer( 4000);
             Assert.AreEqual(0, x.Count);
 
             x.Write(LinearArray(0, 3950), 0, 3950);

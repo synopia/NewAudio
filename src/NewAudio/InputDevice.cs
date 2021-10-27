@@ -4,12 +4,13 @@ using System.Threading;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
 using NewAudio.Internal;
+using Serilog;
 
 namespace NewAudio
 {
     public class InputDevice: IDevice
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("InputDevice");
+        private readonly ILogger _logger = Log.ForContext<InputDevice>();
         private readonly AudioBufferFactory _audioBufferFactory = new AudioBufferFactory();
         private readonly IWaveIn _waveInput;
         private AudioFlowSource _flow;
@@ -66,7 +67,7 @@ namespace NewAudio
             
             _broadcastBlock = new BroadcastBlock<AudioBuffer>(i=>
             {
-                _logger.Trace($"Broadcast {i.Count} at {i.Time}");
+                _logger.Verbose("Broadcast {size} at {time}", i.Count, i.Time);
                 return i;
             });
             // _flow.LinkTo(_broadcastBlock);
@@ -75,12 +76,11 @@ namespace NewAudio
                 try
                 {
                     var b = _audioBufferFactory.FromByteBuffer(format.WaveFormat, a.Buffer, a.BytesRecorded);
-                    _logger.Trace($"bufIn {_flow.Buffer.FreeSpace}");
                     _flow.Post(b);
                 }
                 catch (Exception e)
                 {
-                    _logger.Error(e);
+                    _logger.Error("{e}", e);
                 }
             };
         }
@@ -89,7 +89,7 @@ namespace NewAudio
         {
             if (!IsPlaying)
             {
-                _logger.Info($"Starting input device {_device?.Value}");
+                _logger.Information("Starting input device {device}", _device?.Value);
                 _waveInput.StartRecording();
                 IsPlaying = true;
             }
@@ -99,7 +99,7 @@ namespace NewAudio
         {
             if (IsPlaying)
             {
-                _logger.Info($"Stopping input device {_device?.Value}");
+                _logger.Information("Stopping input device {device}", _device?.Value);
                 _waveInput.StopRecording();
                 IsPlaying = false;
             }

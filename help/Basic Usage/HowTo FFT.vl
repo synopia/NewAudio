@@ -36,7 +36,6 @@
             </p:NodeReference>
             <Pin Id="NQsxyQc4OlUMvAa9HjW1PG" Name="Play" Kind="InputPin" />
             <Pin Id="SmAfHxfgBA1M4KIMn2V1Px" Name="Reset" Kind="InputPin" />
-            <Pin Id="NppocI9xRLMLyKIznsVGzC" Name="Min LogLevel" Kind="InputPin" />
             <Pin Id="Nw5ulEx3WUEMPT9hYARb8v" Name="Buffer Cache Size" Kind="OutputPin" />
             <Pin Id="OOoxWKN0WhDM4qQrFhJS1k" Name="Logs" Kind="OutputPin" />
           </Node>
@@ -458,7 +457,7 @@
             <Pin Id="Rk4YkSKDSLGOzV6IV6pizj" Name="Average Bytes Per Second" Kind="OutputPin" />
             <Pin Id="FCcCfAqNvjcPv2ilnfO7WN" Name="Encoding" Kind="OutputPin" />
           </Node>
-          <Pad Id="HBkXeFrTfBcMVUnbt1FAL0" Comment="FFT Size" Bounds="204,518,35,15" ShowValueBox="true" isIOBox="true" Value="8">
+          <Pad Id="HBkXeFrTfBcMVUnbt1FAL0" Comment="FFT Size" Bounds="204,518,35,15" ShowValueBox="true" isIOBox="true" Value="16">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Integer32" />
               <FullNameCategoryReference ID="Primitive" />
@@ -568,9 +567,8 @@
               <p:stringtype p:Assembly="VL.Core" p:Type="VL.Core.StringType">Comment</p:stringtype>
             </p:ValueBoxSettings>
           </Pad>
+          <Pad Id="B9BaiJS3g5yPKfXEaAoppP" Bounds="808,826" />
         </Canvas>
-        <Patch Id="JdAy5MF5KDhNtNuNEZgjhT" Name="Create" />
-        <Patch Id="NG4NXUivOn9LivaheS2qoP" Name="Update" />
         <ProcessDefinition Id="OhvjURylezfQIOP9W7zkGV">
           <Fragment Id="FUTzMWCRmWLNRaJX1K6e8A" Patch="JdAy5MF5KDhNtNuNEZgjhT" Enabled="true" />
           <Fragment Id="IKQCVTXKas4NtEbTzbyK2p" Patch="NG4NXUivOn9LivaheS2qoP" Enabled="true" />
@@ -648,6 +646,9 @@
         <Link Id="LVqUlrvtvt4Pz0AgzuPUdO" Ids="KmaynU6FCCTLxOjrvVZtiX,O8llyscJFyjL3oXR8BL9nS" />
         <Link Id="C3tIFJlggmgOhZz4UtTa4n" Ids="Tc8kt88vQYsMHEMJsMidEj,CfgAcIrLQPQOZBdWcwHWyy" />
         <Link Id="RjiOk8v9tphPWjCcqq0chg" Ids="IbMJc4DLDklNhVI7SEvic8,O35LHOTZUlZMPxnq3zJhFo" />
+        <Patch Id="JdAy5MF5KDhNtNuNEZgjhT" Name="Create" />
+        <Patch Id="NG4NXUivOn9LivaheS2qoP" Name="Update" />
+        <Link Id="UcpQXdljmy6Ohi7qUOo7fG" Ids="Oof6bb9lqKyOKCDw3KbDu8,B9BaiJS3g5yPKfXEaAoppP" />
       </Patch>
     </Node>
   </Patch>

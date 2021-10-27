@@ -2,12 +2,13 @@ using System;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using Serilog;
 
 namespace NewAudio
 {
     public class WaveOutput : AudioNodeSink
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("WaveOutput");
+        private readonly ILogger _logger = Log.ForContext<WaveOutput>();
 
         private OutputDevice _device;
         public OutputDevice Device => _device;
@@ -59,7 +60,7 @@ namespace NewAudio
                 {
                     _device.AddAudioLink(Input);
                 }
-                _logger.Info($"Changed device to {device.Value}");
+                _logger.Information("Changed device to {device}", device.Value);
                 IsPlaying = true;
 
             }
@@ -94,7 +95,7 @@ namespace NewAudio
         public void ChangeSettings(AudioLink input, int latency = 150)
         {
             Connect(input);
-            _logger.Info($"Changed settings");
+            _logger.Information("Changed settings");
         }
 
         public override void Dispose()

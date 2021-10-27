@@ -1,11 +1,12 @@
 using System;
 using NewAudio;
+using Serilog;
 
 namespace VL.NewAudio
 {
     public class Decimator
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("Decimator");
+        private readonly ILogger _logger = Log.ForContext<Decimator>();
         public int Oversample { get; }
         private int quality;
         private float cutoff;
@@ -16,7 +17,7 @@ namespace VL.NewAudio
 
         public Decimator(int oversample, int quality, float cutoff = 0.9f)
         {
-            _logger.Info($"Decimator: New Decimator created size={oversample * quality}");
+            _logger.Information("Decimator: New Decimator created size={size}", oversample * quality);
             Oversample = oversample;
             this.quality = quality;
             this.cutoff = cutoff;

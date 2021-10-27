@@ -1,11 +1,12 @@
 using System;
 using NAudio.Wave;
+using Serilog;
 
 namespace NewAudio.Internal
 {
     public class CircularSampleBuffer
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("CB");
+        private readonly ILogger _logger = Log.ForContext<CircularSampleBuffer>();
         private readonly float[] _buffer;
         public float[] Data => _buffer;
         private readonly object _lockObject;
@@ -20,9 +21,8 @@ namespace NewAudio.Internal
         
         /// <summary>Create a new circular buffer</summary>
         /// <param name="size">Max buffer size in samples</param>
-        public CircularSampleBuffer(string name, int size)
+        public CircularSampleBuffer(int size)
         {
-            _logger.Category = name;
             _buffer = new float[size];
             _lockObject = new object();
         }

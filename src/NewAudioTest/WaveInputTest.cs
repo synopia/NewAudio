@@ -106,7 +106,6 @@ namespace NewAudioTest
         public void TestReconnect()
         {
             AudioCore.Instance.Restart();
-            LogFactory.Instance.MinLevel = LogLevel.Trace;            
             var input = new WaveInput();
             input.ChangeDevice(new WaveInputDevice("Audio Generator Test"));
             input.ChangeSettings();
@@ -140,7 +139,6 @@ namespace NewAudioTest
         public void TestReconnectLonger()
         {
             AudioCore.Instance.Restart();
-            LogFactory.Instance.MinLevel = LogLevel.Trace;            
             var input = new WaveInput();
             input.ChangeDevice(new WaveInputDevice("Audio Generator Test"));
             input.ChangeSettings();
@@ -181,7 +179,6 @@ namespace NewAudioTest
         public void TestDisconnect()
         {
             AudioCore.Instance.Restart();
-            LogFactory.Instance.MinLevel = LogLevel.Trace;            
             var input = new WaveInput();
             input.ChangeDevice(new WaveInputDevice("Audio Generator Test"));
             input.ChangeSettings();
@@ -230,7 +227,6 @@ namespace NewAudioTest
         public void TestMultipleSources()
         {
             AudioCore.Instance.Restart();
-            LogFactory.Instance.MinLevel = LogLevel.Info;            
             var input1 = new WaveInput();
             input1.ChangeDevice(new WaveInputDevice("Audio Generator Test"));
             input1.ChangeSettings();
