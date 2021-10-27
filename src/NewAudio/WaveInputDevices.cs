@@ -29,6 +29,13 @@ namespace NewAudio
             return new AudioGenerator(format, latency);
         }
     }
+    public class AudioTestGeneratorFactory : IWaveInputFactory
+    {
+        public IWaveIn Create(WaveFormat format, int latency)
+        {
+            return new AudioTestGenerator(format, latency);
+        }
+    }
 
     public class WaveInFactory : IWaveInputFactory
     {
@@ -65,7 +72,7 @@ namespace NewAudio
 
     public class WasapiLoopbackFactory : IWaveInputFactory
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("WasapiLoopbackFactory");
+        // private readonly Logger _logger = LogFactory.Instance.Create("WasapiLoopbackFactory");
         private string deviceId;
 
         public WasapiLoopbackFactory(string deviceId)
@@ -87,7 +94,8 @@ namespace NewAudio
         {
             Dictionary<string, object> devices = new Dictionary<string, object>
             {
-                ["Audio Generator"] = new AudioGeneratorFactory()
+                ["Audio Generator"] = new AudioGeneratorFactory(),
+                ["Audio Generator Test"] = new AudioTestGeneratorFactory(),
             };
 
             for (int i = 0; i < WaveIn.DeviceCount; i++)

@@ -10,45 +10,97 @@ namespace NewAudio
         private readonly Logger _logger = LogFactory.Instance.Create("WaveOutput");
 
         private OutputDevice _device;
+        public OutputDevice Device => _device;
+        public bool IsPlaying
+        {
+            get => _device?.IsPlaying ?? false;
+            set
+            {
+                if (value)
+                {
+                    _device?.Start();
+                }
+                else
+                {
+                    _device?.Stop();
+                }
+            }
+        }
 
         public WaveOutput()
         {
-            AudioCore.Instance.AddSink(this);
+            AudioCore.Instance.AudioGraph.AddSink(this);
         }
 
-        public void Update(out int overflows, out int underruns, out int bufferedSamples)
+        public void Update(out AudioFormat format, out int overflows, out int underruns, out float latency)
         {
-            overflows = _device.Buffer.Overflows;
-            underruns = _device.Buffer.UnderRuns;
-            bufferedSamples = _device.Buffer.BufferedSamples;
+            overflows = _device?.Overflows ?? 0;
+            underruns = _device?.UnderRuns ?? 0;
+            latency = _device?.Latency ?? 0;
+            format = Input?.Format ?? default;
         }
 
-        public void ChangeSettings(WaveOutputDevice device, AudioLink input, int blockCount = 64)
+        public void ChangeDevice(WaveOutputDevice device)
         {
+            var wasPlaying = IsPlaying;
+            if (_device != null)
+            {
+                if (Input != null)
+                {
+                    _device.RemoveAudioLink(Input);
+                }
+                AudioCore.Instance.Devices.ReleaseOutputDevice(_device);
+            }
 
-            Stop();
-            if (device == null || input == null || blockCount==0)
+            if (device != null)
+            {
+                _device = AudioCore.Instance.Devices.GetOutputDevice(device);
+                if (Input != null)
+                {
+                    _device.AddAudioLink(Input);
+                }
+                _logger.Info($"Changed device to {device.Value}");
+                IsPlaying = true;
+
+            }
+            else
+            {
+                _device = null;
+            }
+        }
+
+        public override void Connect(AudioLink input)
+        {
+            if (Input == input)
             {
                 return;
             }
 
-            Connect(input);
+            if (_device != null)
+            {
+                if (Input != null)
+                {
+                    _device.RemoveAudioLink(Input);
+                }
 
-            _device = AudioCore.Instance.Devices.GetOutputDevice(device);
-            _device.AddAudioLink(input);
-            _logger.Info($"Ready");
+                if (input != null)
+                {
+                    _device.AddAudioLink(input);
+                }
+            }
+            base.Connect(input);
         }
 
-        public void Stop()
+        public void ChangeSettings(AudioLink input, int latency = 150)
         {
-            _logger.Info("Stopping WaveOut...");
-            _device?.Stop();
+            Connect(input);
+            _logger.Info($"Changed settings");
         }
 
         public override void Dispose()
         {
-            Stop();
-            AudioCore.Instance.RemoveSink(this);
+            IsPlaying = false;
+            AudioCore.Instance.AudioGraph.RemoveSink(this);
             base.Dispose();
         }
     }

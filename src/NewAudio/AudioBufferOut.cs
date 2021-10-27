@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Internal;
 using VL.Lib.Collections;
@@ -9,7 +10,7 @@ namespace NewAudio
 {
     public class AudioBufferOut: AudioNodeConsumer
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("AudioLink");
+        private readonly Logger _logger = LogFactory.Instance.Create("AudioBufferOut");
         
         private IDisposable _link;
         private float[] _outBuffer;

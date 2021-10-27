@@ -13,6 +13,11 @@ namespace NewAudio
         public Time Time => frameTime;
         public double TimeDifference { get; private set; }
 
+        public void Init(double time)
+        {
+            frameTime = time;
+        }
+
         public void IncrementTime(double diff)
         {
             frameTime += diff;
@@ -33,16 +38,13 @@ namespace NewAudio
     public class AudioBufferLoop<TState> : AudioNodeTransformer where TState : class
     {
         private readonly Logger _logger = LogFactory.Instance.Create("AudioBufferLoop");
-        public readonly AudioSampleFrameClock SampleClock;
-        private TState _state;
         private Func<IFrameClock, TState> _createFunc;
         private Func<TState, AudioSampleAccessor, TState> _updateFunc;
-        private readonly AudioSampleAccessor _sampleAccessor = new AudioSampleAccessor();
         private IDisposable _link;
+
 
         public AudioBufferLoop()
         {
-            SampleClock = new AudioSampleFrameClock();
         }
 
         public AudioLink Update(
@@ -56,82 +58,78 @@ namespace NewAudio
         {
             _createFunc = create;
             _updateFunc = update;
-            if (reset)
-            {
-                Stop(true);
-            }
 
-            if (abort)
+            if (reset || input != Input)
             {
-                Stop(false);
-            }
+                _link?.Dispose();
+                Connect(input);
 
-            if (_link == null && input != null)
-            {
-                var inputChannels = input.WaveFormat.Channels;
-                if (outputChannels == 0)
+                if (input != null)
                 {
-                    outputChannels = inputChannels;
-                }
-                var outputFormat = input.Format.WithChannels(outputChannels);
-                
-                _logger.Info($"Creating Buffer & Processor for Loop {input.Format} => {outputFormat}");
-                var samples = input.Format.SampleCount;
-                var inputSamples = input.Format.BufferSize;
-                var outputSamples = outputFormat.BufferSize;
-
-                var transformer = new TransformBlock<AudioBuffer, AudioBuffer>(inp =>
-                {
-                    try
+                    var inputChannels = input.WaveFormat.Channels;
+                    if (outputChannels == 0)
                     {
-                        if (inp.Count != inputSamples)
-                        {
-                            throw new Exception($"Expected Input size: {inputSamples}, actual: {inp.Count}");
-                        }
-                        var output = AudioCore.Instance.BufferFactory.GetBuffer(inp.Time, outputSamples);
-                        TState state = _state;
-                        if (state == null)
-                        {
-                            state = _createFunc?.Invoke(SampleClock);
-                        }
+                        outputChannels = inputChannels;
+                    }
 
-                        if (state != null && _updateFunc != null)
+                    var outputFormat = input.Format.WithChannels(outputChannels);
+
+                    _logger.Info($"Creating Buffer & Processor for Loop {input.Format} => {outputFormat}");
+                    var samples = input.Format.SampleCount;
+                    var inputBufferSize = input.Format.BufferSize;
+                    var outputBufferSize = outputFormat.BufferSize;
+
+                    var transformer = new TransformBlock<AudioBuffer, AudioBuffer>(inp =>
+                    {
+                        var sampleClock = new AudioSampleFrameClock();
+                        var sampleAccessor = new AudioSampleAccessor();
+
+                        try
                         {
-                            _sampleAccessor.Update(output.Data, inp.Data, outputChannels, inputChannels);
-                            var increment = 1.0 / input.Format.SampleRate;
-                            for (int i = 0; i < samples; i++)
+                            _logger.Trace(
+                                $"ID={Thread.CurrentThread.GetHashCode()} Received Data {inp.Count} Time={inp.Time}");
+                            if (inp.Count != inputBufferSize)
                             {
-                                _sampleAccessor.UpdateLoop(i, i);
-                                state = _updateFunc(state, _sampleAccessor);
-                                SampleClock.IncrementTime(increment);
+                                throw new Exception($"Expected Input size: {inputBufferSize}, actual: {inp.Count}");
                             }
-                        }
 
-                        _state = state;
-                        if (_state is IDisposable fState)
+                            var output = AudioCore.Instance.BufferFactory.GetBuffer(outputBufferSize);
+                            output.Time = inp.Time;
+                            output.DTime = inp.Time;
+                            sampleClock.Init(inp.DTime);
+
+                            var state = _createFunc?.Invoke(sampleClock);
+
+                            if (state != null && _updateFunc != null)
+                            {
+                                sampleAccessor.Update(output.Data, inp.Data, outputChannels, inputChannels);
+                                var increment = 1.0d / input.Format.SampleRate;
+                                for (int i = 0; i < samples; i++)
+                                {
+                                    sampleAccessor.UpdateLoop(i, i);
+                                    state = _updateFunc(state, sampleAccessor);
+                                    sampleClock.IncrementTime(increment);
+                                }
+                            }
+
+                            return output;
+                        }
+                        catch (Exception e)
                         {
-                            fState.Dispose();
+                            _logger.Error(e);
+                            throw;
                         }
-
-                        _state = default(TState);
-
-                        return output;
-                    }
-                    catch (Exception e)
+                    }, new ExecutionDataflowBlockOptions()
                     {
-                        _logger.Error(e);
-                        throw;
-                    }
-                }, new ExecutionDataflowBlockOptions()
-                {
-                    
-                });
-                _link = input.SourceBlock.LinkTo(transformer, new DataflowLinkOptions()
-                {
-                    PropagateCompletion = true
-                });
-                Output.SourceBlock = transformer;
-                Output.Format = input.Format.WithChannels(outputChannels);
+                        // BoundedCapacity = 1,
+                        // SingleProducerConstrained = true,
+                        // MaxDegreeOfParallelism = 1,
+                        // MaxMessagesPerTask = 1
+                    });
+                    _link = input.SourceBlock.LinkTo(transformer);
+                    Output.SourceBlock = transformer;
+                    Output.Format = input.Format.WithChannels(outputChannels);
+                }
             }
 
             inProgress = _link != null;
@@ -139,15 +137,10 @@ namespace NewAudio
             return Output;
         }
 
-        private void Stop(bool shouldRun)
-        {
-            _link?.Dispose();
-            _link = null;
-        }
-
         public override void Dispose()
         {
-            Stop(false);
+            _link?.Dispose();
+            base.Dispose();
         }
     }
 }

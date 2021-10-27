@@ -9,49 +9,71 @@ namespace NewAudio
     public class WaveInput : AudioNodeInput
     {
         private readonly Logger _logger = LogFactory.Instance.Create("WaveInput");
+
         private InputDevice _device;
+        public InputDevice Device => _device;
+        public int Channels { get; private set; }
+        public int ChannelOffset { get; private set; }
+
+        public bool IsPlaying
+        {
+            get => _device?.IsPlaying ?? false;
+            set
+            {
+                if (value)
+                {
+                    _device?.Start();
+                }
+                else
+                {
+                    _device?.Stop();
+                }
+            }
+        }
 
         public WaveInput()
         {
-            AudioCore.Instance.AddInput(this);
+            AudioCore.Instance.AudioGraph.AddInput(this);
         }
 
         public void Update(out AudioFormat format, out int overflows, out int underruns, out int bufferedSamples)
         {
-            overflows = _device.Buffer.Overflows;
-            underruns = _device.Buffer.UnderRuns;
-            bufferedSamples = _device.Buffer.BufferedSamples;
-            format = Output.Format;
+            overflows = _device?.Overflows ?? 0;
+            underruns = _device?.UnderRuns ?? 0;
+            bufferedSamples = _device?.BufferedSamples ?? 0;
+            format = Output?.Format ?? default;
         }
 
-        public void ChangeSettings(WaveInputDevice device, AudioSampleRate sampleRate = AudioSampleRate.Hz44100,
-            int channelOffset = 0, int channels = 2, int bufferSize = 256, int blockCount = 64)
+        public void ChangeDevice(WaveInputDevice device)
         {
-            Stop();
-            if (device == null)
+            var wasPlaying = IsPlaying;
+            if (_device != null)
             {
-                return;
+                AudioCore.Instance.Devices.ReleaseInputDevice(_device);
             }
-
-            _device = AudioCore.Instance.Devices.GetInputDevice(device);
-            Output.Format = _device.OutputBuffer.Format;
-            Output.SourceBlock = _device.OutputBuffer;
-
-            _logger.Info(
-                $"Ready");
-
+            if (device != null)
+            {
+                _device = AudioCore.Instance.Devices.GetInputDevice(device);
+                Output.Format = _device.Format;
+                Output.SourceBlock = _device.OutputBuffer;
+                _logger.Info($"Changed device to {device.Value}");
+                IsPlaying = wasPlaying;
+            }
+            else
+            {
+                _device = null;
+                Output.Format = default;
+                Output.SourceBlock = null;
+            }
         }
-
-        public void Stop()
+        public void ChangeSettings(int channelOffset = 0, int channels = 2)
         {
-            _logger.Info("Stopping WaveIn...");
-            _device?.Stop();
         }
 
         public override void Dispose()
         {
-            Stop();
-            AudioCore.Instance.RemoveInput(this);
+            IsPlaying = false;
+            AudioCore.Instance.AudioGraph.RemoveInput(this);
             base.Dispose();
         }
     }

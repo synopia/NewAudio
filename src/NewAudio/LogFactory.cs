@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 
 namespace NewAudio
 {
     public enum LogLevel
     {
-        DEBUG,
-        INFO,
-        WARN,
-        ERROR
+        Trace,
+        Debug,
+        Info,
+        Warn,
+        Error
     }
     public readonly struct LogEntry
     {
@@ -18,14 +21,16 @@ namespace NewAudio
         public readonly LogLevel Level; 
         public readonly string Category;
         public readonly string Message;
+        public readonly int ThreadId;
 
         public override string ToString()
         {
-            return $"{Time} {Level} {Category} {Message}";
+            return $"[{Time}] [{ThreadId}] [{Level}] [{Category}]   {Message}";
         }
 
-        public LogEntry(LogLevel level, string category, string message)
+        public LogEntry(int threadId, LogLevel level, string category, string message)
         {
+            ThreadId = threadId;
             Time = DateTime.Now;
             Level = level;
             Category = category;
@@ -44,53 +49,64 @@ namespace NewAudio
             Category = category;
         }
 
+        public void Trace(string message)
+        {
+            _entries.OnNext(new LogEntry(Thread.CurrentThread.GetHashCode(), LogLevel.Trace, Category, message));
+        }
         public void Debug(string message)
         {
-            _entries.OnNext(new LogEntry(LogLevel.DEBUG, Category, message));
+            _entries.OnNext(new LogEntry(Thread.CurrentThread.GetHashCode(), LogLevel.Debug, Category, message));
         }
         public void Info(string message)
         {
-            _entries.OnNext(new LogEntry(LogLevel.INFO, Category, message));
+            _entries.OnNext(new LogEntry(Thread.CurrentThread.GetHashCode(), LogLevel.Info, Category, message));
         }
         public void Warn(string message)
         {
-            _entries.OnNext(new LogEntry(LogLevel.WARN, Category, message));
+            _entries.OnNext(new LogEntry(Thread.CurrentThread.GetHashCode(), LogLevel.Warn, Category, message));
         }
         public void Error(string message)
         {
-            _entries.OnNext(new LogEntry(LogLevel.ERROR, Category, message));
+            _entries.OnNext(new LogEntry(Thread.CurrentThread.GetHashCode(), LogLevel.Error, Category, message));
         }
         public void Error(Exception exception)
         {
-            _entries.OnNext(new LogEntry(LogLevel.ERROR, Category, exception.Message+"\n"+exception.StackTrace));
+            _entries.OnNext(new LogEntry(Thread.CurrentThread.GetHashCode(), LogLevel.Error, Category, exception.Message+"\n"+exception.StackTrace));
         }
     }
     public class LogFactory
     {
         private readonly Subject<LogEntry> _entries = new Subject<LogEntry>();
         private static LogFactory _instance;
-        private static int id = 0;
+        private int _id = 0;
 
         public static LogFactory Instance => _instance ??= new LogFactory();
         readonly StreamWriter _writer = File.CreateText("VL.NewAudio.log");
-        public LogFactory()
+        public LogLevel MinLevel = LogLevel.Debug;
+        
+        private LogFactory()
         {
             _writer.AutoFlush = true;
-            _entries.Subscribe(e =>
+            GetLogEntries().Subscribe(e =>
             {
-                _writer.WriteLine(e);
-                
+                if ((int)e.Level >= (int)MinLevel)
+                {
+                    Console.WriteLine(e);
+                    _writer.WriteLine(e);
+                }
+
             });
         }
 
+        
         public Logger Create(string category)
         {
-            return new Logger(_entries, category+$"{id++}");
+            return new Logger(_entries, category+$"{_id++}");
         }
 
-        public static IObservable<LogEntry> GetLogEntries()
+        public IObservable<LogEntry> GetLogEntries()
         {
-            return _instance._entries;
+            return _entries.Where(e =>(int)e.Level>=(int)MinLevel);
         }
     }
 }

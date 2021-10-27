@@ -10,7 +10,7 @@ namespace NewAudio
         public readonly int BufferSize => SampleCount*Channels;
 
         public readonly WaveFormat WaveFormat;
-
+        
         public AudioFormat(int channels, int sampleRate, int sampleCount) : this()
         {
             Channels = channels;
@@ -47,7 +47,7 @@ namespace NewAudio
         }
         public AudioFormat WithSampleCount(int sampleCount)
         {
-            if (sampleCount != SampleCount)
+            if (sampleCount == SampleCount)
             {
                 return this;
             }

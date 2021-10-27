@@ -13,6 +13,9 @@ namespace NewAudio.Internal
         private int _readPosition;
         private int _sampleCount;
 
+        public int WritePos => _writePosition;
+        public int ReadPos => _readPosition;
+
         public Action<float[]> BufferFilled;
         
         /// <summary>Create a new circular buffer</summary>

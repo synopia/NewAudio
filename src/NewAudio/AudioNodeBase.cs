@@ -33,7 +33,7 @@ namespace NewAudio
     {
         private AudioLink _input;
         public AudioLink Input => _input;
-        public void Connect(AudioLink input)
+        public virtual void Connect(AudioLink input)
         {
             _input = input;
         }

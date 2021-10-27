@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
 
@@ -31,18 +32,40 @@ namespace NewAudio
         public readonly AudioBufferFactory BufferFactory = new AudioBufferFactory();
         public readonly DeviceManager Devices = new DeviceManager();
         
-        private readonly List<AudioLink> _links = new List<AudioLink>();
-        private readonly List<AudioNodeSink> _sinks = new List<AudioNodeSink>();
-        private readonly List<AudioNodeInput> _inputs = new List<AudioNodeInput>();
-        public readonly BufferBlock<int> Requests = new BufferBlock<int>();
-        public void Init()
+        public readonly BroadcastBlock<int> Requests;
+        public readonly AudioGraph AudioGraph = new AudioGraph();
+        
+        public AudioCore()
         {
-            _logger.Info($"AudioEngine started links: {_links.Count}, sinks: {_sinks.Count}, sources: {_inputs.Count}");
+            Requests = new BroadcastBlock<int>(i=>
+            {
+                _logger.Trace($"CC Received Request for {i} samples");
+                return i;
+            });
         }
 
+        public void Restart()
+        {
+            Devices.Dispose();
+            AudioGraph.Dispose();
+            BufferFactory.Clear();
+        }
+
+        public void Init()
+        {
+            _logger.Info($"AudioEngine started links: {AudioGraph}");
+        }
+
+        public bool IsPlaying { get; private set; }
         public void ChangeSettings(bool playing = false)
         {
-            if (playing)
+            if (IsPlaying == playing)
+            {
+                return;
+            }
+
+            IsPlaying = playing;
+            if (IsPlaying)
             {
                 Devices.Start();
             }
@@ -52,45 +75,6 @@ namespace NewAudio
             }
         }
         
-        public void AddAudioLink(AudioLink audioLink)
-        {
-            if (!_links.Contains(audioLink))
-            {
-                _links.Add(audioLink);
-            }
-        }
-
-        public void RemoveAudioLink(AudioLink audioLink)
-        {
-            _links.Remove(audioLink);
-        }
-
-        public void AddSink(AudioNodeSink sink)
-        {
-            if (!_sinks.Contains(sink))
-            {
-                _sinks.Add(sink);
-            }
-        }
-
-        public void RemoveSink(AudioNodeSink sink)
-        {
-            _sinks.Remove(sink);
-        }
-
-        public void AddInput(AudioNodeInput source)
-        {
-            if (!_inputs.Contains(source))
-            {
-                _inputs.Add(source);
-            }
-        }
-
-        public void RemoveInput(AudioNodeInput source)
-        {
-            _inputs.Remove(source);
-        }
-
         public void Update(out int bufferCacheSize, bool reset = false)
         {
             if (reset)

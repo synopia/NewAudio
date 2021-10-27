@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
     <metadata>
         <id>VL.NewAudio</id>
-        <version>0.3.0-alpha</version>
+        <version>0.3.1-alpha</version>
         <title>VL.NewAudio</title>
         <authors>synopia</authors>
         <owners>synopia</owners>
@@ -18,9 +18,9 @@
     <files>
         <file src="..\*.vl" target="" exclude=""/>
         <file src="..\lib\net472\VL.NewAudio.dll" target="lib\net472\" exclude=""/>
-<!--        <file src="packages/FFTW.NET.1.0.1/lib/netstandard1.3/FFTW.NET.dll" target="lib/naudio173" exclude=""/>-->
-<!--        <file src="packages/FFTW.NET.1.0.1/build/netstandard1.3/libfftw3-3-x86.dll" target="lib/naudio173" exclude=""/>-->
-<!--        <file src="packages/FFTW.NET.1.0.1/build/netstandard1.3/libfftw3-3-x64.dll" target="lib/naudio173" exclude=""/>-->
+        <file src="..\lib\net472\FFTW.NET.dll" target="lib\net472" exclude=""/>
+        <file src="..\lib\net472\libfftw3-3-x64.dll" target="lib\net472" exclude=""/>
+        <file src="..\lib\net472\libfftw3-3-x86.dll" target="lib\net472" exclude=""/>
         <file src="..\help\**\*.vl" target="\help" exclude=""/>
     </files>
 </package>

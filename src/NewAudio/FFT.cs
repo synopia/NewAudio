@@ -95,24 +95,18 @@ namespace NewAudio
                     return;
                 }
 
-                int fftBufferSize = fftLength;
-                int bufferSize = fftBufferSize;
-                if (input.Format.BufferSize > bufferSize)
-                {
-                    bufferSize = 512;
-                }
-
-                var target = new AudioFlowBuffer(input.Format, bufferSize, fftLength);
+               
                 _source = new BufferBlock<AudioBuffer>();
                 var action = new ActionBlock<AudioBuffer>(i =>
                 {
                     try
                     {
                         _time = i.Time;
-                        if (fftDirection == FFTDirection.Forwards)
+                        if (_fftDirection == FFTDirection.Forwards)
                         {
                             if (_inputType == FFTType.Real)
                             {
+                                
                                 DoFFT_R2C(i);
                             }
                             else
@@ -124,6 +118,7 @@ namespace NewAudio
                         {
                             if (_outputType == FFTType.Real)
                             {
+                                
                                 DoIFFT_C2R(i);
                             }
                             else
@@ -137,10 +132,26 @@ namespace NewAudio
                         _logger.Error(e);
                     }
                 });
-                target.LinkTo(action);
-                _link = input.SourceBlock.LinkTo(target);
-                Output.SourceBlock = _source;
-                Output.Format = new AudioFormat(OutputChannels, input.Format.SampleRate, fftLength/2);
+                if (fftDirection == FFTDirection.Forwards)
+                {
+                    AudioFormat fftFormat = input.Format.WithSampleCount(fftLength);
+                    // todo
+                    var target = new AudioFlowSource(fftFormat, 4 * fftLength);
+                    target.LinkTo(action);
+                    _link = input.SourceBlock.LinkTo(target);
+                    Output.SourceBlock = _source;
+                    Output.Format = fftFormat; 
+                }
+                else
+                {
+                    AudioFormat fftFormat = input.Format.WithSampleCount(fftLength);
+                    // todo
+                    var target = new AudioFlowSource(fftFormat, 4 * fftLength);
+                    target.LinkTo(action);
+                    _link = input.SourceBlock.LinkTo(target);
+                    Output.SourceBlock = _source;
+                    Output.Format = new AudioFormat(OutputChannels, input.Format.SampleRate, 256);
+                }
             }
         }
 
@@ -151,6 +162,7 @@ namespace NewAudio
                 _inputBufferReal = new double[_fftLength];
             }
 
+            _logger.Trace($"input: {_inputBufferReal.Length}, data: {input.Data.Length}, window: {_window.Length}");
             for (int i = 0; i < _fftLength; i++)
             {
                 _inputBufferReal[i] = input.Data[i] * _window[i];
@@ -159,12 +171,13 @@ namespace NewAudio
 
         private void CopyInputComplex(AudioBuffer input)
         {
-            if (_inputBufferComplex == null || _inputBufferComplex.Length != _fftLength/2)
+            if (_inputBufferComplex == null || _inputBufferComplex.Length != (_fftLength-1)/2+1)
             {
-                _inputBufferComplex = new Complex[_fftLength/2];
+                _inputBufferComplex = new Complex[(_fftLength-1)/2+1];
             }
+            _logger.Info($"{input.Data.Length} {_fftLength} {_window.Length} {_inputBufferComplex.Length}");
 
-            for (int i = 0; i < _fftLength/2; i++)
+            for (int i = 0; i < (_fftLength-1)/2+1; i++)
             {
                 if (_inputType==FFTType.Real)
                 {
@@ -182,7 +195,7 @@ namespace NewAudio
             AudioBuffer outputBuffer;
             if (_outputType == FFTType.Real)
             {
-                outputBuffer = AudioCore.Instance.BufferFactory.GetBuffer(_time, _fftLength/2);
+                outputBuffer = AudioCore.Instance.BufferFactory.GetBuffer( _fftLength/2);
                 for (int i = 1; i < _fftLength/2; i++)
                 {
                     var real = (float)output[i].Real;
@@ -194,7 +207,7 @@ namespace NewAudio
             }
             else
             {
-                outputBuffer = AudioCore.Instance.BufferFactory.GetBuffer(_time, _fftLength);
+                outputBuffer = AudioCore.Instance.BufferFactory.GetBuffer(_fftLength);
                 for (int i = 0; i < _fftLength/2; i++)
                 {
                     outputBuffer.Data[i * 2] = (float)output[i].Real;
@@ -209,7 +222,7 @@ namespace NewAudio
             AudioBuffer outputBuffer;
             if (_outputType == FFTType.Real)
             {
-                outputBuffer = AudioCore.Instance.BufferFactory.GetBuffer(_time, _fftLength/2);
+                outputBuffer = AudioCore.Instance.BufferFactory.GetBuffer( _fftLength/2);
                 for (int i = 1; i < _fftLength/2; i++)
                 {
                     var real = (float)output[i].Real;
@@ -221,7 +234,7 @@ namespace NewAudio
             }
             else
             {
-                outputBuffer = AudioCore.Instance.BufferFactory.GetBuffer(_time, _fftLength);
+                outputBuffer = AudioCore.Instance.BufferFactory.GetBuffer( _fftLength);
                 for (int i = 0; i < _fftLength/2; i++)
                 {
                     outputBuffer.Data[i * 2] = (float)output[i].Real;
@@ -234,14 +247,17 @@ namespace NewAudio
         private void CopyOutput3(double[] output)
         {
             AudioBuffer outputBuffer;
-                outputBuffer = AudioCore.Instance.BufferFactory.GetBuffer(_time, _fftLength/2);
-                for (int i = 1; i < _fftLength/2; i++)
+            for (int b = 0; b < _fftLength / 256; b++)
+            {
+                outputBuffer = AudioCore.Instance.BufferFactory.GetBuffer(256);
+                for (int i = 0; i < 256; i++)
                 {
-                    outputBuffer.Data[i] = (float)output[i];
+                    outputBuffer.Data[i % 256] = (float)output[b*256+i] / _fftLength;
                 }
 
                 outputBuffer.Data[0] = 0;
-            _source.Post(outputBuffer);
+                _source.Post(outputBuffer);
+            }
         }
 
         private void DoFFT_R2C(AudioBuffer input)
@@ -264,11 +280,22 @@ namespace NewAudio
 
         private void DoIFFT_C2R(AudioBuffer input)
         {
-            double[] o = new double[_fftLength];
-            CopyInputComplex(input);
-            using var pinIn = new PinnedArray<Complex>(_inputBufferComplex);
+            double[] o = new double[input.Data.Length];
+            // CopyInputComplex(input);
+            using var pinIn = new PinnedArray<Complex>((input.Data.Length-1)/2+2);
             using var output = new PinnedArray<double>(o);
+            // CopyInputComplex(input);
+            /*
+            using var output = new PinnedArray<double>(o);
+            using var pinIn = new FftwArrayComplex(DFT.GetComplexBufferSize(output.GetSize()));
+            */
+            for (int i = 0; i < pinIn.Length-1; i++)
+            {
+                pinIn[i+1] = new Complex(input.Data[i*2], input.Data[i*2+1]);
+            }
+
             DFT.IFFT(pinIn, output);
+            
             CopyOutput3(o);
         }
 

@@ -56,7 +56,7 @@ namespace NewAudio
 
     public class WasapiOutFactory : IWaveOutputFactory
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("WasapiOutFactory");
+        // private readonly Logger _logger = LogFactory.Instance.Create("WasapiOutFactory");
         private string deviceId;
 
         public WasapiOutFactory(string deviceId)
@@ -74,7 +74,6 @@ namespace NewAudio
 
     public class AsioOutFactory : IWaveOutputFactory
     {
-        private readonly Logger _logger = LogFactory.Instance.Create("AsioOutFactory");
         private string driverName;
 
         public AsioOutFactory(string driverName)
@@ -85,16 +84,16 @@ namespace NewAudio
         public IWavePlayer Create(int latency)
         {
             var asioOut = new AsioOut(driverName);
-            _logger.Info($"DriverInputChannelCount {asioOut.DriverInputChannelCount}");
-            _logger.Info($"DriverOutputChannelCount {asioOut.DriverOutputChannelCount}");
-            _logger.Info($"PlaybackLatency {asioOut.PlaybackLatency}");
-            _logger.Info($"NumberOfInputChannels {asioOut.NumberOfInputChannels}");
-            _logger.Info($"NumberOfOutputChannels {asioOut.NumberOfOutputChannels}");
-            _logger.Info($"ChannelOffset {asioOut.ChannelOffset}");
-            _logger.Info($"InputChannelOffset {asioOut.InputChannelOffset}");
+            // _logger.Info($"DriverInputChannelCount {asioOut.DriverInputChannelCount}");
+            // _logger.Info($"DriverOutputChannelCount {asioOut.DriverOutputChannelCount}");
+            // _logger.Info($"PlaybackLatency {asioOut.PlaybackLatency}");
+            // _logger.Info($"NumberOfInputChannels {asioOut.NumberOfInputChannels}");
+            // _logger.Info($"NumberOfOutputChannels {asioOut.NumberOfOutputChannels}");
+            // _logger.Info($"ChannelOffset {asioOut.ChannelOffset}");
+            // _logger.Info($"InputChannelOffset {asioOut.InputChannelOffset}");
             // _logger.Info($"FramesPerBuffer {asioOut.FramesPerBuffer}");
-            _logger.Info($"{asioOut.IsSampleRateSupported(48000)}");
-            _logger.Info($"{asioOut.IsSampleRateSupported(44100)}");
+            // _logger.Info($"{asioOut.IsSampleRateSupported(48000)}");
+            // _logger.Info($"{asioOut.IsSampleRateSupported(44100)}");
 //            AudioEngine.Log($"{asioOut.}");
 //            AudioEngine.Log($"{asioOut.}");
 
@@ -102,11 +101,47 @@ namespace NewAudio
         }
     }
 
+    public class NullAudioPlayer : IWavePlayer
+    {
+        public void Dispose()
+        {
+        }
+
+        public void Play()
+        {
+        }
+
+        public void Stop()
+        {
+        }
+
+        public void Pause()
+        {
+        }
+
+        public void Init(IWaveProvider waveProvider)
+        {
+        }
+
+        public float Volume { get; set; }
+        public PlaybackState PlaybackState { get; }
+        public event EventHandler<StoppedEventArgs> PlaybackStopped;
+    }
+    public class NullAudioFactory: IWaveOutputFactory
+    {
+        public IWavePlayer Create(int latency)
+        {
+            return new NullAudioPlayer();
+        }
+    }
     public class WaveOutputDeviceDefinition : DynamicEnumDefinitionBase<WaveOutputDeviceDefinition>
     {
         protected override IReadOnlyDictionary<string, object> GetEntries()
         {
-            Dictionary<string, object> devices = new Dictionary<string, object>();
+            Dictionary<string, object> devices = new Dictionary<string, object>()
+            {
+                ["NullAudio"] = new NullAudioFactory()
+            };
 
             for (int i = 0; i < WaveOut.DeviceCount; i++)
             {

@@ -28,6 +28,7 @@
             </p:NodeReference>
             <Pin Id="UyfSiFy5ZK4Mc6WKXITkey" Name="Play" Kind="InputPin" />
             <Pin Id="RXUtF66ZODCMXuRVh2YgHA" Name="Reset" Kind="InputPin" />
+            <Pin Id="Tr0hM9LpEpJOUleUujDkdi" Name="Min LogLevel" Kind="InputPin" />
             <Pin Id="TFSKp2WHzgYOQojqepKsQe" Name="Buffer Cache Size" Kind="OutputPin" />
             <Pin Id="J0hAgZAgMVgP7dKV4QuaRn" Name="Logs" Kind="OutputPin" />
           </Node>
@@ -50,13 +51,11 @@
               <Choice Kind="ProcessAppFlag" Name="WaveIn" />
             </p:NodeReference>
             <Pin Id="EpMsFRCjtSMNJjQ7LZlm7M" Name="Reset" Kind="InputPin" />
-            <Pin Id="KR7nYimT6iWQIOi2VP79Rf" Name="Device" Kind="InputPin" />
-            <Pin Id="Bh5qoy6aYWFLsHZpnfvG76" Name="Sample Rate" Kind="InputPin" />
             <Pin Id="Crlr5yRY6CVQBCYOai3lGh" Name="Channel Offset" Kind="InputPin" />
             <Pin Id="EAnqRZ4k6DmL2ozUW9TGHy" Name="Channels" Kind="InputPin" />
-            <Pin Id="F2G33fM0JnyLCG1qtYRlQP" Name="Buffer Size" Kind="InputPin" />
-            <Pin Id="QL5o3YksDCfLoIwxgrcre4" Name="Block Count" Kind="InputPin" />
+            <Pin Id="KR7nYimT6iWQIOi2VP79Rf" Name="Device" Kind="InputPin" />
             <Pin Id="SzLYDCg7kERNpkaB6AKwav" Name="Output" Kind="OutputPin" />
+            <Pin Id="LvCiAkN6aFtMJB2MrUDcCp" Name="Format" Kind="OutputPin" />
             <Pin Id="UxvHe0IubePO4GhWDOwfXw" Name="Overflows" Kind="OutputPin" />
             <Pin Id="GecKRi3OTcvMntB4ohrfFX" Name="Underruns" Kind="OutputPin" />
             <Pin Id="LgqGUZnrWczQOn29UxODXE" Name="Buffered Samples" Kind="OutputPin" />
@@ -70,31 +69,18 @@
               <p:buttonmode p:Assembly="VL.UI.Forms" p:Type="VL.HDE.PatchEditor.Editors.ButtonModeEnum">Bang</p:buttonmode>
             </p:ValueBoxSettings>
           </Pad>
-          <Pad Id="TTFUxHzZzfvMqlhAFpNsHV" Comment="Device" Bounds="233,246,374,15" ShowValueBox="true" isIOBox="true" Value="Audio Generator">
+          <Pad Id="TTFUxHzZzfvMqlhAFpNsHV" Comment="Device" Bounds="130,382,374,15" ShowValueBox="true" isIOBox="true" Value="Audio Generator">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="WaveInputDevice" />
             </p:TypeAnnotation>
           </Pad>
-          <Pad Id="P9yZdumVESrN3ZabmZjzjg" Comment="Sample Rate" Bounds="271,269,76,15" ShowValueBox="true" Value="Hz44100" />
-          <Pad Id="RVvPhNdvuAeL1jxAO479zW" Comment="Channel Offset" Bounds="313,296,35,15" ShowValueBox="true" isIOBox="true" Value="0">
+          <Pad Id="RVvPhNdvuAeL1jxAO479zW" Comment="Channel Offset" Bounds="270,353,35,15" ShowValueBox="true" isIOBox="true" Value="0">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Integer32" />
               <FullNameCategoryReference ID="Primitive" />
             </p:TypeAnnotation>
           </Pad>
           <Pad Id="ScsQ3dPOkQxOzFSshu1z5j" Comment="Channels" Bounds="352,326,35,15" ShowValueBox="true" isIOBox="true" Value="2">
-            <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="Integer32" />
-              <FullNameCategoryReference ID="Primitive" />
-            </p:TypeAnnotation>
-          </Pad>
-          <Pad Id="AxLn4dH8UfHLdfmIRSk3dm" Comment="Buffer Size" Bounds="393,354,35,15" ShowValueBox="true" isIOBox="true" Value="256">
-            <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="Integer32" />
-              <FullNameCategoryReference ID="Primitive" />
-            </p:TypeAnnotation>
-          </Pad>
-          <Pad Id="JqYqf54eSkULyMxpV3j1KE" Comment="Block Count" Bounds="431,384,35,15" ShowValueBox="true" isIOBox="true" Value="64">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Integer32" />
               <FullNameCategoryReference ID="Primitive" />
@@ -186,35 +172,24 @@
             <Pin Id="VH0WDAg3iTbLOKb8S69YUh" Name="Reset" Kind="InputPin" />
             <Pin Id="L7cqX4xRJ9RLRJhv6A5oSo" Name="Device" Kind="InputPin" />
             <Pin Id="MTf43zcbc8LMNQDcWW4H8s" Name="Input" Kind="InputPin" />
-            <Pin Id="GLTwKsngLsELbrhWGJMEXo" Name="Block Count" Kind="InputPin" />
+            <Pin Id="H7sQJhWz0zxLntJuSkhabs" Name="Latency" Kind="InputPin" />
+            <Pin Id="QYjHv3esBN7NaIfh9xSqJy" Name="Format" Kind="OutputPin" />
             <Pin Id="T2Tglax0WKYMlhUlVgMWw7" Name="Overflows" Kind="OutputPin" />
             <Pin Id="BOXysKIp6elNpRwL7c2Zsb" Name="Underruns" Kind="OutputPin" />
-            <Pin Id="Juuc28TD5mfLCShUMDPbjr" Name="Buffered Samples" Kind="OutputPin" />
+            <Pin Id="EbiVbh71xu1Pm0XcCWD4QJ" Name="Latency" Kind="OutputPin" />
           </Node>
           <Pad Id="SEWQr5w4kgZMmD5gAl77jr" Comment="Device" Bounds="791,570,327,15" ShowValueBox="true" isIOBox="true" Value="ASIO: ASIO4ALL v2">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="WaveOutputDevice" />
             </p:TypeAnnotation>
           </Pad>
-          <Pad Id="GQ4xnPz3Md5P38lmoqS3f1" Comment="Block Count" Bounds="884,622,35,15" ShowValueBox="true" isIOBox="true" Value="0">
+          <Pad Id="RL7AQKYA4yQLTYeJmOjnsc" Comment="Overflows" Bounds="780,792,35,15" ShowValueBox="true" isIOBox="true" Value="0">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Integer32" />
               <FullNameCategoryReference ID="Primitive" />
             </p:TypeAnnotation>
           </Pad>
-          <Pad Id="RL7AQKYA4yQLTYeJmOjnsc" Comment="Overflows" Bounds="743,793,35,15" ShowValueBox="true" isIOBox="true" Value="0">
-            <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="Integer32" />
-              <FullNameCategoryReference ID="Primitive" />
-            </p:TypeAnnotation>
-          </Pad>
-          <Pad Id="GeUcnMU5glUNbuzIog2Ffs" Comment="Underruns" Bounds="814,753,35,15" ShowValueBox="true" isIOBox="true" Value="0">
-            <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="Integer32" />
-              <FullNameCategoryReference ID="Primitive" />
-            </p:TypeAnnotation>
-          </Pad>
-          <Pad Id="DtUHpdggVgTM8JDLI4Y5KB" Comment="Buffered Samples" Bounds="883,707,35,15" ShowValueBox="true" isIOBox="true" Value="0">
+          <Pad Id="GeUcnMU5glUNbuzIog2Ffs" Comment="Underruns" Bounds="833,748,35,15" ShowValueBox="true" isIOBox="true" Value="0">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Integer32" />
               <FullNameCategoryReference ID="Primitive" />
@@ -270,16 +245,6 @@
             <Pin Id="AH51rnkldN7PW75bVDKhE4" Name="Fft Direction" Kind="InputPin" />
             <Pin Id="FcIvaFmspBLLBqh6d5ZnU2" Name="Output Type" Kind="InputPin" />
             <Pin Id="PzhyNSrKdzfOQe4VklH9VW" Name="Output" Kind="OutputPin" />
-          </Node>
-          <Node Bounds="178,856,68,19" Id="ND3YS3YFQtmPwZFKhG0Vc0">
-            <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
-              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-              <CategoryReference Kind="Category" Name="NewAudio" />
-              <Choice Kind="ProcessAppFlag" Name="Multiplexer" />
-            </p:NodeReference>
-            <Pin Id="UTodeH2GJLqMnt1LDLXIQm" Name="One" Kind="InputPin" />
-            <Pin Id="OcgraDiCoczL5I7zJpLvvZ" Name="Two" Kind="InputPin" />
-            <Pin Id="LCkh6VIrJO8PFJTZhINzmj" Name="Output" Kind="OutputPin" />
           </Node>
           <Node Bounds="387,859,194,138" Id="AFCqZiaQkTBL0CIkF7eYCg">
             <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
@@ -338,21 +303,16 @@
         <Slot Id="Tz26fzGtQXjNunRHyIWgpp" Name="Error Log" />
         <Link Id="BHUY3eQGVApOAszdFbkrsR" Ids="E3dYpexnExAO78E6OzDoqJ,EpMsFRCjtSMNJjQ7LZlm7M" />
         <Link Id="MqdB6eT1YVLPJDWqkgC9q4" Ids="TTFUxHzZzfvMqlhAFpNsHV,KR7nYimT6iWQIOi2VP79Rf" />
-        <Link Id="TpEGwQEiH1rOxK6kpaZ8Zv" Ids="P9yZdumVESrN3ZabmZjzjg,Bh5qoy6aYWFLsHZpnfvG76" />
         <Link Id="AI8WdcbWm5hLpR2Cj9DTuv" Ids="RVvPhNdvuAeL1jxAO479zW,Crlr5yRY6CVQBCYOai3lGh" />
         <Link Id="SRVrhiNtaD7PmTAzqeNmIW" Ids="ScsQ3dPOkQxOzFSshu1z5j,EAnqRZ4k6DmL2ozUW9TGHy" />
-        <Link Id="ViIbp7LnRNNOQTj7o5Kvz8" Ids="AxLn4dH8UfHLdfmIRSk3dm,F2G33fM0JnyLCG1qtYRlQP" />
-        <Link Id="GKGLeUo4LcQNnnpiiaqrbq" Ids="JqYqf54eSkULyMxpV3j1KE,QL5o3YksDCfLoIwxgrcre4" />
         <Link Id="F0oxfnLpGrFMNA39nCdeRz" Ids="SzLYDCg7kERNpkaB6AKwav,QsaOWXbRBzhNDnryfmUg6G" />
         <Link Id="D430SM0HlXTLLNmGRDqA9J" Ids="UxvHe0IubePO4GhWDOwfXw,AfwyE9QfXzjONBwP8yHJrs" />
         <Link Id="PZnn6qLV6v0Lf9N33vNK9U" Ids="GecKRi3OTcvMntB4ohrfFX,DQEw652hykVOEoPdRRrDKI" />
         <Link Id="IZ3RKIoCemxNseMRyRvd74" Ids="LgqGUZnrWczQOn29UxODXE,KTzacBNcigzNNC0Ukro2cl" />
         <Link Id="SB5eaIOwCJ1P4DEYpDvyGJ" Ids="QrwDWuj9k6jPmp5Bkkfajb,SvBtK3lDGL0PYLQ5dw2RaH" />
         <Link Id="SUG3JmYFbayNLhPkLk7A5O" Ids="SEWQr5w4kgZMmD5gAl77jr,L7cqX4xRJ9RLRJhv6A5oSo" />
-        <Link Id="DuqXDUOYBBoMdPO1h1MHvD" Ids="GQ4xnPz3Md5P38lmoqS3f1,GLTwKsngLsELbrhWGJMEXo" />
         <Link Id="GrPAgdTi8gbMGJfIiXY7sl" Ids="T2Tglax0WKYMlhUlVgMWw7,RL7AQKYA4yQLTYeJmOjnsc" />
         <Link Id="NeX4SAD7RlvPgXor403N7S" Ids="BOXysKIp6elNpRwL7c2Zsb,GeUcnMU5glUNbuzIog2Ffs" />
-        <Link Id="ULNu4WcWfa2PeocCls0SLJ" Ids="Juuc28TD5mfLCShUMDPbjr,DtUHpdggVgTM8JDLI4Y5KB" />
         <Link Id="QxS9oDvrqksPQl1pNLMY6m" Ids="IKSskVcLLJeN7KFKv1fPHB,VH0WDAg3iTbLOKb8S69YUh" />
         <Link Id="UJ6YYxaRlLYNmniEiNNvyY" Ids="SLJJPu9zh6ELwAkTA23FwA,KlXykTNqBQ8PGYjZR9Nwn2" IsHidden="true" />
         <Link Id="StcMitAN6L2Pol0WmA2bet" Ids="OR2VeVSoG5lLS8SnfWJ37S,L7xUQBb12fBNO3G97PtfcR" IsHidden="true" />

@@ -97,7 +97,7 @@ namespace NewAudioTest
             var value = 0;
             while (count > 0)
             {
-                var buf = new AudioBuffer(null,0,  200);
+                var buf = new AudioBuffer( 200);
                 for (int i = 0; i < 200; i++)
                 {
                     buf.Data[i] = value++;
@@ -135,8 +135,8 @@ namespace NewAudioTest
         {
             var producer = new BufferBlock<AudioBuffer>();
             var format = new AudioFormat(1, 44100, 512);
-            var splitter = new AudioFlowBuffer(format, 2000, 64);
-            var combiner = new AudioFlowBuffer(format, 2000, 170);
+            var splitter = new AudioFlowSource(format.WithBufferSize(64), 2000);
+            var combiner = new AudioFlowSource(format.WithBufferSize(170), 2000);
 
             producer.LinkTo(splitter);
             splitter.LinkTo(combiner);

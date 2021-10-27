@@ -2,11 +2,14 @@
 {
     public class SampleTimer
     {
-        private int time = 0;
+        private int _time = 0;
+        public int Time => _time;
 
         public int Advance(int samples)
         {
-            return time++;
+            var t = _time;
+            _time += samples;
+            return t;
         }
     }
 }

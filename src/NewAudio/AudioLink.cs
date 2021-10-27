@@ -26,14 +26,14 @@ namespace NewAudio
             {
                 _outputLink?.Dispose();
                 _sourceBlock = value;
-                _outputLink = _sourceBlock.LinkTo(_broadcastBlock);
+                _outputLink = _sourceBlock?.LinkTo(_broadcastBlock);
             }
         }
         public AudioFormat Format;
         
         public AudioLink()
         {
-            AudioCore.Instance.AddAudioLink(this);
+            AudioCore.Instance.AudioGraph.AddAudioLink(this);
         }
 
         public int Read(float[] buffer, int offset, int count)
@@ -45,7 +45,7 @@ namespace NewAudio
 
         public void Dispose()
         {
-            AudioCore.Instance.RemoveAudioLink(this);
+            AudioCore.Instance.AudioGraph.RemoveAudioLink(this);
         }
     }
 }
