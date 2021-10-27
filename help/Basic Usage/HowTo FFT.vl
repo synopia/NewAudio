@@ -300,8 +300,7 @@
             <Pin Id="JbpTxqgp6t6OUZ3eZt2m3e" Name="Input" Kind="InputPin" />
             <Pin Id="TLz2OMiTpQ9PpjiFkQKc8r" Name="Result" Kind="OutputPin" />
           </Node>
-          <Pad Id="DqLwHzUrFo6OKs19n6NsDS" Comment="Window Function" SlotId="Q1vaWTyB4E2MVTsmHRouG4" Bounds="388,564,99,15" ShowValueBox="true" Value="None" />
-          <Pad Id="Q8C0h5TXBbdLtxVyUhSHSN" Comment="Fft Direction" SlotId="QCBmC7BsUE0Nnd6s4s1ZOd" Bounds="415,595,76,15" ShowValueBox="true" Value="Forwards" />
+          <Pad Id="DqLwHzUrFo6OKs19n6NsDS" Comment="Window Function" SlotId="Q1vaWTyB4E2MVTsmHRouG4" Bounds="446,676,107,20" ShowValueBox="true" Value="None" />
           <Node Bounds="325,814,87,19" Id="FmOKLMWTubEO7HJ2piJNsq">
             <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
@@ -312,7 +311,7 @@
             <Pin Id="LKalhND8pZhLVkx5GzSoYP" Name="Count" Kind="InputPin" />
             <Pin Id="Oof6bb9lqKyOKCDw3KbDu8" Name="Result" Kind="OutputPin" />
           </Node>
-          <Node Bounds="324,700,119,19" Id="JnjU0InuVD0MPPfhA6gKVL">
+          <Node Bounds="324,700,126,19" Id="JnjU0InuVD0MPPfhA6gKVL">
             <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
               <CategoryReference Kind="Category" Name="NewAudio" />
@@ -321,11 +320,8 @@
             <Pin Id="EiNayVQPRz9QZ7ZOGqJAto" Name="Input" Kind="InputPin" />
             <Pin Id="IlxG39tqeuSLW7ovBu08xw" Name="Fft Length" Kind="InputPin" />
             <Pin Id="JL02m8aZhgxLvQIXjze1CJ" Name="Window Function" Kind="InputPin" />
-            <Pin Id="T4Ycsm6fqLIPLp3y1zeMn8" Name="Fft Direction" Kind="InputPin" />
-            <Pin Id="TYGGEHKuyRSMOtuDbNk9ur" Name="Output Type" Kind="InputPin" />
             <Pin Id="Swk920CKizcONfS09WwsAX" Name="Output" Kind="OutputPin" />
           </Node>
-          <Pad Id="CMsx3luc2YFMc26aX5RYbT" Comment="Output Type" Bounds="441,635,69,15" ShowValueBox="true" Value="Complex" />
           <Node Bounds="366,727,145,19" Id="OQ8Kc9NQOipPNvdh5DE4g9">
             <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
@@ -342,7 +338,7 @@
             <Pin Id="QkuNn9q1oZCPwn6qzBse14" Name="Average Bytes Per Second" Kind="OutputPin" />
             <Pin Id="ReVHsYJ2R4VNYmdHg6ePwv" Name="Encoding" Kind="OutputPin" />
           </Node>
-          <Pad Id="NjNlC8nOeaBLHpcQwiGzlU" Comment="Play" Bounds="996,260,84,73" ShowValueBox="true" isIOBox="true" Value="True">
+          <Pad Id="NjNlC8nOeaBLHpcQwiGzlU" Comment="Play" Bounds="996,260,84,73" ShowValueBox="true" isIOBox="true" Value="False">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Boolean" />
               <FullNameCategoryReference ID="Primitive" />
@@ -350,28 +346,6 @@
             <p:ValueBoxSettings>
               <p:buttonmode p:Assembly="VL.UI.Forms" p:Type="VL.HDE.PatchEditor.Editors.ButtonModeEnum">Toggle</p:buttonmode>
             </p:ValueBoxSettings>
-          </Pad>
-          <Node Bounds="321,892,121,19" Id="QKkGSFyzkiaQB2LYyq4GJu">
-            <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
-              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-              <Choice Kind="ProcessAppFlag" Name="FFT" />
-            </p:NodeReference>
-            <Pin Id="R3BF7h0wsLHOD9jwR2yfpO" Name="Input" Kind="InputPin" />
-            <Pin Id="IQXMLVwLj1WQXnSvorOndT" Name="Fft Length" Kind="InputPin" />
-            <Pin Id="Rncmo1axmh3QStMLvAZQhT" Name="Window Function" Kind="InputPin" />
-            <Pin Id="K48djyou7NkMGMjodE4cDs" Name="Fft Direction" Kind="InputPin" />
-            <Pin Id="GpbjYXe6zPuOUaJdGK5G13" Name="Output Type" Kind="InputPin" DefaultValue="Complex" />
-            <Pin Id="Tc8kt88vQYsMHEMJsMidEj" Name="Output" Kind="OutputPin" />
-          </Node>
-          <Pad Id="AAPVRpgO5ZpLQy6eqMVc0Y" Comment="Output Type" Bounds="440,869,69,15" ShowValueBox="true" Value="Real">
-            <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="FFTType" />
-            </p:TypeAnnotation>
-          </Pad>
-          <Pad Id="DkzQbrJdHRIP04mnyIsPiw" Bounds="411,842,85,20" ShowValueBox="true" isIOBox="true" Value="Backwards">
-            <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="FFTDirection" />
-            </p:TypeAnnotation>
           </Pad>
           <Node Bounds="550,306,139,182" Id="P0Ur7ksKV4uLHBVtqXjaRN">
             <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
@@ -567,7 +541,17 @@
               <p:stringtype p:Assembly="VL.Core" p:Type="VL.Core.StringType">Comment</p:stringtype>
             </p:ValueBoxSettings>
           </Pad>
-          <Pad Id="B9BaiJS3g5yPKfXEaAoppP" Bounds="808,826" />
+          <Node Bounds="316,888,132,19" Id="OdBicZTCwjVQDjz8oo9OV0">
+            <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
+              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+              <CategoryReference Kind="Category" Name="NewAudio" />
+              <Choice Kind="ProcessAppFlag" Name="IFFT" />
+            </p:NodeReference>
+            <Pin Id="OHFOSu2O047O71Q9qLqNGZ" Name="Input" Kind="InputPin" />
+            <Pin Id="HnEU0jwKJUBMKNrNkwzW70" Name="Fft Length" Kind="InputPin" />
+            <Pin Id="K2byoSXoUxxM2s8lWfEGAQ" Name="Window Function" Kind="InputPin" />
+            <Pin Id="GGQPLy3mN00QZ81mp48iNm" Name="Output" Kind="OutputPin" />
+          </Node>
         </Canvas>
         <ProcessDefinition Id="OhvjURylezfQIOP9W7zkGV">
           <Fragment Id="FUTzMWCRmWLNRaJX1K6e8A" Patch="JdAy5MF5KDhNtNuNEZgjhT" Enabled="true" />
@@ -583,7 +567,6 @@
         <Link Id="UxetGAKr26UP3u0makXEM2" Ids="JeuxgbVCwVVPUl1GhRTsv7,JS2mF7aQRUzL8uWWsX440Y" />
         <Link Id="JNhPazcganQN2NTgtaGq9G" Ids="CnQ8TETrpS2M2Zgxw1DN4n,SIJ6YOklFYJN7If07ZiuM5" />
         <Link Id="EAvgRGbN3faM4UH9VDsx5d" Ids="MSx9q916V6EQEQcIdhCaKn,JPIKnZ90gIJLvtuC2p4EOg" />
-        <Link Id="RK7M7Vx5B1FL18NWySKrHI" Ids="AaNoO9y5fvwPo7cztnyM6P,RAj5xy2A6vgO66W16C6mUZ" />
         <Link Id="Mozs8677VJuQMIzL8EUw2P" Ids="Bo0dILRnLuHPMdOKJWWtFH,PO2uWSlTzKWMrB6TqIREcx" />
         <Link Id="UVQMYfDheGPMdwsTtKKey6" Ids="Aki1uBF9NcGMSgtjpYayYV,P3MXGsYk5ayNN3in6PZH8B" />
         <Link Id="UzRFTOBzmC5QT5ytu9EtCI" Ids="QMMYSJmjFOoP4e8j0OdgsX,Jd0vhKbSWiNPbFABAt6Dsi" />
@@ -601,19 +584,12 @@
         <Link Id="UL0Dd0C6MKWLVUe6OeA9Or" Ids="TLz2OMiTpQ9PpjiFkQKc8r,QEYjEGwuVK7P8Yj4LUlGSP" />
         <Link Id="Sz2KiccAMR3LUjKbBg7oxH" Ids="TLz2OMiTpQ9PpjiFkQKc8r,VUeFWWlk65nQBovUxFGyA9" />
         <Slot Id="Q1vaWTyB4E2MVTsmHRouG4" Name="Window Function" Value="BlackmanHarris" />
-        <Slot Id="QCBmC7BsUE0Nnd6s4s1ZOd" Name="Direction" Value="Backwards" />
-        <Link Id="UOmAb4XQuw9QI7DoqkYqtU" Ids="Q8C0h5TXBbdLtxVyUhSHSN,T4Ycsm6fqLIPLp3y1zeMn8" />
         <Link Id="LeAXJUsLpACPbNJvdJ1PYn" Ids="DqLwHzUrFo6OKs19n6NsDS,JL02m8aZhgxLvQIXjze1CJ" />
         <Link Id="IqfiLSHtemONoKqLtTi5PF" Ids="Swk920CKizcONfS09WwsAX,TCazKL8ge7lMo3UnssjTa9" />
         <Link Id="APA5xtaVsGJOsdhOQk2Gxy" Ids="GDqWMLEml5wMabWeIGXr5a,MG3Qba16LElQCjAhHXSwEd" />
-        <Link Id="AZVR6alSXzMNL2RVeKNOBv" Ids="CMsx3luc2YFMc26aX5RYbT,TYGGEHKuyRSMOtuDbNk9ur" />
         <Link Id="N0RnDBm2IigMgxUWBygJ7C" Ids="Swk920CKizcONfS09WwsAX,TRkoj7cUB4wNG1enpHU09F" />
-        <Link Id="BAQpYwb5dSIM828xKfmx0l" Ids="B5YJ7pG5ixxNCGTdnFKpUL,LKalhND8pZhLVkx5GzSoYP" />
         <Link Id="S3es6KYhoYjMFBLxzqVZF5" Ids="NjNlC8nOeaBLHpcQwiGzlU,NQsxyQc4OlUMvAa9HjW1PG" />
         <Link Id="VkIDGbuqfO8OzcBNcwBb77" Ids="OOoxWKN0WhDM4qQrFhJS1k,JyVUEguk3nyNljWzZsRor2" />
-        <Link Id="TnI0PFjvWpxNpo0eqCHpqz" Ids="AAPVRpgO5ZpLQy6eqMVc0Y,GpbjYXe6zPuOUaJdGK5G13" />
-        <Link Id="H5l8BUFMxw7M53qSROeDh3" Ids="DkzQbrJdHRIP04mnyIsPiw,K48djyou7NkMGMjodE4cDs" />
-        <Link Id="SVZjDxWu0BpLwZ0eUmIYGL" Ids="Swk920CKizcONfS09WwsAX,R3BF7h0wsLHOD9jwR2yfpO" />
         <Link Id="QhFmthOrhhlLtYD2cyYSWt" Ids="VnqUwGA1ISyLHwg3xVrEF3,UThnQvrdQKtLA2K5bkWZSA" IsHidden="true" />
         <Link Id="OK6zJ0mBMztOXPfbZ8OYOk" Ids="Q6sI1I1TH2aPxqrL2Inbk9,GDcm4ZziUYsLDuzRe9e5Ph" IsHidden="true" />
         <Link Id="RETDyr2pxgLO5IWYEEl8Ie" Ids="GDcm4ZziUYsLDuzRe9e5Ph,SEuqRXhel6hOHRLEK4zQge" />
@@ -622,11 +598,9 @@
         <Link Id="Ewf0tIoRqeiMwSpJG4ypvc" Ids="MCzK0xol4mBNMMlrzWGHZ7,Mn9tREGwz7RPkd7X0Qw3Ry" />
         <Link Id="BxD5lCgIxd7QMHPuP5z84z" Ids="H2bF31U2K1dLPcC0Yj9yZq,GgHDjje9yTIPkV5dYtOLhC" />
         <Link Id="BDVaebs8Fh2QGg178oPvpz" Ids="Psw2hnrqZdiPs2RishCV3r,IlxG39tqeuSLW7ovBu08xw" />
-        <Link Id="SqLlhBvXZMrOkCaSlKWqde" Ids="Psw2hnrqZdiPs2RishCV3r,IQXMLVwLj1WQXnSvorOndT" />
         <Link Id="L2RuOR07i90MnHQOMLL1z6" Ids="IbMJc4DLDklNhVI7SEvic8,CHmDK4gBWIFMuD0h2QuA7w" />
         <Link Id="V0DghqKjzIIO7X99tQ03E6" Ids="QJ0rc4LS4scN5PtOD09p2f,Dh22QzEfWQjOOLooNl3V4g" />
         <Link Id="KLefF1aYiHQPL3LHr79PYQ" Ids="HBkXeFrTfBcMVUnbt1FAL0,RA9BvtSfW2RMbr91VH3zv7" />
-        <Link Id="FbUQyf6Xy5nOonUrMddPx5" Ids="H2bF31U2K1dLPcC0Yj9yZq,EiNayVQPRz9QZ7ZOGqJAto" />
         <Link Id="SrwtIcMoV7uQaXbdUGh2df" Ids="GDqWMLEml5wMabWeIGXr5a,TRxoj8MdGdZPUwuDNI0mKn" />
         <Link Id="QhQcu5qcLUkLqevGeoVYRN" Ids="Oof6bb9lqKyOKCDw3KbDu8,MSnmtAgr5ayPnG9wSboOqc" />
         <Link Id="Cpp7mC6xPJAMojuTY3Hwiu" Ids="O8llyscJFyjL3oXR8BL9nS,JbpTxqgp6t6OUZ3eZt2m3e" />
@@ -644,11 +618,15 @@
         <Link Id="Iw8OQCkWmqvNowmD0iBJ0E" Ids="BLR1oGgo3H3PlfeBm9ekR8,AphzLb4NNVCMZcMYzXGLFb" />
         <Link Id="ItrrMR2mk6jNoejHJD9LWF" Ids="IWLQuIEiywwL2jiViGnqtX,KmaynU6FCCTLxOjrvVZtiX" />
         <Link Id="LVqUlrvtvt4Pz0AgzuPUdO" Ids="KmaynU6FCCTLxOjrvVZtiX,O8llyscJFyjL3oXR8BL9nS" />
-        <Link Id="C3tIFJlggmgOhZz4UtTa4n" Ids="Tc8kt88vQYsMHEMJsMidEj,CfgAcIrLQPQOZBdWcwHWyy" />
-        <Link Id="RjiOk8v9tphPWjCcqq0chg" Ids="IbMJc4DLDklNhVI7SEvic8,O35LHOTZUlZMPxnq3zJhFo" />
         <Patch Id="JdAy5MF5KDhNtNuNEZgjhT" Name="Create" />
         <Patch Id="NG4NXUivOn9LivaheS2qoP" Name="Update" />
-        <Link Id="UcpQXdljmy6Ohi7qUOo7fG" Ids="Oof6bb9lqKyOKCDw3KbDu8,B9BaiJS3g5yPKfXEaAoppP" />
+        <Link Id="KXPirAHnTdBPcoqNViHIUu" Ids="Swk920CKizcONfS09WwsAX,OHFOSu2O047O71Q9qLqNGZ" />
+        <Link Id="MaLgJqsx5AmPiEeK33HiYa" Ids="Psw2hnrqZdiPs2RishCV3r,HnEU0jwKJUBMKNrNkwzW70" />
+        <Link Id="Q3pTJk5s59oLvC5CgGDRSP" Ids="GGQPLy3mN00QZ81mp48iNm,CfgAcIrLQPQOZBdWcwHWyy" />
+        <Link Id="NITBQ71XqQJOVN8YTIogS8" Ids="AaNoO9y5fvwPo7cztnyM6P,RAj5xy2A6vgO66W16C6mUZ" />
+        <Link Id="AyyAtZe21p7P4gqAhxC7bL" Ids="Psw2hnrqZdiPs2RishCV3r,LKalhND8pZhLVkx5GzSoYP" />
+        <Link Id="U2Xq0OMhFA8NT8TPI5kTPX" Ids="H2bF31U2K1dLPcC0Yj9yZq,EiNayVQPRz9QZ7ZOGqJAto" />
+        <Link Id="QgiDIUJwrztO172ME7oBB8" Ids="AaNoO9y5fvwPo7cztnyM6P,O35LHOTZUlZMPxnq3zJhFo" />
       </Patch>
     </Node>
   </Patch>

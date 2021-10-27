@@ -38,7 +38,9 @@ namespace NewAudio
 
             if (_outBuffer==null || _sampleBuffer==null || _sampleBuffer.MaxLength != count)
             {
-                _sampleBuffer = new CircularSampleBuffer(count)
+                var bufferSize = Math.Max(count, input.Format.BufferSize);
+                _logger.Verbose("Creating buffer of size: {bufferSize}", bufferSize);
+                _sampleBuffer = new CircularSampleBuffer(bufferSize)
                 {
                     BufferFilled = data =>
                     {
@@ -50,7 +52,7 @@ namespace NewAudio
             
             if (_action == null)
             {
-                _logger.Information("Getting samples {count}", count);
+                _logger.Verbose("Getting samples {count} {inputCount}", count, input.Format.BufferSize);
                 _action = new ActionBlock<AudioBuffer>(inp =>
                 {
                     var written = _sampleBuffer.Write(inp.Data, 0, Math.Min(inp.Count, count));
@@ -58,9 +60,9 @@ namespace NewAudio
                 });
             }
 
-            if (_link == null )
+            if (_link == null && _action!=null)
             {
-                _logger.Information("Setting link {input}", input);
+                _logger.Verbose("Setting link {input}", input);
                 _link = input.SourceBlock.LinkTo(_action);
             }
         }

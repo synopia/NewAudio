@@ -33,16 +33,15 @@ namespace NewAudio
                         _logger.Verbose("Received {size} at {time}  in={inBuffers} out={outBuffers}", inp.Count, inp.Time, _t.InputCount, _t.OutputCount);
                         var target = AudioCore.Instance.BufferFactory.GetBuffer(inp.Count);
                         target.Time = inp.Time;
-                        target.DTime = inp.DTime;
 
                         double time = 0;
                         if (_useIntTime)
                         {
-                            time = (double)inp.Time / input.Format.SampleRate;
+                            time = inp.Time.Time;
                         }
                         else
                         {
-                            time = inp.DTime;
+                            time = inp.Time.DTime;
                         }
 
                         for (int i = 0; i < inp.Count / input.Format.Channels; i += input.Format.Channels)

@@ -57,6 +57,10 @@ namespace NewAudio.Internal
                     _writePosition += count - num2;
                     num2 = count;
                 }
+                if (_writePosition>=_buffer.Length && BufferFilled != null)
+                {
+                    BufferFilled(_buffer);
+                }
 
                 _sampleCount += num2;
                 return num2;
@@ -130,7 +134,7 @@ namespace NewAudio.Internal
         /// <param name="count">samples to advance</param>
         public void Advance(int count)
         {
-            if (count >= _sampleCount)
+            if (count > _sampleCount)
             {
                 Reset();
             }

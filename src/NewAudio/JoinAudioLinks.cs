@@ -71,7 +71,7 @@ namespace NewAudio
                     _logger.Warning("TIME DIFF {time1}!={time2}", time1, time2);
                 }
                 var buf = AudioCore.Instance.BufferFactory.GetBuffer(channels * sampleCount);
-                buf.Time = Math.Max(time1, time2);
+                buf.Time = time1;// todo
                 for (int i = 0; i < sampleCount; i++)
                 {
                     for (int c = 0; c < channels1; c++)

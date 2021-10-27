@@ -96,8 +96,7 @@ namespace NewAudio
 
                             var output = AudioCore.Instance.BufferFactory.GetBuffer(outputBufferSize);
                             output.Time = inp.Time;
-                            output.DTime = inp.Time;
-                            sampleClock.Init(inp.DTime);
+                            sampleClock.Init(inp.Time.DTime);
 
                             var state = _createFunc?.Invoke(sampleClock);
 

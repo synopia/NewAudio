@@ -69,7 +69,7 @@ namespace NewAudio
             _target = target;
         }
 
-        protected abstract void OnDataReceived(int time, int count);
+        protected abstract void OnDataReceived(AudioTime time, int count);
         
         public void Dispose()
         {
@@ -150,14 +150,13 @@ namespace NewAudio
 
     public class AudioFlowSource : AudioFlowBuffer
     {
-        private int _time = 0;
-        private double _dTime = 0;
+        private AudioTime _time;
         
         public AudioFlowSource(AudioFormat format, int internalBufferSize) : base(format, internalBufferSize)
         {
         }
 
-        protected override void OnDataReceived(int time, int count)
+        protected override void OnDataReceived(AudioTime time, int count)
         {
             while (Buffer.BufferedSamples >= Format.BufferSize)
             {
@@ -166,9 +165,7 @@ namespace NewAudio
 
                 Buffer.Read(buf.Data, 0, Format.BufferSize);
                 buf.Time = _time;
-                buf.DTime = _dTime;
-                _time += Format.SampleCount;
-                _dTime += 1.0 / Format.SampleRate;
+                _time += new AudioTime(Format.SampleCount, (double)Format.SampleCount/Format.SampleRate);
                 Source.Post(buf);
             }
         }
@@ -176,12 +173,12 @@ namespace NewAudio
 
     public class AudioFlowSink : AudioFlowBuffer
     {
-        private int _time;
+        private AudioTime _time;
         public AudioFlowSink(AudioFormat format, int internalBufferSize) : base(format, internalBufferSize)
         {
         }
 
-        protected override void OnDataReceived(int time, int count)
+        protected override void OnDataReceived(AudioTime time, int count)
         {
             Logger.Verbose("Received {count} at {time}, buf={Buffer}  source count {SourceCount}", count, time, Buffer.BufferedSamples, Source.Count);
             if (time != _time)
@@ -190,7 +187,7 @@ namespace NewAudio
                 _time = time;
             }
 
-            _time += count / Format.Channels;
+            _time += new AudioTime(count / Format.Channels, count / (double)Format.Channels / Format.SampleRate);
         }
     }
 }

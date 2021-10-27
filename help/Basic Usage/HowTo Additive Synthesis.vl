@@ -52,7 +52,6 @@
             </p:NodeReference>
             <Pin Id="Puy9wcbZfDrPTeLMLNWNsq" Name="Play" Kind="InputPin" />
             <Pin Id="FR7LpRyqO4KNXxA0JfnHwU" Name="Reset" Kind="InputPin" />
-            <Pin Id="MjHI4sZgTpEPQmFExd1oKP" Name="Min LogLevel" Kind="InputPin" />
             <Pin Id="MxrA0o1QcdGMFnHscWzFyv" Name="Buffer Cache Size" Kind="OutputPin" />
             <Pin Id="CHlNpbGzjvsQRPE3sImwkR" Name="Logs" Kind="OutputPin" />
           </Node>

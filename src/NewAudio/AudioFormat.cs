@@ -34,7 +34,7 @@ namespace NewAudio
             {
                 return this;
             }
-            return new AudioFormat(Channels, sampleRate, BufferSize);
+            return new AudioFormat(Channels, sampleRate, SampleCount);
             
         }
         public AudioFormat WithBufferSize(int bufferSize)

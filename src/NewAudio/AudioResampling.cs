@@ -8,28 +8,25 @@ namespace NewAudio
     public class WdlResampling : AudioFlowBuffer
     {
         private WdlResamplingSampleProvider _wdl;
-        private int _time = 0;
-        private double _dTime = 0;
+        private AudioTime _time = default;
 
         public WdlResampling(AudioFormat format, int internalBufferSize) : base(format, internalBufferSize)
         {
             _wdl = new WdlResamplingSampleProvider(Buffer, format.SampleRate);
         }
 
-        protected override void OnDataReceived(int time, int count)
+        protected override void OnDataReceived(AudioTime time, int count)
         {
             _time = time;
             try
             {
-                while (Buffer.BufferedSamples >= Format.BufferSize)
+                while (Buffer.BufferedSamples >= Format.SampleCount)
                 {
                     var buf = AudioCore.Instance.BufferFactory.GetBuffer(Format.BufferSize);
                 
                     _wdl.Read(buf.Data, 0, Format.BufferSize);
-                    _time += Format.SampleCount;
-                    _dTime += 1.0 / Format.SampleRate;
+                    _time += Format;
                     buf.Time = _time;
-                    buf.DTime = _dTime;
                     Source.Post(buf);
                 }
             }
