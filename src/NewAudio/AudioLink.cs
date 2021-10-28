@@ -13,6 +13,7 @@ namespace NewAudio
     {
         private readonly ILogger _logger = Log.ForContext<AudioLink>();
         public WaveFormat WaveFormat => Format.WaveFormat;
+        public AudioFormat Format;
 
         private readonly BroadcastBlock<AudioBuffer> _broadcastBlock = new BroadcastBlock<AudioBuffer>(i=>i, new GroupingDataflowBlockOptions()
         {
@@ -30,7 +31,6 @@ namespace NewAudio
                 _outputLink = _sourceBlock?.LinkTo(_broadcastBlock);
             }
         }
-        public AudioFormat Format;
         
         public AudioLink()
         {

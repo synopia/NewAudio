@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Serilog;
 using VL.Lib.Animation;
@@ -39,27 +42,28 @@ namespace NewAudio
     public class AudioBufferLoop<TState> : AudioNodeTransformer where TState : class
     {
         private readonly ILogger _logger = Log.Logger;
-        private Func<IFrameClock, TState> _createFunc;
+        private readonly AudioSampleFrameClock _clock = new AudioSampleFrameClock();
         private Func<TState, AudioSampleAccessor, TState> _updateFunc;
         private IDisposable _link;
-
-
-        public AudioBufferLoop()
-        {
-        }
+        private TState _state;
+        private bool _bypass;
 
         public AudioLink Update(
             Func<IFrameClock, TState> create,
             Func<TState, AudioSampleAccessor, TState> update,
             bool reset,
-            bool abort,
-            AudioLink input, out bool inProgress, int outputChannels = 0,
-            int oversample = 1
+            bool bypass,
+            AudioLink input, out bool inProgress, int outputChannels = 0
         )
         {
-            _createFunc = create;
-            _updateFunc = update;
+            if (_state == null && create!=null)
+            {
+                _state = create(_clock);
+            }
 
+            _bypass = bypass;
+            _updateFunc = update;
+            
             if (reset || input != Input)
             {
                 _link?.Dispose();
@@ -82,13 +86,15 @@ namespace NewAudio
 
                     var transformer = new TransformBlock<AudioBuffer, AudioBuffer>(inp =>
                     {
-                        var sampleClock = new AudioSampleFrameClock();
+                        if (_bypass)
+                        {
+                            Array.Clear(inp.Data, 0, inp.Count);
+                            return inp;
+                        }
                         var sampleAccessor = new AudioSampleAccessor();
 
                         try
                         {
-                            _logger.Verbose(
-                                "Received Data {count} Time={time}", inp.Count, inp.Time);
                             if (inp.Count != inputBufferSize)
                             {
                                 throw new Exception($"Expected Input size: {inputBufferSize}, actual: {inp.Count}");
@@ -96,19 +102,18 @@ namespace NewAudio
 
                             var output = AudioCore.Instance.BufferFactory.GetBuffer(outputBufferSize);
                             output.Time = inp.Time;
-                            sampleClock.Init(inp.Time.DTime);
 
-                            var state = _createFunc?.Invoke(sampleClock);
+                            _clock.Init(inp.Time.DTime);
 
-                            if (state != null && _updateFunc != null)
+                            if (_state != null && _updateFunc != null)
                             {
                                 sampleAccessor.Update(output.Data, inp.Data, outputChannels, inputChannels);
                                 var increment = 1.0d / input.Format.SampleRate;
                                 for (int i = 0; i < samples; i++)
                                 {
                                     sampleAccessor.UpdateLoop(i, i);
-                                    state = _updateFunc(state, sampleAccessor);
-                                    sampleClock.IncrementTime(increment);
+                                    _state = _updateFunc(_state, sampleAccessor);
+                                    _clock.IncrementTime(increment);
                                 }
                             }
 
@@ -116,15 +121,9 @@ namespace NewAudio
                         }
                         catch (Exception e)
                         {
-                            _logger.Error(e.StackTrace);
+                            _logger.Error("{e}" , e);
                             throw;
                         }
-                    }, new ExecutionDataflowBlockOptions()
-                    {
-                        // BoundedCapacity = 1,
-                        // SingleProducerConstrained = true,
-                        // MaxDegreeOfParallelism = 1,
-                        // MaxMessagesPerTask = 1
                     });
                     _link = input.SourceBlock.LinkTo(transformer);
                     Output.SourceBlock = transformer;

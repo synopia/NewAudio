@@ -7,7 +7,7 @@ namespace NewAudio
         public readonly int Channels;
         public readonly int SampleRate;
         public readonly int SampleCount;
-        public readonly int BufferSize => SampleCount*Channels;
+        public int BufferSize => SampleCount*Channels;
 
         public readonly WaveFormat WaveFormat;
         

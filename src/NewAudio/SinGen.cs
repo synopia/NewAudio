@@ -8,6 +8,7 @@ namespace NewAudio
     {
         private readonly ILogger _logger = Log.ForContext<SinGen>();
         private int _frequency;
+        private double _phase;
         private bool _useIntTime;
         private IDisposable _link;
         private TransformBlock<AudioBuffer, AudioBuffer> _t;
@@ -46,10 +47,22 @@ namespace NewAudio
 
                         for (int i = 0; i < inp.Count / input.Format.Channels; i += input.Format.Channels)
                         {
-                            var r = Math.Sin(time * _frequency * 2.0* Math.PI ) * 0.1;
+                            _phase += _frequency * 2.0 * Math.PI / input.Format.SampleRate;
+                            if (_phase > 2.0 * Math.PI)
+                            {
+                                _phase -= 2.0 * Math.PI;
+                            }
+
+                            if (_phase < 0.0)
+                            {
+                                _phase += 2.0 * Math.PI;
+                                
+                            }
+                            
+                            var r = Math.Sin(_phase ) * 0.1;
                             for (int c = 0; c < input.Format.Channels; c++)
                             {
-                                target.Data[i * input.Format.Channels + c] = (float)r;
+                                target.Data[i  + c] = (float)r;
                             }
 
                             time += 1.0d / input.Format.SampleRate;                                 

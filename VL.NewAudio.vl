@@ -595,10 +595,9 @@
                   <Pin Id="DgXB4TAbDtNQOnODRt1iVT" Name="Create" Kind="InputPin" />
                   <Pin Id="B3XHLqf2ha7L4Gwc1U3ZpW" Name="Update" Kind="InputPin" />
                   <Pin Id="TIXPScOCVK5LfjCiGfNwkd" Name="Reset" Kind="InputPin" />
-                  <Pin Id="Nv8g9jrgNGVPLpp9tZpWT1" Name="Abort" Kind="InputPin" />
+                  <Pin Id="VHislYJ1UsuNmVNnZ5x4yj" Name="Bypass" Kind="InputPin" />
                   <Pin Id="TAsp29WFOWfPEaegvYfL7d" Name="Input" Kind="InputPin" />
                   <Pin Id="L7i5NeY9lRFPgt33wz6xjb" Name="Output Channels" Kind="InputPin" />
-                  <Pin Id="SQ8chn8OKi2OSid4PRpsxh" Name="Oversample" Kind="InputPin" />
                   <Pin Id="UdRZzmCYmYCLEVTnNgJWbU" Name="Output" Kind="StateOutputPin" />
                   <Pin Id="KgnK7m6l0xkO6bYwVE7qix" Name="Result" Kind="OutputPin" />
                   <Pin Id="Oe1nBUJL1YpO4ZOYA1M7He" Name="In Progress" Kind="OutputPin" />
@@ -607,10 +606,9 @@
                 <Pin Id="Hy8xAAGPJkLODx8S05duSa" Name="Create" Kind="InputPin" />
                 <Pin Id="If0tSBNH7ghLOylO462Fdd" Name="Update" Kind="InputPin" />
                 <Pin Id="ApAKzD5HuYJMnIxz0PCWkM" Name="Reset" Kind="InputPin" />
-                <Pin Id="NinyqPu3JBjNv63Rjv3jwB" Name="Abort" Kind="InputPin" />
+                <Pin Id="C080htsmKQLQWded6E1AVx" Name="Bypass" Kind="InputPin" />
                 <Pin Id="DAqAHq8AaCiLulRbOkL0Nv" Name="Input" Kind="InputPin" />
                 <Pin Id="NruXdt6STX3QORpjFStXEe" Name="Output Channels" Kind="InputPin" />
-                <Pin Id="QcyhPBLqd24Oc5IYUfzn4B" Name="Oversample" Kind="InputPin" />
                 <Pin Id="FfADG9qtwH9MQdeIBfLIgf" Name="Output" Kind="OutputPin" />
                 <Pin Id="GKOrsiWZnLuOM7TBTmg9Ps" Name="Result" Kind="OutputPin" />
                 <Pin Id="AYZrEpjaeU9Lub1Ubz3uJt" Name="In Progress" Kind="OutputPin" />

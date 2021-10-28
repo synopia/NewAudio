@@ -40,7 +40,9 @@ namespace NewAudio
             var log = new LoggerConfiguration()
                 .Enrich.WithThreadId()
                 .WriteTo.Seq("http://localhost:5341")
-                .WriteTo.File("VL.NewAudio.log", outputTemplate:"{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties}{NewLine}{Exception}")
+                .WriteTo.File("VL.NewAudio.log",
+                    outputTemplate:
+                    "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties}{NewLine}{Exception}")
                 .MinimumLevel.Debug()
                 .CreateLogger();
             Log.Logger = log;
