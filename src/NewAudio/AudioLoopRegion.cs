@@ -6,51 +6,21 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Serilog;
 using VL.Lib.Animation;
-using VL.NewAudio;
 
 namespace NewAudio
 {
-    public class AudioSampleFrameClock : IFrameClock
-    {
-        private Time frameTime;
-
-        public Time Time => frameTime;
-        public double TimeDifference { get; private set; }
-
-        public void Init(double time)
-        {
-            frameTime = time;
-        }
-
-        public void IncrementTime(double diff)
-        {
-            frameTime += diff;
-            TimeDifference = diff;
-        }
-
-        public IObservable<FrameTimeMessage> GetTicks()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IObservable<FrameFinishedMessage> GetFrameFinished()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class AudioBufferLoop<TState> : AudioNodeTransformer where TState : class
+    public class AudioLoopRegion<TState> : AudioNodeTransformer where TState : class
     {
         private readonly ILogger _logger = Log.Logger;
         private readonly AudioSampleFrameClock _clock = new AudioSampleFrameClock();
-        private Func<TState, AudioSampleAccessor, TState> _updateFunc;
+        private Func<TState, AudioChannels, TState> _updateFunc;
         private IDisposable _link;
         private TState _state;
         private bool _bypass;
 
         public AudioLink Update(
             Func<IFrameClock, TState> create,
-            Func<TState, AudioSampleAccessor, TState> update,
+            Func<TState, AudioChannels, TState> update,
             bool reset,
             bool bypass,
             AudioLink input, out bool inProgress, int outputChannels = 0
@@ -91,7 +61,7 @@ namespace NewAudio
                             Array.Clear(inp.Data, 0, inp.Count);
                             return inp;
                         }
-                        var sampleAccessor = new AudioSampleAccessor();
+                        var sampleAccessor = new AudioChannels();
 
                         try
                         {

@@ -399,7 +399,7 @@
                 <Node Bounds="136,225,95,26" Id="Vfc0pseeK7pNtXeP067f7N">
                   <p:NodeReference LastCategoryFullName="Main.AudioSampleAccessor" LastSymbolSource="VL.NewAudio.vl">
                     <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                    <Choice Kind="OperationCallFlag" Name="GetSamples" />
+                    <Choice Kind="OperationCallFlag" Name="GetAllSamples" />
                     <CategoryReference Kind="ClassType" Name="AudioSampleAccessor" NeedsToBeDirectParent="true" />
                   </p:NodeReference>
                   <Pin Id="NU2fsSRPsoKNm2M3mL2PT4" Name="Input" Kind="StateInputPin" />
@@ -410,7 +410,7 @@
                 <Node Bounds="136,929,95,26" Id="Dkzg16mgbrKPxggLiIuCCR">
                   <p:NodeReference LastCategoryFullName="Main.AudioSampleAccessor" LastSymbolSource="VL.NewAudio.vl">
                     <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                    <Choice Kind="OperationCallFlag" Name="SetSamples" />
+                    <Choice Kind="OperationCallFlag" Name="SetAllSamples" />
                     <CategoryReference Kind="ClassType" Name="AudioSampleAccessor" NeedsToBeDirectParent="true" />
                   </p:NodeReference>
                   <Pin Id="JiccDDg2IOMOIAtGkMIOUs" Name="Input" Kind="StateInputPin" />

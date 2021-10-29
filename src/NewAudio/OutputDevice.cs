@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using NewAudio.Internal;
 using Serilog;
 
 namespace NewAudio

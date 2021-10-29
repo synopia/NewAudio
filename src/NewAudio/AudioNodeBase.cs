@@ -7,7 +7,6 @@ using System.Reflection;
 using NAudio.Wave;
 using NewAudio.Internal;
 using VL.Core;
-using VL.NewAudio;
 
 namespace NewAudio
 {

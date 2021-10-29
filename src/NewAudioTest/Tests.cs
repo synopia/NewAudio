@@ -2,7 +2,6 @@
 using NewAudio;
 using NewAudio.Internal;
 using NUnit.Framework;
-using VL.NewAudio;
 
 namespace NewAudioTest
 {

@@ -2,7 +2,7 @@ using System;
 using NewAudio;
 using Serilog;
 
-namespace VL.NewAudio
+namespace NewAudio.Internal
 {
     public class Decimator
     {

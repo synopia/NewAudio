@@ -33,7 +33,7 @@ In each iteration you have access to an AudioSampleAccessor. Use this with the G
 
 If you want to use any time related VL Nodes, connect the supplied clock to your nodes. This clock ticks on sample base.
 
-#### Get/SetSamples
+#### Get/SetAllSamples
 
 Operations to gain access to samples per channel in AudioSampleLoop.
 

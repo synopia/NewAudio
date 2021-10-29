@@ -233,7 +233,7 @@
               <Node Bounds="245,518,95,26" Id="TCJblOrdURWQCkW7MYmHj6">
                 <p:NodeReference LastCategoryFullName="NewAudio.AudioSampleAccessor" LastSymbolSource="VL.NewAudio.vl">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                  <Choice Kind="OperationCallFlag" Name="SetSamples" />
+                  <Choice Kind="OperationCallFlag" Name="SetAllSamples" />
                 </p:NodeReference>
                 <Pin Id="DbvSk2UdRrANwnCKB8nLRG" Name="Input" Kind="StateInputPin" />
                 <Pin Id="JUGRmCntSyWPIqpNwFjvxy" Name="Samples" Kind="InputPin" />

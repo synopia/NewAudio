@@ -23,10 +23,8 @@ namespace NewAudio
         private IDisposable _link;
         protected double[] Window;
 
-        protected AudioFlowSource Source;
-        protected BufferBlock<AudioBuffer> Source2;
+        protected BufferBlock<AudioBuffer> Source;
 
-        public AudioFormat SourceFormat => Input.Format;
         private AudioTime _time;
 
         public void ChangeSettings(AudioLink input, int fftLength, WindowFunction windowFunction)
@@ -61,8 +59,7 @@ namespace NewAudio
                     _logger.Information("Config Changed: format: {InputFormat}, len: {fftLength}, Window: {WindowFunction}",
                         input.Format, FftLength, windowFunction);
 
-                    // Source = new AudioFlowSource(input.Format, 4 * fftLength);
-                    Source2 = new BufferBlock<AudioBuffer>();
+                    Source = new BufferBlock<AudioBuffer>();
                     var action = new ActionBlock<AudioBuffer>(i =>
                     {
                         try
@@ -80,7 +77,7 @@ namespace NewAudio
                     _logger.Information("Created, internal: {outFormat} fft={fftLength} {inFormat}", fftFormat, FftLength, input.Format);
                     target.LinkTo(action);
                     _link = input.SourceBlock.LinkTo(target);
-                    Output.SourceBlock = Source2;
+                    Output.SourceBlock = Source;
                     Output.Format = input.Format;
                 }
                 catch (Exception e)
@@ -112,7 +109,7 @@ namespace NewAudio
 
         public void Post(AudioBuffer buf)
         {
-            Source2.Post(buf);
+            Source.Post(buf);
         }
 
         /*

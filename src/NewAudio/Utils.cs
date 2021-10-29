@@ -12,16 +12,6 @@ namespace NewAudio
 {
     public static class Utils
     {
-        public static float[] EnsureBuffer(float[] buffer, int bufferSize)
-        {
-            if (buffer == null || buffer.Length < bufferSize || buffer.Length > bufferSize * 2)
-            {
-                return new float[bufferSize];
-            }
-
-            return buffer;
-        }
-        
         public static float PI = (float)Math.PI;
 
         public static float TanH(float v)
@@ -52,22 +42,9 @@ namespace NewAudio
             return SinF(v) / v;
         }
         
-        public static bool SequenceEquals<T>(IEnumerable<T> first, IEnumerable<T> second)
-        {
-            if (first == second)
-                return true;
-            if (first == null && second == null)
-                return true;
-            if (first == null || second == null)
-                return false;
-            return first.SequenceEqual(second);
-        }
-
         public static bool ArrayEquals<T>(T[] first, T[] second)
         {
             if (first == second)
-                return true;
-            if (first == null && second == null)
                 return true;
             if (first == null || second == null)
                 return false;

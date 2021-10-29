@@ -8,7 +8,7 @@ using NAudio.Wave;
 using NewAudio.Internal;
 using Serilog;
 
-namespace NewAudio
+namespace NewAudio.Internal
 {
     public class BlockingSampleProvider : ISampleProvider, IDisposable
     {

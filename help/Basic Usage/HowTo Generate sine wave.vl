@@ -247,7 +247,7 @@
           <Node Bounds="193,398,215,277" Id="T1yw8DTAbx0PBGlTAdn2Cs">
             <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
               <CategoryReference Kind="Category" Name="NewAudio" />
-              <Choice Kind="ProcessAppFlag" Name="AudioBufferLoop" />
+              <Choice Kind="ProcessAppFlag" Name="AudioLoopRegion" />
               <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
             </p:NodeReference>
             <Patch Id="VJU9RsGLGtINxZwC530qrw" ManuallySortedPins="true">
@@ -262,7 +262,7 @@
               <Node Bounds="205,636,153,19" Id="CVfSCwwJpahNucmS7yYrtc">
                 <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                  <Choice Kind="ProcessAppFlag" Name="SetSamples" />
+                  <Choice Kind="ProcessAppFlag" Name="SetAllSamples" />
                 </p:NodeReference>
                 <Pin Id="HX6nKuOnkPuM7dByYFhulp" Name="Input" Kind="InputPin" />
                 <Pin Id="KK0JNusPM9MN9X5NPoF5Nq" Name="Inp" Kind="InputPin" />

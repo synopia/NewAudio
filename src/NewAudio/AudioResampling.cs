@@ -8,7 +8,7 @@ namespace NewAudio
     public class WdlResampling : AudioFlowBuffer
     {
         private WdlResamplingSampleProvider _wdl;
-        private AudioTime _time = default;
+        private AudioTime _time;
 
         public WdlResampling(AudioFormat format, int internalBufferSize) : base(format, internalBufferSize)
         {

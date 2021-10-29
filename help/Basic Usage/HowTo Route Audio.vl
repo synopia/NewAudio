@@ -53,7 +53,7 @@
           <Node Bounds="298,413,121,193" Id="Q5WgDwRQ0ZcOHqGZIK8fMg">
             <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
               <CategoryReference Kind="Category" Name="NewAudio" />
-              <Choice Kind="ProcessAppFlag" Name="AudioBufferLoop" />
+              <Choice Kind="ProcessAppFlag" Name="AudioLoopRegion" />
               <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
             </p:NodeReference>
             <Pin Id="H8jnpTlyiTJLwKXCOwjFHW" Name="Reset" Kind="InputPin" />
@@ -70,7 +70,7 @@
                 <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="Category" Name="NewAudio" />
-                  <Choice Kind="ProcessAppFlag" Name="GetSamples" />
+                  <Choice Kind="ProcessAppFlag" Name="GetAllSamples" />
                 </p:NodeReference>
                 <Pin Id="HavjJ8FUVALLG4DmcUuQrS" Name="Input" Kind="InputPin" />
                 <Pin Id="KygyuvEoGvmNPYzzt5Uwb6" Name="Result" Kind="OutputPin" />
@@ -80,7 +80,7 @@
                 <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="Category" Name="NewAudio" />
-                  <Choice Kind="ProcessAppFlag" Name="SetSamples" />
+                  <Choice Kind="ProcessAppFlag" Name="SetAllSamples" />
                 </p:NodeReference>
                 <Pin Id="R78xVXqtERIPHERGoNQf6V" Name="Input" Kind="InputPin" />
                 <Pin Id="VHsJiHIUAyuQZTEVRngw2t" Name="Inp" Kind="InputPin" />
