@@ -27,7 +27,7 @@ namespace NewAudio.Internal
 
         public int BufferedSamples => _circularBuffer?.Count ?? 0;
 
-        public void AddSamples(float[] buffer, int offset, int count)
+        public int AddSamples(float[] buffer, int offset, int count)
         {
             var added = _circularBuffer.Write(buffer, offset, count);
             
@@ -38,6 +38,7 @@ namespace NewAudio.Internal
                     "Added {added}, tried: {count}, overflow: {overflow}, total: {BufferedSamples} len: {BufferLength}", added, count, added<count, BufferedSamples, BufferLength);
             }
 
+            return added;
         }
 
         public int Read(float[] buffer, int offset, int count)

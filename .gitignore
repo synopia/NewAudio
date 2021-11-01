@@ -12,5 +12,5 @@ packages/
 /test.vl
 /text.log
 /vl.old.vl
-/.vl/
+*.vl/
 /*.nupkg

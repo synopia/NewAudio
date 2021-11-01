@@ -10,51 +10,39 @@ There are a few important VL Nodes:
 
 #### WaveInput
 
-Any Windows sound input or capture device (WaveIn, Wasapi, Wasapi Loopback or ASIO). Outputs a fresh AudioSampleBuffer, that can be used later.
+Any Windows sound input or capture device (WaveIn, Wasapi, Wasapi Loopback or ASIO). Outputs an AudioLink, that is used to send sample buffers between VL.NewAudio nodes.
 
 #### WaveOutput
 
-Any Windows sound output device (WaveOut, DirectSound, Wasapi or ASIO). Takes an AudioSampleBuffer and sends data to sound driver.
+Any Windows sound output device (WaveOut, DirectSound, Wasapi or ASIO). Takes an AudioLink as input and send its samples to the sound card driver.
 
 * WaveOut: Do not use this, its freaking slow!
 * DirectSound, nah
 * Wasapi: This gives good performance and work with low latency (~45m)
+* Use Wasapi Loopback to capture sound from other Windows applications
 * ASIO: Use this if possible, latency is below 20ms
 
-#### AudioSampleBuffer
+#### AudioLink and AudioMessage
 
-The data type, that flows through the VL patch. Contains a small portion of sound data in 32 bit float precision. May contain multiple channels in interleaved format (ch0, ch1, ch2, ch0, ch1, ...).
+A AudioLink works like a normal VL patch connection. However, it is used to send different kinds of data, all implementing a common interface IAudioMessage.
 
-#### AudioSampleLoop
+Sound data itself can be transmitted either in normal sound format (ch0, ch1, ch2, ch0, ch1, ...). It is also possible to convert the data in to seperated 
+channels. This makes working with multichannel sounds much easier.
 
-A custom region, that loops over an AudioSampleBuffer in the sound render thread.
+#### AudioLoopRegion
 
-In each iteration you have access to an AudioSampleAccessor. Use this with the Get/SetSample Operations to access samples per input/output channel.
+A custom region, that loops over each sample in an audio message.
+
+In each iteration you have access to an AudioChannels node, which can be used to get all or individual samples from the raw data.
 
 If you want to use any time related VL Nodes, connect the supplied clock to your nodes. This clock ticks on sample base.
 
-#### Get/SetAllSamples
-
-Operations to gain access to samples per channel in AudioSampleLoop.
-
-#### AudioSplitter
-
-Splits one incoming multichannel AudioSampleBuffer into several single channel buffers. 
-
-#### AudioMixer
-
-To mix multiple AudioSampleBuffers into exactly one output Buffer, you can use the AudioMixer.
-Takes a Spread of AudioSampleBuffers (with any number of channels) and a Spread of Integers, to map input to output channels.
-
 #### FFT
 
-Provides FFT data in raw format (real and imaginary part). See example for conversion to bins.
+Provides FFT data as complex, normalized numbers (so you get two channels out). The IFFT takes complex number stream back and calculates
+the real numbers (2ch=>1ch).
 
-#### VCV
-
-For some advance examples, check out Sample.CV for some crazy control voltage like machines.
-
-Currently there are some remakes of a VCO, VCF, LFO and a Delay.
+### 
 
 ![Sample2](help/vcv.png)
 

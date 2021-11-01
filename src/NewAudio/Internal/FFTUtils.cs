@@ -6,23 +6,13 @@ namespace NewAudio.Internal
 
     public static class FFTUtils
     {
-        public static uint UpperPow2(uint v)
+        public enum WindowFunction
         {
-            v--;
-            v |= v >> 1;
-            v |= v >> 2;
-            v |= v >> 4;
-            v |= v >> 8;
-            v |= v >> 16;
-            v++;
-            return v;
+            None,
+            Hamming,
+            Hann,
+            BlackmanHarris
         }
-
-        public static bool IsPowerOfTwo(int x)
-        {
-            return (x & (x - 1)) == 0;
-        }
-
         public static double[] CreateWindow(WindowFunction windowFunction, int size)
         {
             Func<int, int, double> function = (i, n) => 1;;

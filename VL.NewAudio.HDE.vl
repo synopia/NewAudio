@@ -709,18 +709,18 @@
           <Link Id="HjxroXsRjMBPVGl5dKDJ5C" Ids="GVp6VWmmIzkM4WwJdxKmWE,L59Sb3XoN95OppvYOFiS03" IsHidden="true" />
           <Link Id="JWUSTeP3Q5ENNAyKkLthAp" Ids="JBSB8qkj9pELeyYrA92uZd,Ex8hO4pMCMjOunwOAlC3b1" />
           <Link Id="H1w8p2hStGnNGyeSA3LC0o" Ids="C8oXkKkxMM1P0YeNbk2y1b,O1KxpHyN94tL4z26iUU5kR" />
+          <Link Id="EcShYmdVxS9PZZJRpQAxxi" Ids="CVE5kCkmZKpMQ3rSd4K98K,F35pNpIAeCvPXWTor1LPlk" />
+          <Link Id="Cpr7p7ULJkeLcSBCsPDXm6" Ids="MGYJgFNk01SOtv2szWx2JM,UvEBGhV4TfNQQkH00GPyQe" />
           <Patch Id="HNYoI3eTZ3pLu1FGBu8AkB" Name="Create" />
           <Patch Id="HU7je5E1MK5PWftmEYezj0" Name="Update">
             <Pin Id="DqUvXmKiUo7QM8cpMXx9SM" Name="Value" Kind="InputPin">
-              <p:TypeAnnotation LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.dll">
+              <p:TypeAnnotation LastCategoryFullName="NewAudio.Core" LastSymbolSource="VL.NewAudio.dll">
                 <Choice Kind="TypeFlag" Name="AudioFormat" />
               </p:TypeAnnotation>
             </Pin>
             <Pin Id="GVp6VWmmIzkM4WwJdxKmWE" Name="Context" Kind="InputPin" />
             <Pin Id="GPMM4oFxZM6Mvuu1iHBsas" Name="Widget" Kind="OutputPin" />
           </Patch>
-          <Link Id="EcShYmdVxS9PZZJRpQAxxi" Ids="CVE5kCkmZKpMQ3rSd4K98K,F35pNpIAeCvPXWTor1LPlk" />
-          <Link Id="Cpr7p7ULJkeLcSBCsPDXm6" Ids="MGYJgFNk01SOtv2szWx2JM,UvEBGhV4TfNQQkH00GPyQe" />
         </Patch>
       </Node>
     </Canvas>

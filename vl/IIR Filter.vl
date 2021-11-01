@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="TMABXAlnSwGMx5QNACN9h7" LanguageVersion="2021.4.0.526" Version="0.128">
+<Document xmlns:p="property" Id="LYaJ9XJnNs3PfwrX14fTjk" LanguageVersion="2021.4.0.526" Version="0.128">
   <NugetDependency Id="Karzca3RHEMP33W7Z2vdkb" Location="VL.CoreLib" Version="2021.4.0-0526-gd606d93626" />
   <Patch Id="PvyxW6UL2wsPbsk2MghI54">
     <Canvas Id="Ie77yoTwJBuQAtDZf6VEfF" DefaultCategory="NewAudio.Filter" CanvasType="FullCategory">
@@ -47,12 +47,6 @@
                 <Choice Kind="ProcessAppFlag" Name="AudioLoopRegion" />
                 <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
               </p:NodeReference>
-              <Pin Id="DD2YQOMG2XKLJuuRhlvVjv" Name="Reset" Kind="InputPin" DefaultValue="False" />
-              <Pin Id="PTNs8Y3YedXPIqV7bJlpQT" Name="Bypass" Kind="InputPin" />
-              <Pin Id="UgeGAy4dLcCP8se7NZKtj6" Name="Input" Kind="InputPin" />
-              <Pin Id="MgDwe7Ha1oANVZN7eHo5hO" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
-              <Pin Id="IThw6cj47D3MiwsLTIPNn1" Name="Result" Kind="OutputPin" />
-              <Pin Id="Pn3yg9TLDtYOuZuzuogxh4" Name="In Progress" Kind="OutputPin" />
               <Patch Id="COx4ZIZKFsRLSbdi7RW8gY" ManuallySortedPins="true">
                 <ControlPoint Id="DjM2rDBEUr5OY9pxvnJSE2" Bounds="509,329" />
                 <ControlPoint Id="Sj8RNqzmeuvOv0WwoW6eT0" Bounds="569,329" />
@@ -116,6 +110,14 @@
                   <Pin Id="FaC05soGUgvOO8xt3Jabj3" Name="False" Kind="OutputPin" />
                 </Node>
               </Patch>
+              <Pin Id="Js61hGhgJAPQJ6xkckBURx" Name="Create" Kind="InputPin" />
+              <Pin Id="C95SHQzW9ZGMLdi7eMoyJS" Name="Update" Kind="InputPin" />
+              <Pin Id="DD2YQOMG2XKLJuuRhlvVjv" Name="Reset" Kind="InputPin" DefaultValue="False" />
+              <Pin Id="PTNs8Y3YedXPIqV7bJlpQT" Name="Bypass" Kind="InputPin" />
+              <Pin Id="UgeGAy4dLcCP8se7NZKtj6" Name="Input" Kind="InputPin" />
+              <Pin Id="MgDwe7Ha1oANVZN7eHo5hO" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
+              <Pin Id="IThw6cj47D3MiwsLTIPNn1" Name="Result" Kind="OutputPin" />
+              <Pin Id="Pn3yg9TLDtYOuZuzuogxh4" Name="In Progress" Kind="OutputPin" />
             </Node>
             <ControlPoint Id="AAoZiiiXFMrPQhGZsNIGzT" Bounds="504,855" />
             <ControlPoint Id="NrBgZS0DkvyNNGJR7unTFj" Bounds="577,201" />
@@ -569,12 +571,6 @@
                 <Choice Kind="ProcessAppFlag" Name="AudioLoopRegion" />
                 <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
               </p:NodeReference>
-              <Pin Id="JTpx1oYesFNPGIycZifiex" Name="Reset" Kind="InputPin" DefaultValue="False" />
-              <Pin Id="VuFafanU2hkQKuiG3oTlpx" Name="Bypass" Kind="InputPin" />
-              <Pin Id="PaSosDi543eQBVRHHxVOlC" Name="Input" Kind="InputPin" />
-              <Pin Id="R4MiPVPs1kOOK3busv4bBS" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
-              <Pin Id="TreuKOu7LqrNvmxM00s6u0" Name="Result" Kind="OutputPin" />
-              <Pin Id="Q2epErwPeZTPQdEuKlW6IR" Name="In Progress" Kind="OutputPin" />
               <Patch Id="BmUk6jSzGvnLVCBJqCcxYy" ManuallySortedPins="true">
                 <ControlPoint Id="JXGnvb8AMSgN5AzPGWkoaF" Bounds="385,379" />
                 <ControlPoint Id="Igw09knGjkKLIpd3kAm5uB" Bounds="445,379" />
@@ -618,6 +614,14 @@
                   <Pin Id="RNqmJBzjcCqMYg5tjnsr04" Name="Result" Kind="OutputPin" />
                 </Node>
               </Patch>
+              <Pin Id="TzkAnNEv9q6MQrmHb3xC7N" Name="Create" Kind="InputPin" />
+              <Pin Id="MKZe4eEjsZlPTrWfdhswYv" Name="Update" Kind="InputPin" />
+              <Pin Id="JTpx1oYesFNPGIycZifiex" Name="Reset" Kind="InputPin" DefaultValue="False" />
+              <Pin Id="VuFafanU2hkQKuiG3oTlpx" Name="Bypass" Kind="InputPin" />
+              <Pin Id="PaSosDi543eQBVRHHxVOlC" Name="Input" Kind="InputPin" />
+              <Pin Id="R4MiPVPs1kOOK3busv4bBS" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
+              <Pin Id="TreuKOu7LqrNvmxM00s6u0" Name="Result" Kind="OutputPin" />
+              <Pin Id="Q2epErwPeZTPQdEuKlW6IR" Name="In Progress" Kind="OutputPin" />
             </Node>
             <ControlPoint Id="TmTRRGihlwBQVfb7ZsXWhI" Bounds="380,905" />
             <ControlPoint Id="KQ3WRslZ62APqxB0jkP8JH" Bounds="512,230" />
@@ -1024,12 +1028,6 @@
                 <Choice Kind="ProcessAppFlag" Name="AudioLoopRegion" />
                 <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
               </p:NodeReference>
-              <Pin Id="RdIkVVj1zR7LfaxVLzU1KS" Name="Reset" Kind="InputPin" DefaultValue="False" />
-              <Pin Id="SB3kln1P2A5QAjVA96b5SV" Name="Bypass" Kind="InputPin" />
-              <Pin Id="RTu8W0UCLYYPaKvlvB8daq" Name="Input" Kind="InputPin" />
-              <Pin Id="MGjhsvTPOTcMrHvjd6Unis" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
-              <Pin Id="GZ2zSedSMjcPKlPzQkZJkW" Name="Result" Kind="OutputPin" />
-              <Pin Id="MNmQbwUfGp0QcGaaNQceGL" Name="In Progress" Kind="OutputPin" />
               <Patch Id="I3HAdtWNAbgQK4trYleBTh" ManuallySortedPins="true">
                 <ControlPoint Id="PzXOwM1AnkhMtt1gj91wHd" Bounds="258,329" />
                 <ControlPoint Id="P7rMxNRk2LuNVQxKAi2NG9" Bounds="318,329" />
@@ -1073,6 +1071,14 @@
                   <Pin Id="H5sdNk5B4fhPlppzmgfztm" Name="Result" Kind="OutputPin" />
                 </Node>
               </Patch>
+              <Pin Id="AryqGzxnS15LCDsmr6TOkp" Name="Create" Kind="InputPin" />
+              <Pin Id="RHEtPHLdxNxO34syKodZbE" Name="Update" Kind="InputPin" />
+              <Pin Id="RdIkVVj1zR7LfaxVLzU1KS" Name="Reset" Kind="InputPin" DefaultValue="False" />
+              <Pin Id="SB3kln1P2A5QAjVA96b5SV" Name="Bypass" Kind="InputPin" />
+              <Pin Id="RTu8W0UCLYYPaKvlvB8daq" Name="Input" Kind="InputPin" />
+              <Pin Id="MGjhsvTPOTcMrHvjd6Unis" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
+              <Pin Id="GZ2zSedSMjcPKlPzQkZJkW" Name="Result" Kind="OutputPin" />
+              <Pin Id="MNmQbwUfGp0QcGaaNQceGL" Name="In Progress" Kind="OutputPin" />
             </Node>
             <ControlPoint Id="OGMGnYg1T5aPJNFKM1jcng" Bounds="253,855" />
             <ControlPoint Id="CmRRDwhtKqRMj2QWoOKAnZ" Bounds="385,180" />
@@ -1599,12 +1605,6 @@
                 <Choice Kind="ProcessAppFlag" Name="AudioLoopRegion" />
                 <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
               </p:NodeReference>
-              <Pin Id="RbFw7MMUvdsNYvF8XWRnZa" Name="Reset" Kind="InputPin" DefaultValue="False" />
-              <Pin Id="HZUIUItJmyNM5qf3jCN3Rx" Name="Bypass" Kind="InputPin" />
-              <Pin Id="UflSEgNS2E3Mr3BYt6YHvw" Name="Input" Kind="InputPin" />
-              <Pin Id="Jt8wwb7CcjZOasRpjt4JgO" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
-              <Pin Id="P68F8LOMLB3P0RNuw6oCWn" Name="Result" Kind="OutputPin" />
-              <Pin Id="OOYs91q6kV0PmLTyMEaRi5" Name="In Progress" Kind="OutputPin" />
               <Patch Id="TZ4n5ap9u7ZMhLq24ux0VS" ManuallySortedPins="true">
                 <ControlPoint Id="E0jhnsNFUS0LyZw3MHnYjo" Bounds="280,276" />
                 <ControlPoint Id="L67aEdV1OQvQQPraBsLQDd" Bounds="340,276" />
@@ -1650,6 +1650,14 @@
                   <Pin Id="CoOo8zE096OL5J4c2UoK6y" Name="Result" Kind="OutputPin" />
                 </Node>
               </Patch>
+              <Pin Id="Mvskc0BaAndNSZk8holeIt" Name="Create" Kind="InputPin" />
+              <Pin Id="NX0HYLpjYJoLVuCFbWdhMT" Name="Update" Kind="InputPin" />
+              <Pin Id="RbFw7MMUvdsNYvF8XWRnZa" Name="Reset" Kind="InputPin" DefaultValue="False" />
+              <Pin Id="HZUIUItJmyNM5qf3jCN3Rx" Name="Bypass" Kind="InputPin" />
+              <Pin Id="UflSEgNS2E3Mr3BYt6YHvw" Name="Input" Kind="InputPin" />
+              <Pin Id="Jt8wwb7CcjZOasRpjt4JgO" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
+              <Pin Id="P68F8LOMLB3P0RNuw6oCWn" Name="Result" Kind="OutputPin" />
+              <Pin Id="OOYs91q6kV0PmLTyMEaRi5" Name="In Progress" Kind="OutputPin" />
             </Node>
             <ControlPoint Id="SVy0cvSo3ipNaIDnRGkDWa" Bounds="275,802" />
             <ControlPoint Id="PtFToAMm2N8Lyk5XkgLvug" Bounds="407,127" />
@@ -2115,6 +2123,46 @@
               <Pin Id="B2DKVGH4iOqQaTjyWfS3Gh" Name="Value" Kind="InputPin" />
               <Pin Id="Ksc9T43DDffQExKOI3Lj5f" Name="Value" Kind="OutputPin" />
             </Node>
+            <Node Bounds="300,209,58,26" Id="Qv6e4BjwQWkOBBbRDslOh1">
+              <p:NodeReference LastCategoryFullName="NewAudio.CallCounter" LastSymbolSource="VL.NewAudio.vl">
+                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                <CategoryReference Kind="ClassType" Name="CallCounter" />
+                <Choice Kind="OperationCallFlag" Name="Update" />
+              </p:NodeReference>
+              <Pin Id="M7uBjgJHPeqMezUcj6oVf4" Name="Input" Kind="StateInputPin" />
+              <Pin Id="JNEIMiWnX1sONh4c1RCIQp" Name="Value" Kind="InputPin" />
+              <Pin Id="Q4v70Uo3CzgM7tIJAKUT3B" Name="Output" Kind="StateOutputPin" />
+              <Pin Id="M15bfU2ekKiL76C0ld3bH5" Name="Result" Kind="OutputPin" />
+            </Node>
+            <Node Bounds="292,62,58,26" Id="RwoB4GEf9FcLJDrA6MxCvW">
+              <p:NodeReference LastCategoryFullName="NewAudio.CallCounter" LastSymbolSource="VL.NewAudio.vl">
+                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                <CategoryReference Kind="ClassType" Name="CallCounter" />
+                <Choice Kind="OperationCallFlag" Name="Create" />
+              </p:NodeReference>
+              <Pin Id="ApcmGAdwXZGNsebsifUPpx" Name="Output" Kind="StateOutputPin" />
+            </Node>
+            <Pad Id="Twvwg6kf4u3M5uDRudL1LC" Bounds="339,177" />
+            <Node Bounds="207,83,58,26" Id="Pj0LGErRf2NQAjGIBPh5ry">
+              <p:NodeReference LastCategoryFullName="NewAudio.CallCounter" LastSymbolSource="VL.NewAudio.vl">
+                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                <CategoryReference Kind="ClassType" Name="CallCounter" />
+                <Choice Kind="OperationCallFlag" Name="Create" />
+              </p:NodeReference>
+              <Pin Id="HPpjUrRH7q1NiXxkausT80" Name="Output" Kind="StateOutputPin" />
+            </Node>
+            <Pad Id="EluXC4gdZLaPXFu5wPFFFh" Bounds="358,151" />
+            <Node Bounds="602,329,58,26" Id="FWyxfjMxAhxLfZL8jnqAkq">
+              <p:NodeReference LastCategoryFullName="NewAudio.CallCounter" LastSymbolSource="VL.NewAudio.vl">
+                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                <CategoryReference Kind="ClassType" Name="CallCounter" />
+                <Choice Kind="OperationCallFlag" Name="Update" />
+              </p:NodeReference>
+              <Pin Id="FO0alfbErj0NI6OB2wUYrS" Name="Input" Kind="StateInputPin" />
+              <Pin Id="K2wqVHwP83iNMunraX34pF" Name="Value" Kind="InputPin" />
+              <Pin Id="UK3pM5ul7FVMcqU4No97bq" Name="Output" Kind="StateOutputPin" />
+              <Pin Id="HIb94fJP6sFMSwqava2RA2" Name="Result" Kind="OutputPin" />
+            </Node>
           </Canvas>
           <ProcessDefinition Id="NUUyfQ2ZafGLdBdu7xWMAY">
             <Fragment Id="McS0I4D8xZjNfEGGRuCKeP" Patch="SZAWBe47C6OMTEmDvyWjNh" Enabled="true" />
@@ -2136,7 +2184,7 @@
           <Link Id="ODWq4ixh8nhMfgeUIlgOc2" Ids="MF47a5Y6sY9NV6gBkmkvy4,T4hER5ecbHJM5dxVPWcHMs" IsHidden="true" />
           <Link Id="TzsHur2pgpcPQqH9DRKj48" Ids="DsatDsCQ5tgPA62aDN52Of,GQd9Tx6HMfHNlb0rDtVwQu" />
           <Link Id="A90fbTP7lbwMYkQpddkvUS" Ids="CFVKh2AfTrRQdnYFnvoFzX,Ha61qNCObsmQX8RLfBKX7Z" />
-          <Link Id="BmSMQtE848lPpybvO2LRzv" Ids="NjSKAgDqgMDNjyYllzl8aB,FhrYU1QnMcsMWo5RniEjDw" />
+          <Link Id="BmSMQtE848lPpybvO2LRzv" Ids="NjSKAgDqgMDNjyYllzl8aB,K2wqVHwP83iNMunraX34pF" />
           <Link Id="FMLMz8eJQdnOayBWjNE9o9" Ids="SfjN70ZW49FQCpOhVMmnQG,Luzsyxq1Q8vPwXckQVPhZj" />
           <Link Id="P71XhRDKEf1Pgrdv72w6tk" Ids="GEY25vDqoeoPSMZEiGHWhK,IQXCrp0iwHEO41RpvwHq8o" />
           <Link Id="JcixucsEifcPrU9V7LBVHC" Ids="ENcU1eCMBpdLgGNGm2Co7C,SljzaYwFu4qPuoS9Vhn36z" />
@@ -2160,7 +2208,7 @@
           <Link Id="UjxfUuxdw0FPvqw6CjXSa4" Ids="UnlRIdAgpTnOpZNAIIbFpg,TBqQuD8RpJjO4qkFfh3L5e" IsHidden="true" />
           <Slot Id="V1avM2fB7sFNxz5cltH8Q1" Name="b2" />
           <Link Id="GunLZX3Np8uPDg1NM0ylyW" Ids="DmFV5RK6SfSLYzOH4WQ8wb,NBvztP5sYw1OwL9dic684E" IsHidden="true" />
-          <Patch Id="SZAWBe47C6OMTEmDvyWjNh" Name="Create" ParticipatingElements="QfFi8qomlXZQbSmu4rr3sE,NiD9shDOTw4MfBsMqPKC0a,KicJzGCSpbGNt8PZUDBhsr,Rqsw3dPgiC2PFpq8gt6Lda" />
+          <Patch Id="SZAWBe47C6OMTEmDvyWjNh" Name="Create" ParticipatingElements="QfFi8qomlXZQbSmu4rr3sE,NiD9shDOTw4MfBsMqPKC0a,KicJzGCSpbGNt8PZUDBhsr,Rqsw3dPgiC2PFpq8gt6Lda,QMR4QTWrnY0NMkLaXscc77,URAJoEHSYQuQRePAABIGHW" />
           <Patch Id="KU355el6m2bPbRd2NzMSSh" Name="Update">
             <Pin Id="SCzuAOmO8I7PcuV1ysiI5d" Name="b0" Kind="InputPin" />
             <Pin Id="Mbhw5LSsIKhLBCJoQDfPXQ" Name="b1" Kind="InputPin" />
@@ -2191,7 +2239,13 @@
           <Link Id="IeMEC5YxrqQPobr6HuGlgZ" Ids="EJ0RW1swNetOb4CjfYjpmA,C00mtOSF2UfOmFsYtYALEz" />
           <Link Id="Krfxh8RKtz4PW16Y425R7t" Ids="GHtUTSBkl2vMHMyjeWBsJp,J41S24DucbQOWD233LCd0K" />
           <Link Id="Fk0DqD5822IP1XAF7iu7uL" Ids="PvEni1qWLwxMZBWklu0ROC,ImQhBcZjy9AQU9WHQnTRmI" />
-          <Link Id="VDdcIdisBQ8Ona9W99PzG9" Ids="Ksc9T43DDffQExKOI3Lj5f,A69bWu6n1ofLGoWaq0MgDU" />
+          <Link Id="VDdcIdisBQ8Ona9W99PzG9" Ids="Ksc9T43DDffQExKOI3Lj5f,JNEIMiWnX1sONh4c1RCIQp" />
+          <Link Id="TQ3mwWr9xjAOia4bh4hQpv" Ids="M15bfU2ekKiL76C0ld3bH5,A69bWu6n1ofLGoWaq0MgDU" />
+          <Link Id="QMR4QTWrnY0NMkLaXscc77" Ids="ApcmGAdwXZGNsebsifUPpx,Twvwg6kf4u3M5uDRudL1LC" />
+          <Link Id="UQI8BMX5sZkNvT0wWGi8wX" Ids="Twvwg6kf4u3M5uDRudL1LC,M7uBjgJHPeqMezUcj6oVf4" />
+          <Link Id="URAJoEHSYQuQRePAABIGHW" Ids="HPpjUrRH7q1NiXxkausT80,EluXC4gdZLaPXFu5wPFFFh" />
+          <Link Id="CHN48fgCofZMa6ah0giHIO" Ids="HIb94fJP6sFMSwqava2RA2,FhrYU1QnMcsMWo5RniEjDw" />
+          <Link Id="IlvwPj7NUqhLyM9y6SoWbi" Ids="EluXC4gdZLaPXFu5wPFFFh,FO0alfbErj0NI6OB2wUYrS" />
         </Patch>
       </Node>
       <!--
@@ -2214,12 +2268,6 @@
                 <Choice Kind="ProcessAppFlag" Name="AudioLoopRegion" />
                 <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
               </p:NodeReference>
-              <Pin Id="KQ1gcUTWA64QMYvlYnMMd6" Name="Reset" Kind="InputPin" DefaultValue="False" />
-              <Pin Id="T4tMK3YdW0nO1SZf7YqrQq" Name="Bypass" Kind="InputPin" />
-              <Pin Id="CzTCPuEWcRmPcdPWU3DAAm" Name="Input" Kind="InputPin" />
-              <Pin Id="Lk3Fp3sj4HtNE5py4HfSXR" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
-              <Pin Id="V8Gw4u1nCo7NMkUTodmvox" Name="Result" Kind="OutputPin" />
-              <Pin Id="N0TGHAG6hzTQI6RJoiWM9G" Name="In Progress" Kind="OutputPin" />
               <Patch Id="QxetUpeJaMBLNTcDgT7xfN" ManuallySortedPins="true">
                 <ControlPoint Id="AO1sQeAaiV1QEpir5fmtF3" Bounds="129,273" />
                 <ControlPoint Id="QPaK97n1lY1MhuF4ayDdWj" Bounds="189,273" />
@@ -2265,6 +2313,14 @@
                   <Pin Id="BXktdXIPHmLPkljg2eHgAi" Name="Result" Kind="OutputPin" />
                 </Node>
               </Patch>
+              <Pin Id="Q5mbtpLS2sFN7W3awJteV8" Name="Create" Kind="InputPin" />
+              <Pin Id="OGhGvBgIvdqMXjNxc0fBF1" Name="Update" Kind="InputPin" />
+              <Pin Id="KQ1gcUTWA64QMYvlYnMMd6" Name="Reset" Kind="InputPin" DefaultValue="False" />
+              <Pin Id="T4tMK3YdW0nO1SZf7YqrQq" Name="Bypass" Kind="InputPin" />
+              <Pin Id="CzTCPuEWcRmPcdPWU3DAAm" Name="Input" Kind="InputPin" />
+              <Pin Id="Lk3Fp3sj4HtNE5py4HfSXR" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
+              <Pin Id="V8Gw4u1nCo7NMkUTodmvox" Name="Result" Kind="OutputPin" />
+              <Pin Id="N0TGHAG6hzTQI6RJoiWM9G" Name="In Progress" Kind="OutputPin" />
             </Node>
             <ControlPoint Id="UCuSuhCnuJXLafREeCYZyq" Bounds="124,799" />
             <ControlPoint Id="QWFCD3iQd7LMCOmisQmKzN" Bounds="256,124" />
