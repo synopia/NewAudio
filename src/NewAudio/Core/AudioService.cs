@@ -2,6 +2,7 @@
 using Serilog;
 using Serilog.Formatting.Display;
 using Stride.Core;
+using VL.NewAudio.Core;
 
 namespace NewAudio.Core
 {
@@ -16,17 +17,7 @@ namespace NewAudio.Core
         public AudioGraph Graph { get; private set; }
 
         public ILogger Logger { get; }
-
-        private LifecyclePhase _phase;
-        public LifecyclePhase Phase
-        {
-            get => _phase;
-            set
-            {
-                Flow.PostLifecycleMessage(_phase, value);
-                _phase = value;
-            }
-        }
+        public readonly Lifecycle Lifecycle = new Lifecycle();
 
         private AudioService()
         {
@@ -50,41 +41,40 @@ namespace NewAudio.Core
         public void Init()
         {
             Log.Logger.Information("Audio Service: Initialized, Flow={flow}", Flow.DebugInfo());
-            Phase = LifecyclePhase.Stopped;
+            Lifecycle.Phase = LifecyclePhase.Stopped;
         }
 
+        public void Update()
+        {
+            Lifecycle.Update();
+        }
         public void Stop()
         {
-            Log.Logger.Information("Audio Service: Stop, current {current}", _phase);
-            if (Phase == LifecyclePhase.Playing)
-            {
-                Phase = LifecyclePhase.Stopped;
-            }
+            Log.Logger.Information("Audio Service: Stop, current {current}", Lifecycle.Phase);
+            Lifecycle.Stop();
         }
 
         public void Play()
         {
-            Log.Logger.Information("Audio Service: Play current {current}", _phase);
-            if (Phase == LifecyclePhase.Stopped)
-            {
-                Phase = LifecyclePhase.Playing;
-            }
+            Log.Logger.Information("Audio Service: Play current {current}", Lifecycle.Phase);
+            Lifecycle.Start();
         }
 
         public string DebugInfo()
         {
-            return $"{Flow.DebugInfo()}, {Graph.DebugInfo()}, Phase: {Phase}";
+            return $"{Flow.DebugInfo()}, {Graph.DebugInfo()}, Phase: {Lifecycle.Phase}";
         }
         
         public void Reset()
         {
+            Stop();
             Flow = new AudioDataflow(Logger);
             Graph = new AudioGraph();
         }
 
         public void Dispose()
         {
-            Phase = LifecyclePhase.Shutdown;
+            Lifecycle.Phase = LifecyclePhase.Shutdown;
             Flow.Dispose();
             Log.Logger.Information("AudioService Disposed");
         }

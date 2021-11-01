@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading;
 using NAudio.Wave;
+using NewAudio.Core;
+using Serilog;
 using SharedMemory;
 using VL.NewAudio.Core;
 
@@ -8,29 +10,28 @@ namespace NewAudio.Devices
 {
     public class DirectSoundDevice: BaseDevice
     {
+        private ILogger _logger;
 
         private Guid _guid;
         private DirectSoundOut _directSoundOut;
         public DirectSoundDevice(string name, Guid guid)
         {
+            _logger = AudioService.Instance.Logger.ForContext<DirectSoundDevice>();
             Name = name;
             _guid = guid;
             IsOutputDevice = true;
             IsInputDevice = false;
         }
 
-        public override void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat,
-            PlayPauseStop playPauseStop)
+        public override void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
         {
-            PlayPauseStop = playPauseStop;
-            AudioDataProvider = new AudioDataProvider(waveFormat, buffer, PlayPauseStop);
+            AudioDataProvider = new AudioDataProvider(waveFormat, buffer);
             _directSoundOut = new DirectSoundOut(_guid, desiredLatency);
             _directSoundOut?.Init(AudioDataProvider);
-            Logger.Information("DirectSound Out initialized.. ");
+            _logger.Information("DirectSound Out initialized.. ");
         }
 
-        public override void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat,
-            PlayPauseStop playPauseStop)
+        public override void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
         {
         }
 
@@ -41,21 +42,18 @@ namespace NewAudio.Devices
 
         public override void Play()
         {
-            Logger.Information("DirectSound Out Play");
             _directSoundOut?.Play();
         }
 
         public override void Stop()
         {
-            Logger.Information("DirectSound Out Stop");
             _directSoundOut?.Stop();
         }
 
         public override void Dispose()
         {
-            Logger.Information("DirectSound Out Dispose");
-            base.Dispose();
             _directSoundOut?.Dispose();
+            base.Dispose();
         }
 
         public override string ToString()

@@ -1,68 +1,89 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reactive.Concurrency;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using Irony.Parsing;
-using NAudio.Wave;
 using NewAudio.Core;
-using NewAudio.Internal;
 using Serilog;
 using SharedMemory;
 using VL.NewAudio.Core;
 
 namespace NewAudio.Blocks
 {
-    public class AudioInputBlock : AudioBufferBlock
+    public class AudioInputBlock : ISourceBlock<AudioDataMessage>, IDisposable
     {
-        private ActionBlock<AudioDataRequestMessage> Processor;
-        protected override ITargetBlock<AudioDataMessage> DataResponseSource => null;
-        protected override ITargetBlock<AudioDataRequestMessage> DataRequestSource => Processor;
-        private bool _reusedData;
-        protected override bool IsForwardLifecycleMessages => true;
+        private readonly ILogger _logger;
 
-        private PlayPauseStop _playPauseStop;
+        private readonly ITargetBlock<AudioDataMessage> _bufferBlock = new BufferBlock<AudioDataMessage>();
+        public CircularBuffer Buffer { get; }
 
-        public AudioInputBlock(CircularBuffer buffer, AudioDataflow flow, IAudioFormat format,
-            PlayPauseStop playPauseStop) : base(buffer, flow, format)
+        public AudioFormat OutputFormat { get; set; }
+
+        public AudioInputBlock(AudioDataflow flow, AudioFormat outputFormat)
         {
-            _playPauseStop = playPauseStop;
-            Processor = new ActionBlock<AudioDataRequestMessage>(message =>
+            _logger = AudioService.Instance.Logger.ForContext<AudioInputBlock>();
+            AudioService.Instance.Lifecycle.OnPlay += Loop;
+            AudioService.Instance.Flow.Add(this);
+            try
             {
-                try
+                Buffer = new CircularBuffer($"Input Block {flow.GetId()}",64, outputFormat.BufferSize);
+                OutputFormat = outputFormat;
+            }
+            catch (Exception e)
+            {
+                _logger.Error("Ctor: {e}", e);
+            }
+        }
+        
+        private void Loop()
+        {
+            try
+            {
+                Task.Run(() =>
                 {
-                    int remaining = message.RequestedSamples;
-                    var header = Buffer.ReadNodeHeader();
-                    var dist = header.WriteEnd - header.ReadStart;
-                    Logger.Information("DIST {d}", dist);
-                    var pos = 0;
-                    CancellationToken cancellationToken = playPauseStop.GetToken();
-                    var output = new AudioDataMessage(Format, 256);
-                    while (pos<8*512 && !cancellationToken.IsCancellationRequested)
+                    _logger.Information("Audio input reading thread");
+                    var token = AudioService.Instance.Lifecycle.GetToken();
+
+                    while (!token.IsCancellationRequested)
                     {
-                        var x = Buffer.Read(output.Data, pos%512);
-                        pos += x;
-                        if (pos%512 == 0)
+                        var message = new AudioDataMessage(OutputFormat, OutputFormat.SampleCount);
+                        var pos = 0;
+
+                        while (pos < OutputFormat.BufferSize && !token.IsCancellationRequested)
                         {
-                            Source.Post(output);
-                            output = new AudioDataMessage(Format, 256);
+                            var read = Buffer.Read(message.Data, pos);
+                            pos += read;
                         }
+
+                        _bufferBlock.Post(message);
                     }
-                }
-                catch (Exception e)
-                {
-                    Logger.Error("{e}", e);
-                }
-            });
+                    _logger.Information("Audio input reading thread finished");
+
+                });
+            }
+            catch (Exception e)
+            {
+                _logger.Error("{e}", e);
+            }
         }
 
+        public void Dispose()
+        {
+            try
+            {
+                AudioService.Instance.Flow.Remove(this);
+                Buffer.Dispose();
+            }
+            catch (Exception e)
+            {
+                _logger.Error("Dispose: {e}", e);
+            }
+        }
+        /*
         protected AudioDataMessage CreateMessage(AudioDataRequestMessage request, int sampleCount)
         {
             AudioDataMessage output;
-            if (!_reusedData && request.Data != null)
+            if (!_reusedData && request.ReusableDate != null)
             {
-                output = new AudioDataMessage(request.Data, Format, sampleCount / Format.Channels);
+                output = new AudioDataMessage(request.ReusableDate, Format, sampleCount / Format.Channels);
                 _reusedData = true;
             }
             else
@@ -71,6 +92,41 @@ namespace NewAudio.Blocks
             }
 
             return output;
+        }
+        */
+
+        public void Complete()
+        {
+            _bufferBlock.Complete();
+        }
+
+        public void Fault(Exception exception)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task Completion => _bufferBlock.Completion;
+
+        public IDisposable LinkTo(ITargetBlock<AudioDataMessage> target, DataflowLinkOptions linkOptions)
+        {
+            return ((ISourceBlock<AudioDataMessage>)_bufferBlock).LinkTo(target, linkOptions);
+        }
+
+        public AudioDataMessage ConsumeMessage(DataflowMessageHeader messageHeader,
+            ITargetBlock<AudioDataMessage> target, out bool messageConsumed)
+        {
+            return ((ISourceBlock<AudioDataMessage>)_bufferBlock).ConsumeMessage(messageHeader, target,
+                out messageConsumed);
+        }
+
+        public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<AudioDataMessage> target)
+        {
+            return ((ISourceBlock<AudioDataMessage>)_bufferBlock).ReserveMessage(messageHeader, target);
+        }
+
+        public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<AudioDataMessage> target)
+        {
+            ((ISourceBlock<AudioDataMessage>)_bufferBlock).ReleaseReservation(messageHeader, target);
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Threading;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
 using NewAudio.Core;
 using Serilog;
 using SharedMemory;
@@ -12,13 +10,15 @@ namespace NewAudio.Devices
 {
     public class WasapiDevice : BaseDevice
     {
-        public bool IsLoopback { get; }
+        private bool IsLoopback { get; }
 
+        private ILogger _logger;
         private WasapiOut _wavePlayer;
         private WasapiLoopbackCapture _loopback;
         private WasapiCapture _capture;
-        private string _deviceId;
-
+        private readonly string _deviceId;
+        private bool _firstLoop = true;
+        
         public WasapiDevice(string name, bool isInputDevice, bool isLoopback, string deviceId)
         {
             Name = name;
@@ -26,40 +26,32 @@ namespace NewAudio.Devices
             IsOutputDevice = !isInputDevice;
             IsLoopback = isLoopback;
             _deviceId = deviceId;
+            _logger = AudioService.Instance.Logger.ForContext<WasapiDevice>();
         }
 
-        public override void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat,
-            PlayPauseStop playPauseStop)
+        public override void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
         {
             if (IsOutputDevice)
             {
-                PlayPauseStop = playPauseStop;
-                AudioDataProvider = new AudioDataProvider(waveFormat, buffer, PlayPauseStop);
+                AudioDataProvider = new AudioDataProvider(waveFormat, buffer);
                 var device = new MMDeviceEnumerator().GetDevice(_deviceId);
                 _wavePlayer = new WasapiOut(device, AudioClientShareMode.Shared, true, desiredLatency);
                 _wavePlayer.Init(AudioDataProvider);
-                AudioService.Instance.Logger.Information("PLAYBACK Output Format: {format}",
+                _logger.Information("PLAYBACK Output Format: {format}",
                     _wavePlayer.OutputWaveFormat);
             }
         }
 
-        public override void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat,
-            PlayPauseStop playPauseStop)
+        public override void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
         {
             RecordingWaveFormat = waveFormat;
             RecordingBuffer = buffer;
-            PlayPauseStop = playPauseStop;
             if (IsLoopback)
             {
                 var device = new MMDeviceEnumerator().GetDevice(_deviceId);
                 _loopback = new WasapiLoopbackCapture(device);
 
                 _loopback.DataAvailable += DataAvailable;
-                var format = _loopback.WaveFormat;
-                Logger.Information("Starting Wasapi Recording, T={T}, CH={CH}, ENC={ENC}",
-                    RecordingWaveFormat.SampleRate, RecordingWaveFormat.Channels, RecordingWaveFormat.Encoding);
-                Logger.Information("Format2 T={T}, CH={CH}, ENC={ENC}", format.SampleRate, format.Channels,
-                    format.Encoding);
             }
             else if (IsInputDevice)
             {
@@ -71,39 +63,37 @@ namespace NewAudio.Devices
                 _capture.DataAvailable += DataAvailable;
             }
         }
-        
+
         private void DataAvailable(object sender, WaveInEventArgs evt)
         {
-            AudioService.Instance.Flow.PostRequest(new AudioDataRequestMessage(evt.BytesRecorded/4));
-            Logger.Verbose("DataAvailable {bytes}", evt.BytesRecorded);
+            if (_firstLoop)
+            {
+                _logger.Information("Wasapi AudioIn Thread started");
+                _firstLoop = false;
+            }
+            // AudioService.Instance.Flow.PostRequest(new AudioDataRequestMessage(evt.BytesRecorded/4));
+            _logger.Verbose("DataAvailable {bytes}", evt.BytesRecorded);
             try
             {
                 int remaining = evt.BytesRecorded;
                 int pos = 0;
-                var cancellationToken = PlayPauseStop.GetToken();
-                while (remaining > 0 && !cancellationToken.IsCancellationRequested)
+                var token = AudioService.Instance.Lifecycle.GetToken();
+                while (pos < evt.BytesRecorded && !token.IsCancellationRequested)
                 {
-                    if (remaining < 2048)
-                    {
-                        Buffers.WriteAll(RecordingBuffer, evt.Buffer, pos, remaining, cancellationToken);
-                        remaining = 0;
-                    }
-                    else
-                    {
-                        var written = RecordingBuffer.Write(evt.Buffer, pos);
-                        pos += written;
-                        remaining -= written;
-                    }
+                    var written = Buffers.Write(RecordingBuffer, evt.Buffer, pos, remaining);
+                    pos += written;
+                    remaining -= written;
                 }
             }
             catch (Exception e)
             {
-                Logger.Error("{e}", e);
+                _logger.Error("DataAvailable: {e}", e);
             }
         }
 
         public override void Record()
         {
+            _firstLoop = true;
             if (IsLoopback)
             {
                 _loopback?.StartRecording();
@@ -116,6 +106,7 @@ namespace NewAudio.Devices
 
         public override void Play()
         {
+            _firstLoop = true;
             _wavePlayer?.Play();
         }
 
@@ -124,17 +115,14 @@ namespace NewAudio.Devices
             _loopback?.StopRecording();
             _capture?.StopRecording();
             _wavePlayer?.Stop();
-            _loopback?.Dispose();
-            _capture?.Dispose();
-            _wavePlayer?.Dispose();
         }
 
         public override void Dispose()
         {
-            base.Dispose();
             _loopback?.Dispose();
             _capture?.Dispose();
             _wavePlayer?.Dispose();
+            base.Dispose();
         }
 
         public override string ToString()

@@ -10,12 +10,7 @@
         Finished
     }
     
-    public interface IAudioMessage
-    {
-        public AudioTime Time { get; set; }
-    }
-
-    public struct LifecycleMessage : IAudioMessage
+    public struct LifecycleMessage
     {
         public AudioTime Time { get; set; }
         public LifecyclePhase Leave { get; private set; }
@@ -34,38 +29,32 @@
         }
     }
 
-    public interface IAudioDataMessage : IAudioMessage, IAudioFormat
-    {
-        public bool IsLocked { get; }
-        public float[] Data { get; }
-    }
-
-    public struct AudioDataRequestMessage : IAudioMessage
+    public struct AudioDataRequestMessage 
     {
         public AudioTime Time { get; set; }
         public int RequestedSamples { get; private set; }
 
-        public float[] Data { get; private set; }
+        public float[] ReusableDate { get; private set; }
 
         public AudioDataRequestMessage(int requestedSamples)
         {
             RequestedSamples = requestedSamples;
-            Data = null;
+            ReusableDate = null;
             Time = new AudioTime();
         }
 
-        public AudioDataRequestMessage(AudioDataMessage recycle, int requestedSamples) : this(requestedSamples)
+        public AudioDataRequestMessage(float[] reusableDate, int requestedSamples) : this(requestedSamples)
         {
-            Data = recycle.Data;
+            ReusableDate = reusableDate;
         }
 
         public override string ToString()
         {
-            return $"Data Request: {Time}, requested samples={RequestedSamples}, recycling={Data != null}";
+            return $"Data Request: {Time}, requested samples={RequestedSamples}, recycling={ReusableDate != null}";
         }
     }
 
-    public struct AudioDataMessage : IAudioDataMessage
+    public struct AudioDataMessage 
     {
         public AudioTime Time { get; set; }
         public int SampleCount { get; set; }
@@ -75,18 +64,18 @@
         public int Channels { get; private set; }
         public int BufferSize => SampleCount*Channels;
 
-        public AudioDataMessage(IAudioFormat format, int sampleCount):this(null, format, sampleCount)
+        public AudioDataMessage(AudioFormat format, int sampleCount):this(null, format, sampleCount)
         {
         }
 
-        public AudioDataMessage(float[] recycled, IAudioFormat format, int sampleCount)
+        public AudioDataMessage(float[] data, AudioFormat format, int sampleCount)
         {
             IsInterleaved = format.IsInterleaved;
             SampleCount = sampleCount;
             Channels = format.Channels;
             Time = new AudioTime();
             IsLocked = false;
-            Data = recycled!=null && recycled.Length == sampleCount*Channels ? recycled : new float[sampleCount*Channels];
+            Data = data!=null && data.Length == sampleCount*Channels ? data : new float[sampleCount*Channels];
         }
 
         public override string ToString()

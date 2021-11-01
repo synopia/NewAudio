@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks.Dataflow;
+using NewAudio.Blocks;
 using Serilog;
+using SharedMemory;
 
 namespace NewAudio.Core
 {
@@ -8,15 +10,15 @@ namespace NewAudio.Core
         
         private readonly ILogger _logger = Log.ForContext<AudioLink>();
         
-        private ISourceBlock<IAudioMessage> _sourceBlock;
-        private readonly BroadcastBlock<IAudioMessage> _broadcastBlock = new BroadcastBlock<IAudioMessage>(i=> i);
+        private ISourceBlock<AudioDataMessage> _sourceBlock;
+        private readonly BroadcastBlock<AudioDataMessage> _broadcastBlock = new BroadcastBlock<AudioDataMessage>(i=> i);
         private IDisposable _currentLink;
 
-        public  Action<ISourceBlock<IAudioMessage>> Connect;
-        public  Action<ISourceBlock<IAudioMessage>> Disconnect;
-        public  Action<ISourceBlock<IAudioMessage>, ISourceBlock<IAudioMessage>> Reconnect;
-
-        public ISourceBlock<IAudioMessage> SourceBlock
+        public  Action<ISourceBlock<AudioDataMessage>> Connect;
+        public  Action<ISourceBlock<AudioDataMessage>> Disconnect;
+        public  Action<ISourceBlock<AudioDataMessage>, ISourceBlock<AudioDataMessage>> Reconnect;
+        
+        public ISourceBlock<AudioDataMessage> SourceBlock
         {
             get => _broadcastBlock;
             // get => _sourceBlock;

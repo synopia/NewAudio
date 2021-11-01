@@ -13,10 +13,8 @@ namespace NewAudio.Devices
         public string Name { get; }
         public bool IsInputDevice { get; }
         public bool IsOutputDevice { get; }
-        public void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat,
-            PlayPauseStop playPauseStop);
-        public void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat,
-            PlayPauseStop playPauseStop);
+        public void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);
+        public void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);
         public void Play();
         
         public void Record();
@@ -25,10 +23,6 @@ namespace NewAudio.Devices
 
     public abstract class BaseDevice : IDevice
     {
-        protected ILogger Logger;
-
-        protected PlayPauseStop PlayPauseStop { get; set; }
-
         public WaveFormat RecordingWaveFormat { get; protected set; }
         public CircularBuffer RecordingBuffer { get; protected set; }
 
@@ -42,13 +36,10 @@ namespace NewAudio.Devices
         
         protected BaseDevice()
         {
-            Logger = AudioService.Instance.Logger;
         }
-        public abstract void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat,
-            PlayPauseStop playPauseStop);
+        public abstract void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);
 
-        public abstract void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat,
-            PlayPauseStop playPauseStop);
+        public abstract void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);
 
         public abstract void Play();
 
@@ -58,8 +49,6 @@ namespace NewAudio.Devices
 
         public virtual void Dispose()
         {
-            Logger.Information("Cancel AUDIO THREAD");
-            
             AudioDataProvider?.Dispose();
         }
     }

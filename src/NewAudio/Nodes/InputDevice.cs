@@ -11,118 +11,96 @@ using VL.NewAudio.Core;
 
 namespace NewAudio.Nodes
 {
-    public class InputDevice: BaseNode<AudioInputBlock>
+    public class InputDevice: BaseNode
     {
+        private readonly ILogger _logger;
         private IDevice _device;
-        private CircularBuffer _mainBuffer;
-        private CircularBuffer _sharedBuffer;
         private AudioFormat _format;
-        private PlayPauseStop _playPauseStop;
-        private AudioInputBlock _inputBlock;
+        private readonly AudioInputBlock _audioInputBlock;
+        
         public WaveFormat WaveFormat => _format.WaveFormat;
-        public override AudioInputBlock AudioBlock => _inputBlock;
 
         public InputDevice()
         {
-            _playPauseStop = new PlayPauseStop();
-            Logger.Information("Input device created");
+            _logger = AudioService.Instance.Logger.ForContext<InputDevice>();
+            _logger.Information("Input device created");
             _format = new AudioFormat(48000, 256, 2, true);
+
             try
             {
-                var name = $"Buffer {Graph.GetBufferId()}";
-                _mainBuffer = new CircularBuffer(name, 1024, 4*_format.BufferSize);
-                _sharedBuffer = new CircularBuffer(name);
-                Logger.Information("Buffer [{name}] created, buffer size", name);
+                _audioInputBlock = new AudioInputBlock(AudioService.Instance.Flow, _format);
+                Output.SourceBlock = _audioInputBlock;
             }
             catch (Exception e)
             {
-                Logger.Error("{e}", e);
+                _logger.Error("Ctor: {e}", e);
             }
-            _inputBlock = new AudioInputBlock(_sharedBuffer, AudioService.Instance.Flow, _format, _playPauseStop);
-            _inputBlock.PhaseChanged = (old, newPhase) =>
-            {
-                if (newPhase == LifecyclePhase.Playing)
-                {
-                    Play();
-                } else 
-                {
-                    Stop();
-                }
-            };
-            Output.SourceBlock = _inputBlock;
         }
 
-        private bool _needsRestart;
-
-        public void Update()
+        public string DebugInfo()
         {
-            if (_needsRestart && Phase==LifecyclePhase.Playing)
+            return Utils.CalculateBufferStats(_audioInputBlock.Buffer);
+        }
+        
+        protected override void Start()
+        {
+            try
             {
-                _needsRestart = false;
-                _device.InitRecording(200, _mainBuffer, WaveFormat, _playPauseStop);
-                _playPauseStop.Play();
-                _device?.Record();
+                _device.Record();
+            }
+            catch (Exception e)
+            {
+                _logger.Error("Start: {e}",e);
             }
         }
+        
         public void ChangeDevice(WaveInputDevice device)
         {
             try
             {
-                if (_device != null)
-                {
-                    Stop();
-                    _device.Dispose();
-                }
+                _device?.Dispose();
+
                 _device = (IDevice)device.Tag;
-                // _device.InitRecording(200, _mainBuffer, WaveFormat, _playPauseStop);
-                Logger.Information("Device changed: {device}", _device);
+                _device.InitRecording(200, _audioInputBlock.Buffer, WaveFormat);
+                _logger.Information("Device changed: {device}", _device);
+                
                 if (Phase == LifecyclePhase.Playing)
                 {
-                    // Play();
+                    Start();
                 }
-
-                _needsRestart = true;
             }
             catch (Exception e)
             {
-                Logger.Error("InputDevice.Init({device}): {e}", _device, e);
+                _logger.Error("ChangeDevice({device}): {e}", _device, e);
 
             }
         }
-        public void Play()
+
+        protected override void Stop()
         {
             try
             {
-                // _playPauseStop.Play();
-                // _device?.Record();
-                _needsRestart = true;
-            }
-            catch (Exception e)
-            {
-                Logger.Error("OutputDevice.Init({device}): {e}", _device, e);
-            }
-
-        }
-
-        public void Stop()
-        {
-            try
-            {
-                _playPauseStop.Stop();
                 _device?.Stop();
             }
             catch (Exception e)
             {
-                Logger.Error("OutputDevice.Init({device}): {e}", _device, e);
+                _logger.Error("Stop({device}): {e}", _device, e);
             }
 
         }
 
         public override void Dispose()
         {
-            _playPauseStop.Stop();
-            _device?.Stop();
-            _device?.Dispose();
+            try
+            {
+                Stop();
+                _audioInputBlock.Dispose();
+                _device?.Dispose();
+            }
+            catch (Exception e)
+            {
+                _logger.Error("Dispose {e}", e);
+            }
             base.Dispose();
         }
     }

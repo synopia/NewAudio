@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
 using NewAudio.Core;
@@ -9,23 +11,36 @@ using VL.NewAudio.Core;
 
 namespace NewAudio.Blocks
 {
-    public class AudioOutputBlock : AudioBufferBlock 
+    public class AudioOutputBlock : ITargetBlock<AudioDataMessage>, IDisposable
     {
-        protected ActionBlock<AudioDataMessage> Processor;
-        protected override ITargetBlock<AudioDataMessage> DataResponseSource => Processor;
-        protected override ITargetBlock<AudioDataRequestMessage> DataRequestSource => null;
-        protected  override bool IsForwardLifecycleMessages => false;
+        private readonly ILogger _logger;
 
-        private PlayPauseStop _playPauseStop;
-        public AudioOutputBlock(CircularBuffer buffer, AudioDataflow flow, IAudioFormat format, PlayPauseStop playPauseStop) : base(buffer, flow, format)
+        public CircularBuffer Buffer { get; }
+
+        public AudioFormat InputFormat { get; set; }
+
+        private ActionBlock<AudioDataMessage> _actionBlock;
+
+        public AudioOutputBlock(AudioDataflow flow, AudioFormat inputFormat)
         {
-            _playPauseStop = playPauseStop;
-            Processor = new ActionBlock<AudioDataMessage>(message =>
+            _logger = AudioService.Instance.Logger.ForContext<AudioInputBlock>();
+            AudioService.Instance.Flow.Add(this);
+            try
             {
-                var token = _playPauseStop.GetToken();
-                Logger.Verbose("Writing data to Main Buffer Out {message} {size} {token}",message.Data.Length, message.BufferSize, token.IsCancellationRequested);
+                Buffer = new CircularBuffer($"Output Buffer {flow.GetId()}", 64, inputFormat.BufferSize);
+                InputFormat = inputFormat;
+            }
+            catch (Exception e)
+            {
+                _logger.Error("Ctor: {e}",e);
+            }
+
+            _actionBlock = new ActionBlock<AudioDataMessage>(message =>
+            {
+                _logger.Verbose("Writing data to Main Buffer Out {message} {size}",message.Data.Length, message.BufferSize);
 
                 var pos = 0;
+                var token = AudioService.Instance.Lifecycle.GetToken();
                 while (pos<message.BufferSize && !token.IsCancellationRequested)
                 {
                     var v = Buffer.Write(message.Data, pos);
@@ -33,7 +48,37 @@ namespace NewAudio.Blocks
                 }
             });
             
+            
         }
-      
+
+        public void Dispose()
+        {
+            try
+            {
+                AudioService.Instance.Flow.Remove(this);
+                Buffer.Dispose();
+            }
+            catch (Exception e)
+            {
+                _logger.Error("Dispose: {e}",e);
+            }
+        }
+
+        public void Complete()
+        {
+            _actionBlock.Complete();
+        }
+
+        public void Fault(Exception exception)
+        {
+        }
+
+        public Task Completion => _actionBlock.Completion;
+
+        public DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, AudioDataMessage messageValue,
+            ISourceBlock<AudioDataMessage> source, bool consumeToAccept)
+        {
+            return ((ITargetBlock<AudioDataMessage>)_actionBlock).OfferMessage(messageHeader, messageValue, source, consumeToAccept);
+        }
     }
 }

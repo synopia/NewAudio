@@ -9,16 +9,19 @@ using Serilog;
 
 namespace NewAudio.Nodes
 {
-    public class AudioBufferOut : BaseNode<AudioEffectBlock>
+    public class AudioBufferOut : BaseNode
     {
+        private readonly ILogger _logger;
         private float[] _outBuffer;
         private CircularSampleBuffer _sampleBuffer;
+        private ActionBlock<AudioDataMessage> _readBuffer;
         public int BufferSize { get; private set; }
-        public override AudioEffectBlock AudioBlock { get; }
 
         public AudioBufferOut()
         {
-            var readBuffer = new ActionBlock<IAudioDataMessage>(input =>
+            _logger = AudioService.Instance.Logger.ForContext<OutputDevice>();
+            _logger.Information("AudioBufferOut created");
+            _readBuffer = new ActionBlock<AudioDataMessage>(input =>
             {
                 var inputBufferSize = Math.Min(input.BufferSize, BufferSize);
                 if (_sampleBuffer == null || _sampleBuffer.MaxLength != inputBufferSize)
@@ -44,26 +47,37 @@ namespace NewAudio.Nodes
                 _sampleBuffer.Advance(written);
             });
 
-            
-            
-            Connect += input =>
-            {
-                var filter = new MessageFilterBlock<IAudioDataMessage>();
-                input.SourceBlock.LinkTo(filter);
-                filter.LinkTo(readBuffer);
-            };
-            Disconnect += input =>
-            {
 
+            Connect += link =>
+            {  
+                _logger.Information("New connection");
+                AddLink(link.SourceBlock.LinkTo(_readBuffer));
             };
-            Reconnect += (o, n) =>
+            Reconnect += (old, link) =>
             {
-                Connect?.Invoke(n);
+                DisposeLinks();
+                AddLink(link.SourceBlock.LinkTo(_readBuffer));
+                _logger.Information("New connection (removing old one)");
+            };
+            Disconnect += link =>
+            {
+                DisposeLinks();
+                _logger.Information("Disconnected from");
             };
             // Output.SourceBlock = readBuffer;
         }
-        
-        public IEnumerable Update()
+
+        protected override void Start()
+        {
+            
+        }
+
+        protected override void Stop()
+        {
+            
+        }
+
+        public  IEnumerable Update()
         {
             if (_outBuffer!=null)
             {

@@ -9,10 +9,7 @@ namespace NewAudio.Core
 {
     public static class Buffers
     {
-        public static int Read(CircularBuffer buffer, float[] data, int bytes, CancellationToken token)
-        {
-            return buffer.Read<float>(data);
-        }
+        /*
         public static unsafe void ReadAll(CircularBuffer buffer, float[] data, int bytes, CancellationToken token)
         {
             fixed (float* b = data)
@@ -77,7 +74,17 @@ namespace NewAudio.Core
                 }
             }
         }
+        */
 
+        public static unsafe int Write(CircularBuffer buffer, byte[] data, int offset, int bytes)
+        {
+            fixed (byte* buf = data)
+            {
+                IntPtr ptr = new IntPtr(buf)+offset;
+                return buffer.Write(ptr, bytes);
+            }
+        }
+        /*
         public static unsafe void WriteAll(CircularBuffer buffer, byte[] data, int offset, int bytes, CancellationToken token)
         {
             fixed (byte* buf = data)
@@ -99,6 +106,7 @@ namespace NewAudio.Core
                 }
             }
         }
+        */
 
         public static void FromSampleProvider(float[] buffer, ISampleProvider provider, int bufferSize)
         {

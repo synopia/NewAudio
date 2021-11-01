@@ -14,14 +14,12 @@ namespace NewAudio.Devices
             IsOutputDevice = isOutputDevice;
         }
 
-        public override void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat,
-            PlayPauseStop playPauseStop)
+        public override void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
         {
             
         }
 
-        public override void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat,
-            PlayPauseStop playPauseStop)
+        public override void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
         {
             
         }

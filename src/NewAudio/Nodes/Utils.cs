@@ -7,11 +7,24 @@ using NAudio.Wave;
 using VL.Core;
 using VL.Lib.Collections;
 using FFTW.NET;
+using SharedMemory;
 
 namespace NewAudio.Nodes
 {
     public static class Utils
     {
+        
+        public static string CalculateBufferStats(CircularBuffer buffer)
+        {
+            var header = buffer.ReadNodeHeader();
+            var nodes = header.NodeCount;
+            var ws = header.WriteStart;
+            var we = header.WriteEnd;
+            var rs = header.ReadStart;
+            var re = header.ReadEnd;
+            return $"Nodes: {nodes} Write: [{ws}, {we}], Read: [{rs}, {re}]";
+        }
+
         public static float PI = (float)Math.PI;
         public static float TwoPI = (float)(2.0*Math.PI);
 

@@ -3,31 +3,28 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
 using Serilog;
+using SharedMemory;
 
 namespace NewAudio.Blocks
 {
-    public abstract class BaseAudioBlock: IPropagatorBlock<IAudioMessage, IAudioMessage>, IDisposable
+    public abstract class BaseAudioBlock<TIn,TOut>: IPropagatorBlock<TIn, TOut>, IDisposable
     {
         protected readonly ILogger Logger;
 
         protected readonly AudioDataflow Flow;
-        public readonly BufferBlock<IAudioMessage> Source;
-        public readonly ITargetBlock<IAudioMessage> Target;
+        public ISourceBlock<TOut> Source { get; protected set; }
+        public ITargetBlock<TIn> Target { get; protected set; }
         public LifecyclePhase CurrentPhase { get; private set; }
-        public bool IsPostDataRequestMessages => DataRequestSource != null;
-        public bool IsPostDataResponseMessages => DataResponseSource != null;
 
-        protected abstract bool IsForwardLifecycleMessages { get; }
-        protected abstract ITargetBlock<AudioDataMessage> DataResponseSource { get; }
-        protected abstract ITargetBlock<AudioDataRequestMessage> DataRequestSource { get; }
         public Action<LifecyclePhase, LifecyclePhase> PhaseChanged;
+        
         protected BaseAudioBlock(AudioDataflow flow)
         {
             Logger = AudioService.Instance.Logger;
             Logger.Information("Constructing {this}", this);
             Flow = flow;
-            Flow.Add(this);
-            Source =new BufferBlock<IAudioMessage>();
+
+            /*Source =new BufferBlock<IAudioMessage>();
             Target = new ActionBlock<IAudioMessage>(input =>
             {
                 try
@@ -62,7 +59,7 @@ namespace NewAudio.Blocks
             {
                 
             });
-            Target.Completion.ContinueWith(delegate { Source.Complete(); });
+            Target.Completion.ContinueWith(delegate { Source.Complete(); });*/
         }
 
 
@@ -85,30 +82,30 @@ namespace NewAudio.Blocks
 
         public Task Completion => Source.Completion;
 
-        public DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, IAudioMessage messageValue,
-            ISourceBlock<IAudioMessage> source, bool consumeToAccept)
+        public DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, TIn messageValue,
+            ISourceBlock<TIn> source, bool consumeToAccept)
         {
             return Target.OfferMessage(messageHeader, messageValue, source, consumeToAccept);
         }
 
-        public IDisposable LinkTo(ITargetBlock<IAudioMessage> target, DataflowLinkOptions linkOptions)
+        public IDisposable LinkTo(ITargetBlock<TOut> target, DataflowLinkOptions linkOptions)
         {
             return Source.LinkTo(target, linkOptions);
         }
 
-        public IAudioMessage ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<IAudioMessage> target, out bool messageConsumed)
+        public TOut ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<TOut> target, out bool messageConsumed)
         {
-            return ((IReceivableSourceBlock<IAudioMessage>)Source).ConsumeMessage(messageHeader, target, out messageConsumed);
+            return ((IReceivableSourceBlock<TOut>)Source).ConsumeMessage(messageHeader, target, out messageConsumed);
         }
 
-        public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<IAudioMessage> target)
+        public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<TOut> target)
         {
-            return ((IReceivableSourceBlock<IAudioMessage>)Source).ReserveMessage(messageHeader, target);
+            return ((IReceivableSourceBlock<TOut>)Source).ReserveMessage(messageHeader, target);
         }
 
-        public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<IAudioMessage> target)
+        public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<TOut> target)
         {
-            ((IReceivableSourceBlock<IAudioMessage>)Source).ReleaseReservation(messageHeader, target);
+            ((IReceivableSourceBlock<TOut>)Source).ReleaseReservation(messageHeader, target);
 
         }
         

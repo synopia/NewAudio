@@ -9,10 +9,13 @@ namespace NewAudio.Devices
 {
     public class AsioDevice: BaseDevice
     {
+        private ILogger _logger;
         private string _driverName;
         private AsioOut _asioOut;
         private bool _isRecording;
         private bool _isPlaying;
+        private CircularBuffer _buffer;
+        private WaveFormat _waveFormat;
         private bool _isInitialized;
         
         public AsioDevice(string name, string driverName)
@@ -21,19 +24,17 @@ namespace NewAudio.Devices
             _driverName = driverName;
             IsInputDevice = true;
             IsOutputDevice = true;
+            _logger = AudioService.Instance.Logger.ForContext<AsioDevice>();
         }
 
-        private CircularBuffer _buffer;
-        private WaveFormat _waveFormat;
-        public override void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat,
-            PlayPauseStop playPauseStop)
+        public override void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
         {
             _waveFormat = waveFormat;
             _buffer = buffer;
-            PlayPauseStop = playPauseStop;
             _isPlaying = true;
-            Logger.Information("Starting Asio Playback, T={T}, CH={CH}, ENC={ENC}", waveFormat.SampleRate, waveFormat.Channels, waveFormat.Encoding);
-            DoInit();
+            _logger.Information("Starting Asio Playback, T={T}, CH={CH}, ENC={ENC}", waveFormat.SampleRate, waveFormat.Channels, waveFormat.Encoding);
+           
+         
             // _logger.Info($"DriverInputChannelCount {asioOut.DriverInputChannelCount}");
             // _logger.Info($"DriverOutputChannelCount {asioOut.DriverOutputChannelCount}");
             // _logger.Info($"PlaybackLatency {asioOut.PlaybackLatency}");
@@ -46,8 +47,7 @@ namespace NewAudio.Devices
             // _logger.Info($"{asioOut.IsSampleRateSupported(44100)}");
         }
 
-        public override void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat,
-            PlayPauseStop playPauseStop)
+        public override void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
         {
             _isRecording = true;
         }
@@ -62,7 +62,7 @@ namespace NewAudio.Devices
         }
         private void DoInit()
         {
-            AudioDataProvider = new AudioDataProvider(_waveFormat, _buffer, PlayPauseStop);
+            AudioDataProvider = new AudioDataProvider(_waveFormat, _buffer);
             _asioOut = new AsioOut(_driverName);
             if (_isRecording )
             {
@@ -80,7 +80,7 @@ namespace NewAudio.Devices
         {
             if (!_isInitialized)
             {
-                // DoInit();
+                DoInit();
             }
             _asioOut?.Play();
         }
@@ -89,7 +89,7 @@ namespace NewAudio.Devices
         {
             if (!_isInitialized)
             {
-                // DoInit();
+                DoInit();
             }
             _asioOut?.Play();
         }
@@ -97,13 +97,13 @@ namespace NewAudio.Devices
         public override void Stop()
         {
             _asioOut?.Stop();
-            _asioOut?.Dispose();
         }
 
         public override void Dispose()
         {
-            base.Dispose();
+            Stop();
             _asioOut?.Dispose();
+            base.Dispose();
         }
 
         public override string ToString()

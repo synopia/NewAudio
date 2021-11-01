@@ -34,6 +34,34 @@ namespace NewAudioTest
         }
 
         [Test]
+        public void ManyBufs()
+        {
+            Init();
+            var b = new CircularBuffer("1", 20, 2048);
+            byte[] bb = new byte[3000];
+            byte[] bb2 = new byte[2048];
+            var b11 = new CircularBuffer("1");
+            var b21 = new CircularBuffer("1");
+            // b21.Read(bb);
+            var a1= b.Write(bb);
+            var a2 = a1+b.Write(bb, a1);
+            var a3 = a2+b.Write(bb, a2);
+            var r1 = b11.Read(bb2);
+            var b1 = b.ReadNodeHeader().ReadEnd;
+            var r2 = b11.Read(bb2);
+            var b2 = b.ReadNodeHeader().ReadEnd;
+            var r3 = b11.Read(bb2);
+            var b3 = b.ReadNodeHeader().ReadEnd;
+            var r4 = b21.Read(bb2);
+            var b4 = b.ReadNodeHeader().ReadEnd;
+            var a4= b.Write(bb);
+            // b11.Read(bb);
+            Log.Information("{a1} {a2} {a3} {a4} {b1} {b2} {b3} {b4} ",a1,a2,a3,a4, b1,b2,b3,b4 );
+            Log.Information("{r0} {r1} {r2} {r3}",r1, r2, r3, r4);
+
+        }
+
+        [Test]
         public void Test3()
         {
             var format = new AudioFormat(48000, 256, 2, true);
@@ -55,55 +83,6 @@ namespace NewAudioTest
             _logger.Information("{wrote} {read} {f1} {f2}",read, wrote, f, f2);
         }
 
-        [Test]
-        public void Test2()
-        {
-            var format = new AudioFormat(48000, 256, 2, true);
-            var buffer = new CircularBuffer("X", 256, format.BufferSize*64);
-
-            float[] f = new float[format.BufferSize];
-            for (int i = 0; i < 100; i++)
-            {
-                
-                Buffers.WriteAll(buffer, f, format.BufferSize, CancellationToken.None);
-            }
-            for (int i = 0; i < 100; i++)
-            {
-                Buffers.ReadAll(buffer, f, format.BufferSize, CancellationToken.None);
-                Assert.AreEqual(5, f[5]);
-            }
-            
-            
-        }
-
-        [Test]
-        public void TestBuffers()
-        {
-            Init();
-
-            var token = new CancellationTokenSource().Token;
-            var buffer = new CircularBuffer("X", 16, 25600);
-            float[] f = new float[400];
-            float[] f2 = new float[400];
-            for (int i = 0; i < 333; i++)
-            {
-                f[i] = i;
-            }
-            byte[] b2 = new byte[2000];
-            
-            Buffers.WriteAll(buffer, f, 333, token);
-            Buffers.ReadAll(buffer, f2, 333, token);
-            Assert.AreEqual(222, f2[222]);
-            
-            Buffers.WriteAll(buffer, f, 333, token);
-            Buffers.ReadAll(buffer, b2, 333*4, token);
-            // Buffers.WriteAll(buffer, b2, 333*4, token);
-            Buffers.ReadAll(buffer, f2, 333, token);
-            Assert.AreEqual(222, f2[222]);
-            
-            
-        }
-        
         [Test]
         public void TestSimple()
         {

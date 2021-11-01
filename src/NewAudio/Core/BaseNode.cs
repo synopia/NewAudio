@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using NewAudio.Blocks;
 using Serilog;
+using VL.NewAudio.Core;
 
 namespace NewAudio.Core
 {
-    public abstract class BaseNode<TBaseBlock> : IDisposable where TBaseBlock: BaseAudioBlock
+    public abstract class BaseNode : IDisposable 
     {
-        protected readonly ILogger Logger;
-        public LifecyclePhase Phase => AudioBlock.CurrentPhase;
         private readonly AudioLink _output = new AudioLink();
+        protected AudioDataflow Flow;
         public AudioLink Input { get; private set; }
 
         public Action<AudioLink> Connect;
@@ -17,15 +17,20 @@ namespace NewAudio.Core
         public Action<AudioLink, AudioLink> Reconnect;
 
         public AudioLink Output => _output;
-        public abstract TBaseBlock AudioBlock { get; }
+        public LifecyclePhase Phase => AudioService.Instance.Lifecycle.Phase;
+
         private List<IDisposable> _links = new List<IDisposable>();
-        protected readonly AudioGraph Graph;
 
         protected BaseNode()
         {
-            Logger = AudioService.Instance.Logger;
-            Graph = AudioService.Instance.Graph;
+            Flow = AudioService.Instance.Flow;
+            AudioService.Instance.Lifecycle.OnPlay += Start;
+            AudioService.Instance.Lifecycle.OnStop += Stop;
         }
+
+        protected abstract void Start();
+        protected abstract void Stop();
+        
         
         public void UpdateInput(AudioLink input, bool reset=false)
         {
@@ -78,7 +83,6 @@ namespace NewAudio.Core
         
         public virtual void Dispose()
         {
-            Logger.Information("Disposing {this}", this);
             DisposeLinks();
             if (Input != null)
             {

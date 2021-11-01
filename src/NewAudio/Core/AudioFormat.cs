@@ -19,17 +19,7 @@ namespace NewAudio.Core
         Hz352800 = 352800
     }
 
-    public interface IAudioFormat
-    {
-        public int Channels { get; }
-        // public int SampleRate { get; }
-        public int SampleCount { get; }
-        public int BufferSize { get; }
-        public bool IsInterleaved { get; }
-        
-    }
-
-    public struct AudioFormat : IAudioFormat
+    public struct AudioFormat 
     {
         public int SampleRate { get; }
         public int Channels { get; }
