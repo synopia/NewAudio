@@ -7,14 +7,13 @@ namespace NewAudio.Core
     {
         private readonly List<IDisposable> _links = new List<IDisposable>();
 
-        public Action<AudioLink> Connect;
-        public Action<AudioLink> Disconnect;
-        protected AudioDataflow Flow;
-        public Action<AudioLink, AudioLink> Reconnect;
+        public Action<AudioLink> OnConnect;
+        public Action<AudioLink> OnDisconnect;
+
+        private List<Exception> _exceptions = new List<Exception>();
 
         protected BaseNode()
         {
-            Flow = AudioService.Instance.Flow;
             AudioService.Instance.Lifecycle.OnPlay += Start;
             AudioService.Instance.Lifecycle.OnStop += Stop;
         }
@@ -28,7 +27,7 @@ namespace NewAudio.Core
         public virtual void Dispose()
         {
             DisposeLinks();
-            if (Input != null) Disconnect?.Invoke(Input);
+            if (Input != null) OnDisconnect?.Invoke(Input);
 
             Output.Dispose();
         }
@@ -36,36 +35,49 @@ namespace NewAudio.Core
         protected abstract void Start();
         protected abstract void Stop();
 
+        protected void HandleError(Exception exception)
+        {
+            if( !_exceptions.Exists(e=>e.Message==exception.Message))
+            {
+                _exceptions.Add(exception);
+                throw exception;
+            }
+        }
 
         public void UpdateInput(AudioLink input, bool reset = false)
         {
             if (reset)
                 if (Input != null)
                 {
-                    Disconnect?.Invoke(Input);
+                    OnDisconnect?.Invoke(Input);
                     Input = null;
                 }
 
+            if (input == Input)
+            {
+                return;
+            }
+            
             if (Input == null)
             {
                 if (input != null)
                 {
                     Input = input;
-                    Connect?.Invoke(input);
+                    OnConnect?.Invoke(input);
                 }
             }
             else
             {
                 if (input == null)
                 {
-                    Disconnect?.Invoke(Input);
+                    OnDisconnect?.Invoke(Input);
                     Input = null;
                 }
                 else
                 {
-                    var old = Input;
+                    OnDisconnect?.Invoke(Input);
                     Input = input;
-                    Reconnect?.Invoke(old, input);
+                    OnConnect?.Invoke(input);
                 }
             }
         }

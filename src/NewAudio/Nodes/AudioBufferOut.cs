@@ -13,7 +13,6 @@ namespace NewAudio.Nodes
         private readonly ILogger _logger;
         private float[] _outBuffer;
         private readonly ActionBlock<AudioDataMessage> _readBuffer;
-        private CircularSampleBuffer _sampleBuffer;
 
         public AudioBufferOut()
         {
@@ -22,34 +21,28 @@ namespace NewAudio.Nodes
             _readBuffer = new ActionBlock<AudioDataMessage>(input =>
             {
                 var inputBufferSize = Math.Min(input.BufferSize, BufferSize);
-                if (_sampleBuffer == null || _sampleBuffer.MaxLength != inputBufferSize)
-                    _sampleBuffer = new CircularSampleBuffer(inputBufferSize)
-                    {
-                        BufferFilled = data =>
-                        {
-                            if (_outBuffer != null) Array.Copy(data, 0, _outBuffer, 0, inputBufferSize);
-                        }
-                    };
+                // if (_sampleBuffer == null || _sampleBuffer.MaxLength != inputBufferSize)
+                    // _sampleBuffer = new CircularSampleBuffer(inputBufferSize)
+                    // {
+                        // BufferFilled = data =>
+                        // {
+                            // if (_outBuffer != null) Array.Copy(data, 0, _outBuffer, 0, inputBufferSize);
+                        // }
+                    // };
 
                 if (_outBuffer == null || _outBuffer.Length != inputBufferSize) _outBuffer = new float[inputBufferSize];
 
-                var written = _sampleBuffer.Write(input.Data, 0, inputBufferSize);
-                _sampleBuffer.Advance(written);
+                // var written = _sampleBuffer.Write(input.Data, 0, inputBufferSize);
+                // _sampleBuffer.Advance(written);
             });
 
 
-            Connect += link =>
+            OnConnect += link =>
             {
                 _logger.Information("New connection");
                 AddLink(link.SourceBlock.LinkTo(_readBuffer));
             };
-            Reconnect += (old, link) =>
-            {
-                DisposeLinks();
-                AddLink(link.SourceBlock.LinkTo(_readBuffer));
-                _logger.Information("New connection (removing old one)");
-            };
-            Disconnect += link =>
+            OnDisconnect += link =>
             {
                 DisposeLinks();
                 _logger.Information("Disconnected from");

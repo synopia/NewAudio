@@ -22,31 +22,30 @@
         <OutputPath>..\..\lib\</OutputPath>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="FFTW.NET" Version="1.0.1"/>
-        <PackageReference Include="NAudio" Version="2.0.1"/>
-        <PackageReference Include="NAudio.Asio" Version="2.0.0"/>
-        <PackageReference Include="NAudio.Core" Version="2.0.0"/>
-        <PackageReference Include="NAudio.Midi" Version="2.0.1"/>
-        <PackageReference Include="NAudio.Wasapi" Version="2.0.0"/>
-        <PackageReference Include="NAudio.WinMM" Version="2.0.1"/>
-        <PackageReference Include="Serilog" Version="2.10.0"/>
-        <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0"/>
-        <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0"/>
-        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0"/>
-        <PackageReference Include="Serilog.Sinks.Seq" Version="5.0.1"/>
-        <PackageReference Include="SharedMemory" Version="2.2.3"/>
-        <PackageReference Include="System.Management" Version="4.7.0"/>
-        <PackageReference Include="System.Threading.Tasks.Dataflow" Version="5.0.0"/>
+        <PackageReference Include="FFTW.NET" Version="1.0.1" />
+        <PackageReference Include="NAudio" Version="2.0.1" />
+        <PackageReference Include="NAudio.Asio" Version="2.0.0" />
+        <PackageReference Include="NAudio.Core" Version="2.0.0" />
+        <PackageReference Include="NAudio.Midi" Version="2.0.1" />
+        <PackageReference Include="NAudio.Wasapi" Version="2.0.0" />
+        <PackageReference Include="NAudio.WinMM" Version="2.0.1" />
+        <PackageReference Include="Serilog" Version="2.10.0" />
+        <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+        <PackageReference Include="Serilog.Sinks.Seq" Version="5.0.1" />
+        <PackageReference Include="SharedMemory" Version="2.2.3" />
+        <PackageReference Include="System.Management" Version="4.7.0" />
+        <PackageReference Include="System.Threading.Tasks.Dataflow" Version="5.0.0" />
         <!--        <PackageReference Include="System.Management" Version="4.7.0" />-->
-        <PackageReference Include="VL.Core" Version="2021.3.2"/>
+        <PackageReference Include="VL.Core" Version="2021.3.2" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Remove="Nodes\SinGen.cs"/>
-        <Compile Remove="Nodes\AudioLoopRegion.cs"/>
-        <Compile Remove="Nodes\AudioResampling.cs"/>
-        <Compile Remove="Nodes\FFT.cs"/>
-        <Compile Remove="Nodes\JoinAudioLinks.cs"/>
-        <Compile Remove="Nodes\AudioGenerator.cs"/>
+        <Compile Remove="Nodes\SinGen.cs" />
+        <Compile Remove="Nodes\AudioResampling.cs" />
+        <Compile Remove="Nodes\FFT.cs" />
+        <Compile Remove="Nodes\JoinAudioLinks.cs" />
+        <Compile Remove="Nodes\AudioGenerator.cs" />
     </ItemGroup>
 
 </Project>

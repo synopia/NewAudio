@@ -17,12 +17,12 @@ namespace NewAudio.Blocks
 
         public AudioOutputBlock(AudioDataflow flow, AudioFormat inputFormat)
         {
-            _logger = AudioService.Instance.Logger.ForContext<AudioInputBlock>();
+            _logger = AudioService.Instance.Logger.ForContext<AudioOutputBlock>();
             AudioService.Instance.Flow.Add(this);
             try
             {
                 var name = $"Output Buffer {flow.GetId()}";
-                _buffer = new CircularBuffer(name, 512, 4 * inputFormat.BufferSize);
+                _buffer = new CircularBuffer(name, 32, 4 * inputFormat.BufferSize);
                 Buffer = new CircularBuffer(name);
 
                 InputFormat = inputFormat;
@@ -44,7 +44,7 @@ namespace NewAudio.Blocks
                     _firstLoop = false;
                 }
 
-                _logger.Verbose("Writing data to Main Buffer Out {message} {size}", message.Data.Length,
+                _logger.Verbose("Writing data to Main Buffer Out {message} {size}", message.Data?.Length,
                     message.BufferSize);
 
                 var pos = 0;
@@ -56,11 +56,10 @@ namespace NewAudio.Blocks
                     pos += v;
                 }
 
-                if (pos != message.BufferSize) _logger.Warning("pos!=msg {pos}!={msg}", pos, message.BufferSize);
+                if (!token.IsCancellationRequested && pos != message.BufferSize) _logger.Warning("pos!=msg {pos}!={msg}", pos, message.BufferSize);
             }, new ExecutionDataflowBlockOptions
             {
                 MaxDegreeOfParallelism = 1
-                // CancellationToken = AudioService.Instance.Lifecycle.GetToken()
             });
         }
 

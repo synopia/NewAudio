@@ -16,7 +16,7 @@ namespace NewAudioTest
             var input = new InputDevice();
             var output = new OutputDevice();
             
-            output.Connect.Invoke(input.Output);
+            output.OnConnect.Invoke(input.Output);
             Thread.Sleep(1);
             AudioService.Instance.Dispose();
             Thread.Sleep(1);

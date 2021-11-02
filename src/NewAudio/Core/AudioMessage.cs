@@ -1,4 +1,6 @@
-﻿namespace NewAudio.Core
+﻿using NAudio.Wave;
+
+namespace NewAudio.Core
 {
     public enum LifecyclePhase
     {

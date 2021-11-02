@@ -18,6 +18,7 @@ namespace NewAudio.Core
         public Action<ISourceBlock<AudioDataMessage>> Disconnect;
         public Action<ISourceBlock<AudioDataMessage>, ISourceBlock<AudioDataMessage>> Reconnect;
 
+        public AudioFormat Format { get; set; }
         public AudioLink()
         {
             AudioService.Instance.Graph.Add(this);

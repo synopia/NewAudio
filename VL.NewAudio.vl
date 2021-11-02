@@ -448,7 +448,7 @@
             <ControlPoint Id="DV7XLp5RcwTOA2K4nDpqlP" Bounds="459,173" />
             <ControlPoint Id="BFvuITLDgfPLUQPDC7Q8rs" Bounds="579,189" />
             <Node Bounds="534,325" Id="KogA8ynKzKoMuWOIztjGbY">
-              <p:NodeReference LastCategoryFullName="NewAudio.AudioChannels" LastSymbolSource="VL.NewAudio.dll">
+              <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioChannels" LastSymbolSource="VL.NewAudio.dll">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                 <Choice Kind="OperationCallFlag" Name="SetAllSamples" />
                 <CategoryReference Kind="AssemblyCategory" Name="AudioChannels" NeedsToBeDirectParent="true" />
@@ -470,7 +470,7 @@
           <Patch Id="G75FsnNDU0EMQ0GvSLrn4N" Name="Create" />
           <Patch Id="GZV4uCpjLJzNCSOMBznAeL" Name="Update">
             <Pin Id="OZGA0tTfzQDPfpMrhU56DB" Name="Input" Kind="InputPin" />
-            <Pin Id="SUeZlyMihv2OsJZdteokI9" Name="Samples" Kind="InputPin" PinGroupDefaultCount="1">
+            <Pin Id="SUeZlyMihv2OsJZdteokI9" Name="Samples" Kind="InputPin" IsPinGroup="true" PinGroupDefaultCount="1">
               <p:TypeAnnotation>
                 <Choice Kind="TypeFlag" Name="MutableArray" />
                 <p:TypeArguments>
@@ -501,7 +501,7 @@
             <ControlPoint Id="H8JG056K4E4Ph7qapD5uqt" Bounds="447,137" />
             <ControlPoint Id="DVSOXXj0uM0Nwq36BLev6q" Bounds="569,387" />
             <Node Bounds="465,288" Id="RA6K8RXS7GnNMjK6x2OBOp">
-              <p:NodeReference LastCategoryFullName="NewAudio.AudioChannels" LastSymbolSource="VL.NewAudio.dll">
+              <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioChannels" LastSymbolSource="VL.NewAudio.dll">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                 <Choice Kind="OperationCallFlag" Name="GetAllSamples" />
                 <CategoryReference Kind="AssemblyCategory" Name="AudioChannels" NeedsToBeDirectParent="true" />
@@ -526,7 +526,7 @@
           <Patch Id="CsPALpgWMVOLDfeLIKaSWW" Name="Update">
             <Pin Id="PWuWasIdRzPM9WDUqEbE0t" Name="Input" Kind="InputPin" />
             <Pin Id="CzvSpkHDWgbMBUOMuwQBO9" Name="Input" Kind="OutputPin" />
-            <Pin Id="VNVrfxr9roIOZpHEdXtZUN" Name="Samples" Kind="OutputPin" PinGroupDefaultCount="1">
+            <Pin Id="VNVrfxr9roIOZpHEdXtZUN" Name="Samples" Kind="OutputPin" IsPinGroup="true" PinGroupDefaultCount="1">
               <p:TypeAnnotation>
                 <Choice Kind="TypeFlag" Name="MutableArray" />
                 <p:TypeArguments>
@@ -568,7 +568,7 @@
               </p:NodeReference>
               <Patch Id="SJeX30jlvwqLzgicNlqba5" IsGeneric="true">
                 <Node Bounds="560,291" AutoConnect="true" Id="HArc0EubYBcPxcSS7KD0ku">
-                  <p:NodeReference LastCategoryFullName="NewAudio.AudioLoopRegion`1" LastSymbolSource="VL.NewAudio.dll">
+                  <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioLoopRegion`1" LastSymbolSource="VL.NewAudio.dll">
                     <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                     <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                     <CategoryReference Kind="AssemblyCategory" Name="AudioLoopRegion`1" />
@@ -584,38 +584,38 @@
     ************************ Update (Hidden) ************************
 
 -->
-            <Node Name="Update (Hidden)" Bounds="513,407,80,80" Id="P7c3maapbLgOFpAgre70RV">
+            <Node Name="Update (Hidden)" Bounds="538,428,141,233" Id="P7c3maapbLgOFpAgre70RV">
               <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="builtin">
                 <Choice Kind="OperationDefinition" Name="Operation" />
                 <CategoryReference Kind="Category" Name="Primitive" NeedsToBeDirectParent="true" />
               </p:NodeReference>
               <Patch Id="J0umtsRV6JIMEOvEdioPm2" IsGeneric="true">
                 <Node Bounds="550,451" AutoConnect="true" Id="NgYYpBona3rMwvE0Kr7HYm">
-                  <p:NodeReference LastCategoryFullName="NewAudio.AudioLoopRegion`1" LastSymbolSource="VL.NewAudio.dll">
+                  <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioLoopRegion`1" LastSymbolSource="VL.NewAudio.dll">
                     <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                     <CategoryReference Kind="AssemblyCategory" Name="AudioLoopRegion`1" />
                     <Choice Kind="OperationCallFlag" Name="Update" />
                     <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   </p:NodeReference>
-                  <Pin Id="TcztoMrng7LP5KRyrD5g1j" Name="Input (this)" Kind="StateInputPin" />
+                  <Pin Id="Mhz3mW5KGf0PVali68EnHo" Name="Input (this)" Kind="InputPin" />
+                  <Pin Id="TAsp29WFOWfPEaegvYfL7d" Name="Input" Kind="InputPin" />
                   <Pin Id="DgXB4TAbDtNQOnODRt1iVT" Name="Create" Kind="InputPin" />
                   <Pin Id="B3XHLqf2ha7L4Gwc1U3ZpW" Name="Update" Kind="InputPin" />
                   <Pin Id="TIXPScOCVK5LfjCiGfNwkd" Name="Reset" Kind="InputPin" />
                   <Pin Id="VHislYJ1UsuNmVNnZ5x4yj" Name="Bypass" Kind="InputPin" />
-                  <Pin Id="TAsp29WFOWfPEaegvYfL7d" Name="Input" Kind="InputPin" />
                   <Pin Id="L7i5NeY9lRFPgt33wz6xjb" Name="Output Channels" Kind="InputPin" />
                   <Pin Id="UdRZzmCYmYCLEVTnNgJWbU" Name="Output" Kind="StateOutputPin" />
                   <Pin Id="KgnK7m6l0xkO6bYwVE7qix" Name="Result" Kind="OutputPin" />
                   <Pin Id="Oe1nBUJL1YpO4ZOYA1M7He" Name="In Progress" Kind="OutputPin" />
                 </Node>
-                <Pin Id="RLYTMDHnlicLyjs6ddYkE6" Name="Input (this)" Kind="InputPin" />
+                <Pin Id="DH4xeS5P00GNICIn4PeuVB" Name="Input (this)" Kind="InputPin" />
+                <Pin Id="DAqAHq8AaCiLulRbOkL0Nv" Name="Input" Kind="InputPin" />
                 <Pin Id="Hy8xAAGPJkLODx8S05duSa" Name="Create" Kind="InputPin" />
                 <Pin Id="If0tSBNH7ghLOylO462Fdd" Name="Update" Kind="InputPin" />
                 <Pin Id="ApAKzD5HuYJMnIxz0PCWkM" Name="Reset" Kind="InputPin" />
                 <Pin Id="C080htsmKQLQWded6E1AVx" Name="Bypass" Kind="InputPin" />
-                <Pin Id="DAqAHq8AaCiLulRbOkL0Nv" Name="Input" Kind="InputPin" />
                 <Pin Id="NruXdt6STX3QORpjFStXEe" Name="Output Channels" Kind="InputPin" />
-                <Pin Id="FfADG9qtwH9MQdeIBfLIgf" Name="Output" Kind="OutputPin" />
+                <Pin Id="VEz1WVlSPckQBTWwjez3IA" Name="Output" Kind="OutputPin" />
                 <Pin Id="GKOrsiWZnLuOM7TBTmg9Ps" Name="Result" Kind="OutputPin" />
                 <Pin Id="AYZrEpjaeU9Lub1Ubz3uJt" Name="In Progress" Kind="OutputPin" />
               </Patch>
@@ -807,7 +807,7 @@
         <Patch Id="RYsuUK9yGNDPMsNfem4d38">
           <Canvas Id="TIoiyqaQarVMV6CcceCKTZ" CanvasType="Group">
             <Node Bounds="420,350,52,26" Id="G4EaztI0p8cNZQdsi2FbL9">
-              <p:NodeReference LastCategoryFullName="NewAudio.AudioLink" LastSymbolSource="VL.NewAudio.dll">
+              <p:NodeReference LastCategoryFullName="NewAudio.Core.AudioLink" LastSymbolSource="VL.NewAudio.dll">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                 <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                 <CategoryReference Kind="AssemblyCategory" Name="AudioLink" />
@@ -1556,11 +1556,9 @@
                   <Pin Id="B0osnTlGoI2PWD7TYxj6oY" Name="Input" Kind="OutputPin" />
                 </Node>
               </Patch>
-              <Pin Id="D4EJNH6AbR2NRWoGqZVZNN" Name="Create" Kind="InputPin" />
-              <Pin Id="ANI3VQq7CHBQC2E5mRe9aC" Name="Update" Kind="InputPin" />
+              <Pin Id="CCZ36BYO7F8LK1GxBRyIwe" Name="Input" Kind="InputPin" />
               <Pin Id="KEfOeccAFvOPJCMKm8hVgo" Name="Reset" Kind="InputPin" />
               <Pin Id="FVa7gHDLhmdLseGd59S3YO" Name="Bypass" Kind="InputPin" />
-              <Pin Id="CCZ36BYO7F8LK1GxBRyIwe" Name="Input" Kind="InputPin" />
               <Pin Id="HrvAWbgThFKQb0IIQLhFJg" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
               <Pin Id="SbooEUCZqX8LrJ3jE1ITdA" Name="Result" Kind="OutputPin" />
               <Pin Id="K1Zx1i2rN8KNyxz58vQLyZ" Name="In Progress" Kind="OutputPin" />
@@ -1605,11 +1603,9 @@
                   <Pin Id="P9xlTjY8beWMfP7W2ZFOHL" Name="Input" Kind="OutputPin" />
                 </Node>
               </Patch>
-              <Pin Id="PktJ6I4i7H7LwtKU1F5hEL" Name="Create" Kind="InputPin" />
-              <Pin Id="QWCeZM6pEdbNS11g3TM8JE" Name="Update" Kind="InputPin" />
+              <Pin Id="KFtp2V6psYUPxuPgWUfRHW" Name="Input" Kind="InputPin" />
               <Pin Id="LuPxpKnxAs4MsLFlsG2jQq" Name="Reset" Kind="InputPin" />
               <Pin Id="TZctVq1aPlaORDCcm81WxU" Name="Bypass" Kind="InputPin" />
-              <Pin Id="KFtp2V6psYUPxuPgWUfRHW" Name="Input" Kind="InputPin" />
               <Pin Id="LnCpqmlSxKROztrfPNv4z0" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
               <Pin Id="Nca9wOR6zKNPCaqy8ODPbx" Name="Result" Kind="OutputPin" />
               <Pin Id="JHGS2zRqGRzQSVIZ87s0Wj" Name="In Progress" Kind="OutputPin" />

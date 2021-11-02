@@ -47,7 +47,7 @@ namespace VL.NewAudio.Core
                     pos += x;
                 }
 
-                if (pos != count) _logger.Warning("pos!=count: {p}!={c}", pos, count);
+                if (!token.IsCancellationRequested && pos != count) _logger.Warning("pos!=count: {p}!={c}", pos, count);
                 return pos;
             }
             catch (Exception e)

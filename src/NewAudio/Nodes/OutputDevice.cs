@@ -23,25 +23,11 @@ namespace NewAudio.Nodes
             _logger = AudioService.Instance.Logger.ForContext<OutputDevice>();
             _logger.Information("Output device created");
             _format = new AudioFormat(48000, 512, 2);
-            var correctLag = true;
             var buf = new TransformBlock<AudioDataMessage, AudioDataMessage>(msg =>
             {
                 var now = DateTime.Now.Ticks;
                 var span = now - msg.Time.RealTime;
                 var l = TimeSpan.FromTicks(span).TotalMilliseconds;
-                // if (correctLag)
-                // {
-                // Task.Delay(1).Wait();
-                // }
-                // if (l < 50)
-                // {
-
-                // correctLag = true;
-                // }
-                // else
-                // {
-                // correctLag = false;
-                // }
 
                 _lag += span;
                 _counter++;
@@ -58,7 +44,7 @@ namespace NewAudio.Nodes
             try
             {
                 _audioOutputBlock = new AudioOutputBlock(AudioService.Instance.Flow, _format);
-                AddLink(buf.LinkTo(_audioOutputBlock));
+                buf.LinkTo(_audioOutputBlock);
             }
             catch (Exception e)
             {
@@ -66,18 +52,12 @@ namespace NewAudio.Nodes
             }
 
 
-            Connect += link =>
+            OnConnect += link =>
             {
                 _logger.Information("New connection to output device");
                 AddLink(link.SourceBlock.LinkTo(buf));
             };
-            Reconnect += (old, link) =>
-            {
-                DisposeLinks();
-                AddLink(link.SourceBlock.LinkTo(buf));
-                _logger.Information("New connection to output device (removing old one)");
-            };
-            Disconnect += link =>
+            OnDisconnect += link =>
             {
                 DisposeLinks();
                 _logger.Information("Disconnected from output device");

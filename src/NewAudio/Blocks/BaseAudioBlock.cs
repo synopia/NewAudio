@@ -6,17 +6,15 @@ using Serilog;
 
 namespace NewAudio.Blocks
 {
-    public abstract class BaseAudioBlock<TIn, TOut> : IPropagatorBlock<TIn, TOut>, IDisposable
+    public abstract class BaseAudioBlock : IPropagatorBlock<AudioDataMessage, AudioDataMessage>, IDisposable
     {
         protected readonly AudioDataflow Flow;
-        protected readonly ILogger Logger;
-
-        public Action<LifecyclePhase, LifecyclePhase> PhaseChanged;
+        private readonly ILogger _logger;
 
         protected BaseAudioBlock(AudioDataflow flow)
         {
-            Logger = AudioService.Instance.Logger;
-            Logger.Information("Constructing {this}", this);
+            _logger = AudioService.Instance.Logger;
+            _logger.Information("Constructing {this}", this);
             Flow = flow;
 
             /*Source =new BufferBlock<IAudioMessage>();
@@ -57,8 +55,8 @@ namespace NewAudio.Blocks
             Target.Completion.ContinueWith(delegate { Source.Complete(); });*/
         }
 
-        public ISourceBlock<TOut> Source { get; protected set; }
-        public ITargetBlock<TIn> Target { get; protected set; }
+        public ISourceBlock<AudioDataMessage> Source { get; protected set; }
+        public ITargetBlock<AudioDataMessage> Target { get; protected set; }
         public LifecyclePhase CurrentPhase { get; private set; }
 
 
@@ -80,31 +78,31 @@ namespace NewAudio.Blocks
 
         public Task Completion => Source.Completion;
 
-        public DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, TIn messageValue,
-            ISourceBlock<TIn> source, bool consumeToAccept)
+        public DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, AudioDataMessage messageValue,
+            ISourceBlock<AudioDataMessage> source, bool consumeToAccept)
         {
             return Target.OfferMessage(messageHeader, messageValue, source, consumeToAccept);
         }
 
-        public IDisposable LinkTo(ITargetBlock<TOut> target, DataflowLinkOptions linkOptions)
+        public IDisposable LinkTo(ITargetBlock<AudioDataMessage> target, DataflowLinkOptions linkOptions)
         {
             return Source.LinkTo(target, linkOptions);
         }
 
-        public TOut ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<TOut> target,
+        public AudioDataMessage ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<AudioDataMessage> target,
             out bool messageConsumed)
         {
-            return ((IReceivableSourceBlock<TOut>)Source).ConsumeMessage(messageHeader, target, out messageConsumed);
+            return ((IReceivableSourceBlock<AudioDataMessage>)Source).ConsumeMessage(messageHeader, target, out messageConsumed);
         }
 
-        public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<TOut> target)
+        public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<AudioDataMessage> target)
         {
-            return ((IReceivableSourceBlock<TOut>)Source).ReserveMessage(messageHeader, target);
+            return ((IReceivableSourceBlock<AudioDataMessage>)Source).ReserveMessage(messageHeader, target);
         }
 
-        public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<TOut> target)
+        public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<AudioDataMessage> target)
         {
-            ((IReceivableSourceBlock<TOut>)Source).ReleaseReservation(messageHeader, target);
+            ((IReceivableSourceBlock<AudioDataMessage>)Source).ReleaseReservation(messageHeader, target);
         }
     }
 }

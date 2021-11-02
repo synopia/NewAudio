@@ -24,6 +24,7 @@ namespace NewAudio.Nodes
             {
                 _audioInputBlock = new AudioInputBlock(AudioService.Instance.Flow, _format);
                 Output.SourceBlock = _audioInputBlock;
+                Output.Format = _format;
             }
             catch (Exception e)
             {

@@ -20,7 +20,7 @@ namespace NewAudio.Core
                 // .WriteTo.File("VL.NewAudio.log",
                 // outputTemplate:
                 // "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}")
-                .MinimumLevel.Verbose()
+                .MinimumLevel.Debug()
                 .CreateLogger();
             Log.Logger = Logger;
 
@@ -48,7 +48,7 @@ namespace NewAudio.Core
         public void Init()
         {
             Log.Logger.Information("Audio Service: Initialized, Flow={flow}", Flow.DebugInfo());
-            Lifecycle.Phase = LifecyclePhase.Stopped;
+            Lifecycle.Phase = LifecyclePhase.Booting;
         }
 
         public void Update()

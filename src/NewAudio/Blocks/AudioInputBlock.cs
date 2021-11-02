@@ -12,6 +12,7 @@ namespace NewAudio.Blocks
         private readonly ITargetBlock<AudioDataMessage> _bufferBlock = new BufferBlock<AudioDataMessage>(
             new DataflowBlockOptions
             {
+                BoundedCapacity = 100,
                 MaxMessagesPerTask = 4
             });
 
@@ -26,7 +27,7 @@ namespace NewAudio.Blocks
             try
             {
                 var name = $"Input Block {flow.GetId()}";
-                Buffer = new CircularBuffer(name, 512, 4 * outputFormat.BufferSize);
+                Buffer = new CircularBuffer(name, 32, 4 * outputFormat.BufferSize);
                 _buffer = new CircularBuffer(name);
 
                 OutputFormat = outputFormat;
@@ -73,7 +74,6 @@ namespace NewAudio.Blocks
 
         public void Complete()
         {
-            _bufferBlock.Complete();
         }
 
         public void Fault(Exception exception)
@@ -131,8 +131,8 @@ namespace NewAudio.Blocks
                         pos += read;
                     }
 
-                    if (pos != OutputFormat.BufferSize)
-                        _logger.Warning("pos!=buf {p} {b}", pos, OutputFormat.BufferSize);
+                    if (!token.IsCancellationRequested && pos != OutputFormat.BufferSize)
+                        _logger.Warning("pos!=buf {p} {b} {t}", pos, OutputFormat.BufferSize, token.IsCancellationRequested);
                     var res = _bufferBlock.Post(message);
                     _logger.Verbose("Posted {samples} ", message.BufferSize);
                     if (!res) _logger.Warning("Cant deliver message");

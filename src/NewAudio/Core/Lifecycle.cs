@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using NewAudio.Core;
+using Serilog;
 
 namespace VL.NewAudio.Core
 {
@@ -32,6 +33,7 @@ namespace VL.NewAudio.Core
 
         public void Dispose()
         {
+            AudioService.Instance.Logger.Information("Lifecycle: Dispose called");
             _tokenSource.Cancel();
         }
 
@@ -39,11 +41,13 @@ namespace VL.NewAudio.Core
         {
             if (_phase != _nextPhase)
             {
+                AudioService.Instance.Logger.Information("Phase change to {phase}", _nextPhase);
                 _phase = _nextPhase;
                 switch (_phase)
                 {
                     case LifecyclePhase.Booting:
                         OnBoot?.Invoke();
+                        _phase = LifecyclePhase.Stopped;
                         break;
                     case LifecyclePhase.Playing:
                         CreateToken();
@@ -54,8 +58,8 @@ namespace VL.NewAudio.Core
                         OnStop?.Invoke();
                         break;
                     case LifecyclePhase.Shutdown:
-                        _tokenSource.Cancel();
                         OnShutdown?.Invoke();
+                        _tokenSource.Cancel();
                         break;
                 }
             }
