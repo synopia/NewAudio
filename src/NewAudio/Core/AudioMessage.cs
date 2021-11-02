@@ -9,12 +9,12 @@
         Shutdown,
         Finished
     }
-    
+
     public struct LifecycleMessage
     {
         public AudioTime Time { get; set; }
-        public LifecyclePhase Leave { get; private set; }
-        public LifecyclePhase Enter { get; private set; }
+        public LifecyclePhase Leave { get; }
+        public LifecyclePhase Enter { get; }
 
         public LifecycleMessage(LifecyclePhase leave, LifecyclePhase enter) : this()
         {
@@ -29,12 +29,12 @@
         }
     }
 
-    public struct AudioDataRequestMessage 
+    public struct AudioDataRequestMessage
     {
         public AudioTime Time { get; set; }
-        public int RequestedSamples { get; private set; }
+        public int RequestedSamples { get; }
 
-        public float[] ReusableDate { get; private set; }
+        public float[] ReusableDate { get; }
 
         public AudioDataRequestMessage(int requestedSamples)
         {
@@ -54,17 +54,17 @@
         }
     }
 
-    public struct AudioDataMessage 
+    public struct AudioDataMessage
     {
         public AudioTime Time { get; set; }
         public int SampleCount { get; set; }
-        public bool IsLocked { get; private set; }
-        public bool IsInterleaved { get; private set; }
-        public float[] Data { get; private set; }
-        public int Channels { get; private set; }
-        public int BufferSize => SampleCount*Channels;
+        public bool IsLocked { get; }
+        public bool IsInterleaved { get; }
+        public float[] Data { get; }
+        public int Channels { get; }
+        public int BufferSize => SampleCount * Channels;
 
-        public AudioDataMessage(AudioFormat format, int sampleCount):this(null, format, sampleCount)
+        public AudioDataMessage(AudioFormat format, int sampleCount) : this(null, format, sampleCount)
         {
         }
 
@@ -73,9 +73,9 @@
             IsInterleaved = format.IsInterleaved;
             SampleCount = sampleCount;
             Channels = format.Channels;
-            Time = new AudioTime();
+            Time = new AudioTime(0, 0);
             IsLocked = false;
-            Data = data!=null && data.Length == sampleCount*Channels ? data : new float[sampleCount*Channels];
+            Data = data != null && data.Length == sampleCount * Channels ? data : new float[sampleCount * Channels];
         }
 
         public override string ToString()

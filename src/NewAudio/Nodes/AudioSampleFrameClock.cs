@@ -5,21 +5,9 @@ namespace NewAudio.Nodes
 {
     public class AudioSampleFrameClock : IFrameClock
     {
-        private Time _frameTime;
+        public Time Time { get; private set; }
 
-        public Time Time => _frameTime;
         public double TimeDifference { get; private set; }
-
-        public void Init(double time)
-        {
-            _frameTime = time;
-        }
-
-        public void IncrementTime(double diff)
-        {
-            _frameTime += diff;
-            TimeDifference = diff;
-        }
 
         public IObservable<FrameTimeMessage> GetTicks()
         {
@@ -29,6 +17,17 @@ namespace NewAudio.Nodes
         public IObservable<FrameFinishedMessage> GetFrameFinished()
         {
             throw new NotImplementedException();
+        }
+
+        public void Init(double time)
+        {
+            Time = time;
+        }
+
+        public void IncrementTime(double diff)
+        {
+            Time += diff;
+            TimeDifference = diff;
         }
     }
 }

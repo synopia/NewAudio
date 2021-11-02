@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using NAudio.Wave;
+﻿using System.Collections.Generic;
 
 namespace NewAudio.Devices
 {

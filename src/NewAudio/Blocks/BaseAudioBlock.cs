@@ -3,21 +3,16 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
 using Serilog;
-using SharedMemory;
 
 namespace NewAudio.Blocks
 {
-    public abstract class BaseAudioBlock<TIn,TOut>: IPropagatorBlock<TIn, TOut>, IDisposable
+    public abstract class BaseAudioBlock<TIn, TOut> : IPropagatorBlock<TIn, TOut>, IDisposable
     {
+        protected readonly AudioDataflow Flow;
         protected readonly ILogger Logger;
 
-        protected readonly AudioDataflow Flow;
-        public ISourceBlock<TOut> Source { get; protected set; }
-        public ITargetBlock<TIn> Target { get; protected set; }
-        public LifecyclePhase CurrentPhase { get; private set; }
-
         public Action<LifecyclePhase, LifecyclePhase> PhaseChanged;
-        
+
         protected BaseAudioBlock(AudioDataflow flow)
         {
             Logger = AudioService.Instance.Logger;
@@ -62,6 +57,10 @@ namespace NewAudio.Blocks
             Target.Completion.ContinueWith(delegate { Source.Complete(); });*/
         }
 
+        public ISourceBlock<TOut> Source { get; protected set; }
+        public ITargetBlock<TIn> Target { get; protected set; }
+        public LifecyclePhase CurrentPhase { get; private set; }
+
 
         public virtual void Dispose()
         {
@@ -77,7 +76,6 @@ namespace NewAudio.Blocks
         public void Fault(Exception exception)
         {
             Target.Fault(exception);
-
         }
 
         public Task Completion => Source.Completion;
@@ -93,7 +91,8 @@ namespace NewAudio.Blocks
             return Source.LinkTo(target, linkOptions);
         }
 
-        public TOut ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<TOut> target, out bool messageConsumed)
+        public TOut ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<TOut> target,
+            out bool messageConsumed)
         {
             return ((IReceivableSourceBlock<TOut>)Source).ConsumeMessage(messageHeader, target, out messageConsumed);
         }
@@ -106,8 +105,6 @@ namespace NewAudio.Blocks
         public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<TOut> target)
         {
             ((IReceivableSourceBlock<TOut>)Source).ReleaseReservation(messageHeader, target);
-
         }
-        
     }
 }

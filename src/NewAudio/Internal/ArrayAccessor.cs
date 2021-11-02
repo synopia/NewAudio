@@ -21,9 +21,7 @@ namespace NewAudio.Internal
         public void SetValues(float[] inp)
         {
             if (inp != null && inp.Length == currentOutputBuffer.Length)
-            {
                 Array.Copy(inp, currentOutputBuffer, inp.Length);
-            }
         }
     }
 }

@@ -7,22 +7,10 @@ namespace NewAudio.Devices
     public class DriverManager
     {
         private static DriverManager _instance;
+        private readonly List<IDevice> _devices = new List<IDevice>();
 
-        public static DriverManager Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new DriverManager();
-                }
+        private readonly List<IDriver> _drivers = new List<IDriver>();
 
-                return _instance;
-            }
-        }
-
-        private List<IDriver> _drivers = new List<IDriver>();
-        private List<IDevice> _devices = new List<IDevice>();
         public DriverManager()
         {
             _drivers.Add(new AsioDriver());
@@ -31,11 +19,18 @@ namespace NewAudio.Devices
             _drivers.Add(new WasapiDriver());
             _drivers.Add(new WaveDriver());
 
-            foreach (var driver in _drivers)
+            foreach (var driver in _drivers) _devices.AddRange(driver.GetDevices());
+            _devices.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.Ordinal));
+        }
+
+        public static DriverManager Instance
+        {
+            get
             {
-                _devices.AddRange(driver.GetDevices());
+                if (_instance == null) _instance = new DriverManager();
+
+                return _instance;
             }
-            _devices.Sort((a, b) => String.Compare(a.Name, b.Name, StringComparison.Ordinal));
         }
 
         public IEnumerable<IDevice> GetInputDevices()

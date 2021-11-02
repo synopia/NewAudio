@@ -1,22 +1,20 @@
 ﻿using System;
-using System.Threading;
 using NAudio.Wave;
-using NewAudio.Core;
-using Serilog;
 using SharedMemory;
 using VL.NewAudio.Core;
 
 namespace NewAudio.Devices
 {
-    public interface IDevice: IDisposable
+    public interface IDevice : IDisposable
     {
         public string Name { get; }
         public bool IsInputDevice { get; }
         public bool IsOutputDevice { get; }
+        AudioDataProvider AudioDataProvider { get; }
         public void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);
         public void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);
         public void Play();
-        
+
         public void Record();
         public void Stop();
     }
@@ -30,13 +28,9 @@ namespace NewAudio.Devices
 
         public string Name { get; protected set; }
 
-        public bool IsInputDevice { get;protected set; }
+        public bool IsInputDevice { get; protected set; }
 
-        public bool IsOutputDevice { get;protected set; }
-        
-        protected BaseDevice()
-        {
-        }
+        public bool IsOutputDevice { get; protected set; }
         public abstract void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);
 
         public abstract void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);
@@ -52,5 +46,4 @@ namespace NewAudio.Devices
             AudioDataProvider?.Dispose();
         }
     }
-
 }

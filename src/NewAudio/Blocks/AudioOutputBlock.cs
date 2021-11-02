@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using NAudio.Wave;
 using NewAudio.Core;
-using NewAudio.Internal;
 using Serilog;
 using SharedMemory;
-using VL.NewAudio.Core;
 
 namespace NewAudio.Blocks
 {
@@ -15,11 +11,9 @@ namespace NewAudio.Blocks
     {
         private readonly ILogger _logger;
 
-        public CircularBuffer Buffer { get; }
-
-        public AudioFormat InputFormat { get; set; }
-
-        private ActionBlock<AudioDataMessage> _actionBlock;
+        private readonly ActionBlock<AudioDataMessage> _actionBlock;
+        private readonly CircularBuffer _buffer;
+        private bool _firstLoop;
 
         public AudioOutputBlock(AudioDataflow flow, AudioFormat inputFormat)
         {
@@ -27,46 +21,71 @@ namespace NewAudio.Blocks
             AudioService.Instance.Flow.Add(this);
             try
             {
-                Buffer = new CircularBuffer($"Output Buffer {flow.GetId()}", 64, inputFormat.BufferSize);
+                var name = $"Output Buffer {flow.GetId()}";
+                _buffer = new CircularBuffer(name, 512, 4 * inputFormat.BufferSize);
+                Buffer = new CircularBuffer(name);
+
                 InputFormat = inputFormat;
             }
             catch (Exception e)
             {
-                _logger.Error("Ctor: {e}",e);
+                _logger.Error("Ctor: {e}", e);
             }
+
+            AudioService.Instance.Lifecycle.OnPlay += () => { _firstLoop = true; };
+            AudioService.Instance.Lifecycle.OnStop += Complete;
 
             _actionBlock = new ActionBlock<AudioDataMessage>(message =>
             {
-                _logger.Verbose("Writing data to Main Buffer Out {message} {size}",message.Data.Length, message.BufferSize);
+                if (_firstLoop)
+                {
+                    _logger.Information("Audio Output writer started (Writing to {writer} ({owner}))", _buffer.Name,
+                        _buffer.IsOwnerOfSharedMemory);
+                    _firstLoop = false;
+                }
+
+                _logger.Verbose("Writing data to Main Buffer Out {message} {size}", message.Data.Length,
+                    message.BufferSize);
 
                 var pos = 0;
                 var token = AudioService.Instance.Lifecycle.GetToken();
-                while (pos<message.BufferSize && !token.IsCancellationRequested)
+
+                while (pos < message.BufferSize && !token.IsCancellationRequested)
                 {
-                    var v = Buffer.Write(message.Data, pos);
+                    var v = _buffer.Write(message.Data, pos, 1);
                     pos += v;
                 }
+
+                if (pos != message.BufferSize) _logger.Warning("pos!=msg {pos}!={msg}", pos, message.BufferSize);
+            }, new ExecutionDataflowBlockOptions
+            {
+                MaxDegreeOfParallelism = 1
+                // CancellationToken = AudioService.Instance.Lifecycle.GetToken()
             });
-            
-            
         }
+
+        public CircularBuffer Buffer { get; }
+
+        public AudioFormat InputFormat { get; set; }
+
 
         public void Dispose()
         {
             try
             {
+                Complete();
                 AudioService.Instance.Flow.Remove(this);
                 Buffer.Dispose();
             }
             catch (Exception e)
             {
-                _logger.Error("Dispose: {e}",e);
+                _logger.Error("Dispose: {e}", e);
             }
         }
 
         public void Complete()
         {
-            _actionBlock.Complete();
+            // _actionBlock.Complete();
         }
 
         public void Fault(Exception exception)
@@ -78,7 +97,8 @@ namespace NewAudio.Blocks
         public DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, AudioDataMessage messageValue,
             ISourceBlock<AudioDataMessage> source, bool consumeToAccept)
         {
-            return ((ITargetBlock<AudioDataMessage>)_actionBlock).OfferMessage(messageHeader, messageValue, source, consumeToAccept);
+            return ((ITargetBlock<AudioDataMessage>)_actionBlock).OfferMessage(messageHeader, messageValue, source,
+                consumeToAccept);
         }
     }
 }

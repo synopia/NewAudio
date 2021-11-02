@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using NAudio.CoreAudioApi;
-using NAudio.Wave;
-using NewAudio.Devices;
 using VL.Lib;
 using VL.Lib.Collections;
 
@@ -15,7 +12,10 @@ namespace NewAudio.Devices
         {
         }
 
-        public static WaveOutputDevice CreateDefault() => CreateDefaultBase("Null: Output");
+        public static WaveOutputDevice CreateDefault()
+        {
+            return CreateDefaultBase("Null: Output");
+        }
     }
 
 
@@ -23,11 +23,8 @@ namespace NewAudio.Devices
     {
         protected override IReadOnlyDictionary<string, object> GetEntries()
         {
-            Dictionary<string, object> devices = new Dictionary<string, object>();
-            foreach (var device in DriverManager.Instance.GetOutputDevices())
-            {
-                devices[device.Name] = device;
-            }
+            var devices = new Dictionary<string, object>();
+            foreach (var device in DriverManager.Instance.GetOutputDevices()) devices[device.Name] = device;
             return devices;
         }
 

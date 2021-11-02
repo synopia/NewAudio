@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using NewAudio.Devices;
 using VL.Lib;
 using VL.Lib.Collections;
 
@@ -13,19 +12,19 @@ namespace NewAudio.Devices
         {
         }
 
-        public static WaveInputDevice CreateDefault() => CreateDefaultBase("Null: Input");
+        public static WaveInputDevice CreateDefault()
+        {
+            return CreateDefaultBase("Null: Input");
+        }
     }
 
     public class WaveInputDeviceDefinition : DynamicEnumDefinitionBase<WaveInputDeviceDefinition>
     {
         protected override IReadOnlyDictionary<string, object> GetEntries()
         {
-            Dictionary<string, object> devices = new Dictionary<string, object>();
-            
-            foreach (var device in DriverManager.Instance.GetInputDevices())
-            {
-                devices[device.Name] = device;
-            }
+            var devices = new Dictionary<string, object>();
+
+            foreach (var device in DriverManager.Instance.GetInputDevices()) devices[device.Name] = device;
             return devices;
         }
 

@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Linq;
 using System.Threading.Tasks.Dataflow;
-using NewAudio.Blocks;
 using NewAudio.Core;
 using NewAudio.Internal;
 using Serilog;
@@ -13,9 +12,8 @@ namespace NewAudio.Nodes
     {
         private readonly ILogger _logger;
         private float[] _outBuffer;
+        private readonly ActionBlock<AudioDataMessage> _readBuffer;
         private CircularSampleBuffer _sampleBuffer;
-        private ActionBlock<AudioDataMessage> _readBuffer;
-        public int BufferSize { get; private set; }
 
         public AudioBufferOut()
         {
@@ -25,23 +23,15 @@ namespace NewAudio.Nodes
             {
                 var inputBufferSize = Math.Min(input.BufferSize, BufferSize);
                 if (_sampleBuffer == null || _sampleBuffer.MaxLength != inputBufferSize)
-                {
                     _sampleBuffer = new CircularSampleBuffer(inputBufferSize)
                     {
                         BufferFilled = data =>
                         {
-                            if (_outBuffer != null)
-                            {
-                                Array.Copy(data, 0, _outBuffer, 0, inputBufferSize);
-                            }
+                            if (_outBuffer != null) Array.Copy(data, 0, _outBuffer, 0, inputBufferSize);
                         }
                     };
-                }
 
-                if (_outBuffer == null || _outBuffer.Length != inputBufferSize)
-                {
-                    _outBuffer = new float[inputBufferSize];
-                }
+                if (_outBuffer == null || _outBuffer.Length != inputBufferSize) _outBuffer = new float[inputBufferSize];
 
                 var written = _sampleBuffer.Write(input.Data, 0, inputBufferSize);
                 _sampleBuffer.Advance(written);
@@ -49,7 +39,7 @@ namespace NewAudio.Nodes
 
 
             Connect += link =>
-            {  
+            {
                 _logger.Information("New connection");
                 AddLink(link.SourceBlock.LinkTo(_readBuffer));
             };
@@ -67,28 +57,23 @@ namespace NewAudio.Nodes
             // Output.SourceBlock = readBuffer;
         }
 
+        public int BufferSize { get; private set; }
+
         protected override void Start()
         {
-            
         }
 
         protected override void Stop()
         {
-            
         }
 
-        public  IEnumerable Update()
+        public IEnumerable Update()
         {
-            if (_outBuffer!=null)
-            {
-                return _outBuffer;
-            }            
+            if (_outBuffer != null) return _outBuffer;
             return Enumerable.Empty<float>();
         }
-        
 
-    
-        
+
         public override void Dispose()
         {
             base.Dispose();

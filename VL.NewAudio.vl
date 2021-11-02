@@ -2373,6 +2373,19 @@
                 <Pin Id="JNI00bROs3JPPt2rvE9uNa" Name="Input" Kind="StateInputPin" />
                 <Pin Id="HaUck98vRFnNd0p33vAf1X" Name="Output" Kind="StateOutputPin" />
               </Node>
+              <Node Bounds="541,545" Id="MgYTJIZUAW8LlPHWIRW8J1">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.OutputDevice" LastSymbolSource="VL.NewAudio.dll">
+                  <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                  <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
+                  <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
+                  <CategoryReference Kind="AssemblyCategory" Name="OutputDevice" />
+                  <Choice Kind="OperationCallFlag" Name="DebugInfo" />
+                </p:NodeReference>
+                <Pin Id="VRJ4PTA2TeMOaf4yypvVg3" Name="Input" Kind="StateInputPin" />
+                <Pin Id="INZJiR7fyQJM6ooeJ1WGaS" Name="Output" Kind="StateOutputPin" />
+                <Pin Id="RYNzJY1vykxM1gVfPJ5Rr8" Name="Result" Kind="OutputPin" />
+              </Node>
+              <ControlPoint Id="IxFhRmIycxGOjp8Z07XXTA" Bounds="605,697" />
             </Canvas>
             <ProcessDefinition Id="D4x6vk2EEC0Ohsw3kikrni">
               <Fragment Id="GFuISLGOS5gPELRWfGGa0i" Patch="UgOx7SxDvCRPYb8EYLvoH0" Enabled="true" />
@@ -2395,6 +2408,7 @@
               <Pin Id="OdjRuhvcOpuQEzKcrJyL9l" Name="Reset" Kind="InputPin" />
               <Pin Id="LWPTKEcPqDdORlu7ZlKOmW" Name="Device" Kind="InputPin" />
               <Pin Id="G4a4AIOwCw5Lp3v7xANjnz" Name="Desired Latency" Kind="InputPin" />
+              <Pin Id="HeAYKt7jCX3LKOcQLKt9B3" Name="Result" Kind="OutputPin" />
             </Patch>
             <Patch Id="P6s49HGE88uP5Gt1fimKWq" Name="Dispose" ParticipatingElements="GCk48ItuU4JLodNFp1FGYK" />
             <Link Id="Dirsbqi5n9ILiPnZ84PyvF" Ids="Mtbe6Aw8ad5PAdhO8G7M68,PkQbcnGw8oiNgcurAWxMpO" />
@@ -2404,6 +2418,9 @@
             <Link Id="LKLc53Bp5VoLiK4JnIBQpY" Ids="QMAL1bMJZhHP0wIdfJbn5a,QgEs2FP1TUBPvDOBnyGa6H" />
             <Link Id="PieUzKkuy2fMTMOD0MvbPJ" Ids="L8Mcoma3dn9OiOMurNDUa2,Mg2Zaw8oYq1POJpm399SIH" />
             <Link Id="NX633XiqTsfLWl5Mberbq9" Ids="BDXMPrS7fEoMHk1FuY6Fl2,LtjZ8PP2IV4Og02bjjZ3Jl" />
+            <Link Id="U9qtBNebOo5OQlxJcQftGf" Ids="DyEs0iBvhaYNv1gFxfN2wl,VRJ4PTA2TeMOaf4yypvVg3" />
+            <Link Id="J9rzmQVziUrNqKWdXSFcKb" Ids="IxFhRmIycxGOjp8Z07XXTA,HeAYKt7jCX3LKOcQLKt9B3" IsHidden="true" />
+            <Link Id="L7uw381rIYfNiOzuw23veY" Ids="RYNzJY1vykxM1gVfPJ5Rr8,IxFhRmIycxGOjp8Z07XXTA" />
           </Patch>
         </Node>
       </Canvas>

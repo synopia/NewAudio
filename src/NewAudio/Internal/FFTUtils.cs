@@ -3,7 +3,6 @@ using NAudio.Dsp;
 
 namespace NewAudio.Internal
 {
-
     public static class FFTUtils
     {
         public enum WindowFunction
@@ -13,9 +12,11 @@ namespace NewAudio.Internal
             Hann,
             BlackmanHarris
         }
+
         public static double[] CreateWindow(WindowFunction windowFunction, int size)
         {
-            Func<int, int, double> function = (i, n) => 1;;
+            Func<int, int, double> function = (i, n) => 1;
+            ;
             switch (windowFunction)
             {
                 case WindowFunction.Hamming:
@@ -29,14 +30,10 @@ namespace NewAudio.Internal
                     break;
             }
 
-            double[] window = new double[size];
-            for (int i = 0; i < size; i++)
-            {
-                window[i] = function(i, size);
-            }
+            var window = new double[size];
+            for (var i = 0; i < size; i++) window[i] = function(i, size);
 
             return window;
         }
-
     }
 }

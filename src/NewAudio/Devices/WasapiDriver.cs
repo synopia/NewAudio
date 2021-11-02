@@ -3,10 +3,10 @@ using NAudio.CoreAudioApi;
 
 namespace NewAudio.Devices
 {
-    public class WasapiDriver: IDriver
+    public class WasapiDriver : IDriver
     {
         public string Name => "Wasapi";
-        
+
         public IEnumerable<IDevice> GetDevices()
         {
             var list = new List<IDevice>();

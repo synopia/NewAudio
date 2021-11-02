@@ -10,15 +10,16 @@ namespace NewAudio.Devices
 {
     public class WasapiDevice : BaseDevice
     {
-        private bool IsLoopback { get; }
-
-        private ILogger _logger;
-        private WasapiOut _wavePlayer;
-        private WasapiLoopbackCapture _loopback;
-        private WasapiCapture _capture;
         private readonly string _deviceId;
+        private WasapiCapture _capture;
         private bool _firstLoop = true;
-        
+
+        private readonly ILogger _logger;
+        private WasapiLoopbackCapture _loopback;
+        private byte[] _temp;
+        private int _tempPos;
+        private WasapiOut _wavePlayer;
+
         public WasapiDevice(string name, bool isInputDevice, bool isLoopback, string deviceId)
         {
             Name = name;
@@ -28,6 +29,8 @@ namespace NewAudio.Devices
             _deviceId = deviceId;
             _logger = AudioService.Instance.Logger.ForContext<WasapiDevice>();
         }
+
+        private bool IsLoopback { get; }
 
         public override void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
         {
@@ -50,7 +53,6 @@ namespace NewAudio.Devices
             {
                 var device = new MMDeviceEnumerator().GetDevice(_deviceId);
                 _loopback = new WasapiLoopbackCapture(device);
-
                 _loopback.DataAvailable += DataAvailable;
             }
             else if (IsInputDevice)
@@ -64,26 +66,46 @@ namespace NewAudio.Devices
             }
         }
 
+
         private void DataAvailable(object sender, WaveInEventArgs evt)
         {
             if (_firstLoop)
             {
-                _logger.Information("Wasapi AudioIn Thread started");
+                _logger.Information("Wasapi AudioIn Thread started (Writing to {recording} ({owner}))",
+                    RecordingBuffer.Name, RecordingBuffer.IsOwnerOfSharedMemory);
                 _firstLoop = false;
+                _temp = new byte[RecordingBuffer.NodeBufferSize];
+                _tempPos = 0;
             }
+
             // AudioService.Instance.Flow.PostRequest(new AudioDataRequestMessage(evt.BytesRecorded/4));
-            _logger.Verbose("DataAvailable {bytes}", evt.BytesRecorded);
+            _logger.Verbose("DataAvailable {bytes}", evt.BytesRecorded / 4);
+
             try
             {
-                int remaining = evt.BytesRecorded;
-                int pos = 0;
+                var remaining = evt.BytesRecorded;
+                var pos = 0;
                 var token = AudioService.Instance.Lifecycle.GetToken();
+
                 while (pos < evt.BytesRecorded && !token.IsCancellationRequested)
                 {
-                    var written = Buffers.Write(RecordingBuffer, evt.Buffer, pos, remaining);
-                    pos += written;
-                    remaining -= written;
+                    var toCopy = Math.Min(_temp.Length - _tempPos, remaining);
+                    Array.Copy(evt.Buffer, pos, _temp, _tempPos, toCopy);
+                    _tempPos += toCopy;
+                    pos += toCopy;
+                    remaining -= toCopy;
+
+                    if (_tempPos == _temp.Length)
+                    {
+                        var written = RecordingBuffer.Write(_temp);
+                        _tempPos = 0;
+                        if (written != _temp.Length)
+                            _logger.Warning("Wrote to few bytes ({wrote}, expected: {expected})", written,
+                                _temp.Length);
+                    }
                 }
+
+                if (pos != evt.BytesRecorded) _logger.Warning("pos!=buf {p}!={inc}", pos, evt.BytesRecorded);
             }
             catch (Exception e)
             {
@@ -95,13 +117,9 @@ namespace NewAudio.Devices
         {
             _firstLoop = true;
             if (IsLoopback)
-            {
                 _loopback?.StartRecording();
-            }
             else
-            {
                 _capture?.StartRecording();
-            }
         }
 
         public override void Play()

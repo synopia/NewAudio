@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks.Dataflow;
-using NewAudio.Core;
+﻿using NewAudio.Core;
 
 namespace NewAudio.Blocks
 {
@@ -9,10 +8,8 @@ namespace NewAudio.Blocks
         {
             // Processor = new ActionBlock<AudioDataMessage>(input =>
             // {
-                
+
             // });
         }
-
-        
     }
 }

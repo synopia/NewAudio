@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Runtime.InteropServices;
-using System.Threading;
 using NAudio.Wave;
-using Serilog;
 using SharedMemory;
 
 namespace NewAudio.Core
@@ -76,12 +73,12 @@ namespace NewAudio.Core
         }
         */
 
-        public static unsafe int Write(CircularBuffer buffer, byte[] data, int offset, int bytes)
+        public static unsafe int Write(CircularBuffer buffer, byte[] data, int offset, int bytes, int timeout)
         {
             fixed (byte* buf = data)
             {
-                IntPtr ptr = new IntPtr(buf)+offset;
-                return buffer.Write(ptr, bytes);
+                var ptr = new IntPtr(buf) + offset;
+                return buffer.Write(ptr, bytes, timeout);
             }
         }
         /*
@@ -116,9 +113,7 @@ namespace NewAudio.Core
         public static void FromByteBuffer(float[] buffer, WaveFormat format, byte[] bytes, int bytesRecorded)
         {
             if (format.Encoding == WaveFormatEncoding.IeeeFloat)
-            {
                 Buffer.BlockCopy(bytes, 0, buffer, 0, bytesRecorded);
-            }
             /*
             else if (format.BitsPerSample == 32)
             {
@@ -130,9 +125,7 @@ namespace NewAudio.Core
             }
             */
             else
-            {
                 throw new ArgumentException($"Unsupported format {format}");
-            }
         }
     }
 }

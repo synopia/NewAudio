@@ -19,28 +19,27 @@ namespace NewAudio.Core
         Hz352800 = 352800
     }
 
-    public struct AudioFormat 
+    public struct AudioFormat
     {
         public int SampleRate { get; }
         public int Channels { get; }
         public int SampleCount { get; }
         public int BufferSize => SampleCount * Channels;
         public bool IsInterleaved { get; }
-        
-        public WaveFormat WaveFormat=>WaveFormat.CreateIeeeFloatWaveFormat(SampleRate, Channels);
 
-        public AudioFormat(int sampleRate, int sampleCount, int channels=1,  bool isInterleaved=true)
+        public WaveFormat WaveFormat => WaveFormat.CreateIeeeFloatWaveFormat(SampleRate, Channels);
+
+        public AudioFormat(int sampleRate, int sampleCount, int channels = 1, bool isInterleaved = true)
         {
             SampleRate = sampleRate;
             Channels = channels;
             SampleCount = sampleCount;
             IsInterleaved = isInterleaved;
         }
-        
+
         public override string ToString()
         {
             return $"{SampleRate}Hz, {Channels}Ch {WaveFormat?.BitsPerSample}Bit {SampleCount} samples";
         }
-        
     }
 }

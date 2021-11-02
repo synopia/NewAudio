@@ -4,27 +4,31 @@ using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
 using Serilog;
 using SharedMemory;
-using VL.NewAudio.Core;
 
 namespace NewAudio.Blocks
 {
     public class AudioInputBlock : ISourceBlock<AudioDataMessage>, IDisposable
     {
+        private readonly ITargetBlock<AudioDataMessage> _bufferBlock = new BufferBlock<AudioDataMessage>(
+            new DataflowBlockOptions
+            {
+                MaxMessagesPerTask = 4
+            });
+
         private readonly ILogger _logger;
-
-        private readonly ITargetBlock<AudioDataMessage> _bufferBlock = new BufferBlock<AudioDataMessage>();
-        public CircularBuffer Buffer { get; }
-
-        public AudioFormat OutputFormat { get; set; }
+        private readonly CircularBuffer _buffer;
 
         public AudioInputBlock(AudioDataflow flow, AudioFormat outputFormat)
         {
             _logger = AudioService.Instance.Logger.ForContext<AudioInputBlock>();
-            AudioService.Instance.Lifecycle.OnPlay += Loop;
+            AudioService.Instance.Lifecycle.OnPlay += StartLoop;
             AudioService.Instance.Flow.Add(this);
             try
             {
-                Buffer = new CircularBuffer($"Input Block {flow.GetId()}",64, outputFormat.BufferSize);
+                var name = $"Input Block {flow.GetId()}";
+                Buffer = new CircularBuffer(name, 512, 4 * outputFormat.BufferSize);
+                _buffer = new CircularBuffer(name);
+
                 OutputFormat = outputFormat;
             }
             catch (Exception e)
@@ -32,38 +36,10 @@ namespace NewAudio.Blocks
                 _logger.Error("Ctor: {e}", e);
             }
         }
-        
-        private void Loop()
-        {
-            try
-            {
-                Task.Run(() =>
-                {
-                    _logger.Information("Audio input reading thread");
-                    var token = AudioService.Instance.Lifecycle.GetToken();
 
-                    while (!token.IsCancellationRequested)
-                    {
-                        var message = new AudioDataMessage(OutputFormat, OutputFormat.SampleCount);
-                        var pos = 0;
+        public CircularBuffer Buffer { get; }
 
-                        while (pos < OutputFormat.BufferSize && !token.IsCancellationRequested)
-                        {
-                            var read = Buffer.Read(message.Data, pos);
-                            pos += read;
-                        }
-
-                        _bufferBlock.Post(message);
-                    }
-                    _logger.Information("Audio input reading thread finished");
-
-                });
-            }
-            catch (Exception e)
-            {
-                _logger.Error("{e}", e);
-            }
-        }
+        public AudioFormat OutputFormat { get; set; }
 
         public void Dispose()
         {
@@ -127,6 +103,47 @@ namespace NewAudio.Blocks
         public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<AudioDataMessage> target)
         {
             ((ISourceBlock<AudioDataMessage>)_bufferBlock).ReleaseReservation(messageHeader, target);
+        }
+
+        private void StartLoop()
+        {
+            Task.Run(Loop, AudioService.Instance.Lifecycle.GetToken());
+            // Task.Run(Loop, AudioService.Instance.Lifecycle.GetToken());
+            // Task.WaitAll(tasks, AudioService.Instance.Lifecycle.GetToken());
+        }
+
+        private void Loop()
+        {
+            try
+            {
+                _logger.Information("Audio input reading thread (Reading from {reading} ({owner}))", _buffer.Name,
+                    _buffer.IsOwnerOfSharedMemory);
+                var token = AudioService.Instance.Lifecycle.GetToken();
+                while (!token.IsCancellationRequested)
+                {
+                    token = AudioService.Instance.Lifecycle.GetToken();
+                    var message = new AudioDataMessage(OutputFormat, OutputFormat.SampleCount);
+                    var pos = 0;
+
+                    while (pos < OutputFormat.BufferSize && !token.IsCancellationRequested)
+                    {
+                        var read = _buffer.Read(message.Data, pos, 1);
+                        pos += read;
+                    }
+
+                    if (pos != OutputFormat.BufferSize)
+                        _logger.Warning("pos!=buf {p} {b}", pos, OutputFormat.BufferSize);
+                    var res = _bufferBlock.Post(message);
+                    _logger.Verbose("Posted {samples} ", message.BufferSize);
+                    if (!res) _logger.Warning("Cant deliver message");
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.Error("{e}", e);
+            }
+
+            _logger.Information("Audio input reading thread finished");
         }
     }
 }

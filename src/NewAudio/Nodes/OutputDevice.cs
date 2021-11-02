@@ -10,36 +10,71 @@ namespace NewAudio.Nodes
 {
     public class OutputDevice : BaseNode
     {
+        private readonly AudioOutputBlock _audioOutputBlock;
         private readonly ILogger _logger;
+        private int _counter;
         private IDevice _device;
         private AudioFormat _format;
-        public WaveFormat WaveFormat => _format.WaveFormat;
-        private readonly AudioOutputBlock _audioOutputBlock;
+        private long _lag;
+        private double _lagMs;
 
         public OutputDevice()
         {
             _logger = AudioService.Instance.Logger.ForContext<OutputDevice>();
             _logger.Information("Output device created");
-            _format = new AudioFormat(48000, 256, 2, true);
+            _format = new AudioFormat(48000, 512, 2);
+            var correctLag = true;
+            var buf = new TransformBlock<AudioDataMessage, AudioDataMessage>(msg =>
+            {
+                var now = DateTime.Now.Ticks;
+                var span = now - msg.Time.RealTime;
+                var l = TimeSpan.FromTicks(span).TotalMilliseconds;
+                // if (correctLag)
+                // {
+                // Task.Delay(1).Wait();
+                // }
+                // if (l < 50)
+                // {
+
+                // correctLag = true;
+                // }
+                // else
+                // {
+                // correctLag = false;
+                // }
+
+                _lag += span;
+                _counter++;
+                if (_counter > 100)
+                {
+                    _lagMs = TimeSpan.FromTicks(_lag / 100).TotalMilliseconds;
+                    _lag = 0;
+                    _counter = 0;
+                }
+
+                return msg;
+            });
 
             try
             {
                 _audioOutputBlock = new AudioOutputBlock(AudioService.Instance.Flow, _format);
+                AddLink(buf.LinkTo(_audioOutputBlock));
             }
             catch (Exception e)
             {
                 _logger.Error("Ctor: {e}", e);
             }
 
+
             Connect += link =>
             {
                 _logger.Information("New connection to output device");
-                AddLink(link.SourceBlock.LinkTo(_audioOutputBlock));
+                AddLink(link.SourceBlock.LinkTo(buf));
             };
             Reconnect += (old, link) =>
             {
                 DisposeLinks();
-                AddLink(link.SourceBlock.LinkTo(_audioOutputBlock));
+                AddLink(link.SourceBlock.LinkTo(buf));
                 _logger.Information("New connection to output device (removing old one)");
             };
             Disconnect += link =>
@@ -48,6 +83,8 @@ namespace NewAudio.Nodes
                 _logger.Information("Disconnected from output device");
             };
         }
+
+        public WaveFormat WaveFormat => _format.WaveFormat;
 
         protected override void Start()
         {
@@ -60,9 +97,10 @@ namespace NewAudio.Nodes
                 _logger.Error("Start: {e}", e);
             }
         }
+
         public string DebugInfo()
         {
-            return Utils.CalculateBufferStats(_audioOutputBlock.Buffer);
+            return $"LAG {_lagMs} ";
         }
 
         public void ChangeDevice(WaveOutputDevice device, int desiredLatency)
@@ -74,11 +112,8 @@ namespace NewAudio.Nodes
                 _device = (IDevice)device.Tag;
                 _device.InitPlayback(desiredLatency, _audioOutputBlock.Buffer, WaveFormat);
                 _logger.Information("Device changed: {device}", _device);
-                
-                if (Phase == LifecyclePhase.Playing)
-                {
-                    Start();
-                }
+
+                if (Phase == LifecyclePhase.Playing) Start();
             }
             catch (Exception e)
             {

@@ -3,7 +3,7 @@ using NAudio.Wave;
 
 namespace NewAudio.Internal
 {
-    public class SilenceProvider: ISampleProvider
+    public class SilenceProvider : ISampleProvider
     {
         public SilenceProvider(WaveFormat format)
         {
@@ -16,6 +16,6 @@ namespace NewAudio.Internal
             return count;
         }
 
-        public WaveFormat WaveFormat { get; private set; }
+        public WaveFormat WaveFormat { get; }
     }
 }

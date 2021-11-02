@@ -1,31 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Blocks;
 using Serilog;
-using SharedMemory;
-using VL.NewAudio.Core;
 
 namespace NewAudio.Core
 {
     public class AudioDataflow : IDisposable
     {
-        private readonly ILogger _logger;
         private readonly IList<IDataflowBlock> _blocks = new List<IDataflowBlock>();
-        public IEnumerable<IDataflowBlock> Blocks => _blocks;
         private readonly IList<AudioInputBlock> _inputBlocks = new List<AudioInputBlock>();
+        private readonly ILogger _logger;
         private readonly IList<AudioOutputBlock> _outputBlocks = new List<AudioOutputBlock>();
         private int _nextId = 1;
-        
+
         public AudioDataflow(ILogger logger)
         {
             _logger = logger;
         }
 
-        
+        public IEnumerable<IDataflowBlock> Blocks => _blocks;
+
+        public void Dispose()
+        {
+            _blocks.Clear();
+            _inputBlocks.Clear();
+            _outputBlocks.Clear();
+        }
+
+
         public void PostRequest(AudioDataRequestMessage message)
         {
             /*
@@ -43,6 +46,7 @@ namespace NewAudio.Core
             }
         */
         }
+
         public void PostLifecycleMessage(LifecyclePhase old, LifecyclePhase newPhase)
         {
             /*
@@ -61,49 +65,27 @@ namespace NewAudio.Core
 
         public void Add(IDataflowBlock block)
         {
-            if (block is AudioInputBlock inputBlock)
-            {
-                _inputBlocks.Add(inputBlock);
-            }
+            if (block is AudioInputBlock inputBlock) _inputBlocks.Add(inputBlock);
 
-            if (block is AudioOutputBlock outputBlock)
-            {
-                _outputBlocks.Add(outputBlock);
-            }
+            if (block is AudioOutputBlock outputBlock) _outputBlocks.Add(outputBlock);
             _blocks.Add(block);
         }
 
         public void Remove(IDataflowBlock block)
         {
             Log.Logger.Verbose("Removing block {block}, Waiting for completion", block);
-            if (block is AudioInputBlock inputBlock)
-            {
-                _inputBlocks.Remove(inputBlock);
-            }
-            if (block is AudioOutputBlock outputBlock)
-            {
-                _outputBlocks.Remove(outputBlock);
-            }
+            if (block is AudioInputBlock inputBlock) _inputBlocks.Remove(inputBlock);
+            if (block is AudioOutputBlock outputBlock) _outputBlocks.Remove(outputBlock);
 
             _blocks.Remove(block);
-            
+
             block.Complete();
-            block.Completion.ContinueWith(task =>
-            {
-                Log.Logger.Verbose("Completed {block}", block);
-            });
+            block.Completion.ContinueWith(task => { Log.Logger.Verbose("Completed {block}", block); });
         }
 
         public string DebugInfo()
         {
             return $"Blocks: {_blocks.Count}, Input Blocks: {_inputBlocks.Count}, Output Blocks: {_outputBlocks.Count}";
-        }
-        
-        public void Dispose()
-        {
-            _blocks.Clear();
-            _inputBlocks.Clear();
-            _outputBlocks.Clear();
         }
     }
 }

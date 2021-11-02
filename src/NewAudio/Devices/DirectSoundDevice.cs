@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using NAudio.Wave;
 using NewAudio.Core;
 using Serilog;
@@ -8,12 +7,13 @@ using VL.NewAudio.Core;
 
 namespace NewAudio.Devices
 {
-    public class DirectSoundDevice: BaseDevice
+    public class DirectSoundDevice : BaseDevice
     {
-        private ILogger _logger;
-
-        private Guid _guid;
         private DirectSoundOut _directSoundOut;
+
+        private readonly Guid _guid;
+        private readonly ILogger _logger;
+
         public DirectSoundDevice(string name, Guid guid)
         {
             _logger = AudioService.Instance.Logger.ForContext<DirectSoundDevice>();
@@ -37,7 +37,6 @@ namespace NewAudio.Devices
 
         public override void Record()
         {
-            
         }
 
         public override void Play()
@@ -60,6 +59,5 @@ namespace NewAudio.Devices
         {
             return Name;
         }
-
     }
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
+﻿using NAudio.Wave;
 using NewAudio.Core;
 using Serilog;
 using SharedMemory;
@@ -11,10 +8,10 @@ namespace NewAudio.Devices
 {
     public class WaveDevice : BaseDevice
     {
-        private ILogger _logger;
-        private int _handle;
-        private WaveOutEvent _waveOut;
+        private readonly int _handle;
+        private readonly ILogger _logger;
         private WaveInEvent _waveIn;
+        private WaveOutEvent _waveOut;
 
         public WaveDevice(string name, bool isInputDevice, int handle)
         {
@@ -30,19 +27,17 @@ namespace NewAudio.Devices
             _logger.Information("Init: Format={format}", waveFormat);
             AudioDataProvider = new AudioDataProvider(waveFormat, buffer);
 
-                if (IsOutputDevice)
-                {
-                    _waveOut = new WaveOutEvent() { DeviceNumber = _handle, DesiredLatency = desiredLatency };
-                    _waveOut?.Init(AudioDataProvider);
-
-                }
-
+            if (IsOutputDevice)
+            {
+                _waveOut = new WaveOutEvent { DeviceNumber = _handle, DesiredLatency = desiredLatency };
+                _waveOut?.Init(AudioDataProvider);
+            }
         }
 
         private void DataAvailable(object sender, WaveInEventArgs evt)
         {
-            
         }
+
         public override void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
         {
             if (IsInputDevice)

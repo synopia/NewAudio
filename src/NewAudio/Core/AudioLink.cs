@@ -1,23 +1,28 @@
 ﻿using System;
 using System.Threading.Tasks.Dataflow;
-using NewAudio.Blocks;
 using Serilog;
-using SharedMemory;
 
 namespace NewAudio.Core
 {
-    public class AudioLink : IDisposable {        
-        
+    public class AudioLink : IDisposable
+    {
+        private readonly BroadcastBlock<AudioDataMessage>
+            _broadcastBlock = new BroadcastBlock<AudioDataMessage>(i => i);
+
         private readonly ILogger _logger = Log.ForContext<AudioLink>();
-        
-        private ISourceBlock<AudioDataMessage> _sourceBlock;
-        private readonly BroadcastBlock<AudioDataMessage> _broadcastBlock = new BroadcastBlock<AudioDataMessage>(i=> i);
         private IDisposable _currentLink;
 
-        public  Action<ISourceBlock<AudioDataMessage>> Connect;
-        public  Action<ISourceBlock<AudioDataMessage>> Disconnect;
-        public  Action<ISourceBlock<AudioDataMessage>, ISourceBlock<AudioDataMessage>> Reconnect;
-        
+        private ISourceBlock<AudioDataMessage> _sourceBlock;
+
+        public Action<ISourceBlock<AudioDataMessage>> Connect;
+        public Action<ISourceBlock<AudioDataMessage>> Disconnect;
+        public Action<ISourceBlock<AudioDataMessage>, ISourceBlock<AudioDataMessage>> Reconnect;
+
+        public AudioLink()
+        {
+            AudioService.Instance.Graph.Add(this);
+        }
+
         public ISourceBlock<AudioDataMessage> SourceBlock
         {
             get => _broadcastBlock;
@@ -54,23 +59,14 @@ namespace NewAudio.Core
                         });
                     }
                 }
-            
             }
-        }
-
-        public AudioLink()
-        {
-            AudioService.Instance.Graph.Add(this);
         }
 
         public void Dispose()
         {
             _currentLink?.Dispose();
-            if (_sourceBlock is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-            
+            if (_sourceBlock is IDisposable disposable) disposable.Dispose();
+
             AudioService.Instance.Graph.Remove(this);
         }
     }

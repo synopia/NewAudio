@@ -1,25 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using NewAudio.Blocks;
-using Serilog;
-using VL.NewAudio.Core;
 
 namespace NewAudio.Core
 {
-    public abstract class BaseNode : IDisposable 
+    public abstract class BaseNode : IDisposable
     {
-        private readonly AudioLink _output = new AudioLink();
-        protected AudioDataflow Flow;
-        public AudioLink Input { get; private set; }
+        private readonly List<IDisposable> _links = new List<IDisposable>();
 
         public Action<AudioLink> Connect;
         public Action<AudioLink> Disconnect;
+        protected AudioDataflow Flow;
         public Action<AudioLink, AudioLink> Reconnect;
-
-        public AudioLink Output => _output;
-        public LifecyclePhase Phase => AudioService.Instance.Lifecycle.Phase;
-
-        private List<IDisposable> _links = new List<IDisposable>();
 
         protected BaseNode()
         {
@@ -28,20 +19,32 @@ namespace NewAudio.Core
             AudioService.Instance.Lifecycle.OnStop += Stop;
         }
 
+        public AudioLink Input { get; private set; }
+
+        public AudioLink Output { get; } = new AudioLink();
+
+        public LifecyclePhase Phase => AudioService.Instance.Lifecycle.Phase;
+
+        public virtual void Dispose()
+        {
+            DisposeLinks();
+            if (Input != null) Disconnect?.Invoke(Input);
+
+            Output.Dispose();
+        }
+
         protected abstract void Start();
         protected abstract void Stop();
-        
-        
-        public void UpdateInput(AudioLink input, bool reset=false)
+
+
+        public void UpdateInput(AudioLink input, bool reset = false)
         {
             if (reset)
-            {
                 if (Input != null)
                 {
                     Disconnect?.Invoke(Input);
                     Input = null;
                 }
-            }
 
             if (Input == null)
             {
@@ -74,24 +77,8 @@ namespace NewAudio.Core
 
         protected void DisposeLinks()
         {
-            foreach (var link in _links)
-            {
-                link.Dispose();
-            }
+            foreach (var link in _links) link.Dispose();
             _links.Clear();
         }
-        
-        public virtual void Dispose()
-        {
-            DisposeLinks();
-            if (Input != null)
-            {
-                Disconnect?.Invoke(Input);
-            }
-
-            _output.Dispose();
-        }
     }
-    
-    
 }

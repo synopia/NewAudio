@@ -1,7 +1,6 @@
 ﻿using System;
 using Serilog;
 using Serilog.Formatting.Display;
-using Stride.Core;
 using VL.NewAudio.Core;
 
 namespace NewAudio.Core
@@ -9,6 +8,27 @@ namespace NewAudio.Core
     public class AudioService : IDisposable
     {
         private static AudioService _service;
+        public readonly Lifecycle Lifecycle = new Lifecycle();
+
+        private AudioService()
+        {
+            Logger = new LoggerConfiguration()
+                .Enrich.WithThreadId()
+                .WriteTo.Console(new MessageTemplateTextFormatter(
+                    "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}"))
+                .WriteTo.Seq("http://localhost:5341")
+                // .WriteTo.File("VL.NewAudio.log",
+                // outputTemplate:
+                // "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}")
+                .MinimumLevel.Verbose()
+                .CreateLogger();
+            Log.Logger = Logger;
+
+            // Be careful, dont do anything, that needs the AudioService itself! 
+            Flow = new AudioDataflow(Logger);
+            Graph = new AudioGraph();
+            Log.Logger.Information("Initializing Audio Service");
+        }
 
         public static AudioService Instance => _service ??= new AudioService();
 
@@ -17,25 +37,12 @@ namespace NewAudio.Core
         public AudioGraph Graph { get; private set; }
 
         public ILogger Logger { get; }
-        public readonly Lifecycle Lifecycle = new Lifecycle();
 
-        private AudioService()
+        public void Dispose()
         {
-            Logger = new LoggerConfiguration()
-                .Enrich.WithThreadId()
-                .WriteTo.Console(new MessageTemplateTextFormatter("{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}"))
-                .WriteTo.Seq("http://localhost:5341")
-                // .WriteTo.File("VL.NewAudio.log",
-                    // outputTemplate:
-                    // "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}")
-                .MinimumLevel.Debug()
-                .CreateLogger();
-            Log.Logger = Logger;
-            
-            // Be careful, dont do anything, that needs the AudioService itself! 
-            Flow = new AudioDataflow(Logger);
-            Graph = new AudioGraph();
-            Log.Logger.Information("Initializing Audio Service");
+            Lifecycle.Phase = LifecyclePhase.Shutdown;
+            Flow.Dispose();
+            Log.Logger.Information("AudioService Disposed");
         }
 
         public void Init()
@@ -48,6 +55,7 @@ namespace NewAudio.Core
         {
             Lifecycle.Update();
         }
+
         public void Stop()
         {
             Log.Logger.Information("Audio Service: Stop, current {current}", Lifecycle.Phase);
@@ -64,19 +72,12 @@ namespace NewAudio.Core
         {
             return $"{Flow.DebugInfo()}, {Graph.DebugInfo()}, Phase: {Lifecycle.Phase}";
         }
-        
+
         public void Reset()
         {
             Stop();
             Flow = new AudioDataflow(Logger);
             Graph = new AudioGraph();
-        }
-
-        public void Dispose()
-        {
-            Lifecycle.Phase = LifecyclePhase.Shutdown;
-            Flow.Dispose();
-            Log.Logger.Information("AudioService Disposed");
         }
     }
 }

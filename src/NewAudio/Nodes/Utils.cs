@@ -1,19 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using NAudio.Wave;
-using VL.Core;
-using VL.Lib.Collections;
-using FFTW.NET;
 using SharedMemory;
 
 namespace NewAudio.Nodes
 {
     public static class Utils
     {
-        
+        public static float PI = (float)Math.PI;
+        public static float TwoPI = (float)(2.0 * Math.PI);
+
         public static string CalculateBufferStats(CircularBuffer buffer)
         {
             var header = buffer.ReadNodeHeader();
@@ -24,9 +18,6 @@ namespace NewAudio.Nodes
             var re = header.ReadEnd;
             return $"Nodes: {nodes} Write: [{ws}, {we}], Read: [{rs}, {re}]";
         }
-
-        public static float PI = (float)Math.PI;
-        public static float TwoPI = (float)(2.0*Math.PI);
 
         public static uint UpperPow2(uint v)
         {
@@ -62,7 +53,7 @@ namespace NewAudio.Nodes
 
         public static float SinH(float v)
         {
-            return (float) Math.Sinh(v);
+            return (float)Math.Sinh(v);
         }
 
         public static float SinC(float v)
@@ -72,7 +63,7 @@ namespace NewAudio.Nodes
             v *= PI;
             return SinF(v) / v;
         }
-        
+
         public static bool ArrayEquals<T>(T[] first, T[] second)
         {
             if (first == second)
@@ -82,14 +73,10 @@ namespace NewAudio.Nodes
             if (first.Length != second.Length)
                 return false;
             for (var i = 0; i < first.Length; i++)
-            {
                 if (first[i]?.GetHashCode() != second[i]?.GetHashCode())
                     return false;
-            }
 
             return true;
         }
-
     }
-
 }

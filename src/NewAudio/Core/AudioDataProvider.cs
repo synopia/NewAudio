@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using NAudio.Wave;
 using NewAudio.Core;
 using Serilog;
@@ -10,17 +8,22 @@ namespace VL.NewAudio.Core
 {
     public class AudioDataProvider : IWaveProvider, IDisposable
     {
-        private ILogger _logger;
-        private CircularBuffer _buffer;
-        public WaveFormat WaveFormat { get; }
+        private readonly CircularBuffer _buffer;
+        private readonly ILogger _logger;
         private bool _firstLoop = true;
-        
+
         public AudioDataProvider(WaveFormat waveFormat, CircularBuffer buffer)
         {
             _buffer = buffer;
-            WaveFormat = waveFormat;
+            WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(waveFormat.SampleRate, waveFormat.Channels);
             _logger = AudioService.Instance.Logger.ForContext<AudioDataProvider>();
         }
+
+        public void Dispose()
+        {
+        }
+
+        public WaveFormat WaveFormat { get; }
 
         public int Read(byte[] buffer, int offset, int count)
         {
@@ -28,37 +31,30 @@ namespace VL.NewAudio.Core
             {
                 if (_firstLoop)
                 {
-                    _logger.Information("Audio output thread started");
+                    _logger.Information("Audio output thread started (Reading from {read} ({owner}))", _buffer.Name,
+                        _buffer.IsOwnerOfSharedMemory);
                     _firstLoop = false;
                 }
-                AudioService.Instance.Logger.Verbose("IN AUDIO THREAD: {count}", count);
+
+                AudioService.Instance.Logger.Verbose("IN AUDIO THREAD: {count}", count / 4);
                 // AudioService.Instance.Flow.PostRequest(new AudioDataRequestMessage(count/4/WaveFormat.Channels));
 
-                int pos = 0;
+                var pos = offset;
                 var token = AudioService.Instance.Lifecycle.GetToken();
-                while (pos<count && !token.IsCancellationRequested)
+                while (pos < count && !token.IsCancellationRequested)
                 {
-                    var x = _buffer.Read(buffer, pos);
+                    var x = _buffer.Read(buffer, pos, 1);
                     pos += x;
-                    // if (x == 0)
-                    // {
-                        // return pos;
-                    // }
                 }
 
+                if (pos != count) _logger.Warning("pos!=count: {p}!={c}", pos, count);
                 return pos;
             }
             catch (Exception e)
             {
                 AudioService.Instance.Logger.Error("{e}", e);
                 return count;
-
             }
-        }
-
-        public void Dispose()
-        {
-            
         }
     }
 }

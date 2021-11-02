@@ -1,5 +1,4 @@
 using System;
-using NewAudio;
 using NewAudio.Nodes;
 using Serilog;
 
@@ -7,14 +6,17 @@ namespace NewAudio.Internal
 {
     public class Decimator
     {
+        private static readonly float a0 = 0.35875f;
+        private static readonly float a1 = 0.48829f;
+        private static readonly float a2 = 0.14128f;
+        private static readonly float a3 = 0.01168f;
         private readonly ILogger _logger = Log.ForContext<Decimator>();
-        public int Oversample { get; }
-        private int quality;
         private float cutoff;
 
-        private float[] inBuffer;
-        private float[] kernel;
+        private readonly float[] inBuffer;
         private int inIndex;
+        private readonly float[] kernel;
+        private int quality;
 
         public Decimator(int oversample, int quality, float cutoff = 0.9f)
         {
@@ -27,6 +29,8 @@ namespace NewAudio.Internal
             BoxcarLowpassIR(kernel, cutoff * 0.5f / oversample);
             BlackmanHarrisWindow(kernel);
         }
+
+        public int Oversample { get; }
 
         public void Reset()
         {
@@ -41,7 +45,7 @@ namespace NewAudio.Internal
             inIndex += Oversample;
             inIndex %= length;
             var output = 0.0f;
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 var index = inIndex - 1 - i;
                 index = (index + length) % length;
@@ -55,29 +59,22 @@ namespace NewAudio.Internal
         public static void BoxcarLowpassIR(float[] output, float cutoff = 0.5f)
         {
             var len = output.Length;
-            for (int i = 0; i < len; i++)
+            for (var i = 0; i < len; i++)
             {
                 var t = i - (len - 1) / 2.0f;
                 output[i] = 2 * cutoff * Utils.SinC(2 * cutoff * t);
             }
         }
 
-        private static float a0 = 0.35875f;
-        private static float a1 = 0.48829f;
-        private static float a2 = 0.14128f;
-        private static float a3 = 0.01168f;
-
         public static void BlackmanHarrisWindow(float[] x)
         {
             var factor = 2 * Utils.PI / (x.Length - 1);
-            for (int i = 0; i < x.Length; i++)
-            {
+            for (var i = 0; i < x.Length; i++)
                 x[i] *=
                     a0
                     - a1 * Utils.CosF(1 * factor * i)
                     + a2 * Utils.CosF(2 * factor * i)
                     - a3 * Utils.CosF(3 * factor * i);
-            }
         }
     }
 }

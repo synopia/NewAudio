@@ -1,35 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using NewAudio.Core;
-using Serilog;
 
 namespace VL.NewAudio.Core
 {
-    public class Lifecycle 
+    public class Lifecycle : IDisposable
     {
-        private LifecyclePhase _phase;
+        private CancellationToken _currentToken;
         private LifecyclePhase _nextPhase;
-        
+        private LifecyclePhase _phase;
+
+        private CancellationTokenSource _tokenSource;
+
+        public Action OnBoot;
+        public Action OnPlay;
+        public Action OnShutdown;
+        public Action OnStop;
+
+        public Lifecycle()
+        {
+            _phase = LifecyclePhase.Booting;
+
+            CreateToken();
+        }
+
         public LifecyclePhase Phase
         {
             get => _phase;
             set => _nextPhase = value;
         }
 
-        private CancellationTokenSource _tokenSource;
-        private CancellationToken _currentToken;
-
-        public  Action OnBoot;
-        public  Action OnPlay;
-        public  Action OnStop;
-        public  Action OnShutdown;
-
-        public Lifecycle()
+        public void Dispose()
         {
-            _phase = LifecyclePhase.Booting;
-            
-            CreateToken();
+            _tokenSource.Cancel();
         }
 
         public void Update()
@@ -39,10 +42,21 @@ namespace VL.NewAudio.Core
                 _phase = _nextPhase;
                 switch (_phase)
                 {
-                    case LifecyclePhase.Booting: OnBoot?.Invoke(); break;
-                    case LifecyclePhase.Playing: CreateToken(); OnPlay?.Invoke(); break;
-                    case LifecyclePhase.Stopped: _tokenSource.Cancel(); OnStop?.Invoke(); break;
-                    case LifecyclePhase.Shutdown: OnShutdown?.Invoke(); break;
+                    case LifecyclePhase.Booting:
+                        OnBoot?.Invoke();
+                        break;
+                    case LifecyclePhase.Playing:
+                        CreateToken();
+                        OnPlay?.Invoke();
+                        break;
+                    case LifecyclePhase.Stopped:
+                        _tokenSource.Cancel();
+                        OnStop?.Invoke();
+                        break;
+                    case LifecyclePhase.Shutdown:
+                        _tokenSource.Cancel();
+                        OnShutdown?.Invoke();
+                        break;
                 }
             }
         }
@@ -59,17 +73,16 @@ namespace VL.NewAudio.Core
 
         private void CreateToken()
         {
-            if (_tokenSource==null || _currentToken.IsCancellationRequested)
+            if (_tokenSource == null || _currentToken.IsCancellationRequested)
             {
                 _tokenSource = new CancellationTokenSource();
                 _currentToken = _tokenSource.Token;
             }
         }
-        
+
         public void Start()
         {
             Phase = LifecyclePhase.Playing;
         }
-
     }
 }
