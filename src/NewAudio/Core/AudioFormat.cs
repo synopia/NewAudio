@@ -46,5 +46,9 @@ namespace NewAudio.Core
         {
             return new AudioFormat(SampleRate, SampleCount, channels, IsInterleaved);
         }
+        public AudioFormat WithSampleCount(int sampleCount)
+        {
+            return new AudioFormat(SampleRate, sampleCount, Channels, IsInterleaved);
+        }
     }
 }

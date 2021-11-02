@@ -46,7 +46,7 @@ namespace NewAudio.Nodes
                     var outputBufferSize = Output.Format.BufferSize;
                     var outputChannels = Output.Format.Channels;
                     var inputChannels = Input.Format.Channels;
-                    var output = new AudioDataMessage(Output.Format, Output.Format.BufferSize)
+                    var output = new AudioDataMessage(Output.Format, Output.Format.SampleCount)
                     {
                         Time = input.Time
                     };
@@ -116,12 +116,18 @@ namespace NewAudio.Nodes
 
             _bypass = bypass;
             _updateFunc = update;
+            _outputChannels = outputChannels;
       
             UpdateInput(input, reset);
 
             inProgress = Input != null;
 
             return Output;
+        }
+
+        protected override bool IsInputValid(AudioLink link)
+        {
+            return true;
         }
 
         protected override void Start()

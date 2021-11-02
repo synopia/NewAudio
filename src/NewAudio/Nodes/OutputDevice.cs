@@ -82,6 +82,10 @@ namespace NewAudio.Nodes
         {
             return $"LAG {_lagMs} ";
         }
+        protected override bool IsInputValid(AudioLink link)
+        {
+            return true;
+        }
 
         public void ChangeDevice(WaveOutputDevice device, int desiredLatency)
         {

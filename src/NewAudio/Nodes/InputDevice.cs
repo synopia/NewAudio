@@ -33,6 +33,10 @@ namespace NewAudio.Nodes
         }
 
         public WaveFormat WaveFormat => _format.WaveFormat;
+        protected override bool IsInputValid(AudioLink link)
+        {
+            return true;
+        }
 
         public string DebugInfo()
         {

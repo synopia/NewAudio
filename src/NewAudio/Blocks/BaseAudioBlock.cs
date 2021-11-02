@@ -9,13 +9,11 @@ namespace NewAudio.Blocks
     public abstract class BaseAudioBlock : IPropagatorBlock<AudioDataMessage, AudioDataMessage>, IDisposable
     {
         protected readonly AudioDataflow Flow;
-        private readonly ILogger _logger;
 
         protected BaseAudioBlock(AudioDataflow flow)
         {
-            _logger = AudioService.Instance.Logger;
-            _logger.Information("Constructing {this}", this);
             Flow = flow;
+            flow.Add(this);
 
             /*Source =new BufferBlock<IAudioMessage>();
             Target = new ActionBlock<IAudioMessage>(input =>
@@ -57,12 +55,10 @@ namespace NewAudio.Blocks
 
         public ISourceBlock<AudioDataMessage> Source { get; protected set; }
         public ITargetBlock<AudioDataMessage> Target { get; protected set; }
-        public LifecyclePhase CurrentPhase { get; private set; }
 
 
         public virtual void Dispose()
         {
-            CurrentPhase = LifecyclePhase.Shutdown;
             Flow.Remove(this);
         }
 

@@ -18,6 +18,9 @@ namespace NewAudio.Blocks
 
         private readonly ILogger _logger;
         private readonly CircularBuffer _buffer;
+        public CircularBuffer Buffer { get; }
+
+        public AudioFormat OutputFormat { get; set; }
 
         public AudioInputBlock(AudioDataflow flow, AudioFormat outputFormat)
         {
@@ -38,9 +41,6 @@ namespace NewAudio.Blocks
             }
         }
 
-        public CircularBuffer Buffer { get; }
-
-        public AudioFormat OutputFormat { get; set; }
 
         public void Dispose()
         {

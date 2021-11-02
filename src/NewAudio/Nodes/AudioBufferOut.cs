@@ -51,6 +51,10 @@ namespace NewAudio.Nodes
         }
 
         public int BufferSize { get; private set; }
+        protected override bool IsInputValid(AudioLink link)
+        {
+            return true;
+        }
 
         protected override void Start()
         {

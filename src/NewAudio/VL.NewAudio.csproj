@@ -43,9 +43,9 @@
     <ItemGroup>
         <Compile Remove="Nodes\SinGen.cs" />
         <Compile Remove="Nodes\AudioResampling.cs" />
-        <Compile Remove="Nodes\FFT.cs" />
         <Compile Remove="Nodes\JoinAudioLinks.cs" />
         <Compile Remove="Nodes\AudioGenerator.cs" />
+        <Compile Remove="Nodes\RingBuffer.cs" />
     </ItemGroup>
 
 </Project>

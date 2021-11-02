@@ -32,6 +32,8 @@ namespace NewAudio.Core
             Output.Dispose();
         }
 
+        protected abstract bool IsInputValid(AudioLink link);
+        
         protected abstract void Start();
         protected abstract void Stop();
 
@@ -62,8 +64,11 @@ namespace NewAudio.Core
             {
                 if (input != null)
                 {
-                    Input = input;
-                    OnConnect?.Invoke(input);
+                    if (IsInputValid(input))
+                    {
+                        Input = input;
+                        OnConnect?.Invoke(input);
+                    } // todo else?
                 }
             }
             else
@@ -75,9 +80,12 @@ namespace NewAudio.Core
                 }
                 else
                 {
-                    OnDisconnect?.Invoke(Input);
-                    Input = input;
-                    OnConnect?.Invoke(input);
+                    if (IsInputValid(input))
+                    {
+                        OnDisconnect?.Invoke(Input);
+                        Input = input;
+                        OnConnect?.Invoke(input);
+                    } // todo else?
                 }
             }
         }
