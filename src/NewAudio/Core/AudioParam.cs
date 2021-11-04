@@ -7,6 +7,7 @@ using System.Runtime.Remoting.Proxies;
 
 namespace NewAudio.Core
 {
+  
     public interface IAudioParam
     {
         object ObjValue { get; set; }

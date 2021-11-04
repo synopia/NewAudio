@@ -15,7 +15,7 @@ namespace NewAudio.Nodes
         bool Bypass { get; set; }
         int OutputChannels { get; set; }
     }
-    public class AudioLoopRegion<TState> : IAudioNode<IAudioLoopRegionConfig> where TState : class
+    public class AudioLoopRegion<TState> : AudioNode<IAudioLoopRegionConfig> where TState : class
     {
         private readonly ILogger _logger;
         private readonly AudioSampleFrameClock _clock = new AudioSampleFrameClock();
@@ -23,15 +23,9 @@ namespace NewAudio.Nodes
         private TState _state;
         private TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
 
-        private AudioNodeSupport<IAudioLoopRegionConfig> _support;
-        public AudioParams AudioParams => _support.AudioParams;
-        public IAudioLoopRegionConfig Config => _support.Config;
-        public IAudioLoopRegionConfig LastConfig => _support.LastConfig;
-        public AudioLink Output => _support.Output;
         public AudioLoopRegion()
         {
             _logger = AudioService.Instance.Logger.ForContext<AudioLoopRegion<TState>>();
-            _support = new AudioNodeSupport<IAudioLoopRegionConfig>(this);
 
             _processor = new TransformBlock<AudioDataMessage, AudioDataMessage>(input =>
             {
@@ -79,7 +73,7 @@ namespace NewAudio.Nodes
                 catch (Exception e)
                 {
                     _logger.Error("{e}", e);
-                    _support.HandleError(e);
+                    HandleError(e);
                     return input;
                 }
             });
@@ -87,16 +81,7 @@ namespace NewAudio.Nodes
             Output.SourceBlock = _processor;
         }
 
-        public bool IsInputValid(IAudioLoopRegionConfig next)
-        {
-            return true;
-        }
-
-        public void OnAnyChange()
-        {
-        }
-
-        public void Update(
+        public AudioLink Update(
             AudioLink input,
             Func<IFrameClock, TState> create,
             Func<TState, AudioChannels, TState> update,
@@ -112,14 +97,24 @@ namespace NewAudio.Nodes
             _updateFunc = update;
 
             Config.Bypass = bypass;
-            Config.OutputChannels = outputChannels;
+            Config.OutputChannels = outputChannels > 0 ? outputChannels : input?.Format.Channels ?? 0;
             Config.Reset = reset;
             Config.Input = input;
 
-            _support.Update();
+            return Update();
         }
 
-        public void OnConnect(AudioLink input)
+        protected override bool IsInputValid(IAudioLoopRegionConfig next)
+        {
+            return next.OutputChannels>0 && next.Input?.Format.Channels>0 && next.Input?.Format.SampleCount>0;
+        }
+
+        public override string DebugInfo()
+        {
+            return $"LOOP [{_processor.InputCount}/{_processor.OutputCount}, {_processor.Completion.Status}]";
+        }
+
+        protected override void OnConnect(AudioLink input)
         {
             var inputChannels = input.Format.Channels;
             if (Config.OutputChannels == 0)
@@ -132,26 +127,7 @@ namespace NewAudio.Nodes
             _logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}",
                 input.Format, Output.Format);
 
-            _support.AddLink(input.SourceBlock.LinkTo(_processor));
-        }
-
-        public void OnDisconnect(AudioLink link)
-        {
-            _support.DisposeLinks();
-            _logger.Information("Disconnected from loop region");
-        }
-
-        public void OnStart()
-        {
-        }
-
-        public void OnStop()
-        {
-        }
-
-        public void Dispose()
-        {
-            _support.Dispose();
+            AddLink(input.SourceBlock.LinkTo(_processor));
         }
     }
 }

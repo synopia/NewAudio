@@ -14,14 +14,14 @@ namespace NewAudio.Nodes
         private readonly ILogger _logger;
         private float[] _outBuffer;
         private readonly ActionBlock<AudioDataMessage> _readBuffer;
-        private AudioNodeSupport<IAudioBufferOutConfig> _support;
+        private AudioNode _support;
         public int BufferSize { get; private set; }
 
         public AudioBufferOut()
         {
             _logger = AudioService.Instance.Logger.ForContext<OutputDevice>();
             _logger.Information("AudioBufferOut created");
-            _support = new AudioNodeSupport<IAudioBufferOutConfig>(this);
+            _support = new AudioNode(this);
             _readBuffer = new ActionBlock<AudioDataMessage>(input =>
             {
                 var inputBufferSize = Math.Min(input.BufferSize, BufferSize);

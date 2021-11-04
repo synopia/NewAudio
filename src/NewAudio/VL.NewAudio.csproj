@@ -46,6 +46,7 @@
         <Compile Remove="Nodes\JoinAudioLinks.cs" />
         <Compile Remove="Nodes\AudioGenerator.cs" />
         <Compile Remove="Nodes\RingBuffer.cs" />
+        <Compile Remove="Nodes\AudioBufferOut.cs" />
     </ItemGroup>
 
 </Project>

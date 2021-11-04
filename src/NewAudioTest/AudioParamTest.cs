@@ -18,7 +18,7 @@ namespace NewAudioTest
         }
         public class Tester : IAudioNode<IInterface>
         {
-            private AudioNodeSupport<IInterface> _support;
+            private AudioNode _support;
 
             public AudioParams AudioParams => _support.AudioParams;
             public IInterface Config => _support.Config;
@@ -27,7 +27,12 @@ namespace NewAudioTest
             public bool DoCheck = false;
             public Tester()
             {
-                _support = new AudioNodeSupport<IInterface>(this);
+                _support = new AudioNode(this);
+            }
+
+            public void Update()
+            {
+                _support.Update();
             }
 
             public void Dispose()
@@ -88,12 +93,12 @@ namespace NewAudioTest
 
             t.DoCheck = true;
             t.Config.Phase = LifecyclePhase.Finished;
-            t.AudioParams.Commit();
+            t.Update();
             Assert.AreEqual(LifecyclePhase.Playing, t.Config.Phase);
 
             t.Config.Phase = LifecyclePhase.Finished;
             t.Config.Aint = 123;
-            t.AudioParams.Commit();
+            t.Update();
             Assert.AreEqual(LifecyclePhase.Finished, t.Config.Phase);
         }
         

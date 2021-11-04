@@ -57,8 +57,12 @@ namespace NewAudio.Blocks
             try
             {
                 var token = _cancellationTokenSource.Token;
-                _logger.Information("Audio input reading thread (Reading from {reading} ({owner}))", _buffer.Name,
-                    _buffer.IsOwnerOfSharedMemory);
+                _logger.Information("Audio input reading thread (Reading from {reading} ({owner}))", _buffer?.Name,
+                    _buffer?.IsOwnerOfSharedMemory);
+                if (_buffer == null)
+                {
+                    throw new Exception("Buffer == null !");
+                }
                 
                 while (!token.IsCancellationRequested)
                 {
@@ -101,10 +105,17 @@ namespace NewAudio.Blocks
         
         public void Dispose()
         {
+            _logger.Information("Audio Input Block Dispose!");
             try
             {
                 _cancellationTokenSource?.Cancel();
                 Buffer.Dispose();
+                if (_buffer != null)
+                {
+                    _buffer.Dispose();
+                    Task.Delay(50).Wait();
+                }
+
             }
             catch (Exception e)
             {

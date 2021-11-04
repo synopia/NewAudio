@@ -89,6 +89,8 @@ namespace NewAudioTest
             _outputNullEnum = new WaveOutputDevice("Null: Output"); 
             _inputDevice = ((TestDevice)_inputEnum.Tag);
             _outputDevice = ((TestDevice)_outputEnum.Tag);
+            _inputDevice.MethodCalls.Clear();
+            _outputDevice.MethodCalls.Clear();
             Assert.AreEqual("TEST INPUT", _inputDevice.Name);
             Assert.AreEqual("TEST OUTPUT", _outputDevice.Name);
 
@@ -129,8 +131,11 @@ namespace NewAudioTest
             input.Update(_inputEnum);
             output.Update(input.Output, _outputEnum);
             
+            Log.Logger.Warning("{x}", _inputDevice.MethodCalls);
             Assert.AreEqual(new string[]{"InitRecording", "Record", "Stop", "Record"}, _inputDevice.MethodCalls);
             Assert.AreEqual(new string[]{"InitPlayback", "Play", "Stop", "Play"}, _outputDevice.MethodCalls);
+            _inputDevice.Dispose();
+            _outputDevice.Dispose();
         }
 
         [Test]
@@ -170,6 +175,8 @@ namespace NewAudioTest
 
             Assert.AreEqual(new string[]{"InitRecording", "Record", "Stop","InitRecording", "Record", "Stop", "InitRecording", "Play"}, _inputDevice.MethodCalls);
             Assert.AreEqual(new string[]{"InitPlayback", "Play", "Stop", "InitPlayback", "Play", "Stop", "InitPlayback", "Play"}, _outputDevice.MethodCalls);
+            _inputDevice.Dispose();
+            _outputDevice.Dispose();
         }
         
         

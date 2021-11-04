@@ -16,25 +16,24 @@ namespace NewAudio.Nodes
         public int Channels { get; set; }
     }
 
-    public class InputDevice : IAudioNode<IInputDeviceConfig>
+    public class InputDevice : AudioNode<IInputDeviceConfig>
     {
         private readonly AudioInputBlock _audioInputBlock;
         private readonly ILogger _logger;
 
         private IDevice _device;
         private AudioFormat _format;
-        private AudioNodeSupport<IInputDeviceConfig> _support;
+        public WaveFormat WaveFormat => _format.WaveFormat;
 
         public InputDevice()
         {
             _logger = AudioService.Instance.Logger.ForContext<InputDevice>();
 
             _logger.Information("Input device created");
-            _support = new AudioNodeSupport<IInputDeviceConfig>(this);
             
             _format = new AudioFormat(48000, 512, 2);
 
-            _support.RegisterCallback<WaveInputDevice>("Device", OnDeviceChange);
+            RegisterCallback<WaveInputDevice>("Device", OnDeviceChange);
             try
             {
                 _audioInputBlock = new AudioInputBlock(_format);
@@ -47,23 +46,13 @@ namespace NewAudio.Nodes
             }
         }
 
-        public AudioParams AudioParams => _support.AudioParams;
-        public IInputDeviceConfig Config => _support.Config;
-        public IInputDeviceConfig LastConfig => _support.LastConfig;
-        public AudioLink Output => _support.Output;
-        public WaveFormat WaveFormat => _format.WaveFormat;
 
-        // protected override bool IsInputValid(AudioLink link)
-        // {
-        // return true;
-        // }
-
-        public string DebugInfo()
+        public override string DebugInfo()
         {
-            return Utils.CalculateBufferStats(_audioInputBlock.Buffer);
+            return $"INPUT=[{Output?.SourceBlock?.Completion.Status}, {_device?.AudioDataProvider?.CancellationToken.IsCancellationRequested}]";
         }
 
-        public void OnStart()
+        protected override void OnStart()
         {
             try
             {
@@ -76,24 +65,7 @@ namespace NewAudio.Nodes
             }
         }
 
-        public bool IsInputValid(IInputDeviceConfig next)
-        {
-            return true;
-        }
-
-        public void OnAnyChange()
-        {
-        }
-
-        public void OnConnect(AudioLink input)
-        {
-        }
-
-        public void OnDisconnect(AudioLink link)
-        {
-        }
-
-        public void Update(WaveInputDevice device, SamplingFrequency samplingFrequency = SamplingFrequency.Hz44100,
+        public AudioLink Update(WaveInputDevice device, SamplingFrequency samplingFrequency = SamplingFrequency.Hz44100,
             int channelOffset = 0, int channels = 2, int desiredLatency = 250)
         {
             Config.Device = device;
@@ -102,7 +74,7 @@ namespace NewAudio.Nodes
             Config.ChannelOffset = channelOffset;
             Config.Channels = channels;
 
-            _support.Update();
+            return Update();
         }
 
         private void OnDeviceChange(WaveInputDevice old, WaveInputDevice current)
@@ -133,7 +105,7 @@ namespace NewAudio.Nodes
             }
         }
 
-        public void OnStop()
+        protected override void OnStop()
         {
             try
             {
@@ -146,14 +118,14 @@ namespace NewAudio.Nodes
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             try
             {
-                _audioInputBlock.Stop();
-                _device.Stop();
+                _audioInputBlock?.Stop();
+                _device?.Stop();
                 
-                _audioInputBlock.Dispose();
+                _audioInputBlock?.Dispose();
                 _device?.Dispose();
             }
             catch (Exception e)
@@ -161,7 +133,7 @@ namespace NewAudio.Nodes
                 _logger.Error("Dispose {e}", e);
             }
 
-            _support.Dispose();
+            base.Dispose();
         }
     }
 }

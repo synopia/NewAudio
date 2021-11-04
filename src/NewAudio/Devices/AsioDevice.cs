@@ -100,10 +100,10 @@ namespace NewAudio.Devices
 
         public override void Play()
         {
-            if (!_isInitialized)
-            {
+            // if (!_isInitialized)
+            // {
                 DoInit();
-            }
+            // }
             _cancellationTokenSource = new CancellationTokenSource();
             AudioDataProvider.CancellationToken = _cancellationTokenSource.Token;
 
@@ -113,7 +113,11 @@ namespace NewAudio.Devices
         public override void Stop()
         {
             _cancellationTokenSource?.Cancel();
-            _asioOut?.Stop();
+            if (_asioOut != null && _asioOut.PlaybackState!=PlaybackState.Stopped)
+            {
+                _asioOut.Stop();
+            }
+
             _isInitialized = false;
         }
 

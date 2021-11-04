@@ -39,6 +39,7 @@
     </ItemGroup>
     <ItemGroup>
       <Compile Remove="WaveInputTest.cs" />
+      <Compile Remove="AudioParamTest.cs" />
     </ItemGroup>
 
 </Project>

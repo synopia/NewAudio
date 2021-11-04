@@ -93,11 +93,25 @@ namespace NewAudio.Blocks
 
         public void Stop()
         {
-            _cancellationTokenSource?.Cancel();
-            _link?.Dispose();
-            _actionBlock?.Complete();
-            _link = null;
-            _actionBlock = null;
+            try
+            {
+                _cancellationTokenSource?.Cancel();
+                _link?.Dispose();
+                _actionBlock?.Complete();
+                _link = null;
+                _actionBlock = null;
+                if (_buffer != null)
+                {
+                    _buffer.Dispose();
+                    Task.Delay(50).Wait();
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.Error("Dispose: {e}", e);
+            }
+
+            
         }
 
         public void Dispose()

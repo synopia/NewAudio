@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NewAudio.Nodes;
 using Serilog;
+using IList = System.Collections.IList;
 
 namespace NewAudio.Core
 {
@@ -20,6 +21,10 @@ namespace NewAudio.Core
 
         public void Dispose()
         {
+            foreach (var node in _nodes)
+            {
+                node.Dispose();
+            }
             _nextId = 0;
             _links.Clear();
             _nodes.Clear();
@@ -34,14 +39,14 @@ namespace NewAudio.Core
         {
             foreach (var node in _nodes)
             {
-                // node.Config.Phase = LifecyclePhase.Playing;
+                node.Config.Phase = LifecyclePhase.Playing;
             }
         }
         public void StopAll()
         {
             foreach (var node in _nodes)
             {
-                // node.Config.Phase = LifecyclePhase.Stopped;
+                node.Config.Phase = LifecyclePhase.Stopped;
             }
         }
 
@@ -58,21 +63,29 @@ namespace NewAudio.Core
             _logger.Debug("Removed link {node}", link);
         }
 
-        public void AddNode(IAudioNode node) 
+        public void AddNode(IAudioNode node)
         {
             _nodes.Add(node);
-            _logger.Debug("Added node {node}", node);
         }
 
         public void RemoveNode(IAudioNode node)
         {
             _nodes.Remove(node);
-            _logger.Debug("Removed node {node}", node);
         }
 
         public string DebugInfo()
         {
-            return $"Nodes: {_nodes.Count}, Links: {_links.Count}";
+            var nodes = "";
+            foreach (var node in _nodes)
+            {
+                var debugInfo = node.DebugInfo();
+                if (debugInfo != null)
+                {
+                    nodes += $", {debugInfo}";
+                }
+            }
+            return $"Nodes: {_nodes.Count}, Links: {_links.Count}{nodes}";
         }
+        
     }
 }
