@@ -1,8 +1,8 @@
-﻿using NAudio.Wave;
+﻿using System.Threading;
+using NAudio.Wave;
 using NewAudio.Core;
 using Serilog;
 using SharedMemory;
-using VL.NewAudio.Core;
 
 namespace NewAudio.Devices
 {
@@ -63,16 +63,23 @@ namespace NewAudio.Devices
 
         private void DoInit()
         {
-            AudioDataProvider = new AudioDataProvider(_waveFormat, _buffer);
+            
             _asioOut = new AsioOut(_driverName);
 
-            if (_isRecording)
+            if (_isRecording && _isPlaying )
             {
+                AudioDataProvider = new AudioDataProvider(_waveFormat, _buffer);
                 _asioOut.InitRecordAndPlayback(AudioDataProvider, 2, RecordingWaveFormat.SampleRate);
+                _asioOut.AudioAvailable += OnAsioData;
+            }
+            else if (_isRecording)
+            {
+                _asioOut.InitRecordAndPlayback(null, 2, RecordingWaveFormat.SampleRate);
                 _asioOut.AudioAvailable += OnAsioData;
             }
             else if (_isPlaying)
             {
+                AudioDataProvider = new AudioDataProvider(_waveFormat, _buffer);
                 _asioOut.Init(AudioDataProvider);
             }
 
@@ -81,25 +88,39 @@ namespace NewAudio.Devices
 
         public override void Record()
         {
-            if (!_isInitialized) DoInit();
+            if (!_isInitialized)
+            {
+                DoInit();
+            }
+
+            _cancellationTokenSource = new CancellationTokenSource();
+
             _asioOut?.Play();
         }
 
         public override void Play()
         {
-            if (!_isInitialized) DoInit();
+            if (!_isInitialized)
+            {
+                DoInit();
+            }
+            _cancellationTokenSource = new CancellationTokenSource();
+            AudioDataProvider.CancellationToken = _cancellationTokenSource.Token;
+
             _asioOut?.Play();
         }
 
         public override void Stop()
         {
+            _cancellationTokenSource?.Cancel();
             _asioOut?.Stop();
             _isInitialized = false;
         }
 
         public override void Dispose()
         {
-            Stop();
+            _cancellationTokenSource?.Cancel();
+            _asioOut?.Stop();
             _asioOut?.Dispose();
             base.Dispose();
         }

@@ -6,15 +6,16 @@ using Serilog;
 
 namespace NewAudio.Blocks
 {
-    public abstract class BaseAudioBlock : IPropagatorBlock<AudioDataMessage, AudioDataMessage>, IDisposable
+    public interface IAudioBlock: IDisposable
     {
-        protected readonly AudioDataflow Flow;
+        public void Play();
+        public void Stop();
 
-        protected BaseAudioBlock(AudioDataflow flow)
+    }
+    public abstract class AudioBlock : IAudioBlock, IPropagatorBlock<AudioDataMessage, AudioDataMessage>
+    {
+        protected AudioBlock()
         {
-            Flow = flow;
-            flow.Add(this);
-
             /*Source =new BufferBlock<IAudioMessage>();
             Target = new ActionBlock<IAudioMessage>(input =>
             {
@@ -56,10 +57,18 @@ namespace NewAudio.Blocks
         public ISourceBlock<AudioDataMessage> Source { get; protected set; }
         public ITargetBlock<AudioDataMessage> Target { get; protected set; }
 
+        public void Play()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Stop()
+        {
+            throw new NotImplementedException();
+        }
 
         public virtual void Dispose()
         {
-            Flow.Remove(this);
         }
 
         public void Complete()
@@ -85,10 +94,12 @@ namespace NewAudio.Blocks
             return Source.LinkTo(target, linkOptions);
         }
 
-        public AudioDataMessage ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<AudioDataMessage> target,
+        public AudioDataMessage ConsumeMessage(DataflowMessageHeader messageHeader,
+            ITargetBlock<AudioDataMessage> target,
             out bool messageConsumed)
         {
-            return ((IReceivableSourceBlock<AudioDataMessage>)Source).ConsumeMessage(messageHeader, target, out messageConsumed);
+            return ((IReceivableSourceBlock<AudioDataMessage>)Source).ConsumeMessage(messageHeader, target,
+                out messageConsumed);
         }
 
         public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<AudioDataMessage> target)

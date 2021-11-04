@@ -24,7 +24,11 @@ namespace NewAudio.Devices
         protected override IReadOnlyDictionary<string, object> GetEntries()
         {
             var devices = new Dictionary<string, object>();
-            foreach (var device in DriverManager.Instance.GetOutputDevices()) devices[device.Name] = device;
+            foreach (var device in DriverManager.Instance.GetOutputDevices())
+            {
+                devices[device.Name] = device;
+            }
+
             return devices;
         }
 

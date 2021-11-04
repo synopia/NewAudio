@@ -24,7 +24,7 @@ namespace NewAudioTest
                 .WriteTo.Console(new MessageTemplateTextFormatter(
                     "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}"))
                 .WriteTo.Seq("http://localhost:5341")
-                .WriteTo.File("VL.NewAudio.log",
+                .WriteTo.File("NewAudio.log",
                     outputTemplate:
                     "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties}{NewLine}{Exception}")
                 .MinimumLevel.Verbose()

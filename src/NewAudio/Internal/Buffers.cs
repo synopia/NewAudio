@@ -113,7 +113,9 @@ namespace NewAudio.Core
         public static void FromByteBuffer(float[] buffer, WaveFormat format, byte[] bytes, int bytesRecorded)
         {
             if (format.Encoding == WaveFormatEncoding.IeeeFloat)
+            {
                 Buffer.BlockCopy(bytes, 0, buffer, 0, bytesRecorded);
+            }
             /*
             else if (format.BitsPerSample == 32)
             {
@@ -125,7 +127,9 @@ namespace NewAudio.Core
             }
             */
             else
+            {
                 throw new ArgumentException($"Unsupported format {format}");
+            }
         }
     }
 }

@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Threading;
 using NAudio.Wave;
 using SharedMemory;
-using VL.NewAudio.Core;
+using NewAudio.Core;
 
 namespace NewAudio.Devices
 {
@@ -31,6 +32,8 @@ namespace NewAudio.Devices
         public bool IsInputDevice { get; protected set; }
 
         public bool IsOutputDevice { get; protected set; }
+        protected CancellationTokenSource _cancellationTokenSource;
+        
         public abstract void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);
 
         public abstract void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using SharedMemory;
 
 namespace NewAudio.Nodes
@@ -59,24 +60,13 @@ namespace NewAudio.Nodes
         public static float SinC(float v)
         {
             if (Math.Abs(v) < 0.0000001f)
+            {
                 return 1.0f;
+            }
+
             v *= PI;
             return SinF(v) / v;
         }
 
-        public static bool ArrayEquals<T>(T[] first, T[] second)
-        {
-            if (first == second)
-                return true;
-            if (first == null || second == null)
-                return false;
-            if (first.Length != second.Length)
-                return false;
-            for (var i = 0; i < first.Length; i++)
-                if (first[i]?.GetHashCode() != second[i]?.GetHashCode())
-                    return false;
-
-            return true;
-        }
     }
 }

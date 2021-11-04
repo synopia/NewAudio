@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Threading;
 using NAudio.Wave;
 using NewAudio.Core;
 using Serilog;
 using SharedMemory;
-using VL.NewAudio.Core;
 
 namespace NewAudio.Devices
 {
@@ -41,16 +41,22 @@ namespace NewAudio.Devices
 
         public override void Play()
         {
+            _cancellationTokenSource = new CancellationTokenSource();
+            AudioDataProvider.CancellationToken = _cancellationTokenSource.Token;
+
             _directSoundOut?.Play();
         }
 
         public override void Stop()
         {
+            _cancellationTokenSource?.Cancel();
             _directSoundOut?.Stop();
         }
 
         public override void Dispose()
         {
+            _cancellationTokenSource?.Cancel();
+            _directSoundOut?.Stop();
             _directSoundOut?.Dispose();
             base.Dispose();
         }

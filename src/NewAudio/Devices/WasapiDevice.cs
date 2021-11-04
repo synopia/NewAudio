@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Threading;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NewAudio.Core;
 using Serilog;
 using SharedMemory;
-using VL.NewAudio.Core;
 
 namespace NewAudio.Devices
 {
@@ -85,7 +85,7 @@ namespace NewAudio.Devices
             {
                 var remaining = evt.BytesRecorded;
                 var pos = 0;
-                var token = AudioService.Instance.Lifecycle.GetToken();
+                var token = _cancellationTokenSource.Token;
 
                 while (pos < evt.BytesRecorded && !token.IsCancellationRequested)
                 {
@@ -100,12 +100,17 @@ namespace NewAudio.Devices
                         var written = RecordingBuffer.Write(_temp);
                         _tempPos = 0;
                         if (written != _temp.Length)
+                        {
                             _logger.Warning("Wrote to few bytes ({wrote}, expected: {expected})", written,
                                 _temp.Length);
+                        }
                     }
                 }
 
-                if (pos != evt.BytesRecorded) _logger.Warning("pos!=buf {p}!={inc}", pos, evt.BytesRecorded);
+                if (pos != evt.BytesRecorded && !token.IsCancellationRequested)
+                {
+                    _logger.Warning("pos!=buf {p}!={inc}", pos, evt.BytesRecorded);
+                }
             }
             catch (Exception e)
             {
@@ -115,21 +120,33 @@ namespace NewAudio.Devices
 
         public override void Record()
         {
+            _cancellationTokenSource = new CancellationTokenSource();
+            // AudioDataProvider.CancellationToken = _cancellationTokenSource.Token;
+            
             _firstLoop = true;
             if (IsLoopback)
+            {
                 _loopback?.StartRecording();
+            }
             else
+            {
                 _capture?.StartRecording();
+            }
         }
 
         public override void Play()
         {
+            _cancellationTokenSource = new CancellationTokenSource();
+            AudioDataProvider.CancellationToken = _cancellationTokenSource.Token;
+            
             _firstLoop = true;
             _wavePlayer?.Play();
         }
 
         public override void Stop()
         {
+            _cancellationTokenSource?.Cancel();
+            
             _loopback?.StopRecording();
             _capture?.StopRecording();
             _wavePlayer?.Stop();
@@ -137,6 +154,11 @@ namespace NewAudio.Devices
 
         public override void Dispose()
         {
+            _cancellationTokenSource?.Cancel();
+            
+            _loopback?.StopRecording();
+            _capture?.StopRecording();
+            _wavePlayer?.Stop();
             _loopback?.Dispose();
             _capture?.Dispose();
             _wavePlayer?.Dispose();

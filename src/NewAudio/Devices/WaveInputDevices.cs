@@ -24,7 +24,11 @@ namespace NewAudio.Devices
         {
             var devices = new Dictionary<string, object>();
 
-            foreach (var device in DriverManager.Instance.GetInputDevices()) devices[device.Name] = device;
+            foreach (var device in DriverManager.Instance.GetInputDevices())
+            {
+                devices[device.Name] = device;
+            }
+
             return devices;
         }
 

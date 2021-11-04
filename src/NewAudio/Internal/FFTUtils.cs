@@ -31,7 +31,10 @@ namespace NewAudio.Internal
             }
 
             var window = new double[size];
-            for (var i = 0; i < size; i++) window[i] = function(i, size);
+            for (var i = 0; i < size; i++)
+            {
+                window[i] = function(i, size);
+            }
 
             return window;
         }

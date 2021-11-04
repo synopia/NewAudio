@@ -1,16 +1,18 @@
 ﻿using System;
+using System.Threading;
 using NAudio.Wave;
 using NewAudio.Core;
 using Serilog;
 using SharedMemory;
 
-namespace VL.NewAudio.Core
+namespace NewAudio.Core
 {
     public class AudioDataProvider : IWaveProvider, IDisposable
     {
         private readonly CircularBuffer _buffer;
         private readonly ILogger _logger;
         private bool _firstLoop = true;
+        public CancellationToken CancellationToken { get; set; }
 
         public AudioDataProvider(WaveFormat waveFormat, CircularBuffer buffer)
         {
@@ -40,14 +42,17 @@ namespace VL.NewAudio.Core
                 // AudioService.Instance.Flow.PostRequest(new AudioDataRequestMessage(count/4/WaveFormat.Channels));
 
                 var pos = offset;
-                var token = AudioService.Instance.Lifecycle.GetToken();
-                while (pos < count && !token.IsCancellationRequested)
+                while (pos < count && !CancellationToken.IsCancellationRequested)
                 {
                     var x = _buffer.Read(buffer, pos, 1);
                     pos += x;
                 }
 
-                if (!token.IsCancellationRequested && pos != count) _logger.Warning("pos!=count: {p}!={c}", pos, count);
+                if (!CancellationToken.IsCancellationRequested && pos != count)
+                {
+                    _logger.Warning("pos!=count: {p}!={c}", pos, count);
+                }
+
                 return pos;
             }
             catch (Exception e)

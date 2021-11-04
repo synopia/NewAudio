@@ -45,9 +45,9 @@ namespace NewAudio.Nodes
 
         public void SetSampleToChannel(int channel, float value)
         {
-            _currentOutputBuffer[_currentIndex*_currentOutputChannels + channel % _currentOutputChannels] = value;
+            _currentOutputBuffer[_currentIndex * _currentOutputChannels + channel % _currentOutputChannels] = value;
         }
-        
+
         public float[] GetAllSamples()
         {
             return _tempInputBuffer;
@@ -57,7 +57,7 @@ namespace NewAudio.Nodes
         {
             if (inp != null)
             {
-                for (int i = 0; i < _currentOutputChannels; i++)
+                for (var i = 0; i < _currentOutputChannels; i++)
                 {
                     _currentOutputBuffer[_currentIndex * _currentOutputChannels + i] = inp[i % inp.Length];
                 }

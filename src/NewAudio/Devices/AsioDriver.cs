@@ -11,7 +11,10 @@ namespace NewAudio.Devices
         {
             var list = new List<IDevice>();
 
-            foreach (var asio in AsioOut.GetDriverNames()) list.Add(new AsioDevice($"ASIO: {asio}", asio));
+            foreach (var asio in AsioOut.GetDriverNames())
+            {
+                list.Add(new AsioDevice($"ASIO: {asio}", asio));
+            }
 
             return list;
         }

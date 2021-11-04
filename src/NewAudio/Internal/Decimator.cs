@@ -70,11 +70,13 @@ namespace NewAudio.Internal
         {
             var factor = 2 * Utils.PI / (x.Length - 1);
             for (var i = 0; i < x.Length; i++)
+            {
                 x[i] *=
                     a0
                     - a1 * Utils.CosF(1 * factor * i)
                     + a2 * Utils.CosF(2 * factor * i)
                     - a3 * Utils.CosF(3 * factor * i);
+            }
         }
     }
 }

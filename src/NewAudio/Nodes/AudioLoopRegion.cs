@@ -10,23 +10,32 @@ using VL.Lib.Animation;
 
 namespace NewAudio.Nodes
 {
-    public class AudioLoopRegion<TState> : BaseNode where TState : class
+    public interface IAudioLoopRegionConfig : IAudioNodeConfig
+    {
+        bool Bypass { get; set; }
+        int OutputChannels { get; set; }
+    }
+    public class AudioLoopRegion<TState> : IAudioNode<IAudioLoopRegionConfig> where TState : class
     {
         private readonly ILogger _logger;
         private readonly AudioSampleFrameClock _clock = new AudioSampleFrameClock();
         private Func<TState, AudioChannels, TState> _updateFunc;
         private TState _state;
-        private bool _bypass;
+        private TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
 
-        private int _outputChannels;
-        
+        private AudioNodeSupport<IAudioLoopRegionConfig> _support;
+        public AudioParams AudioParams => _support.AudioParams;
+        public IAudioLoopRegionConfig Config => _support.Config;
+        public IAudioLoopRegionConfig LastConfig => _support.LastConfig;
+        public AudioLink Output => _support.Output;
         public AudioLoopRegion()
         {
             _logger = AudioService.Instance.Logger.ForContext<AudioLoopRegion<TState>>();
-           
-            var transformer = new TransformBlock<AudioDataMessage, AudioDataMessage>(input =>
+            _support = new AudioNodeSupport<IAudioLoopRegionConfig>(this);
+
+            _processor = new TransformBlock<AudioDataMessage, AudioDataMessage>(input =>
             {
-                if (_bypass)
+                if (Config.Bypass)
                 {
                     Array.Clear(input.Data, 0, input.BufferSize);
                     return input;
@@ -36,16 +45,16 @@ namespace NewAudio.Nodes
                 {
                     var channels = new AudioChannels();
 
-                    var inputBufferSize = Input.Format.BufferSize;
+                    var inputBufferSize = Config.Input.Format.BufferSize;
                     if (input.BufferSize != inputBufferSize)
                     {
                         throw new Exception($"Expected Input size: {inputBufferSize}, actual: {input.BufferSize}");
                     }
 
-                    var samples = Input.Format.SampleCount;
+                    var samples = Config.Input.Format.SampleCount;
                     var outputBufferSize = Output.Format.BufferSize;
                     var outputChannels = Output.Format.Channels;
-                    var inputChannels = Input.Format.Channels;
+                    var inputChannels = Config.Input.Format.Channels;
                     var output = new AudioDataMessage(Output.Format, Output.Format.SampleCount)
                     {
                         Time = input.Time
@@ -56,8 +65,8 @@ namespace NewAudio.Nodes
                     if (_state != null && _updateFunc != null)
                     {
                         channels.Update(output.Data, input.Data, outputChannels, inputChannels);
-                        var increment = 1.0d / Input.Format.SampleRate;
-                        for (int i = 0; i < samples; i++)
+                        var increment = 1.0d / Config.Input.Format.SampleRate;
+                        for (var i = 0; i < samples; i++)
                         {
                             channels.UpdateLoop(i, i);
                             _state = _updateFunc(_state, channels);
@@ -69,79 +78,80 @@ namespace NewAudio.Nodes
                 }
                 catch (Exception e)
                 {
-                    _logger.Error("{e}" , e);
-                    HandleError(e);
+                    _logger.Error("{e}", e);
+                    _support.HandleError(e);
                     return input;
                 }
             });
-            
-            OnConnect += link =>
-            {
-                var inputChannels = Input.Format.Channels;
-                if (_outputChannels == 0)
-                {
-                    _outputChannels = inputChannels;
-                }
 
-                Output.Format = Input.Format.WithChannels(_outputChannels);
-
-                _logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}", Input.Format, Output.Format);
-
-                AddLink(link.SourceBlock.LinkTo(transformer));
-            };
-            OnDisconnect += link =>
-            {
-                DisposeLinks();
-                _logger.Information("Disconnected from loop region");
-            };
-            
-
-            Output.SourceBlock = transformer;
-            
+            Output.SourceBlock = _processor;
         }
 
-        public AudioLink Update(
+        public bool IsInputValid(IAudioLoopRegionConfig next)
+        {
+            return true;
+        }
+
+        public void OnAnyChange()
+        {
+        }
+
+        public void Update(
             AudioLink input,
             Func<IFrameClock, TState> create,
             Func<TState, AudioChannels, TState> update,
             bool reset,
             bool bypass,
-            out bool inProgress, int outputChannels = 0
+            int outputChannels = 0
         )
         {
-            if (_state == null && create!=null)
+            if (_state == null && create != null)
             {
                 _state = create(_clock);
             }
-
-            _bypass = bypass;
             _updateFunc = update;
-            _outputChannels = outputChannels;
-      
-            UpdateInput(input, reset);
 
-            inProgress = Input != null;
+            Config.Bypass = bypass;
+            Config.OutputChannels = outputChannels;
+            Config.Reset = reset;
+            Config.Input = input;
 
-            return Output;
+            _support.Update();
         }
 
-        protected override bool IsInputValid(AudioLink link)
+        public void OnConnect(AudioLink input)
         {
-            return true;
+            var inputChannels = input.Format.Channels;
+            if (Config.OutputChannels == 0)
+            {
+                Config.OutputChannels = inputChannels;
+            }
+
+            Output.Format = input.Format.WithChannels(Config.OutputChannels);
+
+            _logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}",
+                input.Format, Output.Format);
+
+            _support.AddLink(input.SourceBlock.LinkTo(_processor));
         }
 
-        protected override void Start()
+        public void OnDisconnect(AudioLink link)
+        {
+            _support.DisposeLinks();
+            _logger.Information("Disconnected from loop region");
+        }
+
+        public void OnStart()
         {
         }
 
-        protected override void Stop()
+        public void OnStop()
         {
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
-            
-            base.Dispose();
+            _support.Dispose();
         }
     }
 }

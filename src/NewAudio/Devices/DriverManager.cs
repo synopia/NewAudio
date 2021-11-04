@@ -19,15 +19,28 @@ namespace NewAudio.Devices
             _drivers.Add(new WasapiDriver());
             _drivers.Add(new WaveDriver());
 
-            foreach (var driver in _drivers) _devices.AddRange(driver.GetDevices());
+            foreach (var driver in _drivers)
+            {
+                _devices.AddRange(driver.GetDevices());
+            }
+
             _devices.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.Ordinal));
         }
 
+        public void AddDriver(IDriver driver)
+        {
+            _drivers.Add(driver);
+            _devices.AddRange(driver.GetDevices());
+        }
+        
         public static DriverManager Instance
         {
             get
             {
-                if (_instance == null) _instance = new DriverManager();
+                if (_instance == null)
+                {
+                    _instance = new DriverManager();
+                }
 
                 return _instance;
             }

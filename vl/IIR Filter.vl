@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="LYaJ9XJnNs3PfwrX14fTjk" LanguageVersion="2021.4.0.526" Version="0.128">
+<Document xmlns:p="property" Id="U3bVYI0uILvPxXgbHoYQOT" LanguageVersion="2021.4.0.526" Version="0.128">
   <NugetDependency Id="Karzca3RHEMP33W7Z2vdkb" Location="VL.CoreLib" Version="2021.4.0-0526-gd606d93626" />
   <Patch Id="PvyxW6UL2wsPbsk2MghI54">
     <Canvas Id="Ie77yoTwJBuQAtDZf6VEfF" DefaultCategory="NewAudio.Filter" CanvasType="FullCategory">
@@ -110,11 +110,9 @@
                   <Pin Id="FaC05soGUgvOO8xt3Jabj3" Name="False" Kind="OutputPin" />
                 </Node>
               </Patch>
-              <Pin Id="Js61hGhgJAPQJ6xkckBURx" Name="Create" Kind="InputPin" />
-              <Pin Id="C95SHQzW9ZGMLdi7eMoyJS" Name="Update" Kind="InputPin" />
+              <Pin Id="UgeGAy4dLcCP8se7NZKtj6" Name="Input" Kind="InputPin" />
               <Pin Id="DD2YQOMG2XKLJuuRhlvVjv" Name="Reset" Kind="InputPin" DefaultValue="False" />
               <Pin Id="PTNs8Y3YedXPIqV7bJlpQT" Name="Bypass" Kind="InputPin" />
-              <Pin Id="UgeGAy4dLcCP8se7NZKtj6" Name="Input" Kind="InputPin" />
               <Pin Id="MgDwe7Ha1oANVZN7eHo5hO" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
               <Pin Id="IThw6cj47D3MiwsLTIPNn1" Name="Result" Kind="OutputPin" />
               <Pin Id="Pn3yg9TLDtYOuZuzuogxh4" Name="In Progress" Kind="OutputPin" />
@@ -212,12 +210,6 @@
           <Choice Kind="ClassDefinition" Name="Class" />
           <FullNameCategoryReference ID="Primitive" />
         </p:NodeReference>
-        <p:Interfaces>
-          <TypeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
-            <CategoryReference Kind="Category" Name="NewAudio" />
-            <Choice Kind="MutableInterfaceType" Name="IAudioProcessor" />
-          </TypeReference>
-        </p:Interfaces>
         <Patch Id="SJ2F1CggwxmLwTpXspU7wV">
           <Canvas Id="FmfyBcNVOEsP4ljHndk4km" CanvasType="Group">
             <Node Bounds="498,482,25,19" Id="ThC0HumkdjWQPP5WZituje">
@@ -614,11 +606,9 @@
                   <Pin Id="RNqmJBzjcCqMYg5tjnsr04" Name="Result" Kind="OutputPin" />
                 </Node>
               </Patch>
-              <Pin Id="TzkAnNEv9q6MQrmHb3xC7N" Name="Create" Kind="InputPin" />
-              <Pin Id="MKZe4eEjsZlPTrWfdhswYv" Name="Update" Kind="InputPin" />
+              <Pin Id="PaSosDi543eQBVRHHxVOlC" Name="Input" Kind="InputPin" />
               <Pin Id="JTpx1oYesFNPGIycZifiex" Name="Reset" Kind="InputPin" DefaultValue="False" />
               <Pin Id="VuFafanU2hkQKuiG3oTlpx" Name="Bypass" Kind="InputPin" />
-              <Pin Id="PaSosDi543eQBVRHHxVOlC" Name="Input" Kind="InputPin" />
               <Pin Id="R4MiPVPs1kOOK3busv4bBS" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
               <Pin Id="TreuKOu7LqrNvmxM00s6u0" Name="Result" Kind="OutputPin" />
               <Pin Id="Q2epErwPeZTPQdEuKlW6IR" Name="In Progress" Kind="OutputPin" />
@@ -1071,11 +1061,9 @@
                   <Pin Id="H5sdNk5B4fhPlppzmgfztm" Name="Result" Kind="OutputPin" />
                 </Node>
               </Patch>
-              <Pin Id="AryqGzxnS15LCDsmr6TOkp" Name="Create" Kind="InputPin" />
-              <Pin Id="RHEtPHLdxNxO34syKodZbE" Name="Update" Kind="InputPin" />
+              <Pin Id="RTu8W0UCLYYPaKvlvB8daq" Name="Input" Kind="InputPin" />
               <Pin Id="RdIkVVj1zR7LfaxVLzU1KS" Name="Reset" Kind="InputPin" DefaultValue="False" />
               <Pin Id="SB3kln1P2A5QAjVA96b5SV" Name="Bypass" Kind="InputPin" />
-              <Pin Id="RTu8W0UCLYYPaKvlvB8daq" Name="Input" Kind="InputPin" />
               <Pin Id="MGjhsvTPOTcMrHvjd6Unis" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
               <Pin Id="GZ2zSedSMjcPKlPzQkZJkW" Name="Result" Kind="OutputPin" />
               <Pin Id="MNmQbwUfGp0QcGaaNQceGL" Name="In Progress" Kind="OutputPin" />
@@ -1650,11 +1638,9 @@
                   <Pin Id="CoOo8zE096OL5J4c2UoK6y" Name="Result" Kind="OutputPin" />
                 </Node>
               </Patch>
-              <Pin Id="Mvskc0BaAndNSZk8holeIt" Name="Create" Kind="InputPin" />
-              <Pin Id="NX0HYLpjYJoLVuCFbWdhMT" Name="Update" Kind="InputPin" />
+              <Pin Id="UflSEgNS2E3Mr3BYt6YHvw" Name="Input" Kind="InputPin" />
               <Pin Id="RbFw7MMUvdsNYvF8XWRnZa" Name="Reset" Kind="InputPin" DefaultValue="False" />
               <Pin Id="HZUIUItJmyNM5qf3jCN3Rx" Name="Bypass" Kind="InputPin" />
-              <Pin Id="UflSEgNS2E3Mr3BYt6YHvw" Name="Input" Kind="InputPin" />
               <Pin Id="Jt8wwb7CcjZOasRpjt4JgO" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
               <Pin Id="P68F8LOMLB3P0RNuw6oCWn" Name="Result" Kind="OutputPin" />
               <Pin Id="OOYs91q6kV0PmLTyMEaRi5" Name="In Progress" Kind="OutputPin" />
@@ -2313,11 +2299,9 @@
                   <Pin Id="BXktdXIPHmLPkljg2eHgAi" Name="Result" Kind="OutputPin" />
                 </Node>
               </Patch>
-              <Pin Id="Q5mbtpLS2sFN7W3awJteV8" Name="Create" Kind="InputPin" />
-              <Pin Id="OGhGvBgIvdqMXjNxc0fBF1" Name="Update" Kind="InputPin" />
+              <Pin Id="CzTCPuEWcRmPcdPWU3DAAm" Name="Input" Kind="InputPin" />
               <Pin Id="KQ1gcUTWA64QMYvlYnMMd6" Name="Reset" Kind="InputPin" DefaultValue="False" />
               <Pin Id="T4tMK3YdW0nO1SZf7YqrQq" Name="Bypass" Kind="InputPin" />
-              <Pin Id="CzTCPuEWcRmPcdPWU3DAAm" Name="Input" Kind="InputPin" />
               <Pin Id="Lk3Fp3sj4HtNE5py4HfSXR" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
               <Pin Id="V8Gw4u1nCo7NMkUTodmvox" Name="Result" Kind="OutputPin" />
               <Pin Id="N0TGHAG6hzTQI6RJoiWM9G" Name="In Progress" Kind="OutputPin" />

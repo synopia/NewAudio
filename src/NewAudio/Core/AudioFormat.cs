@@ -2,7 +2,7 @@
 
 namespace NewAudio.Core
 {
-    public enum AudioSampleRate
+    public enum SamplingFrequency
     {
         Hz8000 = 8000,
         Hz11025 = 11025,
@@ -46,6 +46,7 @@ namespace NewAudio.Core
         {
             return new AudioFormat(SampleRate, SampleCount, channels, IsInterleaved);
         }
+
         public AudioFormat WithSampleCount(int sampleCount)
         {
             return new AudioFormat(SampleRate, sampleCount, Channels, IsInterleaved);
