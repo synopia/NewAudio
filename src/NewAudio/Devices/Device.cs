@@ -32,7 +32,7 @@ namespace NewAudio.Devices
         public bool IsInputDevice { get; protected set; }
 
         public bool IsOutputDevice { get; protected set; }
-        protected CancellationTokenSource _cancellationTokenSource;
+        protected CancellationTokenSource CancellationTokenSource;
         
         public abstract void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);
 
@@ -44,9 +44,19 @@ namespace NewAudio.Devices
 
         public abstract void Stop();
 
-        public virtual void Dispose()
+        private bool _disposedValue;
+        public void Dispose() => Dispose(true);
+        protected virtual void Dispose(bool disposing)
         {
-            AudioDataProvider?.Dispose();
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    
+                }
+
+                _disposedValue = true;
+            }
         }
     }
 }

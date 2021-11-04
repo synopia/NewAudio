@@ -34,18 +34,19 @@ namespace NewAudio.Blocks
             }
         }
 
-        public override void Dispose()
+        private bool _disposedValue;
+        protected override void Dispose(bool disposing)
         {
-            try
+            if (!_disposedValue)
             {
-                _buffer.Dispose();
-            }
-            catch (Exception e)
-            {
-                _logger.Error("Dispose: {e}", e);
-            }
+                if (disposing)
+                {
+                    _buffer.Dispose();
+                }
 
-            base.Dispose();
+                _disposedValue = disposing;
+            }
+            base.Dispose(disposing);
         }
     }
 }

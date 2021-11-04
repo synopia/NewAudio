@@ -41,11 +41,23 @@ namespace NewAudio.Core
             }
         }
 
-        public void Dispose()
+        public void Dispose() => Dispose(true);
+        
+        private bool _disposedValue;
+
+        private void Dispose(bool disposing)
         {
-            _logger.Information("Dispose called!");
-            _currentLink?.Dispose();
-            AudioService.Instance.Graph.RemoveLink(this);
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    AudioService.Instance.Graph.RemoveLink(this);
+                    _currentLink?.Dispose();
+                }
+
+                _disposedValue = disposing;
+            }
         }
+
     }
 }

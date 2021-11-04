@@ -118,22 +118,20 @@ namespace NewAudio.Nodes
             }
         }
 
-        public override void Dispose()
+        private bool _disposedValue;
+        protected override void Dispose(bool disposing)
         {
-            try
+            if (!_disposedValue)
             {
-                _audioInputBlock?.Stop();
-                _device?.Stop();
-                
-                _audioInputBlock?.Dispose();
-                _device?.Dispose();
-            }
-            catch (Exception e)
-            {
-                _logger.Error("Dispose {e}", e);
-            }
+                if (disposing)
+                {
+                    _audioInputBlock?.Dispose();
+                    _device?.Dispose();                    
+                }
 
-            base.Dispose();
+                _disposedValue = disposing;
+            }
+            base.Dispose(disposing);
         }
     }
 }

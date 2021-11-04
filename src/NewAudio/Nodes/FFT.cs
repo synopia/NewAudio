@@ -146,10 +146,6 @@ namespace NewAudio.Nodes
         protected abstract void OnDataReceived(AudioDataMessage[] input);
         protected abstract void ResizeBuffers(int fftLength, int complexLength);
 
-        public override void Dispose()
-        {
-            base.Dispose();
-        }
     }
 
     public class ForwardFFT : BaseFFT
@@ -215,11 +211,20 @@ namespace NewAudio.Nodes
             CopyOutputComplex();
         }
 
-        public override void Dispose()
+        private bool _disposedValue;
+        protected override void Dispose(bool disposing)
         {
-            _pinIn?.Dispose();
-            _pinOut?.Dispose();
-            base.Dispose();
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _pinIn?.Dispose();
+                    _pinOut?.Dispose();
+                }
+
+                _disposedValue = disposing;
+            }
+            base.Dispose(disposing);
         }
     }
 
@@ -282,11 +287,20 @@ namespace NewAudio.Nodes
             CopyOutputReal();
         }
 
-        public override void Dispose()
+        private bool _disposedValue;
+        protected override void Dispose(bool disposing)
         {
-            _pinIn?.Dispose();
-            _pinOut?.Dispose();
-            base.Dispose();
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _pinIn?.Dispose();
+                    _pinOut?.Dispose();
+                }
+
+                _disposedValue = disposing;
+            }
+            base.Dispose(disposing);
         }
     }
 }

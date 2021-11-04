@@ -103,26 +103,22 @@ namespace NewAudio.Blocks
             _task = null;
         }        
         
-        public void Dispose()
+        public void Dispose() => Dispose(true);
+        
+        private bool _disposedValue;
+
+        private void Dispose(bool disposing)
         {
-            _logger.Information("Audio Input Block Dispose!");
-            try
+            if (!_disposedValue)
             {
-                _cancellationTokenSource?.Cancel();
-                Buffer.Dispose();
-                if (_buffer != null)
+                if (disposing)
                 {
                     _buffer.Dispose();
-                    Task.Delay(50).Wait();
                 }
 
-            }
-            catch (Exception e)
-            {
-                _logger.Error("Dispose: {e}", e);
+                _disposedValue = disposing;
             }
         }
-        
         
         /*
         protected AudioDataMessage CreateMessage(AudioDataRequestMessage request, int sampleCount)

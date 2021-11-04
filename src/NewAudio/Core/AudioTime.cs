@@ -4,10 +4,24 @@ namespace NewAudio.Core
 {
     public readonly struct AudioTime
     {
+        public bool Equals(AudioTime other)
+        {
+            return Time == other.Time;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is AudioTime other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return Time;
+        }
+
         public readonly int Time;
         public readonly double DTime;
         public readonly long RealTime;
-
 
         public AudioTime(int time, double dTime)
         {
@@ -38,7 +52,7 @@ namespace NewAudio.Core
 
         public override string ToString()
         {
-            return $"[{Time}, {DTime}]";
+            return $"[{Time}, {DTime}, {RealTime}]";
         }
     }
 }

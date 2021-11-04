@@ -85,7 +85,7 @@ namespace NewAudio.Devices
             {
                 var remaining = evt.BytesRecorded;
                 var pos = 0;
-                var token = _cancellationTokenSource.Token;
+                var token = CancellationTokenSource.Token;
 
                 while (pos < evt.BytesRecorded && !token.IsCancellationRequested)
                 {
@@ -120,7 +120,7 @@ namespace NewAudio.Devices
 
         public override void Record()
         {
-            _cancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource = new CancellationTokenSource();
             // AudioDataProvider.CancellationToken = _cancellationTokenSource.Token;
             
             _firstLoop = true;
@@ -136,8 +136,8 @@ namespace NewAudio.Devices
 
         public override void Play()
         {
-            _cancellationTokenSource = new CancellationTokenSource();
-            AudioDataProvider.CancellationToken = _cancellationTokenSource.Token;
+            CancellationTokenSource = new CancellationTokenSource();
+            AudioDataProvider.CancellationToken = CancellationTokenSource.Token;
             
             _firstLoop = true;
             _wavePlayer?.Play();
@@ -145,24 +145,29 @@ namespace NewAudio.Devices
 
         public override void Stop()
         {
-            _cancellationTokenSource?.Cancel();
+            CancellationTokenSource?.Cancel();
             
             _loopback?.StopRecording();
             _capture?.StopRecording();
             _wavePlayer?.Stop();
         }
 
-        public override void Dispose()
+        private bool _disposedValue;
+        protected override void Dispose(bool disposing)
         {
-            _cancellationTokenSource?.Cancel();
-            
-            _loopback?.StopRecording();
-            _capture?.StopRecording();
-            _wavePlayer?.Stop();
-            _loopback?.Dispose();
-            _capture?.Dispose();
-            _wavePlayer?.Dispose();
-            base.Dispose();
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _loopback?.Dispose();
+                    _capture?.Dispose();
+                    _wavePlayer?.Dispose();
+
+                }
+
+                _disposedValue = disposing;
+            }
+            base.Dispose(disposing);
         }
 
         public override string ToString()

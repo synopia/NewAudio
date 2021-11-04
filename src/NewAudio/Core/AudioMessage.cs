@@ -12,25 +12,6 @@ namespace NewAudio.Core
         Finished
     }
 
-    public struct LifecycleMessage
-    {
-        public AudioTime Time { get; set; }
-        public LifecyclePhase Leave { get; }
-        public LifecyclePhase Enter { get; }
-
-        public LifecycleMessage(LifecyclePhase leave, LifecyclePhase enter) : this()
-        {
-            Time = new AudioTime();
-            Leave = leave;
-            Enter = enter;
-        }
-
-        public override string ToString()
-        {
-            return $"Lifecycle Message: {Time}, {Leave} => {Enter}";
-        }
-    }
-
     public struct AudioDataRequestMessage
     {
         public AudioTime Time { get; set; }

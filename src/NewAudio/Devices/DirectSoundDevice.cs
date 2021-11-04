@@ -41,24 +41,31 @@ namespace NewAudio.Devices
 
         public override void Play()
         {
-            _cancellationTokenSource = new CancellationTokenSource();
-            AudioDataProvider.CancellationToken = _cancellationTokenSource.Token;
+            CancellationTokenSource = new CancellationTokenSource();
+            AudioDataProvider.CancellationToken = CancellationTokenSource.Token;
 
             _directSoundOut?.Play();
         }
 
         public override void Stop()
         {
-            _cancellationTokenSource?.Cancel();
+            CancellationTokenSource?.Cancel();
             _directSoundOut?.Stop();
         }
 
-        public override void Dispose()
+        private bool _disposedValue;
+        protected override void Dispose(bool disposing)
         {
-            _cancellationTokenSource?.Cancel();
-            _directSoundOut?.Stop();
-            _directSoundOut?.Dispose();
-            base.Dispose();
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _directSoundOut?.Dispose();
+                }
+
+                _disposedValue = disposing;
+            }
+            base.Dispose(disposing);
         }
 
         public override string ToString()

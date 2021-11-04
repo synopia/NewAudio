@@ -32,9 +32,18 @@ namespace NewAudio.Devices
         {
         }
 
-        public override void Dispose()
+        private bool _disposedValue;
+        protected override void Dispose(bool disposing)
         {
-            base.Dispose();
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                }
+
+                _disposedValue = disposing;
+            }
+            base.Dispose(disposing);
         }
 
         public override string ToString()

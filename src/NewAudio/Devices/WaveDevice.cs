@@ -52,20 +52,20 @@ namespace NewAudio.Devices
 
         public override void Record()
         {
-            _cancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource = new CancellationTokenSource();
             _waveIn?.StartRecording();
         }
 
         public override void Play()
         {
-            _cancellationTokenSource = new CancellationTokenSource();
-            AudioDataProvider.CancellationToken = _cancellationTokenSource.Token;
+            CancellationTokenSource = new CancellationTokenSource();
+            AudioDataProvider.CancellationToken = CancellationTokenSource.Token;
             _waveOut?.Play();
         }
 
         public override void Stop()
         {
-            _cancellationTokenSource?.Cancel();
+            CancellationTokenSource?.Cancel();
             _waveIn?.StopRecording();
             _waveOut?.Stop();
         }
@@ -75,13 +75,19 @@ namespace NewAudio.Devices
             return Name;
         }
 
-        public override void Dispose()
+        private bool _disposedValue;
+        protected override void Dispose(bool disposing)
         {
-            _cancellationTokenSource?.Cancel();
-            _waveIn?.StopRecording();
-            _waveOut?.Stop();
-            _waveOut?.Dispose();
-            base.Dispose();
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _waveOut?.Dispose();
+                }
+
+                _disposedValue = disposing;
+            }
+            base.Dispose(disposing);
         }
     }
 }

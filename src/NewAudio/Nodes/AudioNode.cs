@@ -151,17 +151,26 @@ namespace NewAudio.Nodes
 
             _links.Clear();
         }
-        
-        public virtual void Dispose()
-        {
-            DisposeLinks();
-            if (Config.Input != null)
-            {
-                OnDisconnect(Config.Input);
-            }
 
-            Output.Dispose();
-        }
+        private bool _disposedValue;
         
+        public void Dispose() => Dispose(true);
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    if (Config.Input != null)
+                    {
+                        OnDisconnect(Config.Input);
+                    }
+                    DisposeLinks();
+                    Output.Dispose();
+                }
+
+                _disposedValue = true;
+            }
+        }
     }
 }

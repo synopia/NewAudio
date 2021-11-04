@@ -8,7 +8,7 @@ using SharedMemory;
 
 namespace NewAudio.Blocks
 {
-    public class AudioOutputBlock : ITargetBlock<AudioDataMessage>, IAudioBlock
+    public sealed class AudioOutputBlock : ITargetBlock<AudioDataMessage>, IAudioBlock
     {
         private readonly ILogger _logger;
         private readonly BufferBlock<AudioDataMessage> _bufferBlock = new BufferBlock<AudioDataMessage>(
@@ -114,17 +114,20 @@ namespace NewAudio.Blocks
             
         }
 
-        public void Dispose()
+        public void Dispose() => Dispose(true);
+        
+        private bool _disposedValue;
+
+        private void Dispose(bool disposing)
         {
-            try
+            if (!_disposedValue)
             {
-                _cancellationTokenSource?.Cancel();
-                Complete();
-                Buffer.Dispose();
-            }
-            catch (Exception e)
-            {
-                _logger.Error("Dispose: {e}", e);
+                if (disposing)
+                {
+                    Buffer.Dispose();
+                }
+
+                _disposedValue = disposing;
             }
         }
 

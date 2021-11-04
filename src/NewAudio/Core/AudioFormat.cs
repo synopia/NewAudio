@@ -19,7 +19,7 @@ namespace NewAudio.Core
         Hz352800 = 352800
     }
 
-    public struct AudioFormat
+    public readonly struct AudioFormat
     {
         public int SampleRate { get; }
         public int Channels { get; }

@@ -6,7 +6,7 @@ using IList = System.Collections.IList;
 
 namespace NewAudio.Core
 {
-    public class AudioGraph : IDisposable
+    public class AudioGraph 
     {
         private readonly IList<IAudioNode> _nodes = new List<IAudioNode>();
         private readonly IList<AudioLink> _links = new List<AudioLink>();
@@ -17,17 +17,6 @@ namespace NewAudio.Core
         public AudioGraph(ILogger logger)
         {
             _logger = logger;
-        }
-
-        public void Dispose()
-        {
-            foreach (var node in _nodes)
-            {
-                node.Dispose();
-            }
-            _nextId = 0;
-            _links.Clear();
-            _nodes.Clear();
         }
 
         public int GetNextId()
@@ -66,11 +55,13 @@ namespace NewAudio.Core
         public void AddNode(IAudioNode node)
         {
             _nodes.Add(node);
+            _logger.Debug("Added node {node}", node);
         }
 
         public void RemoveNode(IAudioNode node)
         {
             _nodes.Remove(node);
+            _logger.Debug("Removing node {node}", node);
         }
 
         public string DebugInfo()

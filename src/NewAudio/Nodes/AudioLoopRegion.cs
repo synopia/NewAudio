@@ -129,5 +129,20 @@ namespace NewAudio.Nodes
 
             AddLink(input.SourceBlock.LinkTo(_processor));
         }
+        
+        private bool _disposedValue;
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                }
+
+                _disposedValue = disposing;
+            }
+            base.Dispose(disposing);
+        }
+
     }
 }

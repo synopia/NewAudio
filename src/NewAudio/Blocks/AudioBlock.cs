@@ -67,10 +67,20 @@ namespace NewAudio.Blocks
             throw new NotImplementedException();
         }
 
-        public virtual void Dispose()
+        private bool _disposedValue;
+        
+        public void Dispose() => Dispose(true);
+        protected virtual void Dispose(bool disposing)
         {
-        }
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                }
 
+                _disposedValue = true;
+            }
+        }
         public void Complete()
         {
             Target.Complete();

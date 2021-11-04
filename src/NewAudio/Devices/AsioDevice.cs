@@ -93,7 +93,7 @@ namespace NewAudio.Devices
                 DoInit();
             }
 
-            _cancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource = new CancellationTokenSource();
 
             _asioOut?.Play();
         }
@@ -104,15 +104,15 @@ namespace NewAudio.Devices
             // {
                 DoInit();
             // }
-            _cancellationTokenSource = new CancellationTokenSource();
-            AudioDataProvider.CancellationToken = _cancellationTokenSource.Token;
+            CancellationTokenSource = new CancellationTokenSource();
+            AudioDataProvider.CancellationToken = CancellationTokenSource.Token;
 
             _asioOut?.Play();
         }
 
         public override void Stop()
         {
-            _cancellationTokenSource?.Cancel();
+            CancellationTokenSource?.Cancel();
             if (_asioOut != null && _asioOut.PlaybackState!=PlaybackState.Stopped)
             {
                 _asioOut.Stop();
@@ -121,12 +121,20 @@ namespace NewAudio.Devices
             _isInitialized = false;
         }
 
-        public override void Dispose()
+        private bool _disposedValue;
+        protected override void Dispose(bool disposing)
         {
-            _cancellationTokenSource?.Cancel();
-            _asioOut?.Stop();
-            _asioOut?.Dispose();
-            base.Dispose();
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _asioOut?.Dispose();
+
+                }
+
+                _disposedValue = disposing;
+            }
+            base.Dispose(disposing);
         }
 
         public override string ToString()

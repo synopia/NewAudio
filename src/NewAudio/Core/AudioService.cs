@@ -5,10 +5,9 @@ using NewAudio.Core;
 
 namespace NewAudio.Core
 {
-    public class AudioService : IDisposable
+    public class AudioService 
     {
         private static AudioService _service;
-        // public readonly Lifecycle Lifecycle = new Lifecycle();
 
         private AudioService()
         {
@@ -36,23 +35,14 @@ namespace NewAudio.Core
         public ILogger Logger { get; }
         public LifecyclePhase Phase { get; private set; }
 
-        public void Dispose()
-        {
-            // Lifecycle.Phase = LifecyclePhase.Shutdown;
-            Graph.Dispose();
-            Log.Logger.Information("AudioService Disposed");
-        }
-
         public void Init()
         {
+            Log.Logger.Information("Audio Service: {Phase} => Booting", Phase);
             Phase = LifecyclePhase.Booting;
-            Log.Logger.Information("Audio Service: Uninitialized => {Phase}", Phase);
-            // Lifecycle.Phase = LifecyclePhase.Booting;
         }
 
         public void Update()
         {
-            // Lifecycle.Update();
         }
 
         public void Stop()
@@ -60,27 +50,18 @@ namespace NewAudio.Core
             Log.Logger.Information("Audio Service: {Phase} => Stop", Phase);
             Phase = LifecyclePhase.Stopped;
             Graph.StopAll();
-            // Lifecycle.Stop();
         }
 
         public void Play()
         {
-            Log.Logger.Information("Audio Service:{Phase} => Play", Phase);
+            Log.Logger.Information("Audio Service: {Phase} => Play", Phase);
             Phase = LifecyclePhase.Playing;
             Graph.PlayAll();
-            // Lifecycle.Start();
         }
 
         public string DebugInfo()
         {
             return $"{Graph.DebugInfo()}, Phase: {Phase}";
-        }
-
-        public void Reset()
-        {
-            Stop();
-            Graph.Dispose();
-            Graph = new AudioGraph(Logger);
         }
     }
 }

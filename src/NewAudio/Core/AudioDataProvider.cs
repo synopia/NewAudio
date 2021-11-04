@@ -7,7 +7,7 @@ using SharedMemory;
 
 namespace NewAudio.Core
 {
-    public class AudioDataProvider : IWaveProvider, IDisposable
+    public sealed class AudioDataProvider : IWaveProvider
     {
         private readonly CircularBuffer _buffer;
         private readonly ILogger _logger;
@@ -19,10 +19,6 @@ namespace NewAudio.Core
             _buffer = buffer;
             WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(waveFormat.SampleRate, waveFormat.Channels);
             _logger = AudioService.Instance.Logger.ForContext<AudioDataProvider>();
-        }
-
-        public void Dispose()
-        {
         }
 
         public WaveFormat WaveFormat { get; }
@@ -61,5 +57,6 @@ namespace NewAudio.Core
                 return count;
             }
         }
+
     }
 }
