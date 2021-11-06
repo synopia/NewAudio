@@ -12,7 +12,17 @@ namespace NewAudio.Core
         private readonly CircularBuffer _buffer;
         private readonly ILogger _logger;
         private bool _firstLoop = true;
-        public CancellationToken CancellationToken { get; set; }
+
+        private CancellationToken _token;
+        public CancellationToken CancellationToken
+        {
+            get => _token;
+            set
+            {
+                _firstLoop = true;
+                _token = value;
+            }
+        }
 
         public AudioDataProvider(WaveFormat waveFormat, CircularBuffer buffer)
         {
@@ -29,7 +39,7 @@ namespace NewAudio.Core
             {
                 if (_firstLoop)
                 {
-                    _logger.Information("Audio output thread started (Reading from {read} ({owner}))", _buffer.Name,
+                    _logger.Information("Audio output reader thread started (Reading from {read} ({owner}))", _buffer.Name,
                         _buffer.IsOwnerOfSharedMemory);
                     _firstLoop = false;
                 }
@@ -47,6 +57,11 @@ namespace NewAudio.Core
                 if (!CancellationToken.IsCancellationRequested && pos != count)
                 {
                     _logger.Warning("pos!=count: {p}!={c}", pos, count);
+                }
+
+                if (CancellationToken.IsCancellationRequested)
+                {
+                    _logger.Information("Audio output reader thread finished");
                 }
 
                 return pos;

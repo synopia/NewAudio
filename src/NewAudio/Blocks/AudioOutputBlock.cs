@@ -8,9 +8,16 @@ using SharedMemory;
 
 namespace NewAudio.Blocks
 {
-    public sealed class AudioOutputBlock : ITargetBlock<AudioDataMessage>, IAudioBlock
+    public struct AudioOutputBlockConfig
+    {
+        public AudioFormat AudioFormat;
+        public int NodeCount;
+
+    }
+    public sealed class AudioOutputBlock : ITargetBlock<AudioDataMessage>, ILifecycleDevice<AudioOutputBlockConfig, bool>
     {
         private readonly ILogger _logger;
+
         private readonly BufferBlock<AudioDataMessage> _bufferBlock = new BufferBlock<AudioDataMessage>(
             new DataflowBlockOptions
             {
@@ -20,32 +27,37 @@ namespace NewAudio.Blocks
 
         private IDisposable _link;
         private ActionBlock<AudioDataMessage> _actionBlock;
-        private readonly CircularBuffer _buffer;
+        private CircularBuffer _buffer;
         private CancellationTokenSource _cancellationTokenSource;
 
-        public CircularBuffer Buffer { get; }
+        public CircularBuffer Buffer { get; private set; }
 
-        public AudioFormat InputFormat { get; set; }
+        public AudioFormat InputFormat { get; private set; }
 
-        public AudioOutputBlock(AudioFormat inputFormat)
+        public LifecyclePhase Phase { get; set; }
+
+        public AudioOutputBlock()
         {
             _logger = AudioService.Instance.Logger.ForContext<AudioOutputBlock>();
-            try
-            {
-                var name = $"Output Buffer {AudioService.Instance.Graph.GetNextId()}";
-                _buffer = new CircularBuffer(name, 32, 4 * inputFormat.BufferSize);
-                Buffer = new CircularBuffer(name);
-
-                InputFormat = inputFormat;
-            }
-            catch (Exception e)
-            {
-                _logger.Error("Ctor: {e}", e);
-            }
-
         }
 
-        public void Play()
+        public void ExceptionHappened(Exception e, string method)
+        {
+            throw e;
+        }
+
+        public Task<bool> CreateResources(AudioOutputBlockConfig config)
+        {
+            InputFormat = config.AudioFormat;
+            
+            var name = $"Output Buffer {AudioService.Instance.Graph.GetNextId()}";
+            _buffer = new CircularBuffer(name, config.NodeCount, 4 * InputFormat.BufferSize);
+            Buffer = new CircularBuffer(name);
+            return Task.FromResult(true);
+        }
+
+
+        public Task<bool> StartProcessing()
         {
             _cancellationTokenSource = new CancellationTokenSource();
             var token = _cancellationTokenSource.Token;
@@ -55,10 +67,12 @@ namespace NewAudio.Blocks
             {
                 _logger.Warning("Link != null! {link}", _link);
             }
+
             if (_actionBlock != null)
             {
                 _logger.Warning("ActionBlock != null! {link}", _link);
             }
+
             _actionBlock = new ActionBlock<AudioDataMessage>(message =>
             {
                 if (firstLoop)
@@ -89,37 +103,45 @@ namespace NewAudio.Blocks
                 CancellationToken = token
             });
             _link = _bufferBlock.LinkTo(_actionBlock);
+            
+            return Task.FromResult(true);
         }
 
-        public void Stop()
+        public Task<bool> FreeResources()
         {
+            _buffer.Dispose();
+            
+            return Task.FromResult(true);
+        }
+        
+        public Task<bool> StopProcessing()
+        {
+            Complete();
+            _link.Dispose();
+            _cancellationTokenSource.Cancel();
             try
             {
-                _cancellationTokenSource?.Cancel();
-                _link?.Dispose();
-                _actionBlock?.Complete();
-                _link = null;
-                _actionBlock = null;
-                if (_buffer != null)
-                {
-                    _buffer.Dispose();
-                    Task.Delay(50).Wait();
-                }
+                Task.WaitAll(new Task[] { Completion });
             }
-            catch (Exception e)
+            catch (TaskCanceledException e)
             {
-                _logger.Error("Dispose: {e}", e);
             }
-
-            
+            catch (AggregateException e)
+            {
+            }
+            _link = null;
+            _actionBlock = null;
+            _logger.Information("DONE");
+            return Task.FromResult(true);
         }
 
         public void Dispose() => Dispose(true);
-        
+
         private bool _disposedValue;
 
         private void Dispose(bool disposing)
         {
+            AudioService.Instance.Logger.Information("Dispose called for OutputBlock {t} ({d})", this, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
@@ -133,6 +155,7 @@ namespace NewAudio.Blocks
 
         public void Complete()
         {
+            _actionBlock.Complete();
         }
 
         public void Fault(Exception exception)

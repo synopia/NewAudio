@@ -1,16 +1,8 @@
-﻿using NAudio.Wave;
+﻿using System.Buffers;
+using NAudio.Wave;
 
 namespace NewAudio.Core
 {
-    public enum LifecyclePhase
-    {
-        Uninitialized,
-        Booting,
-        Stopped,
-        Playing,
-        Shutdown,
-        Finished
-    }
 
     public struct AudioDataRequestMessage
     {
@@ -58,7 +50,7 @@ namespace NewAudio.Core
             Channels = format.Channels;
             Time = new AudioTime(0, 0);
             IsLocked = false;
-            Data = data != null && data.Length == sampleCount * Channels ? data : new float[sampleCount * Channels];
+            Data = data != null && data.Length == sampleCount * Channels ? data : ArrayPool<float>.Shared.Rent(sampleCount * Channels);
         }
 
         public override string ToString()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -8,7 +9,12 @@ using SharedMemory;
 
 namespace NewAudio.Blocks
 {
-    public class AudioInputBlock : ISourceBlock<AudioDataMessage>, IAudioBlock
+    public struct AudioInputBlockConfig
+    {
+        public AudioFormat AudioFormat;
+        public int NodeCount;
+    }
+    public class AudioInputBlock : ISourceBlock<AudioDataMessage>, ILifecycleDevice<AudioInputBlockConfig, bool>
     {
         private readonly ITargetBlock<AudioDataMessage> _bufferBlock = new BufferBlock<AudioDataMessage>(
             new DataflowBlockOptions
@@ -18,52 +24,72 @@ namespace NewAudio.Blocks
             });
 
         private readonly ILogger _logger;
-        private readonly CircularBuffer _buffer;
-        public CircularBuffer Buffer { get; }
+        private CircularBuffer _buffer;
+        public CircularBuffer Buffer { get; private set; }
+        public LifecyclePhase Phase { get; set; }
 
-        public AudioFormat OutputFormat { get; set; }
+        public AudioFormat OutputFormat { get; private set; }
         private CancellationTokenSource _cancellationTokenSource;
-        private Task _task;
+        private Task<bool> _task;
 
-        public AudioInputBlock(AudioFormat outputFormat)
+        public AudioInputBlock()
         {
             _logger = AudioService.Instance.Logger.ForContext<AudioInputBlock>();
-            try
-            {
-                var name = $"Input Block {AudioService.Instance.Graph.GetNextId()}";
-                Buffer = new CircularBuffer(name, 32, 4 * outputFormat.BufferSize);
-                _buffer = new CircularBuffer(name);
-
-                OutputFormat = outputFormat;
-            }
-            catch (Exception e)
-            {
-                _logger.Error("Ctor: {e}", e);
-            }
         }
 
-        public void Play()
+        public Task<bool> CreateResources(AudioInputBlockConfig config)
+        {
+            OutputFormat = config.AudioFormat;
+            
+            var name = $"Input Block {AudioService.Instance.Graph.GetNextId()}";
+            Buffer = new CircularBuffer(name, config.NodeCount, 4 * config.AudioFormat.BufferSize);
+            _buffer = new CircularBuffer(name);
+            return Task.FromResult(true);
+        }
+
+        public Task<bool> FreeResources()
+        {
+            _buffer.Dispose();
+            return Task.FromResult(true);
+        }
+
+        public Task<bool> StartProcessing()
         {
             if (_task != null)
             {
                 _logger.Warning("Task != null {task}", _task);
             }
+
             _cancellationTokenSource = new CancellationTokenSource();
             _task = Task.Run(Loop, _cancellationTokenSource.Token);
+
+            return Task.FromResult(true);
         }
 
-        private void Loop()
+        public Task<bool> StopProcessing()
+        {
+            _cancellationTokenSource.Cancel();
+            Task.WaitAll(new Task[] { _task });
+            return Task.FromResult(true);
+        }
+
+        public void ExceptionHappened(Exception e, string method)
+        {
+            throw e;
+        }
+
+        private bool Loop()
         {
             try
             {
                 var token = _cancellationTokenSource.Token;
-                _logger.Information("Audio input reading thread (Reading from {reading} ({owner}))", _buffer?.Name,
+                _logger.Information("Audio input reading thread started (Reading from {reading} ({owner}))", _buffer?.Name,
                     _buffer?.IsOwnerOfSharedMemory);
                 if (_buffer == null)
                 {
                     throw new Exception("Buffer == null !");
                 }
-                
+
                 while (!token.IsCancellationRequested)
                 {
                     var message = new AudioDataMessage(OutputFormat, OutputFormat.SampleCount);
@@ -75,40 +101,40 @@ namespace NewAudio.Blocks
                         pos += read;
                     }
 
-                    if (!token.IsCancellationRequested && pos != OutputFormat.BufferSize)
+                    if (!token.IsCancellationRequested)
                     {
-                        _logger.Warning("pos!=buf {p} {b} {t}", pos, OutputFormat.BufferSize,
-                            token.IsCancellationRequested);
+                        if (pos != OutputFormat.BufferSize)
+                        {
+                            _logger.Warning("pos!=buf {p} {b} {t}", pos, OutputFormat.BufferSize,
+                                token.IsCancellationRequested);
+                        }
+                        var res = _bufferBlock.Post(message);
+                        _logger.Verbose("Posted {samples} ", message.BufferSize);
+                        if (!res)
+                        {
+                            _logger.Warning("Cant deliver message");
+                        }                        
                     }
 
-                    var res = _bufferBlock.Post(message);
-                    _logger.Verbose("Posted {samples} ", message.BufferSize);
-                    if (!res)
-                    {
-                        _logger.Warning("Cant deliver message");
-                    }
                 }
+                _logger.Information("Audio input reading thread finished (Reading from {reading} ({owner}))", _buffer?.Name,
+                    _buffer?.IsOwnerOfSharedMemory);
             }
             catch (Exception e)
             {
                 _logger.Error("{e}", e);
             }
+
+            return true;
         }
-        
-        public void Stop()
-        {
-            _cancellationTokenSource?.Cancel();
-            _task.Wait(1000);
-            _logger.Information("Audio input reading thread finished");
-            _task = null;
-        }        
-        
+
         public void Dispose() => Dispose(true);
-        
+
         private bool _disposedValue;
 
         private void Dispose(bool disposing)
         {
+            AudioService.Instance.Logger.Information("Dispose called for InputBlock {t} ({d})", this, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
@@ -119,32 +145,15 @@ namespace NewAudio.Blocks
                 _disposedValue = disposing;
             }
         }
-        
-        /*
-        protected AudioDataMessage CreateMessage(AudioDataRequestMessage request, int sampleCount)
-        {
-            AudioDataMessage output;
-            if (!_reusedData && request.ReusableDate != null)
-            {
-                output = new AudioDataMessage(request.ReusableDate, Format, sampleCount / Format.Channels);
-                _reusedData = true;
-            }
-            else
-            {
-                output = new AudioDataMessage(Format, sampleCount / Format.Channels);
-            }
-
-            return output;
-        }
-        */
 
         public void Complete()
         {
+            throw new Exception("This should not be called!");
         }
 
         public void Fault(Exception exception)
         {
-            throw new NotImplementedException();
+            throw new Exception("This should not be called!", exception);
         }
 
         public Task Completion => _bufferBlock.Completion;

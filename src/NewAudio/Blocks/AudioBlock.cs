@@ -6,66 +6,31 @@ using Serilog;
 
 namespace NewAudio.Blocks
 {
-    public interface IAudioBlock: IDisposable
+    public interface IAudioBlock: IDisposable, ILifecycleDevice
     {
-        public void Play();
-        public void Stop();
-
     }
     public abstract class AudioBlock : IAudioBlock, IPropagatorBlock<AudioDataMessage, AudioDataMessage>
     {
+        public LifecyclePhase Phase { get; set; }
+        public readonly LifecycleStateMachine Lifecycle = new LifecycleStateMachine();
+
         protected AudioBlock()
         {
-            /*Source =new BufferBlock<IAudioMessage>();
-            Target = new ActionBlock<IAudioMessage>(input =>
-            {
-                try
-                {
-                    // Logger.Verbose("Received message {input}", input);
-                    if (IsPostDataRequestMessages && input is AudioDataRequestMessage requestMessage)
-                    {
-                            DataRequestSource.Post(requestMessage);
-                    } else if (IsPostDataResponseMessages && input is AudioDataMessage dataMessage)
-                    {
-                            DataResponseSource.Post(dataMessage);
-                    } else if (input is LifecycleMessage lifecycleMessage)
-                    {
-                        if (CurrentPhase != lifecycleMessage.Enter)
-                        {
-                            PhaseChanged?.Invoke(CurrentPhase, lifecycleMessage.Enter);
-                            CurrentPhase = lifecycleMessage.Enter;
-                        }
-
-                        if (IsForwardLifecycleMessages)
-                        {
-                            Source.Post(lifecycleMessage);
-                        }
-                        
-                    }
-                }
-                catch (Exception e)
-                {
-                   Logger.Error("{e}", e);
-                }
-            }, new ExecutionDataflowBlockOptions()
-            {
-                
-            });
-            Target.Completion.ContinueWith(delegate { Source.Complete(); });*/
+            Lifecycle.EventHappens(LifecycleEvents.eCreate, this);
         }
 
         public ISourceBlock<AudioDataMessage> Source { get; protected set; }
         public ITargetBlock<AudioDataMessage> Target { get; protected set; }
 
-        public void Play()
+        public void ExceptionHappened(Exception e, string method)
         {
-            throw new NotImplementedException();
+            throw e;
         }
 
-        public void Stop()
-        {
-            throw new NotImplementedException();
-        }
+        public abstract bool CreateResources();
+        public abstract bool FreeResources();
+        public abstract bool StartProcessing();
+        public abstract bool StopProcessing();
 
         private bool _disposedValue;
         

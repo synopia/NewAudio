@@ -890,17 +890,6 @@
               <Pin Id="JHmloPD8X5tNLBe8F7XfGA" Name="Output" Kind="StateOutputPin" />
               <Pin Id="P6kQTuAYvRxMuZvj5ZCGps" Name="Result" Kind="OutputPin" />
             </Node>
-            <Node Bounds="620,671" Id="GHLnZ3o62krMOv8SREQwrQ">
-              <p:NodeReference LastCategoryFullName="NewAudio.Nodes.ForwardFFT" LastSymbolSource="VL.NewAudio.dll">
-                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
-                <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                <CategoryReference Kind="AssemblyCategory" Name="ForwardFFT" />
-                <Choice Kind="OperationCallFlag" Name="Dispose" />
-              </p:NodeReference>
-              <Pin Id="Exxn1VBeaO9LmMBkDC1F6J" Name="Input" Kind="StateInputPin" />
-              <Pin Id="JyKY0jHzzADMJvL1wp6yLc" Name="Output" Kind="StateOutputPin" />
-            </Node>
             <Node Bounds="733,649" Id="M22YTfjLglXPG2WxogtzRb">
               <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`1" LastSymbolSource="VL.NewAudio.dll">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
@@ -930,14 +919,13 @@
           <Link Id="VEfo3Z8WxPsPdTRBmAL8iY" Ids="VFqljkRbvOqLHZt7O8MP2s,LsQX7P2LzMxPpMD8wEQgY5" IsHidden="true" />
           <Link Id="IfhTotMNq3cO4jkkFqWoJS" Ids="I5tiYscGVoxNPZNhgcSk8d,Gwx5roYLPO7PJ5WIg9qNSc" IsHidden="true" />
           <Link Id="RHt0FUNJmzIN4I02ibuecg" Ids="QoLpyLYhPk4MjAwaGgjOJ3,JO1Mg9vMD27Mh0IvZKPAXd" IsHidden="true" />
-          <Patch Id="DKCRSfcr51JMYapz3Omojk" Name="Dispose" ParticipatingElements="GHLnZ3o62krMOv8SREQwrQ" />
+          <Patch Id="DKCRSfcr51JMYapz3Omojk" Name="Dispose" />
           <Link Id="IihK2Yr6PbpM3avAZWNh5c" Ids="AumAiD09OCdNS4rrkpNWo8,V2AAjkB3hZgOR7IjGlsyfh" IsHidden="true" />
           <Link Id="BpKBwAfilNsLja3uIXNioN" Ids="GvPGFsRPmFjQKig8nxveq1,Jcpe9uJIUlqLqaY1321mDd" />
           <Link Id="OqJLoioA9SxQMxwP9WawhE" Ids="Jcpe9uJIUlqLqaY1321mDd,LwhyO3vq8lmOHVQdf7NXVV" />
           <Link Id="QwfoNaHu4JzM4G0Su9qAEs" Ids="LsQX7P2LzMxPpMD8wEQgY5,QTXooGVsaLBPwMzqPKO4xC" />
           <Link Id="NVuRC511u5yMULYlnRsCCc" Ids="Gwx5roYLPO7PJ5WIg9qNSc,G4ebWQ17C4zQZw2thfkREi" />
           <Link Id="BXMKn3fbSIQNdhN39CryYP" Ids="V2AAjkB3hZgOR7IjGlsyfh,IVMuYX38SBWLWbdzewLP0s" />
-          <Link Id="DdSsIqwpqVTL0Z7QE7leN7" Ids="Jcpe9uJIUlqLqaY1321mDd,Exxn1VBeaO9LmMBkDC1F6J" />
           <Link Id="MHgJxgNDYFzNkB227melYc" Ids="P6kQTuAYvRxMuZvj5ZCGps,QoLpyLYhPk4MjAwaGgjOJ3" />
           <Link Id="K4iRv5jiVDBO5QLBtRJCnq" Ids="Jcpe9uJIUlqLqaY1321mDd,KRN6L10AOPTOhkUtzuS8U9" />
           <Link Id="Uh5bzEj2HYZMjwOtm3SKtH" Ids="RPlZNEbju0eN1ietqUDrgk,SFGsBsZyzLTLl2oeQHnwEE" IsHidden="true" />
@@ -1234,17 +1222,6 @@
               <Pin Id="NST8q99J4xfPSfdbWDiWaH" Name="Output" Kind="StateOutputPin" />
               <Pin Id="JqisD7MHkwxMXajKP8VxPo" Name="Result" Kind="OutputPin" />
             </Node>
-            <Node Bounds="425,703" Id="Dt5RGgkurkTPBWaar78HHK">
-              <p:NodeReference LastCategoryFullName="NewAudio.Nodes.BackwardFFT" LastSymbolSource="VL.NewAudio.dll">
-                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
-                <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                <CategoryReference Kind="AssemblyCategory" Name="BackwardFFT" />
-                <Choice Kind="OperationCallFlag" Name="Dispose" />
-              </p:NodeReference>
-              <Pin Id="CDIUGWaEcjePLjY5azSm61" Name="Input" Kind="StateInputPin" />
-              <Pin Id="QC4YQ14p1s7OlJBqPPHisq" Name="Output" Kind="StateOutputPin" />
-            </Node>
           </Canvas>
           <Patch Id="CTBLci0XcpnLsIHfP4grpv" Name="Create" ParticipatingElements="BQuvfK7Zm42PvttBjL0vzf" />
           <Patch Id="RdqJXY7AqG9MOOB9nVVa1D" Name="Update">
@@ -1260,14 +1237,13 @@
           <Link Id="Q7Ze7ttM7wnQT5CtsLAf9u" Ids="R7UM4e5qj2nM2K1TBvRTnm,U0OfrckrCOsPAOmJSZMrBI" IsHidden="true" />
           <Link Id="LkdANX148FyMPmhpApABAP" Ids="Hq8eokdcCoYOTU8otKBI9h,Q366HLyFancNleGE8r4mK7" IsHidden="true" />
           <Link Id="EMxpMtzlmcAOx9fi9MfSY6" Ids="U60a8ldcHHlOdEqRS15KcR,PWHsV1T49RpN30t9UKfzFw" IsHidden="true" />
-          <Patch Id="CmPuJU6hsqONeIyoWeYHrj" Name="Dispose" ParticipatingElements="Dt5RGgkurkTPBWaar78HHK" />
+          <Patch Id="CmPuJU6hsqONeIyoWeYHrj" Name="Dispose" />
           <Link Id="CNrr6CRrGsTPPASeIqTbfI" Ids="BjTj9ZJP5CsP1NJhIIvUqK,Sg898H8Wl55NbTpGFuUhT7" IsHidden="true" />
           <Link Id="ODlAoQURKWZNDhiMH93xAg" Ids="TzxuwPaIC0hNvw883NwhlD,AiK1IUQWjrIMnsSYkDLS4f" />
           <Link Id="PQpQ8Ccv6FfMxGm0puxreC" Ids="AiK1IUQWjrIMnsSYkDLS4f,NDhCWSJxuRiNBMbqkzJgIk" />
           <Link Id="JBNzseIkUP0OWpi3zlzqoR" Ids="U0OfrckrCOsPAOmJSZMrBI,Bms4mubzlYTQVyGgjbiFsQ" />
           <Link Id="R3are0qpBvNLuz4qNnAuDR" Ids="Q366HLyFancNleGE8r4mK7,KjxkPYLuBNkLkoLQmL06gJ" />
           <Link Id="S3O4wAOza0EMAqwQTlsgVA" Ids="Sg898H8Wl55NbTpGFuUhT7,JvhJnH3vF5SMnr0IgTfhEA" />
-          <Link Id="Kz7cKdNpM8hQHXugE2mT9R" Ids="AiK1IUQWjrIMnsSYkDLS4f,CDIUGWaEcjePLjY5azSm61" />
           <Link Id="PQiSAhYWVFOPHPUZ66mpsT" Ids="JqisD7MHkwxMXajKP8VxPo,U60a8ldcHHlOdEqRS15KcR" />
         </Patch>
       </Node>
@@ -1755,17 +1731,6 @@
               <ControlPoint Id="Qm6F1eMjAfYP123vBdM7jR" Bounds="777,489" />
               <ControlPoint Id="CwxNfuYDCWBPrmbykFWcBC" Bounds="772,525" />
               <ControlPoint Id="KZJDtzrPmpxQCyLqQPJhsB" Bounds="782,553" />
-              <Node Bounds="262,805" Id="Jghmk3ykFpoQQeBPV5fLJg">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.InputDevice" LastSymbolSource="VL.NewAudio.dll">
-                  <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                  <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
-                  <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="InputDevice" />
-                  <Choice Kind="OperationCallFlag" Name="Dispose" />
-                </p:NodeReference>
-                <Pin Id="ASNgf0TKdLGMmMZdEmQQ6v" Name="Input" Kind="StateInputPin" />
-                <Pin Id="EB4xbqn4rxKOLbzF2yEWDc" Name="Output" Kind="StateOutputPin" />
-              </Node>
             </Canvas>
             <ProcessDefinition Id="QYeFP3pqYVwLndYFcaTuBg">
               <Fragment Id="S4dUCKFugTIPHzb0gUJgWs" Patch="Hz0c7Civ76rLkXJeG0s5NF" Enabled="true" />
@@ -1791,10 +1756,9 @@
               <Pin Id="B1S1skOe3WjLQRG2LT9ssF" Name="Output" Kind="OutputPin" />
               <Pin Id="H3SBerYUZzDPUFhguYVX88" Name="Desired Latency" Kind="InputPin" />
             </Patch>
-            <Patch Id="PpEwsqydzWuPPcK6WLQLsv" Name="Dispose" ParticipatingElements="Jghmk3ykFpoQQeBPV5fLJg" />
+            <Patch Id="PpEwsqydzWuPPcK6WLQLsv" Name="Dispose" />
             <Link Id="EnMuuOMuhf3NLw6Ukzu6eZ" Ids="H3SBerYUZzDPUFhguYVX88,KZJDtzrPmpxQCyLqQPJhsB" IsHidden="true" />
             <Link Id="BFCUUed2A5YLwaa5VpzQyt" Ids="KZJDtzrPmpxQCyLqQPJhsB,NxRHjU9CjZrLpWdWtsIUs8" />
-            <Link Id="TYnAzCSaGJ3Nj5ZgEnO78x" Ids="NJjywcJyJ4NL4aLK8BRvTs,ASNgf0TKdLGMmMZdEmQQ6v" />
             <Link Id="T89RQ77h0CwMxytUzZ0rmn" Ids="MTClhx4VbBeMKUv4glOmoT,TVhVE3WNrYuM0olazmkwc2" />
           </Patch>
         </Node>
@@ -1826,15 +1790,6 @@
             <ControlPoint Id="TJkQkSFwX7NOYetcEvzCi9" Bounds="681,637" />
             <ControlPoint Id="DRL7xj1o4xcLjKDSwmdX4r" Bounds="565,271" />
             <ControlPoint Id="GZNnyjIgI1zNewgCyP04Op" Bounds="787,257" />
-            <Node Bounds="763,389" Id="V0H4DSt4F8hNWAsGVpHI5O">
-              <p:NodeReference LastCategoryFullName="Control" LastSymbolSource="CoreLibBasics.vl">
-                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                <Choice Kind="ProcessAppFlag" Name="TogEdge" />
-              </p:NodeReference>
-              <Pin Id="Idg9XICDMHeLyihNbmZPXV" Name="Value" Kind="InputPin" />
-              <Pin Id="AImbDa1YfqSPsnoeW9KEwC" Name="Up Edge" Kind="OutputPin" />
-              <Pin Id="MBkh1c9hV1SLLkX6a6eBw6" Name="Down Edge" Kind="OutputPin" />
-            </Node>
             <Node Bounds="399,378,62,26" Id="IuwmlWZZW0WMz24NYebb67">
               <p:NodeReference LastCategoryFullName="NewAudio.Core.AudioService" LastSymbolSource="VL.NewAudio.dll">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
@@ -1874,64 +1829,7 @@
               <ControlPoint Id="H6hDjt48KHxLfLF1waHoCM" Bounds="593,514" Alignment="Top" />
               <ControlPoint Id="IO37O6vEF0GND8UHxPFAoM" Bounds="637,588" Alignment="Bottom" />
             </Node>
-            <Node Bounds="369,549" Id="BSTGTdTga37MTHT8gywB4V">
-              <p:NodeReference LastCategoryFullName="NewAudio.Core.AudioService" LastSymbolSource="VL.NewAudio.dll">
-                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
-                <CategoryReference Kind="AssemblyCategory" Name="Core" />
-                <CategoryReference Kind="AssemblyCategory" Name="AudioService" />
-                <Choice Kind="OperationCallFlag" Name="Dispose" />
-              </p:NodeReference>
-              <Pin Id="E7kqBZGIx61Ng5aRAXVEgn" Name="Input" Kind="StateInputPin" />
-              <Pin Id="V0GeyMij8usOzuDfI17Xrm" Name="Output" Kind="StateOutputPin" />
-            </Node>
-            <Node Bounds="977,702,86,80" Id="JJpNrvbd0NoOfgRl1YBZIJ">
-              <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="VL.CoreLib.dll">
-                <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
-                <Choice Kind="ApplicationStatefulRegion" Name="If" />
-                <CategoryReference Kind="Category" Name="Primitive" />
-              </p:NodeReference>
-              <Pin Id="EE24IY23pcwMemnadG8xCG" Name="Condition" Kind="InputPin" />
-              <Patch Id="QRLPcwhWuC4Nx14pl0R38p" ManuallySortedPins="true">
-                <Patch Id="AAlMzJurasOMhnm6NIgTe2" Name="Create" ManuallySortedPins="true" />
-                <Patch Id="RqmwHzh3pUPM6iN0dVqm4H" Name="Then" ManuallySortedPins="true" />
-                <Node Bounds="989,730" Id="Sge6orCiDSxMYxUpMv8LQG">
-                  <p:NodeReference LastCategoryFullName="NewAudio.Core.AudioService" LastSymbolSource="VL.NewAudio.dll">
-                    <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                    <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
-                    <CategoryReference Kind="AssemblyCategory" Name="Core" />
-                    <CategoryReference Kind="AssemblyCategory" Name="AudioService" />
-                    <Choice Kind="OperationCallFlag" Name="Stop" />
-                  </p:NodeReference>
-                  <Pin Id="R6lJ8EdDYAvL1frQqj99NS" Name="Input" Kind="StateInputPin" />
-                  <Pin Id="I1tZGuGOR49OCdmCn3KeO3" Name="Output" Kind="StateOutputPin" />
-                </Node>
-              </Patch>
-            </Node>
-            <Node Bounds="861,784,86,80" Id="P9lCWSeZYGaLG3Ysqe6R6Y">
-              <p:NodeReference LastCategoryFullName="Primitive" LastSymbolSource="VL.CoreLib.dll">
-                <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
-                <Choice Kind="ApplicationStatefulRegion" Name="If" />
-                <CategoryReference Kind="Category" Name="Primitive" />
-              </p:NodeReference>
-              <Pin Id="MlInYADVU5fPAxh55edScc" Name="Condition" Kind="InputPin" />
-              <Patch Id="PyjJ0Dbr1AAPLfx6EZv1zK" ManuallySortedPins="true">
-                <Patch Id="PV2eX2MaKAuON29JBAWjhG" Name="Create" ManuallySortedPins="true" />
-                <Patch Id="QANuZr0zs2BLCkJ5ymHEKB" Name="Then" ManuallySortedPins="true" />
-                <Node Bounds="873,813,62,26" Id="JbbZDpOsZVvMuUhHycYri4">
-                  <p:NodeReference LastCategoryFullName="NewAudio.Core.AudioService" LastSymbolSource="VL.NewAudio.dll">
-                    <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                    <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
-                    <CategoryReference Kind="AssemblyCategory" Name="Core" />
-                    <CategoryReference Kind="AssemblyCategory" Name="AudioService" />
-                    <Choice Kind="OperationCallFlag" Name="Play" />
-                  </p:NodeReference>
-                  <Pin Id="HM0On7zQT9nPD4LCoYVPll" Name="Input" Kind="StateInputPin" />
-                  <Pin Id="Rlk6ZBHmmy3LoESfsQU8Zo" Name="Output" Kind="StateOutputPin" />
-                </Node>
-              </Patch>
-            </Node>
-            <Node Bounds="411,714" Id="Abr4AlQjoq1NzEhxa6R68K">
+            <Node Bounds="737,429,62,26" Id="J6LKbjxBCooO0FPh7T5wnX">
               <p:NodeReference LastCategoryFullName="NewAudio.Core.AudioService" LastSymbolSource="VL.NewAudio.dll">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                 <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
@@ -1939,8 +1837,20 @@
                 <CategoryReference Kind="AssemblyCategory" Name="AudioService" />
                 <Choice Kind="OperationCallFlag" Name="Update" />
               </p:NodeReference>
-              <Pin Id="SBtHhES5qxxLAWh4HDx536" Name="Input" Kind="StateInputPin" />
-              <Pin Id="GOc3b0rIJ9oMnamuhw9hCK" Name="Output" Kind="StateOutputPin" />
+              <Pin Id="JYStUC4zEUzM8UhkL7Isv1" Name="Input" Kind="StateInputPin" />
+              <Pin Id="MCvKAzpwA4OL2autqn2nfV" Name="Playing" Kind="InputPin" DefaultValue="True" />
+              <Pin Id="SHGOvaC5TEmMnMxerY9uUy" Name="Output" Kind="StateOutputPin" />
+            </Node>
+            <Node Bounds="409,575" Id="SnLyM91lAXrMEkAlDp5yJP">
+              <p:NodeReference LastCategoryFullName="NewAudio.Core.AudioService" LastSymbolSource="VL.NewAudio.dll">
+                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
+                <CategoryReference Kind="AssemblyCategory" Name="Core" />
+                <CategoryReference Kind="AssemblyCategory" Name="AudioService" />
+                <Choice Kind="OperationCallFlag" Name="Dispose" />
+              </p:NodeReference>
+              <Pin Id="L97tz3HJ55KOmC9v0TJGMC" Name="Input" Kind="StateInputPin" />
+              <Pin Id="EkC3GbrJecCPXN1ZEuYfYI" Name="Output" Kind="StateOutputPin" />
             </Node>
           </Canvas>
           <ProcessDefinition Id="AZkHgK9WOTaPVlmjyvDCUF">
@@ -1959,7 +1869,6 @@
             <Pin Id="ESJy9eNcYObPkCXxPVfBF0" Name="Play" Kind="InputPin" />
           </Patch>
           <Link Id="IOdifWoNIInNUqHjfMapy0" Ids="ESJy9eNcYObPkCXxPVfBF0,GZNnyjIgI1zNewgCyP04Op" IsHidden="true" />
-          <Link Id="CEiIIf5Ftc8O5xlZ6jl5Mr" Ids="GZNnyjIgI1zNewgCyP04Op,Idg9XICDMHeLyihNbmZPXV" />
           <Link Id="S96OGLgzPCBN6jfm4jyRB7" Ids="TYo48Z2elvDLzF0RPT2evM,PSXsI1t20g0NwXMcHAftFX" />
           <Link Id="KwzImAw80cILFJgCw2WWQY" Ids="QDoa9kA7UIcP9tXf0eqTJC,HlnIjoRkcZUQGJt70GdVs8" />
           <Link Id="A4HD3QtFZMXM20Pm0bWxI2" Ids="H6hDjt48KHxLfLF1waHoCM,EI9NhHsWCBLNCQ9wve2t15" />
@@ -1967,13 +1876,10 @@
           <Link Id="GAoqGXRbblMPzrM32tWKZa" Ids="BVuRosRZ3ZSP6M5YLSLoyk,IO37O6vEF0GND8UHxPFAoM" />
           <Link Id="QEWIzG8qwQwOJbFr0CjiOV" Ids="IO37O6vEF0GND8UHxPFAoM,TJkQkSFwX7NOYetcEvzCi9" />
           <Link Id="NCCWgg4IIQDQN2dSsfM2r3" Ids="DRL7xj1o4xcLjKDSwmdX4r,U3XOYRDo7KbLEDvvXqf5XN" />
-          <Patch Id="Pkg9xEZWE19MDis6EXQk7x" Name="Dispose" ParticipatingElements="BSTGTdTga37MTHT8gywB4V" />
-          <Link Id="O4EE7UuMpL4OwUge0gmhVu" Ids="HlnIjoRkcZUQGJt70GdVs8,E7kqBZGIx61Ng5aRAXVEgn" />
-          <Link Id="LYpTzyM7d1VMfBFpE7L3yN" Ids="MBkh1c9hV1SLLkX6a6eBw6,EE24IY23pcwMemnadG8xCG" />
-          <Link Id="Lf0hS02Ack4OcwAOzDgWxu" Ids="HlnIjoRkcZUQGJt70GdVs8,R6lJ8EdDYAvL1frQqj99NS" />
-          <Link Id="JGgCu4Dt2AvLnrgF7LJgYr" Ids="AImbDa1YfqSPsnoeW9KEwC,MlInYADVU5fPAxh55edScc" />
-          <Link Id="MVjsrrvpNY2N19hGp93UT3" Ids="HlnIjoRkcZUQGJt70GdVs8,HM0On7zQT9nPD4LCoYVPll" />
-          <Link Id="PuO8orWo4bjLP60unEueCq" Ids="HlnIjoRkcZUQGJt70GdVs8,SBtHhES5qxxLAWh4HDx536" />
+          <Patch Id="Pkg9xEZWE19MDis6EXQk7x" Name="Dispose" ParticipatingElements="SnLyM91lAXrMEkAlDp5yJP" />
+          <Link Id="SAAjYNa6PBYNfqZMNMy539" Ids="HlnIjoRkcZUQGJt70GdVs8,JYStUC4zEUzM8UhkL7Isv1" />
+          <Link Id="QUG3EBfU1kEPG7Tkf5yJzp" Ids="GZNnyjIgI1zNewgCyP04Op,MCvKAzpwA4OL2autqn2nfV" />
+          <Link Id="BcPgMPtOkRTNLmk0WjK2tP" Ids="HlnIjoRkcZUQGJt70GdVs8,L97tz3HJ55KOmC9v0TJGMC" />
         </Patch>
       </Node>
       <!--
@@ -2075,17 +1981,6 @@
               <ControlPoint Id="CQDUFSBKE7wQF6mZTH1tGA" Bounds="969,226" />
               <ControlPoint Id="HFKmPsKqxUVPXvdNM7K8Uk" Bounds="898,301" />
               <ControlPoint Id="DV53coArM5oNDJq6lukY9T" Bounds="876,359" />
-              <Node Bounds="357,617" Id="REqC2LK3fX4P0kWIpmbVvu">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.OutputDevice" LastSymbolSource="VL.NewAudio.dll">
-                  <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                  <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
-                  <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="OutputDevice" />
-                  <Choice Kind="OperationCallFlag" Name="Dispose" />
-                </p:NodeReference>
-                <Pin Id="B2hgiAKL5rxNr6RxTXJ4FG" Name="Input" Kind="StateInputPin" />
-                <Pin Id="EmQd1FwKs89MKKZnEED5Pv" Name="Output" Kind="StateOutputPin" />
-              </Node>
               <Node Bounds="793,652" Id="EJg3kBhWaItNzpzZ67okX7">
                 <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`1" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
@@ -2132,8 +2027,7 @@
               <Pin Id="HeAYKt7jCX3LKOcQLKt9B3" Name="Result" Kind="OutputPin" />
               <Pin Id="EEx2sjyUqvlNmN6io8aSYn" Name="Errors" Kind="OutputPin" />
             </Patch>
-            <Patch Id="P6s49HGE88uP5Gt1fimKWq" Name="Dispose" ParticipatingElements="REqC2LK3fX4P0kWIpmbVvu" />
-            <Link Id="GqGgDwl70ZrNUloDinqIYV" Ids="DyEs0iBvhaYNv1gFxfN2wl,B2hgiAKL5rxNr6RxTXJ4FG" />
+            <Patch Id="P6s49HGE88uP5Gt1fimKWq" Name="Dispose" />
             <Link Id="JiyORSvjnkWNsBqkACGNGg" Ids="QMp7hdLwSTVLP55f8TSBTE,KstMvjtp97bO6cEEKHxZae" />
             <Link Id="AkEqcmFSxfBNGRaybxfem0" Ids="S1gr7OFEO7cLeEFz3idWxV,EEx2sjyUqvlNmN6io8aSYn" IsHidden="true" />
             <Link Id="SfaBbD4YViRLOkhi09L8e2" Ids="FVoIYHskedFPEq7XyryeRr,S1gr7OFEO7cLeEFz3idWxV" />

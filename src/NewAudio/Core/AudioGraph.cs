@@ -28,14 +28,15 @@ namespace NewAudio.Core
         {
             foreach (var node in _nodes)
             {
-                node.Config.Phase = LifecyclePhase.Playing;
+                
+                node.Config.Playing.Value = true;
             }
         }
         public void StopAll()
         {
             foreach (var node in _nodes)
             {
-                node.Config.Phase = LifecyclePhase.Stopped;
+                node.Config.Playing.Value = false;
             }
         }
 
@@ -78,5 +79,33 @@ namespace NewAudio.Core
             return $"Nodes: {_nodes.Count}, Links: {_links.Count}{nodes}";
         }
         
+        /*
+        public void Dispose() => Dispose(true);
+        
+        private bool _disposedValue;
+
+        private void Dispose(bool disposing)
+        {
+            _logger.Information("Dispose called for AudioGraph {t} ({d})", this, disposing);
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    foreach (var link in _links)
+                    {
+                        link.Dispose();
+                    }
+
+                    foreach (var node in _nodes)
+                    {
+                        node.Dispose();
+                    }
+                }
+
+                _disposedValue = disposing;
+            }
+        }
+        */
+
     }
 }

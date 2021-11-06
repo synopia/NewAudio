@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using NAudio.Wave;
 using NewAudio.Blocks;
 using NewAudio.Core;
@@ -7,18 +9,19 @@ using Serilog;
 
 namespace NewAudio.Nodes
 {
-    public interface IInputDeviceConfig : IAudioNodeConfig
+    public class InputDeviceConfig : AudioNodeConfig
     {
-        public WaveInputDevice Device { get; set; }
-        public SamplingFrequency SamplingFrequency { get; set; }
-        public int DesiredLatency { get; set; }
-        public int ChannelOffset { get; set; }
-        public int Channels { get; set; }
+        public AudioParam<WaveInputDevice> Device;
+        public AudioParam<SamplingFrequency> SamplingFrequency;
+        public AudioParam<int> DesiredLatency;
+        public AudioParam<int> ChannelOffset;
+        public AudioParam<int> Channels;
     }
 
-    public class InputDevice : AudioNode<IInputDeviceConfig>
+    public class InputDevice : AudioNode<InputDeviceConfig>
     {
-        private readonly AudioInputBlock _audioInputBlock;
+        public readonly LifecycleStateMachine<InputDeviceConfig> StateMachine = new LifecycleStateMachine<InputDeviceConfig>();
+        private AudioInputBlock _audioInputBlock;
         private readonly ILogger _logger;
 
         private IDevice _device;
@@ -30,95 +33,87 @@ namespace NewAudio.Nodes
             _logger = AudioService.Instance.Logger.ForContext<InputDevice>();
 
             _logger.Information("Input device created");
-            
-            _format = new AudioFormat(48000, 512, 2);
 
-            RegisterCallback<WaveInputDevice>("Device", OnDeviceChange);
-            try
-            {
-                _audioInputBlock = new AudioInputBlock(_format);
-                Output.SourceBlock = _audioInputBlock;
-                Output.Format = _format;
-            }
-            catch (Exception e)
-            {
-                _logger.Error("Ctor: {e}", e);
-            }
+            _format = new AudioFormat(48000, 512, 2);
+            
         }
 
+        protected override IEnumerable<IAudioParam> GetCreateParams()
+        {
+            return new IAudioParam[]{ Config.Device, Config.Channels, Config.ChannelOffset, Config.DesiredLatency, Config.SamplingFrequency};
+        }
+
+        public override async Task<bool> CreateResources(InputDeviceConfig config)
+        {
+            _device = (IDevice)Config.Device.Value?.Tag;
+            if (_device == null)
+            {
+                return false;
+            }
+            _format = new AudioFormat((int)Config.SamplingFrequency.Value, 512, Config.Channels.Value);
+            _audioInputBlock = new AudioInputBlock();
+            await _audioInputBlock.CreateResources(new AudioInputBlockConfig()
+            {
+                AudioFormat = _format,
+                NodeCount = 32
+            });
+            Output.SourceBlock = _audioInputBlock;
+            Output.Format = _format;
+
+            var req = new DeviceConfigRequest()
+            {
+                Recording = new DeviceConfig()
+                {
+                    Buffer = _audioInputBlock.Buffer,
+                    Latency = Config.DesiredLatency.Value,
+                    WaveFormat = WaveFormat,
+                    Channels = Config.Channels.Value,
+                    ChannelOffset = Config.ChannelOffset.Value
+                }
+            };
+            var resp = await _device.CreateResources(req);
+            _logger.Information("Device changed: {device} {resp}", _device, resp);
+            return true;
+        }
+
+        public override Task<bool> FreeResources()
+        {
+            _device.FreeResources();
+            return _audioInputBlock.FreeResources();
+        }
+
+        public override Task<bool> StartProcessing()
+        {
+            _device.StartProcessing();
+            return _audioInputBlock.StartProcessing();
+        }
+
+        public override Task<bool> StopProcessing()
+        {
+            _device.StopProcessing();
+            return _audioInputBlock.StopProcessing();
+        }
 
         public override string DebugInfo()
         {
-            return $"INPUT=[{Output?.SourceBlock?.Completion.Status}, {_device?.AudioDataProvider?.CancellationToken.IsCancellationRequested}]";
-        }
-
-        protected override void OnStart()
-        {
-            try
-            {
-                _audioInputBlock.Play();
-                _device.Record();
-            }
-            catch (Exception e)
-            {
-                _logger.Error("Start: {e}", e);
-            }
+            return
+                $"INPUT=[{Output?.SourceBlock?.Completion.Status}, {_device?.AudioDataProvider?.CancellationToken.IsCancellationRequested}]";
         }
 
         public AudioLink Update(WaveInputDevice device, SamplingFrequency samplingFrequency = SamplingFrequency.Hz44100,
             int channelOffset = 0, int channels = 2, int desiredLatency = 250)
         {
-            Config.Device = device;
-            Config.SamplingFrequency = samplingFrequency;
-            Config.DesiredLatency = desiredLatency;
-            Config.ChannelOffset = channelOffset;
-            Config.Channels = channels;
+            Config.Device.Value = device;
+            Config.SamplingFrequency.Value = samplingFrequency;
+            Config.DesiredLatency.Value = desiredLatency;
+            Config.ChannelOffset.Value = channelOffset;
+            Config.Channels.Value = channels;
 
-            return Update();
-        }
-
-        private void OnDeviceChange(WaveInputDevice old, WaveInputDevice current)
-        {
-            try
-            {
-                if (Config.Phase == LifecyclePhase.Playing)
-                {
-                    _device.Stop();
-                    _audioInputBlock.Stop();
-                }
-
-                _device = (IDevice)Config.Device.Tag;
-                // _format = WaveFormat.CreateIeeeFloatWaveFormat(_paramSamplingFreq.Value, );
-                _device.InitRecording(Config.DesiredLatency, _audioInputBlock.Buffer, WaveFormat);
-                _logger.Information("Device changed: {device}", _device);
-
-                
-                if (Config.Phase == LifecyclePhase.Playing)
-                {
-                    _audioInputBlock.Play();
-                    _device.Play();
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.Error("ChangeDevice({device}): {e}", _device, e);
-            }
-        }
-
-        protected override void OnStop()
-        {
-            try
-            {
-                _audioInputBlock?.Stop();
-                _device?.Stop();
-            }
-            catch (Exception e)
-            {
-                _logger.Error("Stop({device}): {e}", _device, e);
-            }
+            return Update().GetAwaiter().GetResult();
         }
 
         private bool _disposedValue;
+
         protected override void Dispose(bool disposing)
         {
             if (!_disposedValue)
@@ -126,11 +121,12 @@ namespace NewAudio.Nodes
                 if (disposing)
                 {
                     _audioInputBlock?.Dispose();
-                    _device?.Dispose();                    
+                    _device?.Dispose();
                 }
 
                 _disposedValue = disposing;
             }
+
             base.Dispose(disposing);
         }
     }

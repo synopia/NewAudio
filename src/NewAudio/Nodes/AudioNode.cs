@@ -1,86 +1,77 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NewAudio.Core;
+using Serilog;
 
 namespace NewAudio.Nodes
 {
-    public interface IAudioNodeConfig
+    public class AudioNodeConfig: AudioParams
     {
-        AudioLink Input { get; set; }
-        LifecyclePhase Phase { get; set; }
-        
-        bool Reset { get; set; }
-        bool HasChanged { get; set; }
+        public AudioParam<bool> Playing;
+        public AudioParam<AudioLink> Input;
     }
 
-    public interface IAudioNode : IDisposable
+    public interface IAudioNode : IDisposable, ILifecycleDevice
     {
-        public IAudioNodeConfig Config { get; }
+        public AudioNodeConfig Config { get; }
         public string DebugInfo();
         public string ErrorMessages();
 
     }
-    public abstract class AudioNode<TConfig> : IAudioNode where TConfig: IAudioNodeConfig
+    public abstract class AudioNode<TConfig>: IAudioNode, ILifecycleDevice<TConfig, bool> where TConfig: AudioNodeConfig
     {
         private readonly List<IDisposable> _links = new List<IDisposable>();
         private List<Exception> _exceptions = new List<Exception>();
         
-        public AudioParams AudioParams = new AudioParams(typeof(TConfig));
         public TConfig Config { get; }
-        IAudioNodeConfig IAudioNode.Config => Config;
-        public TConfig LastConfig { get; }
-        public TConfig NextConfig { get; }
+        AudioNodeConfig IAudioNode.Config => Config;
         public AudioLink Output { get; } = new AudioLink();
-
+        public LifecyclePhase Phase { get; set; }
+        public readonly LifecycleStateMachine<TConfig> Lifecycle = new LifecycleStateMachine<TConfig>();
         protected AudioNode()
         {
             AudioService.Instance.Graph.AddNode(this);
-            Config = AudioParams.Create<TConfig>();
-            LastConfig = AudioParams.CreateLast<TConfig>();
-            NextConfig = AudioParams.CreateNext<TConfig>();
+            Config = (TConfig)Activator.CreateInstance(typeof(TConfig));
+            // Lifecycle.EventHappens(LifecycleEvents.eCreate(Config), this).GetAwaiter().GetResult();
             
-            AudioParams.Get<AudioLink>("Input").OnCommit += (last, current) =>
+            Config.Input.OnChange += () =>
             {
-                if (last != null)
+                if (Config.Input.LastValue != null)
                 {
-                    OnDisconnect(last);
+                    OnDisconnect(Config.Input.Value);
                 }
-                if (current != null)
+                if (Config.Input.Value != null)
                 {
-                    OnConnect(current);
+                    OnConnect(Config.Input.Value);
                 } 
+                return Task.CompletedTask;
             };
-            AudioParams.Get<LifecyclePhase>("Phase").OnCommit += (last, current) =>
+            Config.Playing.OnChange += () =>
             {
-                if (current == LifecyclePhase.Playing)
-                {
-                    OnStart();
-                }
-
-                if (current == LifecyclePhase.Stopped)
-                {
-                    OnStop();
-                }
+                return Lifecycle.EventHappens(Config.Playing.Value ? LifecycleEvents.eStart : LifecycleEvents.eStop, this);
             };
-            AudioParams.OnCommit += OnAnyChange;
+            Config.OnChange += OnAnyChange;
+            
+            // ReSharper disable once VirtualMemberCallInConstructor
+            Config.AddGroupOnChange(GetCreateParams(), async () =>
+            {
+                await Lifecycle.EventHappens(LifecycleEvents.eCreate(Config), this);
+            });
         }
 
-        public void RegisterCallback<T>(string name, Action<T, T> action)
-        {
-            AudioParams.Get<T>(name).OnCommit += action;
-        }
-        
+        protected abstract IEnumerable<IAudioParam> GetCreateParams();
 
-        public void HandleError(Exception exception)
+        public void ExceptionHappened(Exception exception, string method)
         {
             if (!_exceptions.Exists(e => e.Message == exception.Message))
             {
                 _exceptions.Add(exception);
-                throw exception;
+                // throw exception;
             }
         }
 
-        protected AudioLink Update()
+        protected async Task<AudioLink> Update()
         {
             // if (BaseConfig.Reset)
             // {
@@ -91,11 +82,15 @@ namespace NewAudio.Nodes
                 // }
             // }
 
-            if (AudioParams.HasChanged)
+            if (Config.HasChanged)
             {
-                if (IsInputValid(NextConfig))
+                if (IsInputValid(Config))
                 {
-                    AudioParams.Commit();
+                    await Config.Update();
+                }
+                else
+                {
+                    Config.Rollback();
                 }
             }
 
@@ -112,19 +107,18 @@ namespace NewAudio.Nodes
             return _exceptions.Count > 0 ? string.Join(", ", _exceptions) : null;
         }
 
-        protected virtual void OnStart()
-        {
-        }
-        protected virtual void OnStop()
-        {
-        }
+        public abstract Task<bool> CreateResources(TConfig config);
+        public abstract Task<bool> FreeResources();
+        public abstract Task<bool> StartProcessing();
+        public abstract Task<bool> StopProcessing();
+
         protected virtual void OnConnect(AudioLink link)
         {
         }
-        protected virtual void OnDisconnect(AudioLink link)
+
+        private void OnDisconnect(AudioLink link)
         {
             DisposeLinks();
-
         }
 
         protected virtual bool IsInputValid(TConfig next)
@@ -132,9 +126,9 @@ namespace NewAudio.Nodes
             return true; 
         }
 
-        protected virtual void OnAnyChange()
+        protected virtual Task OnAnyChange()
         {
-            
+            return Task.CompletedTask;
         }
 
         protected void AddLink(IDisposable disposable)
@@ -157,13 +151,14 @@ namespace NewAudio.Nodes
         public void Dispose() => Dispose(true);
         protected virtual void Dispose(bool disposing)
         {
+            AudioService.Instance.Logger.Information("Dispose called for AudioNode {t} ({d})", this, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
                 {
                     if (Config.Input != null)
                     {
-                        OnDisconnect(Config.Input);
+                        OnDisconnect(Config.Input.Value);
                     }
                     DisposeLinks();
                     Output.Dispose();

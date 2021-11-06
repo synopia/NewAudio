@@ -1,4 +1,7 @@
-﻿using System.Threading;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NAudio.Wave;
 using NewAudio.Core;
 using Serilog;
@@ -22,52 +25,66 @@ namespace NewAudio.Devices
             _handle = handle;
         }
 
-        public override void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
+        public override Task<DeviceConfigResponse> CreateResources(DeviceConfigRequest config)
         {
-            _logger.Information("Init: Format={format}", waveFormat);
-            AudioDataProvider = new AudioDataProvider(waveFormat, buffer);
-
-            if (IsOutputDevice)
+            var configResponse = new DeviceConfigResponse()
             {
-                _waveOut = new WaveOutEvent { DeviceNumber = _handle, DesiredLatency = desiredLatency };
+                SupportedSamplingFrequencies = Enum.GetValues(typeof(SamplingFrequency)).Cast<SamplingFrequency>()
+            };
+
+
+            if (IsOutputDevice && config.IsPlaying)
+            {
+                AudioDataProvider = new AudioDataProvider(config.Playing.WaveFormat, config.Playing.Buffer);
+                _waveOut = new WaveOutEvent { DeviceNumber = _handle, DesiredLatency = config.Playing.Latency};
                 _waveOut?.Init(AudioDataProvider);
-            }
-        }
-
-        private void DataAvailable(object sender, WaveInEventArgs evt)
-        {
-        }
-
-        public override void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
-        {
-            if (IsInputDevice)
+                configResponse.PlayingChannels = 2;
+                configResponse.DriverPlayingChannels = 2;
+                configResponse.PlayingWaveFormat = config.Playing.WaveFormat;
+            } else if (IsInputDevice && config.IsRecording)
             {
                 _waveIn = new WaveInEvent
                 {
-                    /*WaveFormat = format,*/ DeviceNumber = _handle, BufferMilliseconds = desiredLatency
+                    WaveFormat = config.Recording.WaveFormat, DeviceNumber = _handle, BufferMilliseconds = config.Recording.Latency
                 };
                 _waveIn.DataAvailable += DataAvailable;
+                configResponse.RecordingChannels = 2;
+                configResponse.DriverRecordingChannels = 2;
+
             }
+            return Task.FromResult(configResponse);
+
         }
 
-        public override void Record()
-        {
-            CancellationTokenSource = new CancellationTokenSource();
-            _waveIn?.StartRecording();
-        }
-
-        public override void Play()
-        {
-            CancellationTokenSource = new CancellationTokenSource();
-            AudioDataProvider.CancellationToken = CancellationTokenSource.Token;
-            _waveOut?.Play();
-        }
-
-        public override void Stop()
+        public override Task<bool> FreeResources()
         {
             CancellationTokenSource?.Cancel();
             _waveIn?.StopRecording();
             _waveOut?.Stop();
+            _waveOut?.Dispose();
+
+            return Task.FromResult(true);
+        }
+
+        public override Task<bool> StartProcessing()
+        {
+            CancellationTokenSource = new CancellationTokenSource();
+            _waveIn?.StartRecording();
+            _waveOut?.Play();
+            return Task.FromResult(true);
+        }
+
+        public override Task<bool> StopProcessing()
+        {
+            CancellationTokenSource?.Cancel();
+            _waveIn?.StopRecording();
+            _waveOut?.Stop();
+            return Task.FromResult(true);
+        }
+
+        private void DataAvailable(object sender, WaveInEventArgs evt)
+        {
+            throw new System.NotImplementedException();
         }
 
         public override string ToString()

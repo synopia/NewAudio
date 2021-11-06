@@ -1,4 +1,5 @@
-﻿using NAudio.Wave;
+﻿using System.Threading.Tasks;
+using NAudio.Wave;
 using SharedMemory;
 
 namespace NewAudio.Devices
@@ -12,24 +13,24 @@ namespace NewAudio.Devices
             IsOutputDevice = isOutputDevice;
         }
 
-        public override void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
+        public override Task<DeviceConfigResponse> CreateResources(DeviceConfigRequest config)
         {
+            return Task.FromResult(new DeviceConfigResponse());
         }
 
-        public override void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
+        public override Task<bool> FreeResources()
         {
+            return Task.FromResult(true);
         }
 
-        public override void Record()
+        public override Task<bool> StartProcessing()
         {
+            return Task.FromResult(true);
         }
 
-        public override void Play()
+        public override Task<bool> StopProcessing()
         {
-        }
-
-        public override void Stop()
-        {
+            return Task.FromResult(true);
         }
 
         private bool _disposedValue;

@@ -33,35 +33,56 @@ namespace NewAudio.Core
         public AudioGraph Graph { get; private set; }
 
         public ILogger Logger { get; }
-        public LifecyclePhase Phase { get; private set; }
+
+        private bool _playing;
+
 
         public void Init()
         {
-            Log.Logger.Information("Audio Service: {Phase} => Booting", Phase);
-            Phase = LifecyclePhase.Booting;
         }
 
-        public void Update()
+        public void Update(bool playing)
         {
-        }
+            if (playing != _playing)
+            {
+                Log.Logger.Information("Audio Service: {old} => {new}", _playing, playing);
+                _playing = playing;
+                if (playing)
+                {
+                    Graph.PlayAll();
+                }
+                else
+                {
+                    Graph.StopAll();
+                }
+            }
 
-        public void Stop()
-        {
-            Log.Logger.Information("Audio Service: {Phase} => Stop", Phase);
-            Phase = LifecyclePhase.Stopped;
-            Graph.StopAll();
-        }
-
-        public void Play()
-        {
-            Log.Logger.Information("Audio Service: {Phase} => Play", Phase);
-            Phase = LifecyclePhase.Playing;
-            Graph.PlayAll();
         }
 
         public string DebugInfo()
         {
-            return $"{Graph.DebugInfo()}, Phase: {Phase}";
+            return Graph.DebugInfo();
         }
+        
+        /*
+        public void Dispose() => Dispose(true);
+        
+        private bool _disposedValue;
+
+        private void Dispose(bool disposing)
+        {
+            Logger.Information("Dispose called for AudioService {t} ({d})", this, disposing);
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    Graph.Dispose();
+                }
+
+                _disposedValue = disposing;
+            }
+        }
+        */
+
     }
 }

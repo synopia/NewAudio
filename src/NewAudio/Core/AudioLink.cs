@@ -26,18 +26,16 @@ namespace NewAudio.Core
             get => _broadcastBlock;
             set
             {
-                // todo only broadcast if necessary
-                if (_sourceBlock == null)
+                if (_sourceBlock != null)
                 {
-                    if (value != null)
-                    {
-                        _sourceBlock = value;
-                        _currentLink = _sourceBlock.LinkTo(_broadcastBlock);
-                        return;
-                    }
+                    _currentLink.Dispose();
                 }
-
-                throw new Exception("Resetting SourceBlock is not supported!");
+                // todo only broadcast if necessary
+                if (value != null)
+                {
+                    _sourceBlock = value;
+                    _currentLink = _sourceBlock.LinkTo(_broadcastBlock);
+                }
             }
         }
 
@@ -47,12 +45,14 @@ namespace NewAudio.Core
 
         private void Dispose(bool disposing)
         {
+            AudioService.Instance.Logger.Information("Dispose called for AudioLink {t} ({d})", this, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
                 {
                     AudioService.Instance.Graph.RemoveLink(this);
                     _currentLink?.Dispose();
+                    
                 }
 
                 _disposedValue = disposing;

@@ -22,6 +22,7 @@
         <OutputPath>..\..\lib\</OutputPath>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="Abodit.StateMachine" Version="3.21.83.7" />
         <PackageReference Include="FFTW.NET" Version="1.0.1" />
         <PackageReference Include="NAudio" Version="2.0.1" />
         <PackageReference Include="NAudio.Asio" Version="2.0.0" />
@@ -47,6 +48,9 @@
         <Compile Remove="Nodes\AudioGenerator.cs" />
         <Compile Remove="Nodes\RingBuffer.cs" />
         <Compile Remove="Nodes\AudioBufferOut.cs" />
+        <Compile Remove="Core\AudioParam.cs" />
+        <Compile Remove="Blocks\RingBufferBlock.cs" />
+        <Compile Remove="Blocks\AudioBlock.cs" />
     </ItemGroup>
 
 </Project>

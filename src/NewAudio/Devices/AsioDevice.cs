@@ -1,4 +1,8 @@
-﻿using System.Threading;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NAudio.Wave;
 using NewAudio.Core;
 using Serilog;
@@ -9,13 +13,8 @@ namespace NewAudio.Devices
     public class AsioDevice : BaseDevice
     {
         private AsioOut _asioOut;
-        private CircularBuffer _buffer;
         private readonly string _driverName;
-        private bool _isInitialized;
-        private bool _isPlaying;
-        private bool _isRecording;
         private readonly ILogger _logger;
-        private WaveFormat _waveFormat;
 
         public AsioDevice(string name, string driverName)
         {
@@ -26,30 +25,91 @@ namespace NewAudio.Devices
             _logger = AudioService.Instance.Logger.ForContext<AsioDevice>();
         }
 
-        public override void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
+        public override Task<DeviceConfigResponse> CreateResources(DeviceConfigRequest config)
         {
-            _waveFormat = waveFormat;
-            _buffer = buffer;
-            _isPlaying = true;
-            _logger.Information("Starting Asio Playback, T={T}, CH={CH}, ENC={ENC}", waveFormat.SampleRate,
-                waveFormat.Channels, waveFormat.Encoding);
+            _asioOut = new AsioOut(_driverName);
+            var srs = Enum.GetValues(typeof(SamplingFrequency)).Cast<SamplingFrequency>()
+                .Where(sr => _asioOut.IsSampleRateSupported((int)sr)).ToList();
+            var configResponse = new DeviceConfigResponse
+            {
+                DriverRecordingChannels = _asioOut.DriverInputChannelCount,
+                DriverPlayingChannels = _asioOut.DriverOutputChannelCount,
+                SupportedSamplingFrequencies = srs
+            };
+            CancellationTokenSource = new CancellationTokenSource();
+            
+      
+            if (config.IsPlaying && config.IsRecording)
+            {
+                AudioDataProvider = new AudioDataProvider(config.Playing.WaveFormat, config.Playing.Buffer)
+                    {
+                        CancellationToken = CancellationTokenSource.Token
+                    };
 
+                _asioOut.InitRecordAndPlayback(AudioDataProvider, config.Recording.Channels,
+                    config.Recording.WaveFormat.SampleRate);
+                _asioOut.InputChannelOffset = config.Recording.ChannelOffset;
+                _asioOut.ChannelOffset = config.Playing.ChannelOffset;
+                _asioOut.AudioAvailable += OnAsioData;
 
-            // _logger.Info($"DriverInputChannelCount {asioOut.DriverInputChannelCount}");
-            // _logger.Info($"DriverOutputChannelCount {asioOut.DriverOutputChannelCount}");
-            // _logger.Info($"PlaybackLatency {asioOut.PlaybackLatency}");
-            // _logger.Info($"NumberOfInputChannels {asioOut.NumberOfInputChannels}");
-            // _logger.Info($"NumberOfOutputChannels {asioOut.NumberOfOutputChannels}");
-            // _logger.Info($"ChannelOffset {asioOut.ChannelOffset}");
-            // _logger.Info($"InputChannelOffset {asioOut.InputChannelOffset}");
-            // _logger.Info($"FramesPerBuffer {asioOut.FramesPerBuffer}");
-            // _logger.Info($"{asioOut.IsSampleRateSupported(48000)}");
-            // _logger.Info($"{asioOut.IsSampleRateSupported(44100)}");
+                configResponse.RecordingChannels = _asioOut.NumberOfInputChannels;
+                configResponse.PlayingChannels = _asioOut.NumberOfOutputChannels;
+                configResponse.Latency = _asioOut.PlaybackLatency;
+                // todo
+                configResponse.PlayingWaveFormat = config.Playing.WaveFormat;
+                configResponse.RecordingWaveFormat = config.Recording.WaveFormat;
+                configResponse.FrameSize = _asioOut.FramesPerBuffer;
+            }
+            else if (config.IsRecording)
+            {
+                _asioOut.InitRecordAndPlayback(null, config.Recording.Channels, config.Recording.WaveFormat.SampleRate);
+                _asioOut.AudioAvailable += OnAsioData;
+
+                configResponse.RecordingChannels = _asioOut.NumberOfInputChannels;
+                configResponse.Latency = _asioOut.PlaybackLatency;
+                configResponse.FrameSize = _asioOut.FramesPerBuffer;
+            }
+            else if (config.IsPlaying)
+            {
+                AudioDataProvider = new AudioDataProvider(config.Playing.WaveFormat, config.Playing.Buffer)
+                    {
+                        CancellationToken = CancellationTokenSource.Token
+                    };
+
+                _asioOut.Init(AudioDataProvider);
+
+                configResponse.PlayingChannels = _asioOut.NumberOfOutputChannels;
+                configResponse.Latency = _asioOut.PlaybackLatency;
+                configResponse.FrameSize = _asioOut.FramesPerBuffer;
+            }
+
+            return Task.FromResult(configResponse);
         }
 
-        public override void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat)
+        public override Task<bool> FreeResources()
         {
-            _isRecording = true;
+            CancellationTokenSource?.Cancel();
+            _asioOut?.Dispose();
+            return Task.FromResult(true);
+        }
+
+        public override Task<bool> StartProcessing()
+        {
+            CancellationTokenSource = new CancellationTokenSource();
+            AudioDataProvider.CancellationToken = CancellationTokenSource.Token;
+            _asioOut?.Play();
+            return Task.FromResult(true);
+        }
+
+        public override Task<bool> StopProcessing()
+        {
+            CancellationTokenSource?.Cancel();
+            if (_asioOut != null && _asioOut.PlaybackState != PlaybackState.Stopped)
+            {
+                _asioOut.Stop();
+            }
+
+            return Task.FromResult(true);
         }
 
         private void OnAsioData(object sender, AsioAudioAvailableEventArgs evt)
@@ -59,81 +119,26 @@ namespace NewAudio.Devices
             // {
             // Buffers.WriteAll(RecordingBuffer, evt.Buffer, evt.BytesRecorded, Token);
             // }
-        }
+            throw new System.NotImplementedException();
 
-        private void DoInit()
-        {
-            
-            _asioOut = new AsioOut(_driverName);
-
-            if (_isRecording && _isPlaying )
-            {
-                AudioDataProvider = new AudioDataProvider(_waveFormat, _buffer);
-                _asioOut.InitRecordAndPlayback(AudioDataProvider, 2, RecordingWaveFormat.SampleRate);
-                _asioOut.AudioAvailable += OnAsioData;
-            }
-            else if (_isRecording)
-            {
-                _asioOut.InitRecordAndPlayback(null, 2, RecordingWaveFormat.SampleRate);
-                _asioOut.AudioAvailable += OnAsioData;
-            }
-            else if (_isPlaying)
-            {
-                AudioDataProvider = new AudioDataProvider(_waveFormat, _buffer);
-                _asioOut.Init(AudioDataProvider);
-            }
-
-            _isInitialized = true;
-        }
-
-        public override void Record()
-        {
-            if (!_isInitialized)
-            {
-                DoInit();
-            }
-
-            CancellationTokenSource = new CancellationTokenSource();
-
-            _asioOut?.Play();
-        }
-
-        public override void Play()
-        {
-            // if (!_isInitialized)
-            // {
-                DoInit();
-            // }
-            CancellationTokenSource = new CancellationTokenSource();
-            AudioDataProvider.CancellationToken = CancellationTokenSource.Token;
-
-            _asioOut?.Play();
-        }
-
-        public override void Stop()
-        {
-            CancellationTokenSource?.Cancel();
-            if (_asioOut != null && _asioOut.PlaybackState!=PlaybackState.Stopped)
-            {
-                _asioOut.Stop();
-            }
-
-            _isInitialized = false;
         }
 
         private bool _disposedValue;
+
         protected override void Dispose(bool disposing)
         {
             if (!_disposedValue)
             {
                 if (disposing)
                 {
+                    _asioOut?.Stop();
                     _asioOut?.Dispose();
-
+                    CancellationTokenSource.Cancel();
                 }
 
                 _disposedValue = disposing;
             }
+
             base.Dispose(disposing);
         }
 
