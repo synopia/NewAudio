@@ -25,7 +25,7 @@ namespace NewAudio.Devices
             _logger = AudioService.Instance.Logger.ForContext<AsioDevice>();
         }
 
-        public override Task<DeviceConfigResponse> CreateResources(DeviceConfigRequest config)
+        public override Task<DeviceConfigResponse> Create(DeviceConfigRequest config)
         {
             _asioOut = new AsioOut(_driverName);
             var srs = Enum.GetValues(typeof(SamplingFrequency)).Cast<SamplingFrequency>()
@@ -86,22 +86,22 @@ namespace NewAudio.Devices
             return Task.FromResult(configResponse);
         }
 
-        public override Task<bool> FreeResources()
+        public override Task<bool> Free()
         {
             CancellationTokenSource?.Cancel();
             _asioOut?.Dispose();
             return Task.FromResult(true);
         }
 
-        public override Task<bool> StartProcessing()
+        public override bool Start()
         {
             CancellationTokenSource = new CancellationTokenSource();
             AudioDataProvider.CancellationToken = CancellationTokenSource.Token;
             _asioOut?.Play();
-            return Task.FromResult(true);
+            return true;
         }
 
-        public override Task<bool> StopProcessing()
+        public override bool Stop()
         {
             CancellationTokenSource?.Cancel();
             if (_asioOut != null && _asioOut.PlaybackState != PlaybackState.Stopped)
@@ -109,7 +109,7 @@ namespace NewAudio.Devices
                 _asioOut.Stop();
             }
 
-            return Task.FromResult(true);
+            return true;
         }
 
         private void OnAsioData(object sender, AsioAudioAvailableEventArgs evt)

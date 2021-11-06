@@ -18,17 +18,20 @@ namespace NewAudio.Nodes
     public class AudioLoopRegion<TState> : AudioNode<AudioLoopRegionConfig> where TState : class
     {
         private readonly ILogger _logger;
+        private TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
+        private IDisposable _inputBufferLink;
+
         private readonly AudioSampleFrameClock _clock = new AudioSampleFrameClock();
+        
         private Func<TState, AudioChannels, TState> _updateFunc;
         private TState _state;
-        private TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
 
         public AudioLoopRegion()
         {
             _logger = AudioService.Instance.Logger.ForContext<AudioLoopRegion<TState>>();
+            _logger.Information("Audio loop region created");
         }
 
-        
         public  AudioLink Update(
             AudioLink input,
             Func<IFrameClock, TState> create,
@@ -48,21 +51,36 @@ namespace NewAudio.Nodes
             Config.OutputChannels.Value = outputChannels > 0 ? outputChannels : input?.Format.Channels ?? 0;
             Config.Input.Value = input;
 
-            return Update().GetAwaiter().GetResult();
+            if (Config.Input.HasChanged && input!=null)
+            {
+                var inputChannels = input.Format.Channels;
+                if (Config.OutputChannels.Value == 0)
+                {
+                    Config.OutputChannels.Value = inputChannels;
+                }
+
+                Output.Format = input.Format.WithChannels(Config.OutputChannels.Value);
+                _logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}",
+                    input.Format, Output.Format);
+            }
+
+            return Update();
         }
 
-        protected override IEnumerable<IAudioParam> GetCreateParams()
+        public override bool IsInputValid(AudioLoopRegionConfig next)
         {
-            return new IAudioParam[] { Config.OutputChannels, Config.Input };
+            return next.Input.Value!=null && 
+                   next.OutputChannels.Value>0 && 
+                   next.Input.Value.Format.Channels>0 && 
+                   next.Input.Value.Format.SampleCount>0;
         }
 
-        protected override bool IsInputValid(AudioLoopRegionConfig next)
+        public override Task<bool> Create(AudioLoopRegionConfig config)
         {
-            return next.OutputChannels.Value>0 && next.Input?.Value.Format.Channels>0 && next.Input?.Value.Format.SampleCount>0;
-        }
-
-        public override Task<bool> CreateResources(AudioLoopRegionConfig config)
-        {
+            if (_processor != null)
+            {
+                _logger.Warning("TransformBlock != null!");
+            }
             _processor = new TransformBlock<AudioDataMessage, AudioDataMessage>(input =>
             {
                 if (Config.Bypass.Value)
@@ -110,50 +128,48 @@ namespace NewAudio.Nodes
                 }
                 return output;
             });
-
-            Output.SourceBlock = _processor;
+           
 
             return Task.FromResult(true);
         }
 
-        public override Task<bool> FreeResources()
+        public override Task<bool> Free()
         {
+            if (_processor == null)
+            {
+                _logger.Error("TransformBlock == null!");
+                return Task.FromResult(false);
+            }
             _processor.Complete();
-            return _processor.Completion.ContinueWith((t)=>true);
+            return _processor.Completion.ContinueWith((t)=>
+            {
+                _processor = null;
+                _logger.Information("Transform block stopped, status={status}", t.Status);
+                return true;
+            });
         }
 
-        public override Task<bool> StartProcessing()
+        public override bool Start()
         {
-            return Task.FromResult(true);
+            Output.SourceBlock = _processor;
+            _inputBufferLink = InputBufferBlock.LinkTo(_processor);
+
+            return true;
         }
 
-        public override Task<bool> StopProcessing()
+        public override bool Stop()
         {
-            return Task.FromResult(true);
+            _inputBufferLink.Dispose();
+            Output.SourceBlock = null;
+            return true;
         }
         
 
         public override string DebugInfo()
         {
-            return $"LOOP [{_processor.InputCount}/{_processor.OutputCount}, {_processor.Completion.Status}]";
+            return $"LOOP [{_processor?.InputCount}/{_processor?.OutputCount}, {_processor?.Completion.Status}]";
         }
 
-        protected override void OnConnect(AudioLink input)
-        {
-            var inputChannels = input.Format.Channels;
-            if (Config.OutputChannels.Value == 0)
-            {
-                Config.OutputChannels.Value = inputChannels;
-            }
-
-            Output.Format = input.Format.WithChannels(Config.OutputChannels.Value);
-
-            _logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}",
-                input.Format, Output.Format);
-
-            AddLink(input.SourceBlock.LinkTo(_processor));
-        }
-        
         private bool _disposedValue;
         protected override void Dispose(bool disposing)
         {
@@ -161,6 +177,7 @@ namespace NewAudio.Nodes
             {
                 if (disposing)
                 {
+                    _processor?.Complete();
                 }
 
                 _disposedValue = disposing;

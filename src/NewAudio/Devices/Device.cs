@@ -37,18 +37,18 @@ namespace NewAudio.Devices
     }
 
     
-    public interface IDevice : IDisposable, ILifecycleDevice<DeviceConfigRequest, DeviceConfigResponse>
+    public interface IDevice : IDisposable
     {
         public string Name { get; }
         public bool IsInputDevice { get; }
         public bool IsOutputDevice { get; }
         AudioDataProvider AudioDataProvider { get; }
-        // public void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);
-        // public void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);
-        // public void Play();
 
-        // public void Record();
-        // public void Stop();
+        public Task<DeviceConfigResponse> Create(DeviceConfigRequest request);
+
+        public Task<bool> Free();
+        public bool Start();
+        public bool Stop();
     }
 
     public abstract class BaseDevice : IDevice
@@ -61,28 +61,11 @@ namespace NewAudio.Devices
 
         public bool IsOutputDevice { get; protected set; }
         protected CancellationTokenSource CancellationTokenSource;
-        public LifecyclePhase Phase { get; set; }
-        public abstract Task<DeviceConfigResponse> CreateResources(DeviceConfigRequest config);
-        public abstract Task<bool> FreeResources();
-        public abstract Task<bool> StartProcessing();
-        public abstract Task<bool> StopProcessing();
-
-        public void ExceptionHappened(Exception e, string method)
-        {
-            throw e;
-        }
-
-        /*
-        public abstract void InitPlayback(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);
-
-        public abstract void InitRecording(int desiredLatency, CircularBuffer buffer, WaveFormat waveFormat);
-
-        public abstract void Play();
-
-        public abstract void Record();
-
-        public abstract void Stop();
-        */
+        
+        public abstract Task<DeviceConfigResponse> Create(DeviceConfigRequest config);
+        public abstract Task<bool> Free();
+        public abstract bool Start();
+        public abstract bool Stop();
 
         private bool _disposedValue;
         public void Dispose() => Dispose(true);

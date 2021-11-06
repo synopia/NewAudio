@@ -24,28 +24,33 @@ namespace NewAudioTest
                 Calls.Add($"Exception in {method}");
             }
 
-            public Task<bool> CreateResources(int config)
+            public bool IsInputValid(int config)
+            {
+                return true;
+            }
+
+            public Task<bool> Create(int config)
             {
                 Calls.Add("CreateResources");
                 return Task.FromResult(true);
             }
 
-            public Task<bool> FreeResources()
+            public Task<bool> Free()
             {
                 Calls.Add("FreeResources");
                 return Task.FromResult(true);
             }
 
-            public Task<bool> StartProcessing()
+            public bool Start()
             {
                 Calls.Add("StartProcessing");
-                return Task.FromResult(true);
+                return true;
             }
             
-            public Task<bool> StopProcessing()
+            public bool Stop()
             {
                 Calls.Add("StopProcessing");
-                return Task.FromResult(true);
+                return true;
             }
         }
 
@@ -57,15 +62,15 @@ namespace NewAudioTest
             var device = new TestDevice();
             var lf = new LifecycleStateMachine<int>();
             lf.EventHappens(LifecycleEvents.eCreate(1), device);
-            Assert.AreEqual(LifecyclePhase.Ready, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Created, device.Phase);
             lf.EventHappens(LifecycleEvents.eStart, device);
             Assert.AreEqual(LifecyclePhase.Playing, device.Phase);
             lf.EventHappens(LifecycleEvents.eStop, device);
-            Assert.AreEqual(LifecyclePhase.Ready, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Created, device.Phase);
             lf.EventHappens(LifecycleEvents.eStart, device);
             Assert.AreEqual(LifecyclePhase.Playing, device.Phase);
             lf.EventHappens(LifecycleEvents.eStop, device);
-            Assert.AreEqual(LifecyclePhase.Ready, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Created, device.Phase);
             lf.EventHappens(LifecycleEvents.eFree, device);
             Assert.AreEqual(LifecyclePhase.Uninitialized, device.Phase);
 
@@ -81,12 +86,12 @@ namespace NewAudioTest
             var device = new TestDevice();
             var lf = new LifecycleStateMachine<int>();
             lf.EventHappens(LifecycleEvents.eCreate(1), device);
-            Assert.AreEqual(LifecyclePhase.Ready, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Created, device.Phase);
             lf.EventHappens(LifecycleEvents.eStart, device);
             Assert.AreEqual(LifecyclePhase.Playing, device.Phase);
             lf.EventHappens(LifecycleEvents.eStart, device);
             lf.EventHappens(LifecycleEvents.eStop, device);
-            Assert.AreEqual(LifecyclePhase.Ready, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Created, device.Phase);
             lf.EventHappens(LifecycleEvents.eStop, device);
             lf.EventHappens(LifecycleEvents.eFree, device);
             Assert.AreEqual(LifecyclePhase.Uninitialized, device.Phase);
@@ -102,7 +107,7 @@ namespace NewAudioTest
             var device = new TestDevice();
             var lf = new LifecycleStateMachine<int>();
             lf.EventHappens(LifecycleEvents.eCreate(1), device);
-            Assert.AreEqual(LifecyclePhase.Ready, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Created, device.Phase);
             lf.EventHappens(LifecycleEvents.eStart, device);
             Assert.AreEqual(LifecyclePhase.Playing, device.Phase);
             lf.EventHappens(LifecycleEvents.eCreate(1), device);

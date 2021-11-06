@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -26,30 +27,13 @@ namespace NewAudio.Nodes
         private AudioTime _time;
         private BatchBlock<AudioDataMessage> _batchBlock;
         private ActionBlock<AudioDataMessage[]> _processor;
+        private IDisposable _inputBufferLink;
+        private IDisposable _link1;
 
         protected BaseFFT()
         {
+            _logger.Information("FFT created");
             Source = new BufferBlock<AudioDataMessage>();
-
-            // Config.FFTLength.OnChange += DoResize;
-            // Config.WindowFunction.OnChange += DoResize;
-            // Config.Input.OnChange += DoResize;
-            // Config.AddGroupOnChange(, () =>
-            // {
-                // Lifecycle.EventHappens(new CreateEvent<FFTConfig>("CreateResources", Config), this);
-            // });
-            
-            Output.SourceBlock = Source;
-        }
-
-        protected override IEnumerable<IAudioParam> GetCreateParams()
-        {
-            return new IAudioParam[] { Config.FFTLength, Config.WindowFunction, Config.Input };
-        }
-
-        protected override void OnConnect(AudioLink input)
-        {
-            Output.Format = input.Format;
         }
 
         public AudioLink Update(AudioLink input, int fftLength = 512,
@@ -59,7 +43,7 @@ namespace NewAudio.Nodes
             Config.Input.Value = input;
             Config.FFTLength.Value = (int)Utils.UpperPow2((uint)fftLength);;
 
-            return Update().GetAwaiter().GetResult();
+            return Update();
         }
 
         protected void Post(AudioDataMessage buf)
@@ -67,9 +51,29 @@ namespace NewAudio.Nodes
             Source.Post(buf);
         }
 
-        public override Task<bool> CreateResources(FFTConfig config)
+        public override bool IsInputValid(FFTConfig next)
         {
-            
+            return next.Input.Value!=null && 
+                   next.FFTLength.Value > 0 && 
+                   next.Input.Value.Format.Channels == 1;
+        }
+
+        public override Task<bool> Create(FFTConfig config)
+        {
+            if (_processor != null)
+            {
+                _logger.Warning("ActionBlock != null!");
+            }
+            if (_batchBlock != null)
+            {
+                _logger.Warning("BatchBlock != null!");
+            }
+
+            if (_link1 != null)
+            {
+                _logger.Warning("link != null!");
+                _link1.Dispose();
+            }
             _processor = new ActionBlock<AudioDataMessage[]>(i =>
             {
                 try
@@ -82,24 +86,53 @@ namespace NewAudio.Nodes
                     ExceptionHappened(e, "ActionBlock");
                 }
             });
-            DoResize();
+            var input = Config.Input.Value;
+            ResizeBuffers(Config.FFTLength.Value, (Config.FFTLength.Value - 1) / 2 + 2);
+            Window = FFTUtils.CreateWindow(Config.WindowFunction.Value, Config.FFTLength.Value);
+            
+            var fftFormat = input.Format.WithSampleCount(Config.FFTLength.Value);
+            _logger.Information("Created, internal: {outFormat} fft={fftLength} {inFormat}", fftFormat, Config.FFTLength,
+                input.Format);
+
+            _batchBlock = new BatchBlock<AudioDataMessage>(1 * Config.FFTLength.Value / input.Format.BufferSize);
+
+            _link1 = _batchBlock.LinkTo(_processor);
             return Task.FromResult(true);
         }
 
-        public override Task<bool> FreeResources()
+        public override Task<bool> Free()
         {
-            _processor.Complete();
-            return _processor.Completion.ContinueWith(t => true);
+            if (_processor == null)
+            {
+                _logger.Error("ActionBlock == null!");
+            }
+            if (_link1 == null)
+            {
+                _logger.Error("Link == null!");
+            }
+            _link1?.Dispose();
+            _link1 = null;
+            _processor?.Complete();
+            return _processor?.Completion.ContinueWith(t =>
+            {
+                _processor = null;
+                _logger.Information("ActionBlock stopped, status={status}", t.Status);
+                return true;
+            });
         }
 
-        public override Task<bool> StartProcessing()
+        public override bool Start()
         {
-            return Task.FromResult(true);
+            Output.SourceBlock = Source;
+            _inputBufferLink = InputBufferBlock.LinkTo(_batchBlock);
+            return true;
         }
 
-        public override Task<bool> StopProcessing()
+        public override bool Stop()
         {
-            return Task.FromResult(true);
+            _inputBufferLink.Dispose();
+            Output.SourceBlock = null;
+            return true;
         }
 
         /*
@@ -135,31 +168,10 @@ namespace NewAudio.Nodes
             return buf;
         }
 
-        protected override bool IsInputValid(FFTConfig next)
-        {
-            return next.FFTLength.Value > 0 && next.Input.Value.Format.Channels == 1;
-        }
 
         public override string DebugInfo()
         {
             return $"curr={Config.FFTLength}, {_processor?.Completion.Status}, {Source?.Completion.Status}/ {Source?.Count}";
-        }
-
-        private void DoResize()
-        {
-            var input = Config.Input.Value;
-            ResizeBuffers(Config.FFTLength.Value, (Config.FFTLength.Value - 1) / 2 + 2);
-            Window = FFTUtils.CreateWindow(Config.WindowFunction.Value, Config.FFTLength.Value);
-            
-            var fftFormat = input.Format.WithSampleCount(Config.FFTLength.Value);
-            _logger.Information("Created, internal: {outFormat} fft={fftLength} {inFormat}", fftFormat, Config.FFTLength,
-                input.Format);
-
-            _batchBlock = new BatchBlock<AudioDataMessage>(1 * Config.FFTLength.Value / input.Format.BufferSize);
-            AddLink(_batchBlock.LinkTo(_processor));
-            AddLink(input.SourceBlock.LinkTo(_batchBlock));
-
-
         }
 
         protected abstract void OnDataReceived(AudioDataMessage[] input);
@@ -199,6 +211,10 @@ namespace NewAudio.Nodes
                     block++;
                     j = 0;
                 }
+            }
+            foreach (var message in input)
+            {
+                ArrayPool<float>.Shared.Return(message.Data);
             }
         }
 
@@ -276,6 +292,10 @@ namespace NewAudio.Nodes
                     block++;
                     j = 0;
                 }
+            }
+            foreach (var message in input)
+            {
+                ArrayPool<float>.Shared.Return(message.Data);
             }
         }
 

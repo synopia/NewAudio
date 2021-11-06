@@ -8,40 +8,43 @@ namespace NewAudio.Core
     public enum LifecyclePhase
     {
         Uninitialized,
-        Ready,
-        Playing
+        Invalid,
+        Created,
+        Playing,
+        Erroneous,
     }
 
     public interface ILifecycleDevice
     {
         LifecyclePhase Phase { get; set; }
-        Task<bool> FreeResources();
-        Task<bool> StartProcessing();
-        Task<bool> StopProcessing();
+        Task<bool> Free();
+        bool Start();
+        bool Stop();
 
-        void ExceptionHappened(Exception e, string method);        
+        void ExceptionHappened(Exception e, string method);
     }
+
     public interface ILifecycleDevice<in TConfigIn, TConfigOut> : ILifecycleDevice
     {
-
-        Task<TConfigOut> CreateResources(TConfigIn config);
+        Task<TConfigOut> Create(TConfigIn config);
+        bool IsInputValid(TConfigIn config);
     }
 
     internal class CreateEvent<TConfigIn> : Event
     {
         public TConfigIn Config { get; }
 
-        public CreateEvent(string name, TConfigIn config=default) : base(name)
+        public CreateEvent(string name, TConfigIn config = default) : base(name)
         {
             Config = config;
         }
     }
-    
+
     public static class LifecycleEvents
     {
         public static readonly Event eStart = new Event("Start");
         public static readonly Event eStop = new Event("Stop");
-        
+
         internal static readonly Event eCreateIntern = new Event("Create");
         public static readonly Event eFree = new Event("Free");
 
@@ -52,22 +55,47 @@ namespace NewAudio.Core
     }
 
     [Serializable]
-    public class LifecycleStateMachine<TConfig> : StateMachineAsync<LifecycleStateMachine<TConfig>, Event, ILifecycleDevice<TConfig, bool>>
+    public class LifecycleStateMachine<TConfig> : StateMachineAsync<LifecycleStateMachine<TConfig>, Event,
+        ILifecycleDevice<TConfig, bool>>
     {
         protected override void OnStateChanging(ILifecycleDevice<TConfig, bool> device, State oldState, State newState)
         {
         }
 
+        protected override void OnStateChanged(ILifecycleDevice<TConfig, bool> context, State oldState, State newState)
+        {
+            base.OnStateChanged(context, oldState, newState);
+            var device = (ExceptionHandler)context;
+            AudioService.Instance.Logger.Information("LIFECYLE: {device} STATE CHANGE {old}=>{new}, P={phase}",
+                device.Device, oldState.Name, newState.Name, device.Device.Phase);
+        }
+
         public static readonly State Erroneous = AddState("Erroneous");
         public static readonly State Uninitialized = AddState("Uninitialized");
-
-        public static readonly State Ready = AddState("Ready");
-
+        public static readonly State Invalid = AddState("Invalid");
+        public static readonly State Created = AddState("Created");
         public static readonly State Playing = AddState("Playing");
 
-        
+
         static LifecycleStateMachine()
         {
+            Erroneous
+                .OnEnter((m, s, e, c) =>
+                {
+                    c.Phase = LifecyclePhase.Erroneous;
+                    return Task.CompletedTask;
+                })
+                .When(LifecycleEvents.eCreateIntern, async (m, s, e, c) =>
+                {
+                    var config = ((CreateEvent<TConfig>)e).Config;
+                    var res = c.IsInputValid(config);
+                    if (res)
+                    {
+                        return await c.Create(config) ? Created : Uninitialized;
+                    }
+
+                    return Invalid;
+                });
             Uninitialized
                 .OnEnter((m, s, e, c) =>
                 {
@@ -77,27 +105,55 @@ namespace NewAudio.Core
                 .When(LifecycleEvents.eCreateIntern, async (m, s, e, c) =>
                 {
                     var config = ((CreateEvent<TConfig>)e).Config;
-                    return await c.CreateResources(config) ? Ready : Uninitialized;
+                    var res = c.IsInputValid(config);
+                    if (res)
+                    {
+                        return await c.Create(config) ? Created : s;
+                    }
+
+                    return Invalid;
                 });
-            Ready
+            Invalid
                 .OnEnter((m, s, e, c) =>
                 {
-                    c.Phase = LifecyclePhase.Ready;
+                    c.Phase = LifecyclePhase.Invalid;
                     return Task.CompletedTask;
-                })
-                .When(LifecycleEvents.eStart, async (m, s, e, c) =>
-                {
-                    return await c.StartProcessing() ? Playing : Erroneous;
-                })
-                .When(LifecycleEvents.eFree, async (m, s, e, c) =>
-                {
-                    return await c.FreeResources() ? Uninitialized : Erroneous;
                 })
                 .When(LifecycleEvents.eCreateIntern, async (m, s, e, c) =>
                 {
                     var config = ((CreateEvent<TConfig>)e).Config;
-                    var res = await c.FreeResources();
-                    res = res && await c.CreateResources(config);
+                    var res = c.IsInputValid(config);
+                    if (res)
+                    {
+                        return await c.Create(config) ? Created : Uninitialized;
+                    }
+
+                    return Invalid;
+                });
+            Created
+                .OnEnter((m, s, e, c) =>
+                {
+                    c.Phase = LifecyclePhase.Created;
+                    return Task.CompletedTask;
+                })
+                .When(LifecycleEvents.eStart,
+                    (m, s, e, c) =>
+                    {
+                        return c.Start() ? Task.FromResult(Playing) : Task.FromResult<State>(Erroneous);
+                    })
+                .When(LifecycleEvents.eFree,
+                    async (m, s, e, c) => { return await c.Free() ? Uninitialized : Erroneous; })
+                .When(LifecycleEvents.eCreateIntern, async (m, s, e, c) =>
+                {
+                    var config = ((CreateEvent<TConfig>)e).Config;
+                    var res = await c.Free();
+                    var inputValid = c.IsInputValid(config);
+                    if (!inputValid)
+                    {
+                        return Invalid;
+                    }
+
+                    res = res && await c.Create(config);
                     return res ? s : Erroneous;
                 });
             Playing
@@ -109,26 +165,30 @@ namespace NewAudio.Core
                 .When(LifecycleEvents.eCreateIntern, async (m, s, e, c) =>
                 {
                     var config = ((CreateEvent<TConfig>)e).Config;
-                    var res = await c.StopProcessing();
-                    res = res && await c.FreeResources();
-                    res = res && await c.CreateResources(config);
-                    res = res && await c.StartProcessing();
+                    var res = c.Stop();
+                    res = res && await c.Free();
+                    var inputValid = c.IsInputValid(config);
+                    if (!inputValid)
+                    {
+                        return Invalid;
+                    }
+
+                    res = res && await c.Create(config);
+                    res = res && c.Start();
                     return res ? Playing : Erroneous;
                 })
-                .When(LifecycleEvents.eFree,  async (m, s, e, c) =>
+                .When(LifecycleEvents.eFree, async (m, s, e, c) =>
                 {
-                    var res = await c.StopProcessing();
-                    res = res && await c.FreeResources();
+                    var res = c.Stop();
+                    res = res && await c.Free();
                     return res ? Uninitialized : Erroneous;
                 })
-                .When(LifecycleEvents.eStop,async (m, s, e, c) =>
-                {
-                    return await c.StopProcessing() ? Ready : Erroneous;
-                });
-            
+                .When(LifecycleEvents.eStop,
+                    (m, s, e, c) => { return c.Stop() ? Task.FromResult(Created) : Task.FromResult(Erroneous); });
         }
 
         private readonly ExceptionHandler _handler = new ExceptionHandler();
+
         public LifecycleStateMachine() : base(Uninitialized)
         {
         }
@@ -136,6 +196,7 @@ namespace NewAudio.Core
         public override Task EventHappens(Event @event, ILifecycleDevice<TConfig, bool> context)
         {
             _handler.Device = context;
+            
             return base.EventHappens(@event, _handler);
         }
 
@@ -149,11 +210,14 @@ namespace NewAudio.Core
                 set => Device.Phase = value;
             }
 
-            public async Task<bool> CreateResources(TConfig config)
+            public async Task<bool> Create(TConfig config)
             {
                 try
                 {
-                    return await Device.CreateResources(config);
+                    var result = await Device.Create(config);
+                    AudioService.Instance.Logger.Information(
+                        "LIFECYLE: {device} Create, result={result}", Device, result);
+                    return result;
                 }
                 catch (Exception e)
                 {
@@ -162,11 +226,14 @@ namespace NewAudio.Core
                 }
             }
 
-            public async Task<bool> FreeResources()
+            public async Task<bool> Free()
             {
                 try
                 {
-                    return await Device.FreeResources();
+                    var result = await Device.Free();
+                    AudioService.Instance.Logger.Information(
+                        "LIFECYLE: {device} Free, result={result}", Device, result);
+                    return result;
                 }
                 catch (Exception e)
                 {
@@ -175,11 +242,14 @@ namespace NewAudio.Core
                 }
             }
 
-            public async Task<bool> StartProcessing()
+            public bool Start()
             {
                 try
                 {
-                    return await Device.StartProcessing();
+                    var result = Device.Start();
+                    AudioService.Instance.Logger.Information(
+                        "LIFECYLE: {device} Start, result={result}", Device, result);
+                    return result;
                 }
                 catch (Exception e)
                 {
@@ -188,15 +258,34 @@ namespace NewAudio.Core
                 }
             }
 
-            public async Task<bool> StopProcessing()
+            public bool Stop()
             {
                 try
                 {
-                    return await Device.StopProcessing();
+                    var result = Device.Stop();
+                    AudioService.Instance.Logger.Information(
+                        "LIFECYLE: {device} Stop, result={result}", Device, result);
+                    return result;
                 }
                 catch (Exception e)
                 {
                     ExceptionHappened(e, "StopProcessing");
+                    return false;
+                }
+            }
+
+            public bool IsInputValid(TConfig config)
+            {
+                try
+                {
+                    var result = Device.IsInputValid(config);
+                    AudioService.Instance.Logger.Information(
+                        "LIFECYLE: {device} IsInputValid, result={result}", Device, result);
+                    return result;
+                }
+                catch (Exception e)
+                {
+                    ExceptionHappened(e, "IsInputValid");
                     return false;
                 }
             }

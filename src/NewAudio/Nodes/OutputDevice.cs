@@ -22,20 +22,27 @@ namespace NewAudio.Nodes
     public class OutputDevice : AudioNode<OutputDeviceConfig>
     {
         private readonly ILogger _logger;
-        private int _counter;
+        private AudioOutputBlock _audioOutputBlock;
+        
         private IDevice _device;
         private AudioFormat _format;
-        private long _lag;
-        private double _lagMs;
-        private AudioOutputBlock _audioOutputBlock;
-        private TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
         public WaveFormat WaveFormat => _format.WaveFormat;
 
+        private readonly TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
+        private IDisposable _link;
+        private IDisposable _inputBufferLink;
+        
+
+        private int _counter;
+        private long _lag;
+        private double _lagMs;
+        
         public OutputDevice()
         {
             _logger = AudioService.Instance.Logger.ForContext<OutputDevice>();
             _logger.Information("Output device created");
             _format = new AudioFormat(48000, 512, 2);
+            
             _processor = new TransformBlock<AudioDataMessage, AudioDataMessage>(msg =>
             {
                 var now = DateTime.Now.Ticks;
@@ -54,78 +61,6 @@ namespace NewAudio.Nodes
                 return msg;
             });
         }
-        protected override IEnumerable<IAudioParam> GetCreateParams()
-        {
-            return new IAudioParam[]{ Config.Device, Config.Channels, Config.ChannelOffset, Config.DesiredLatency, Config.SamplingFrequency};
-
-        }
-
-        protected override void OnConnect(AudioLink input)
-        {
-            _logger.Information("New connection to output device");
-            AddLink(input.SourceBlock.LinkTo(_processor));
-        }
-
-        public override async Task<bool> CreateResources(OutputDeviceConfig config)
-        {
-            _device = (IDevice)Config.Device.Value?.Tag;
-            if (_device == null)
-            {
-                return false;
-            }
-            _format = new AudioFormat((int)Config.SamplingFrequency.Value, 512, Config.Channels.Value);
-            _audioOutputBlock = new AudioOutputBlock();
-            await _audioOutputBlock.CreateResources(new AudioOutputBlockConfig()
-            {
-                AudioFormat = _format,
-                NodeCount = 32
-            });
-            _processor.LinkTo(_audioOutputBlock);
-
-            var req = new DeviceConfigRequest()
-            {
-                Playing = new DeviceConfig()
-                {
-                    Buffer = _audioOutputBlock.Buffer,
-                    Latency = Config.DesiredLatency.Value,
-                    WaveFormat = WaveFormat,
-                    Channels = Config.Channels.Value,
-                    ChannelOffset = Config.ChannelOffset.Value
-                }
-            };
-            if (config.Input != null)
-            {
-                AddLink(Config.Input.Value?.SourceBlock?.LinkTo(_processor));
-            }
-            var resp = await _device.CreateResources(req);
-            _logger.Information("Device changed: {device} {resp}", _device, resp);
-            return true;
-        }
-
-        public override Task<bool> FreeResources()
-        {
-            DisposeLinks();
-            _device.FreeResources();
-            return _audioOutputBlock.FreeResources();
-        }
-
-        public override Task<bool> StartProcessing()
-        {
-            _device.StartProcessing();
-            return _audioOutputBlock.StartProcessing();
-        }
-
-        public override Task<bool> StopProcessing()
-        {
-            _device.StopProcessing();
-            return _audioOutputBlock.StopProcessing();
-        }
-
-        public override string DebugInfo()
-        {
-            return
-                $"OUTPUT=[{_processor?.Completion.Status}, {_device?.AudioDataProvider?.CancellationToken.IsCancellationRequested}]";
-        }
 
         public AudioLink Update(AudioLink input, WaveOutputDevice device,
             SamplingFrequency samplingFrequency = SamplingFrequency.Hz44100,
@@ -138,8 +73,72 @@ namespace NewAudio.Nodes
             Config.ChannelOffset.Value = channelOffset;
             Config.Channels.Value = channels;
 
-            return Update().GetAwaiter().GetResult();
+            return Update();
         }
+        public override bool IsInputValid(OutputDeviceConfig next)
+        {
+            return next.Input.Value != null && next.Device.Value != null;
+        }
+
+        public override async Task<bool> Create(OutputDeviceConfig config)
+        {
+            _device = (IDevice)Config.Device.Value.Tag;
+            _format = new AudioFormat((int)Config.SamplingFrequency.Value, 512, Config.Channels.Value);
+            _audioOutputBlock = new AudioOutputBlock();
+            _audioOutputBlock.Create(new AudioOutputBlockConfig()
+            {
+                AudioFormat = _format,
+                NodeCount = 32
+            });
+            _link = _processor.LinkTo(_audioOutputBlock);
+
+            var req = new DeviceConfigRequest()
+            {
+                Playing = new DeviceConfig()
+                {
+                    Buffer = _audioOutputBlock.Buffer,
+                    Latency = Config.DesiredLatency.Value,
+                    WaveFormat = WaveFormat,
+                    Channels = Config.Channels.Value,
+                    ChannelOffset = Config.ChannelOffset.Value
+                }
+            };
+            var resp = await _device.Create(req);
+            _logger.Information("Output device changed: {device} Channels={channels}, Driver Channels={driver}, Latency={latency}, Frame size={frameSize}", _device, resp.PlayingChannels, resp.DriverPlayingChannels, resp.Latency, resp.FrameSize);
+            return true;
+        }
+
+        public override Task<bool> Free()
+        {
+            _link.Dispose();
+            _device.Free();
+            return _audioOutputBlock.Free();
+        }
+
+        public override bool Start()
+        {
+            // Output.SourceBlock = null;
+            _inputBufferLink = InputBufferBlock.LinkTo(_processor);
+            _device.Start();
+            _audioOutputBlock.Start();
+            return true;
+        }
+
+        public override bool Stop()
+        {
+            // Output.SourceBlock = null;
+            _audioOutputBlock.Stop();
+            _inputBufferLink.Dispose();
+            _device.Stop();
+            _inputBufferLink = null;
+            return true;
+        }
+
+        public override string DebugInfo()
+        {
+            return null;
+        }
+
 
         private bool _disposedValue;
 
@@ -149,8 +148,9 @@ namespace NewAudio.Nodes
             {
                 if (disposing)
                 {
-                    _audioOutputBlock?.Dispose();
+                    _inputBufferLink?.Dispose();
                     _device?.Dispose();
+                    _audioOutputBlock?.Dispose();
                 }
 
                 _disposedValue = disposing;

@@ -14,22 +14,21 @@ namespace NewAudio.Blocks
         public AudioFormat AudioFormat;
         public int NodeCount;
     }
-    public class AudioInputBlock : ISourceBlock<AudioDataMessage>, ILifecycleDevice<AudioInputBlockConfig, bool>
+    public class AudioInputBlock : ISourceBlock<AudioDataMessage>
     {
-        private readonly ITargetBlock<AudioDataMessage> _bufferBlock = new BufferBlock<AudioDataMessage>(
+        private readonly ILogger _logger;
+        private readonly ITargetBlock<AudioDataMessage> _outputBlock = new BufferBlock<AudioDataMessage>(
             new DataflowBlockOptions
             {
                 BoundedCapacity = 100,
                 MaxMessagesPerTask = 4
             });
 
-        private readonly ILogger _logger;
         private CircularBuffer _buffer;
         public CircularBuffer Buffer { get; private set; }
-        public LifecyclePhase Phase { get; set; }
-
         public AudioFormat OutputFormat { get; private set; }
         private CancellationTokenSource _cancellationTokenSource;
+        private CancellationToken _token;
         private Task<bool> _task;
 
         public AudioInputBlock()
@@ -37,23 +36,25 @@ namespace NewAudio.Blocks
             _logger = AudioService.Instance.Logger.ForContext<AudioInputBlock>();
         }
 
-        public Task<bool> CreateResources(AudioInputBlockConfig config)
+        public bool Create(AudioInputBlockConfig config)
         {
             OutputFormat = config.AudioFormat;
             
             var name = $"Input Block {AudioService.Instance.Graph.GetNextId()}";
             Buffer = new CircularBuffer(name, config.NodeCount, 4 * config.AudioFormat.BufferSize);
             _buffer = new CircularBuffer(name);
-            return Task.FromResult(true);
+
+            return true;
         }
 
-        public Task<bool> FreeResources()
+        public async Task<bool> Free()
         {
-            _buffer.Dispose();
-            return Task.FromResult(true);
+            await Stop();
+            Buffer.Dispose();
+            return true;
         }
 
-        public Task<bool> StartProcessing()
+        public void Start()
         {
             if (_task != null)
             {
@@ -61,28 +62,36 @@ namespace NewAudio.Blocks
             }
 
             _cancellationTokenSource = new CancellationTokenSource();
-            _task = Task.Run(Loop, _cancellationTokenSource.Token);
-
-            return Task.FromResult(true);
+            _token = _cancellationTokenSource.Token;
+            
+            _task = Task.Run(Loop, _token);
         }
 
-        public Task<bool> StopProcessing()
+        public Task<bool> Stop()
         {
+            if (_task == null)
+            {
+                _logger.Error("Task == null {task}", _task);
+                return Task.FromResult(false);
+            }
+
+            if (_token.IsCancellationRequested)
+            {
+                _logger.Warning("Already stopping!");
+            }
             _cancellationTokenSource.Cancel();
-            Task.WaitAll(new Task[] { _task });
-            return Task.FromResult(true);
-        }
-
-        public void ExceptionHappened(Exception e, string method)
-        {
-            throw e;
+            return _task.ContinueWith(t =>
+            {
+                _logger.Information("Task stopped, status={status}", t.Status);
+                _task = null;
+                return true;
+            });
         }
 
         private bool Loop()
         {
             try
             {
-                var token = _cancellationTokenSource.Token;
                 _logger.Information("Audio input reading thread started (Reading from {reading} ({owner}))", _buffer?.Name,
                     _buffer?.IsOwnerOfSharedMemory);
                 if (_buffer == null)
@@ -90,25 +99,25 @@ namespace NewAudio.Blocks
                     throw new Exception("Buffer == null !");
                 }
 
-                while (!token.IsCancellationRequested)
+                while (!_token.IsCancellationRequested)
                 {
                     var message = new AudioDataMessage(OutputFormat, OutputFormat.SampleCount);
                     var pos = 0;
 
-                    while (pos < OutputFormat.BufferSize && !token.IsCancellationRequested)
+                    while (pos < OutputFormat.BufferSize && !_token.IsCancellationRequested)
                     {
                         var read = _buffer.Read(message.Data, pos, 1);
                         pos += read;
                     }
 
-                    if (!token.IsCancellationRequested)
+                    if (!_token.IsCancellationRequested)
                     {
                         if (pos != OutputFormat.BufferSize)
                         {
                             _logger.Warning("pos!=buf {p} {b} {t}", pos, OutputFormat.BufferSize,
-                                token.IsCancellationRequested);
+                                _token.IsCancellationRequested);
                         }
-                        var res = _bufferBlock.Post(message);
+                        var res = _outputBlock.Post(message);
                         _logger.Verbose("Posted {samples} ", message.BufferSize);
                         if (!res)
                         {
@@ -117,8 +126,6 @@ namespace NewAudio.Blocks
                     }
 
                 }
-                _logger.Information("Audio input reading thread finished (Reading from {reading} ({owner}))", _buffer?.Name,
-                    _buffer?.IsOwnerOfSharedMemory);
             }
             catch (Exception e)
             {
@@ -139,7 +146,8 @@ namespace NewAudio.Blocks
             {
                 if (disposing)
                 {
-                    _buffer.Dispose();
+                    _cancellationTokenSource?.Cancel();
+                    Buffer.Dispose();
                 }
 
                 _disposedValue = disposing;
@@ -156,28 +164,28 @@ namespace NewAudio.Blocks
             throw new Exception("This should not be called!", exception);
         }
 
-        public Task Completion => _bufferBlock.Completion;
+        public Task Completion => _outputBlock.Completion;
 
         public IDisposable LinkTo(ITargetBlock<AudioDataMessage> target, DataflowLinkOptions linkOptions)
         {
-            return ((ISourceBlock<AudioDataMessage>)_bufferBlock).LinkTo(target, linkOptions);
+            return ((ISourceBlock<AudioDataMessage>)_outputBlock).LinkTo(target, linkOptions);
         }
 
         public AudioDataMessage ConsumeMessage(DataflowMessageHeader messageHeader,
             ITargetBlock<AudioDataMessage> target, out bool messageConsumed)
         {
-            return ((ISourceBlock<AudioDataMessage>)_bufferBlock).ConsumeMessage(messageHeader, target,
+            return ((ISourceBlock<AudioDataMessage>)_outputBlock).ConsumeMessage(messageHeader, target,
                 out messageConsumed);
         }
 
         public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<AudioDataMessage> target)
         {
-            return ((ISourceBlock<AudioDataMessage>)_bufferBlock).ReserveMessage(messageHeader, target);
+            return ((ISourceBlock<AudioDataMessage>)_outputBlock).ReserveMessage(messageHeader, target);
         }
 
         public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<AudioDataMessage> target)
         {
-            ((ISourceBlock<AudioDataMessage>)_bufferBlock).ReleaseReservation(messageHeader, target);
+            ((ISourceBlock<AudioDataMessage>)_outputBlock).ReleaseReservation(messageHeader, target);
         }
     }
 }

@@ -35,6 +35,7 @@ namespace NewAudio.Core
         public ILogger Logger { get; }
 
         private bool _playing;
+        private int _warmupTicks = 15;
 
 
         public void Init()
@@ -43,6 +44,11 @@ namespace NewAudio.Core
 
         public void Update(bool playing)
         {
+            if (_warmupTicks > 0)
+            {
+                _warmupTicks--;
+                return;
+            }
             if (playing != _playing)
             {
                 Log.Logger.Information("Audio Service: {old} => {new}", _playing, playing);

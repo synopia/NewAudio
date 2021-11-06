@@ -13,24 +13,24 @@ namespace NewAudio.Devices
             IsOutputDevice = isOutputDevice;
         }
 
-        public override Task<DeviceConfigResponse> CreateResources(DeviceConfigRequest config)
+        public override Task<DeviceConfigResponse> Create(DeviceConfigRequest config)
         {
             return Task.FromResult(new DeviceConfigResponse());
         }
 
-        public override Task<bool> FreeResources()
+        public override Task<bool> Free()
         {
             return Task.FromResult(true);
         }
 
-        public override Task<bool> StartProcessing()
+        public override bool Start()
         {
-            return Task.FromResult(true);
+            return true;
         }
 
-        public override Task<bool> StopProcessing()
+        public override bool Stop()
         {
-            return Task.FromResult(true);
+            return true;
         }
 
         private bool _disposedValue;

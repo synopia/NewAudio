@@ -20,7 +20,7 @@ namespace NewAudio.Devices
         private WasapiLoopbackCapture _loopback;
         private WasapiOut _wavePlayer;
         private DeviceConfig _recording;
-        
+
         private byte[] _temp;
         private int _tempPos;
 
@@ -36,7 +36,7 @@ namespace NewAudio.Devices
 
         private bool IsLoopback { get; }
 
-        public override Task<DeviceConfigResponse> CreateResources(DeviceConfigRequest config)
+        public override Task<DeviceConfigResponse> Create(DeviceConfigRequest config)
         {
             CancellationTokenSource = new CancellationTokenSource();
             var configResponse = new DeviceConfigResponse()
@@ -56,11 +56,12 @@ namespace NewAudio.Devices
                 configResponse.PlayingWaveFormat = _wavePlayer.OutputWaveFormat;
                 configResponse.PlayingChannels = 2;
                 configResponse.DriverPlayingChannels = 2;
-            } else if (IsInputDevice && config.IsRecording)
+            }
+            else if (IsInputDevice && config.IsRecording)
             {
                 configResponse.RecordingChannels = 2;
                 configResponse.DriverRecordingChannels = 2;
-                
+
                 if (IsLoopback)
                 {
                     var device = new MMDeviceEnumerator().GetDevice(_deviceId);
@@ -78,18 +79,20 @@ namespace NewAudio.Devices
                     _capture.DataAvailable += DataAvailable;
                     config.Recording.WaveFormat = _capture.WaveFormat;
                 }
+
                 _recording = new DeviceConfig()
                 {
                     Buffer = config.Recording.Buffer
                 };
             }
+
             return Task.FromResult(configResponse);
         }
 
-        public override Task<bool> FreeResources()
+        public override Task<bool> Free()
         {
             CancellationTokenSource?.Cancel();
-            
+
             _loopback?.StopRecording();
             _capture?.StopRecording();
             _wavePlayer?.Stop();
@@ -99,7 +102,7 @@ namespace NewAudio.Devices
             return Task.FromResult(true);
         }
 
-        public override Task<bool> StartProcessing()
+        public override bool Start()
         {
             CancellationTokenSource = new CancellationTokenSource();
             if (AudioDataProvider != null)
@@ -109,19 +112,19 @@ namespace NewAudio.Devices
 
             _firstLoop = true;
             _wavePlayer?.Play();
-                _loopback?.StartRecording();
-                _capture?.StartRecording();
+            _loopback?.StartRecording();
+            _capture?.StartRecording();
 
-            return Task.FromResult(true);
+            return true;
         }
 
-        public override Task<bool> StopProcessing()
+        public override bool Stop()
         {
             _loopback?.StopRecording();
             _capture?.StopRecording();
             _wavePlayer?.Stop();
             CancellationTokenSource?.Cancel();
-            return Task.FromResult(true);
+            return true;
         }
 
         private void DataAvailable(object sender, WaveInEventArgs evt)
@@ -177,6 +180,7 @@ namespace NewAudio.Devices
 
 
         private bool _disposedValue;
+
         protected override void Dispose(bool disposing)
         {
             if (!_disposedValue)
@@ -186,11 +190,11 @@ namespace NewAudio.Devices
                     _loopback?.Dispose();
                     _capture?.Dispose();
                     _wavePlayer?.Dispose();
-
                 }
 
                 _disposedValue = disposing;
             }
+
             base.Dispose(disposing);
         }
 

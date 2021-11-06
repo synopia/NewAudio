@@ -24,7 +24,7 @@ namespace NewAudio.Devices
             IsInputDevice = false;
         }
 
-        public override Task<DeviceConfigResponse> CreateResources(DeviceConfigRequest config)
+        public override Task<DeviceConfigResponse> Create(DeviceConfigRequest config)
         {
             var configResponse = new DeviceConfigResponse()
             {
@@ -46,23 +46,23 @@ namespace NewAudio.Devices
             return Task.FromResult(configResponse);
         }
 
-        public override Task<bool> FreeResources()
+        public override Task<bool> Free()
         {
             _directSoundOut?.Dispose();
             return Task.FromResult(true);
         }
 
-        public override Task<bool> StartProcessing()
+        public override bool Start()
         {
             _directSoundOut?.Play();
-            return Task.FromResult(true);
+            return true;
         }
 
-        public override Task<bool> StopProcessing()
+        public override bool Stop()
         {
             CancellationTokenSource?.Cancel();
             _directSoundOut?.Stop();
-            return Task.FromResult(true);
+            return true;
         }
 
         private bool _disposedValue;

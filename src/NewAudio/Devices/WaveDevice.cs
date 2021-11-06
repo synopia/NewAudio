@@ -25,7 +25,7 @@ namespace NewAudio.Devices
             _handle = handle;
         }
 
-        public override Task<DeviceConfigResponse> CreateResources(DeviceConfigRequest config)
+        public override Task<DeviceConfigResponse> Create(DeviceConfigRequest config)
         {
             var configResponse = new DeviceConfigResponse()
             {
@@ -56,7 +56,7 @@ namespace NewAudio.Devices
 
         }
 
-        public override Task<bool> FreeResources()
+        public override Task<bool> Free()
         {
             CancellationTokenSource?.Cancel();
             _waveIn?.StopRecording();
@@ -66,20 +66,20 @@ namespace NewAudio.Devices
             return Task.FromResult(true);
         }
 
-        public override Task<bool> StartProcessing()
+        public override bool Start()
         {
             CancellationTokenSource = new CancellationTokenSource();
             _waveIn?.StartRecording();
             _waveOut?.Play();
-            return Task.FromResult(true);
+            return true;
         }
 
-        public override Task<bool> StopProcessing()
+        public override bool Stop()
         {
             CancellationTokenSource?.Cancel();
             _waveIn?.StopRecording();
             _waveOut?.Stop();
-            return Task.FromResult(true);
+            return true;
         }
 
         private void DataAvailable(object sender, WaveInEventArgs evt)
