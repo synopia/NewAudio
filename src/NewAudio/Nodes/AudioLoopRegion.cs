@@ -10,12 +10,16 @@ using VL.Lib.Animation;
 
 namespace NewAudio.Nodes
 {
-    public class AudioLoopRegionConfig : AudioNodeConfig
+    public class AudioLoopRegionCreateParams : AudioNodeCreateParams
+    {
+    }
+    public class AudioLoopRegionUpdateParams : AudioNodeUpdateParams
     {
         public AudioParam<bool> Bypass;
         public AudioParam<int> OutputChannels;
     }
-    public class AudioLoopRegion<TState> : AudioNode<AudioLoopRegionConfig> where TState : class
+    
+    public class AudioLoopRegion<TState> : AudioNode<AudioLoopRegionCreateParams, AudioLoopRegionUpdateParams> where TState : class
     {
         private readonly ILogger _logger;
         private TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
@@ -47,19 +51,19 @@ namespace NewAudio.Nodes
             }
             _updateFunc = update;
 
-            Config.Bypass.Value = bypass;
-            Config.OutputChannels.Value = outputChannels > 0 ? outputChannels : input?.Format.Channels ?? 0;
-            Config.Input.Value = input;
+            UpdateParams.Bypass.Value = bypass;
+            UpdateParams.OutputChannels.Value = outputChannels > 0 ? outputChannels : input?.Format.Channels ?? 0;
+            UpdateParams.Input.Value = input;
 
-            if (Config.Input.HasChanged && input!=null)
+            if (UpdateParams.Input.HasChanged && input!=null)
             {
                 var inputChannels = input.Format.Channels;
-                if (Config.OutputChannels.Value == 0)
+                if (UpdateParams.OutputChannels.Value == 0)
                 {
-                    Config.OutputChannels.Value = inputChannels;
+                    UpdateParams.OutputChannels.Value = inputChannels;
                 }
 
-                Output.Format = input.Format.WithChannels(Config.OutputChannels.Value);
+                Output.Format = input.Format.WithChannels(UpdateParams.OutputChannels.Value);
                 _logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}",
                     input.Format, Output.Format);
             }
@@ -67,15 +71,15 @@ namespace NewAudio.Nodes
             return Update();
         }
 
-        public override bool IsInputValid(AudioLoopRegionConfig next)
+        public override bool IsUpdateValid()
         {
-            return next.Input.Value!=null && 
-                   next.OutputChannels.Value>0 && 
-                   next.Input.Value.Format.Channels>0 && 
-                   next.Input.Value.Format.SampleCount>0;
+            return UpdateParams.Input.Value!=null && 
+                   UpdateParams.OutputChannels.Value>0 && 
+                   UpdateParams.Input.Value.Format.Channels>0 && 
+                   UpdateParams.Input.Value.Format.SampleCount>0;
         }
 
-        public override Task<bool> Create(AudioLoopRegionConfig config)
+        public override Task<bool> Create()
         {
             if (_processor != null)
             {
@@ -83,7 +87,7 @@ namespace NewAudio.Nodes
             }
             _processor = new TransformBlock<AudioDataMessage, AudioDataMessage>(input =>
             {
-                if (Config.Bypass.Value)
+                if (UpdateParams.Bypass.Value)
                 {
                     Array.Clear(input.Data, 0, input.BufferSize);
                     return input;
@@ -97,23 +101,23 @@ namespace NewAudio.Nodes
                 {
                     var channels = new AudioChannels();
 
-                    var inputBufferSize = Config.Input.Value.Format.BufferSize;
+                    var inputBufferSize = UpdateParams.Input.Value.Format.BufferSize;
                     if (input.BufferSize != inputBufferSize)
                     {
                         throw new Exception($"Expected Input size: {inputBufferSize}, actual: {input.BufferSize}");
                     }
 
-                    var samples = Config.Input.Value.Format.SampleCount;
+                    var samples = UpdateParams.Input.Value.Format.SampleCount;
                     var outputBufferSize = Output.Format.BufferSize;
                     var outputChannels = Output.Format.Channels;
-                    var inputChannels = Config.Input.Value.Format.Channels;
+                    var inputChannels = UpdateParams.Input.Value.Format.Channels;
 
                     _clock.Init(input.Time.DTime);
 
                     if (_state != null && _updateFunc != null)
                     {
                         channels.Update(output.Data, input.Data, outputChannels, inputChannels);
-                        var increment = 1.0d / Config.Input.Value.Format.SampleRate;
+                        var increment = 1.0d / UpdateParams.Input.Value.Format.SampleRate;
                         for (var i = 0; i < samples; i++)
                         {
                             channels.UpdateLoop(i, i);
@@ -149,7 +153,7 @@ namespace NewAudio.Nodes
             });
         }
 
-        public override bool Start()
+        public override bool Play()
         {
             Output.SourceBlock = _processor;
             _inputBufferLink = InputBufferBlock.LinkTo(_processor);
@@ -157,11 +161,11 @@ namespace NewAudio.Nodes
             return true;
         }
 
-        public override Task<bool> Stop()
+        public override bool Stop()
         {
             _inputBufferLink.Dispose();
             Output.SourceBlock = null;
-            return Task.FromResult(true);
+            return true;
         }
         
 

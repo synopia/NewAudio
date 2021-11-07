@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <FileAlignment>512</FileAlignment>
-        <LangVersion>8.0</LangVersion>
+        <LangVersion>9</LangVersion>
         <Platforms>AnyCPU</Platforms>
         <IsPackable>false</IsPackable>
         <TargetFramework>net472</TargetFramework>

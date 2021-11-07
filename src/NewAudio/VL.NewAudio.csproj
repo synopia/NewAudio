@@ -3,7 +3,7 @@
     <PropertyGroup>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         <FileAlignment>512</FileAlignment>
-        <LangVersion>8.0</LangVersion>
+        <LangVersion>9</LangVersion>
         <Platforms>AnyCPU</Platforms>
         <TargetFramework>net472</TargetFramework>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -51,6 +51,11 @@
         <Compile Remove="Core\AudioParam.cs" />
         <Compile Remove="Blocks\RingBufferBlock.cs" />
         <Compile Remove="Blocks\AudioBlock.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Include="Microsoft.VisualStudio.Threading, Version=16.10.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+        <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0526-gd606d93626\lib\Microsoft.VisualStudio.Threading.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

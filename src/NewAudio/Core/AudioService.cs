@@ -63,7 +63,6 @@ namespace NewAudio.Core
             return Graph.DebugInfo();
         }
         
-        /*
         public void Dispose() => Dispose(true);
         
         private bool _disposedValue;
@@ -75,13 +74,11 @@ namespace NewAudio.Core
             {
                 if (disposing)
                 {
-                    Graph.Dispose();
+                    // Graph.Dispose();
                 }
 
                 _disposedValue = disposing;
             }
         }
-        */
-
     }
 }

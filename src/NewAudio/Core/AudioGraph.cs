@@ -29,14 +29,14 @@ namespace NewAudio.Core
             foreach (var node in _nodes)
             {
                 
-                node.Config.Playing.Value = true;
+                node.UpdateParams.Playing.Value = true;
             }
         }
         public void StopAll()
         {
             foreach (var node in _nodes)
             {
-                node.Config.Playing.Value = false;
+                node.UpdateParams.Playing.Value = false;
             }
         }
 
@@ -79,7 +79,6 @@ namespace NewAudio.Core
             return $"Nodes: {_nodes.Count}, Links: {_links.Count}{nodes}";
         }
         
-        /*
         public void Dispose() => Dispose(true);
         
         private bool _disposedValue;
@@ -91,21 +90,36 @@ namespace NewAudio.Core
             {
                 if (disposing)
                 {
-                    foreach (var link in _links)
+                    var linkCopy = new List<AudioLink>(_links);
+                    
+                    foreach (var link in linkCopy)
                     {
-                        link.Dispose();
+                        try
+                        {
+                            link?.Dispose();
+                        }
+                        catch (ObjectDisposedException e)
+                        {
+                        }
                     }
-
-                    foreach (var node in _nodes)
+                    _links.Clear();
+                    var nodeCopy = new List<IAudioNode>(_nodes);
+                    foreach (var node in nodeCopy)
                     {
-                        node.Dispose();
+                        try
+                        {
+                            node?.Dispose();
+                        }
+                        catch (ObjectDisposedException e)
+                        {
+                        }
                     }
+                    _nodes.Clear();
                 }
 
                 _disposedValue = disposing;
             }
         }
-        */
 
     }
 }

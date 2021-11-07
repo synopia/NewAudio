@@ -43,6 +43,8 @@ namespace NewAudio.Blocks
             var name = $"Input Block {AudioService.Instance.Graph.GetNextId()}";
             Buffer = new CircularBuffer(name, config.NodeCount, 4 * config.AudioFormat.BufferSize);
             _buffer = new CircularBuffer(name);
+            
+            Start();
 
             return true;
         }
@@ -54,7 +56,7 @@ namespace NewAudio.Blocks
             return true;
         }
 
-        public void Start()
+        private void Start()
         {
             if (_task != null)
             {
@@ -65,9 +67,14 @@ namespace NewAudio.Blocks
             _token = _cancellationTokenSource.Token;
             
             _task = Task.Run(Loop, _token);
+            // var thread = new Thread(Loop);
+            
+            // thread.Priority = ThreadPriority.AboveNormal;
+            // thread.IsBackground = true;
+            
         }
 
-        public Task<bool> Stop()
+        private Task<bool> Stop()
         {
             if (_task == null)
             {

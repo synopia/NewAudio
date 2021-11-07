@@ -12,6 +12,8 @@ namespace NewAudio.Core
         private readonly CircularBuffer _buffer;
         private readonly ILogger _logger;
         private bool _firstLoop = true;
+        public bool GenerateSilence { get; set; }
+
 
         private CancellationToken _token;
         public CancellationToken CancellationToken
@@ -29,6 +31,7 @@ namespace NewAudio.Core
             _buffer = buffer;
             WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(waveFormat.SampleRate, waveFormat.Channels);
             _logger = AudioService.Instance.Logger.ForContext<AudioDataProvider>();
+            GenerateSilence = true;
         }
 
         public WaveFormat WaveFormat { get; }
@@ -47,23 +50,33 @@ namespace NewAudio.Core
                 AudioService.Instance.Logger.Verbose("IN AUDIO THREAD: {count}", count / 4);
                 // AudioService.Instance.Flow.PostRequest(new AudioDataRequestMessage(count/4/WaveFormat.Channels));
 
-                var pos = offset;
-                while (pos < count && !CancellationToken.IsCancellationRequested)
+                var pos = 0;
+                if (!GenerateSilence)
                 {
-                    var x = _buffer.Read(buffer, pos, 1);
-                    pos += x;
+                    while (pos < count && !CancellationToken.IsCancellationRequested && !GenerateSilence)
+                    {
+                        var x = _buffer.Read(buffer, pos+offset, 1);
+                        pos += x;
+                    }
                 }
 
+                if (GenerateSilence)
+                {
+                    Array.Clear(buffer, pos+offset,count-pos);
+                    pos += count - pos;
+                }
+                else
+                {
+                    if (CancellationToken.IsCancellationRequested)
+                    {
+                        _logger.Information("Audio output reader thread finished");
+                    }
+                }
+                
                 if (!CancellationToken.IsCancellationRequested && pos != count)
                 {
                     _logger.Warning("pos!=count: {p}!={c}", pos, count);
                 }
-
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    _logger.Information("Audio output reader thread finished");
-                }
-
                 return pos;
             }
             catch (Exception e)

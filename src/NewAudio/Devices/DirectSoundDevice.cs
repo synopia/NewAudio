@@ -43,25 +43,28 @@ namespace NewAudio.Devices
                 configResponse.PlayingWaveFormat = config.Playing.WaveFormat;
                 _logger.Information("DirectSound Out initialized.. ");
             }
+            _directSoundOut?.Play();
             return Task.FromResult(configResponse);
         }
 
-        public override Task<bool> Free()
+        public override bool Free()
         {
+            CancellationTokenSource?.Cancel();
+            _directSoundOut?.Stop();
             _directSoundOut?.Dispose();
-            return Task.FromResult(true);
+            return true;
         }
 
         public override bool Start()
         {
-            _directSoundOut?.Play();
+            GenerateSilence = false;
+            
             return true;
         }
 
         public override bool Stop()
         {
-            CancellationTokenSource?.Cancel();
-            _directSoundOut?.Stop();
+            GenerateSilence = true;
             return true;
         }
 
@@ -73,6 +76,7 @@ namespace NewAudio.Devices
                 if (disposing)
                 {
                     _directSoundOut?.Dispose();
+                    _directSoundOut = null;
                 }
 
                 _disposedValue = disposing;

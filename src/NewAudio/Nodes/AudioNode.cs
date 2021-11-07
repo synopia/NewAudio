@@ -8,7 +8,10 @@ using Serilog;
 
 namespace NewAudio.Nodes
 {
-    public class AudioNodeConfig: AudioParams
+    public class AudioNodeCreateParams: AudioParams
+    {
+    }
+    public class AudioNodeUpdateParams: AudioParams
     {
         public AudioParam<bool> Playing;
         public AudioParam<AudioLink> Input;
@@ -16,19 +19,22 @@ namespace NewAudio.Nodes
 
     public interface IAudioNode : IDisposable, ILifecycleDevice
     {
-        public AudioNodeConfig Config { get; }
+        public AudioNodeCreateParams CreateParams { get; }
+        public AudioNodeUpdateParams UpdateParams { get; }
         public string DebugInfo();
         public IEnumerable<string> ErrorMessages();
 
     }
-    public abstract class AudioNode<TConfig>: IAudioNode, ILifecycleDevice<TConfig, bool> where TConfig: AudioNodeConfig
+    public abstract class AudioNode<TCreate, TUpdate>: IAudioNode where TCreate: AudioNodeCreateParams where TUpdate: AudioNodeUpdateParams
     {
-        private readonly ILogger _logger = AudioService.Instance.Logger.ForContext<AudioNode<TConfig>>();
+        private readonly ILogger _logger = AudioService.Instance.Logger.ForContext<AudioNode<TCreate, TUpdate>>();
         
         private List<Exception> _exceptions = new List<Exception>();
         
-        public TConfig Config { get; }
-        AudioNodeConfig IAudioNode.Config => Config;
+        public TCreate CreateParams { get; }
+        public TUpdate UpdateParams { get; }
+        AudioNodeCreateParams IAudioNode.CreateParams => CreateParams;
+        AudioNodeUpdateParams IAudioNode.UpdateParams => UpdateParams;
         public AudioLink Output { get; } = new AudioLink();
 
         public BufferBlock<AudioDataMessage> InputBufferBlock { get; } = new BufferBlock<AudioDataMessage>(
@@ -40,12 +46,13 @@ namespace NewAudio.Nodes
         private IDisposable _inputLink;
         
         public LifecyclePhase Phase { get; set; }
-        public readonly LifecycleStateMachine<TConfig> Lifecycle;
+        public readonly LifecycleStateMachine Lifecycle;
         protected AudioNode()
         {
             AudioService.Instance.Graph.AddNode(this);
-            Lifecycle = new LifecycleStateMachine<TConfig>(this);
-            Config = (TConfig)Activator.CreateInstance(typeof(TConfig));
+            Lifecycle = new LifecycleStateMachine(this);
+            CreateParams = (TCreate)Activator.CreateInstance(typeof(TCreate));
+            UpdateParams = (TUpdate)Activator.CreateInstance(typeof(TUpdate));
         }
 
         public void ExceptionHappened(Exception exception, string method)
@@ -69,41 +76,35 @@ namespace NewAudio.Nodes
                     // Config.Input = null;
                 // }
             // }
-
-            if (Config.Input.HasChanged)
+            if (CreateParams.HasChanged)
             {
-                if (_inputLink != null && Config.Input.LastValue != null)
+                CreateParams.Commit();
+                Lifecycle.EventHappens(LifecycleEvents.eCreate);
+            }
+
+            if (UpdateParams.Input.HasChanged)
+            {
+                if (_inputLink != null && UpdateParams.Input.LastValue != null)
                 {
                     _inputLink.Dispose();
                     _inputLink = null;
-                } else if (_inputLink != null || Config.Input.LastValue != null)
+                } else if (_inputLink != null || UpdateParams.Input.LastValue != null)
                 {
                     _logger.Warning("Illegal input link found!");
                     _inputLink?.Dispose();
                     _inputLink = null;
                 }
 
-                if (Config.Input.Value != null)
+                if (UpdateParams.Input.Value != null)
                 {
-                    _inputLink = Config.Input.Value.SourceBlock.LinkTo(InputBufferBlock);
+                    _inputLink = UpdateParams.Input.Value.SourceBlock.LinkTo(InputBufferBlock);
                 }
             }
 
-            var sendPlaying = false;
-            if (Config.Playing.HasChanged)
+            if (UpdateParams.HasChanged)
             {
-                Config.Playing.Commit();
-                sendPlaying = true;
-            }
-            if (Config.HasChanged)
-            {
-                Config.Commit();
-                Lifecycle.EventHappens(LifecycleEvents.eCreate(Config));
-            }
-
-            if (sendPlaying)
-            {
-                Lifecycle.EventHappens(Config.Playing.Value ? LifecycleEvents.eStart : LifecycleEvents.eStop);
+                UpdateParams.Commit();
+                Lifecycle.EventHappens(UpdateParams.Playing.Value ? LifecycleEvents.ePlay : LifecycleEvents.eStop);
             }
 
             return Output;
@@ -119,12 +120,16 @@ namespace NewAudio.Nodes
             return _exceptions.Select(i=>i.Message);
         }
 
-        public abstract Task<bool> Create(TConfig config);
+        public abstract Task<bool> Create();
         public abstract Task<bool> Free();
-        public abstract bool Start();
-        public abstract Task<bool> Stop();
+        public abstract bool Play();
+        public abstract bool Stop();
 
-        public virtual bool IsInputValid(TConfig next)
+        public virtual bool IsCreateValid()
+        {
+            return true;
+        }
+        public virtual bool IsUpdateValid()
         {
             return true;
         }

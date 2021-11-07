@@ -18,9 +18,9 @@ namespace NewAudio.Devices
             return Task.FromResult(new DeviceConfigResponse());
         }
 
-        public override Task<bool> Free()
+        public override bool Free()
         {
-            return Task.FromResult(true);
+            return true;
         }
 
         public override bool Start()

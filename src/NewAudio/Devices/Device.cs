@@ -46,7 +46,7 @@ namespace NewAudio.Devices
 
         public Task<DeviceConfigResponse> Create(DeviceConfigRequest request);
 
-        public Task<bool> Free();
+        public bool Free();
         public bool Start();
         public bool Stop();
     }
@@ -54,6 +54,20 @@ namespace NewAudio.Devices
     public abstract class BaseDevice : IDevice
     {
         public AudioDataProvider AudioDataProvider { get; protected set; }
+
+        private bool _generateSilence;
+        public bool GenerateSilence
+        {
+            get => _generateSilence;
+            set
+            {
+                _generateSilence = value;
+                if (AudioDataProvider != null)
+                {
+                    AudioDataProvider.GenerateSilence = value;
+                }
+            }
+        }
 
         public string Name { get; protected set; }
 
@@ -63,10 +77,10 @@ namespace NewAudio.Devices
         protected CancellationTokenSource CancellationTokenSource;
         
         public abstract Task<DeviceConfigResponse> Create(DeviceConfigRequest config);
-        public abstract Task<bool> Free();
+        public abstract bool Free();
         public abstract bool Start();
         public abstract bool Stop();
-
+        
         private bool _disposedValue;
         public void Dispose() => Dispose(true);
         protected virtual void Dispose(bool disposing)

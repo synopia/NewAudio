@@ -27,6 +27,7 @@ namespace NewAudio.Devices
 
         public override Task<DeviceConfigResponse> Create(DeviceConfigRequest config)
         {
+            CancellationTokenSource = new CancellationTokenSource();
             var configResponse = new DeviceConfigResponse()
             {
                 SupportedSamplingFrequencies = Enum.GetValues(typeof(SamplingFrequency)).Cast<SamplingFrequency>()
@@ -35,12 +36,16 @@ namespace NewAudio.Devices
 
             if (IsOutputDevice && config.IsPlaying)
             {
-                AudioDataProvider = new AudioDataProvider(config.Playing.WaveFormat, config.Playing.Buffer);
+                AudioDataProvider = new AudioDataProvider(config.Playing.WaveFormat, config.Playing.Buffer)
+                {
+                    CancellationToken = CancellationTokenSource.Token
+                };
                 _waveOut = new WaveOutEvent { DeviceNumber = _handle, DesiredLatency = config.Playing.Latency};
-                _waveOut?.Init(AudioDataProvider);
+                _waveOut.Init(AudioDataProvider);
                 configResponse.PlayingChannels = 2;
                 configResponse.DriverPlayingChannels = 2;
                 configResponse.PlayingWaveFormat = config.Playing.WaveFormat;
+                _waveOut.Play();
             } else if (IsInputDevice && config.IsRecording)
             {
                 _waveIn = new WaveInEvent
@@ -50,35 +55,32 @@ namespace NewAudio.Devices
                 _waveIn.DataAvailable += DataAvailable;
                 configResponse.RecordingChannels = 2;
                 configResponse.DriverRecordingChannels = 2;
-
+                _waveIn.StartRecording();
             }
             return Task.FromResult(configResponse);
 
         }
 
-        public override Task<bool> Free()
+        public override bool Free()
         {
             CancellationTokenSource?.Cancel();
             _waveIn?.StopRecording();
             _waveOut?.Stop();
+            _waveIn?.Dispose();
             _waveOut?.Dispose();
 
-            return Task.FromResult(true);
+            return true;
         }
 
         public override bool Start()
         {
-            CancellationTokenSource = new CancellationTokenSource();
-            _waveIn?.StartRecording();
-            _waveOut?.Play();
+            GenerateSilence = false;
             return true;
         }
 
         public override bool Stop()
         {
-            CancellationTokenSource?.Cancel();
-            _waveIn?.StopRecording();
-            _waveOut?.Stop();
+            GenerateSilence = true;
             return true;
         }
 
@@ -99,7 +101,11 @@ namespace NewAudio.Devices
             {
                 if (disposing)
                 {
+                    _waveIn?.Dispose();
                     _waveOut?.Dispose();
+                    _waveOut = null;
+                    _waveIn = null;
+                    
                 }
 
                 _disposedValue = disposing;

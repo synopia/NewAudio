@@ -43,6 +43,8 @@ namespace NewAudio.Blocks
             _buffer = new CircularBuffer(name, config.NodeCount, 4 * InputFormat.BufferSize);
             Buffer = new CircularBuffer(name);
 
+            Start();
+            
             return true;
         }
 
@@ -54,7 +56,7 @@ namespace NewAudio.Blocks
         }
 
 
-        public void Start()
+        private void Start()
         {
             if (_actionBlock != null)
             {
@@ -68,7 +70,7 @@ namespace NewAudio.Blocks
             CreateActionBlock();
         }
 
-        public Task<bool> Stop()
+        private Task<bool> Stop()
         {
             if (_actionBlock == null)
             {

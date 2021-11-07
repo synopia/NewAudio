@@ -38,12 +38,12 @@ namespace NewAudio.Devices
             };
             CancellationTokenSource = new CancellationTokenSource();
             
-      
             if (config.IsPlaying && config.IsRecording)
             {
                 AudioDataProvider = new AudioDataProvider(config.Playing.WaveFormat, config.Playing.Buffer)
                     {
-                        CancellationToken = CancellationTokenSource.Token
+                        CancellationToken = CancellationTokenSource.Token,
+                        GenerateSilence = GenerateSilence
                     };
 
                 _asioOut.InitRecordAndPlayback(AudioDataProvider, config.Recording.Channels,
@@ -73,7 +73,8 @@ namespace NewAudio.Devices
             {
                 AudioDataProvider = new AudioDataProvider(config.Playing.WaveFormat, config.Playing.Buffer)
                     {
-                        CancellationToken = CancellationTokenSource.Token
+                        CancellationToken = CancellationTokenSource.Token,
+                        GenerateSilence = GenerateSilence
                     };
 
                 _asioOut.Init(AudioDataProvider);
@@ -82,33 +83,30 @@ namespace NewAudio.Devices
                 configResponse.Latency = _asioOut.PlaybackLatency;
                 configResponse.FrameSize = _asioOut.FramesPerBuffer;
             }
-
+            _asioOut.Play();
             return Task.FromResult(configResponse);
         }
 
-        public override Task<bool> Free()
-        {
-            CancellationTokenSource?.Cancel();
-            _asioOut?.Dispose();
-            return Task.FromResult(true);
-        }
-
-        public override bool Start()
-        {
-            CancellationTokenSource = new CancellationTokenSource();
-            AudioDataProvider.CancellationToken = CancellationTokenSource.Token;
-            _asioOut?.Play();
-            return true;
-        }
-
-        public override bool Stop()
+        public override bool Free()
         {
             CancellationTokenSource?.Cancel();
             if (_asioOut != null && _asioOut.PlaybackState != PlaybackState.Stopped)
             {
                 _asioOut.Stop();
             }
+            _asioOut?.Dispose();
+            return true;
+        }
 
+        public override bool Start()
+        {
+            GenerateSilence = false;
+            return true;
+        }
+
+        public override bool Stop()
+        {
+            GenerateSilence = true;
             return true;
         }
 
@@ -131,9 +129,10 @@ namespace NewAudio.Devices
             {
                 if (disposing)
                 {
+                    CancellationTokenSource.Cancel();
                     _asioOut?.Stop();
                     _asioOut?.Dispose();
-                    CancellationTokenSource.Cancel();
+                    _asioOut = null;
                 }
 
                 _disposedValue = disposing;

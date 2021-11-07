@@ -55,11 +55,11 @@ namespace NewAudioTest
                 return true;
             }
 
-            public Task<bool> Free()
+            public bool Free()
             {
                 Threads.Add(Thread.CurrentThread.ManagedThreadId);
                 MethodCalls.Add("Free");
-                return Task.FromResult(true);
+                return true;
             }
 
             public bool Start()
@@ -137,8 +137,8 @@ namespace NewAudioTest
             _input.Update(null);
             _output.Update(null, null);
             Wait();
-            Assert.AreEqual(LifecyclePhase.Invalid, _output.Phase);
-            Assert.AreEqual(LifecyclePhase.Invalid, _input.Phase);
+            Assert.AreEqual(LifecyclePhase.Uninitialized, _output.Phase);
+            Assert.AreEqual(LifecyclePhase.Uninitialized, _input.Phase);
 
             _input.Update(_inputEnum);
             _output.Update(_input.Output, _outputEnum);
@@ -147,32 +147,32 @@ namespace NewAudioTest
             Assert.AreEqual(LifecyclePhase.Created, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Created, _output.Phase);
 
-            _input.Config.Playing.Value = true;
-            _output.Config.Playing.Value = true;
+            _input.UpdateParams.Playing.Value = true;
+            _output.UpdateParams.Playing.Value = true;
             _input.Update(_inputEnum);
             _output.Update(_input.Output, _outputEnum);
             Wait();
             Assert.AreEqual(LifecyclePhase.Playing, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Playing, _output.Phase);
 
-            _input.Config.Playing.Value = true;
-            _output.Config.Playing.Value = true;
+            _input.UpdateParams.Playing.Value = true;
+            _output.UpdateParams.Playing.Value = true;
             _input.Update(_inputEnum);
             _output.Update(_input.Output, _outputEnum);
             Wait();
             Assert.AreEqual(LifecyclePhase.Playing, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Playing, _output.Phase);
 
-            _input.Config.Playing.Value = false;
-            _output.Config.Playing.Value = false;
+            _input.UpdateParams.Playing.Value = false;
+            _output.UpdateParams.Playing.Value = false;
             _input.Update(_inputEnum);
             _output.Update(_input.Output, _outputEnum);
             Wait();
             Assert.AreEqual(LifecyclePhase.Created, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Created, _output.Phase);
 
-            _input.Config.Playing.Value = true;
-            _output.Config.Playing.Value = true;
+            _input.UpdateParams.Playing.Value = true;
+            _output.UpdateParams.Playing.Value = true;
             _input.Update(_inputEnum);
             _output.Update(_input.Output, _outputEnum);
             Wait();
@@ -180,9 +180,9 @@ namespace NewAudioTest
             Assert.AreEqual(LifecyclePhase.Playing, _output.Phase);
 
             Log.Logger.Warning("{x}", _inputDevice.MethodCalls);
-            Assert.AreEqual(new[] { "InitRecording", "Record", "Stop", "Record" }, _inputDevice.MethodCalls,
+            Assert.AreEqual(new[] { "InitRecording", "Record" }, _inputDevice.MethodCalls,
                 string.Join(", ", _inputDevice.MethodCalls));
-            Assert.AreEqual(new[] { "InitPlayback", "Play", "Stop", "Play" }, _outputDevice.MethodCalls,
+            Assert.AreEqual(new[] { "InitPlayback", "Play" }, _outputDevice.MethodCalls,
                 string.Join(", ", _outputDevice.MethodCalls));
 
             // Assert.AreEqual(1, _inputDevice.Threads.Distinct().Count());
@@ -201,16 +201,16 @@ namespace NewAudioTest
             _input = new InputDevice();
             _output = new OutputDevice();
 
-            _input.Config.Playing.Value = true;
-            _output.Config.Playing.Value = true;
+            _input.UpdateParams.Playing.Value = true;
+            _output.UpdateParams.Playing.Value = true;
             _input.Update(_inputEnum, SamplingFrequency.Hz8000, 1);
             _output.Update(_input.Output, _outputEnum, SamplingFrequency.Hz8000, 1);
             Wait();
             Assert.AreEqual(LifecyclePhase.Playing, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Playing, _output.Phase);
 
-            _input.Config.Playing.Value = false;
-            _output.Config.Playing.Value = false;
+            _input.UpdateParams.Playing.Value = false;
+            _output.UpdateParams.Playing.Value = false;
             _input.Update(_inputEnum, SamplingFrequency.Hz8000, 1);
             _output.Update(_input.Output, _outputEnum, SamplingFrequency.Hz8000, 1);
             Wait();
@@ -223,8 +223,8 @@ namespace NewAudioTest
             Assert.AreEqual(LifecyclePhase.Created, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Created, _output.Phase);
 
-            _input.Config.Playing.Value = true;
-            _output.Config.Playing.Value = true;
+            _input.UpdateParams.Playing.Value = true;
+            _output.UpdateParams.Playing.Value = true;
             _input.Update(_inputEnum, SamplingFrequency.Hz8000, 1);
             _output.Update(_input.Output, _outputEnum, SamplingFrequency.Hz8000, 1);
             Wait();

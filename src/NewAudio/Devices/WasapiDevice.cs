@@ -39,6 +39,7 @@ namespace NewAudio.Devices
         public override Task<DeviceConfigResponse> Create(DeviceConfigRequest config)
         {
             CancellationTokenSource = new CancellationTokenSource();
+            _firstLoop = true;
             var configResponse = new DeviceConfigResponse()
             {
                 SupportedSamplingFrequencies = Enum.GetValues(typeof(SamplingFrequency)).Cast<SamplingFrequency>()
@@ -56,6 +57,7 @@ namespace NewAudio.Devices
                 configResponse.PlayingWaveFormat = _wavePlayer.OutputWaveFormat;
                 configResponse.PlayingChannels = 2;
                 configResponse.DriverPlayingChannels = 2;
+                _wavePlayer.Play();
             }
             else if (IsInputDevice && config.IsRecording)
             {
@@ -68,6 +70,7 @@ namespace NewAudio.Devices
                     _loopback = new WasapiLoopbackCapture(device);
                     _loopback.DataAvailable += DataAvailable;
                     config.Recording.WaveFormat = _loopback.WaveFormat;
+                    _loopback.StartRecording();
                 }
                 else if (IsInputDevice)
                 {
@@ -78,6 +81,7 @@ namespace NewAudio.Devices
                     };
                     _capture.DataAvailable += DataAvailable;
                     config.Recording.WaveFormat = _capture.WaveFormat;
+                    _capture.StartRecording();
                 }
 
                 _recording = new DeviceConfig()
@@ -85,11 +89,11 @@ namespace NewAudio.Devices
                     Buffer = config.Recording.Buffer
                 };
             }
-
+            
             return Task.FromResult(configResponse);
         }
 
-        public override Task<bool> Free()
+        public override bool Free()
         {
             CancellationTokenSource?.Cancel();
 
@@ -99,31 +103,18 @@ namespace NewAudio.Devices
             _loopback?.Dispose();
             _capture?.Dispose();
             _wavePlayer?.Dispose();
-            return Task.FromResult(true);
+            return true;
         }
 
         public override bool Start()
         {
-            CancellationTokenSource = new CancellationTokenSource();
-            if (AudioDataProvider != null)
-            {
-                AudioDataProvider.CancellationToken = CancellationTokenSource.Token;
-            }
-
-            _firstLoop = true;
-            _wavePlayer?.Play();
-            _loopback?.StartRecording();
-            _capture?.StartRecording();
-
+            GenerateSilence = false;
             return true;
         }
 
         public override bool Stop()
         {
-            _loopback?.StopRecording();
-            _capture?.StopRecording();
-            _wavePlayer?.Stop();
-            CancellationTokenSource?.Cancel();
+            GenerateSilence = true;
             return true;
         }
 
@@ -147,7 +138,7 @@ namespace NewAudio.Devices
                 var pos = 0;
                 var token = CancellationTokenSource.Token;
 
-                while (pos < evt.BytesRecorded && !token.IsCancellationRequested)
+                while (pos < evt.BytesRecorded && !token.IsCancellationRequested && !GenerateSilence)
                 {
                     var toCopy = Math.Min(_temp.Length - _tempPos, remaining);
                     Array.Copy(evt.Buffer, pos, _temp, _tempPos, toCopy);
@@ -159,7 +150,7 @@ namespace NewAudio.Devices
                     {
                         var written = _recording.Buffer.Write(_temp);
                         _tempPos = 0;
-                        if (written != _temp.Length)
+                        if (written != _temp.Length && !GenerateSilence)
                         {
                             _logger.Warning("Wrote to few bytes ({wrote}, expected: {expected})", written,
                                 _temp.Length);
@@ -167,9 +158,12 @@ namespace NewAudio.Devices
                     }
                 }
 
-                if (pos != evt.BytesRecorded && !token.IsCancellationRequested)
+                if (!GenerateSilence)
                 {
-                    _logger.Warning("pos!=buf {p}!={inc}", pos, evt.BytesRecorded);
+                    if (pos != evt.BytesRecorded && !token.IsCancellationRequested)
+                    {
+                        _logger.Warning("pos!=buf {p}!={inc}", pos, evt.BytesRecorded);
+                    }
                 }
             }
             catch (Exception e)
@@ -190,6 +184,9 @@ namespace NewAudio.Devices
                     _loopback?.Dispose();
                     _capture?.Dispose();
                     _wavePlayer?.Dispose();
+                    _loopback = null;
+                    _capture = null;
+                    _wavePlayer = null;
                 }
 
                 _disposedValue = disposing;
