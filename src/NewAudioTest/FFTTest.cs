@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using NewAudio.Core;
 using NewAudio.Devices;
 using NewAudio.Nodes;
@@ -19,6 +20,10 @@ namespace NewAudioTest
             var output = new OutputDevice();
             var output2 = new OutputDevice();
             var fft = new ForwardFFT();
+            WaitHandle[] handles = {
+                input.Lifecycle.WaitForEvents, output.Lifecycle.WaitForEvents, output2.Lifecycle.WaitForEvents,
+                fft.Lifecycle.WaitForEvents
+            }; 
             Assert.IsNull(input.ErrorMessages());
             Assert.IsNull(output.ErrorMessages());
             Assert.IsNull(output2.ErrorMessages());
@@ -28,6 +33,8 @@ namespace NewAudioTest
             fft.Update(input.Output, 1024);
             output2.Update(null,  outputNullEnum, SamplingFrequency.Hz48000, 0, 1);
             output.Update(fft.Output, outputNullEnum, SamplingFrequency.Hz48000, 0, 1);
+            WaitHandle.WaitAll(handles);
+            
             Assert.IsNull(fft.ErrorMessages());
             Assert.IsNull(output2.ErrorMessages());
             Assert.IsNull(output.ErrorMessages());
@@ -36,12 +43,16 @@ namespace NewAudioTest
             Assert.AreEqual(LifecyclePhase.Invalid, output2.Phase);
             Assert.AreEqual(LifecyclePhase.Created, output.Phase);
 
-            Task.Delay(10).GetAwaiter().GetResult();
             input.Update(inputNullEnum, SamplingFrequency.Hz48000, 0, 1);
+            WaitHandle.WaitAll(handles);
+          
             fft.Update(input.Output, 1024);
-            output2.Update(fft.Output, outputNullEnum, SamplingFrequency.Hz48000, 0, 1);
+            WaitHandle.WaitAll(handles);
             output.Update(null, outputNullEnum, SamplingFrequency.Hz48000, 0, 1);
-
+            WaitHandle.WaitAll(handles);
+            output2.Update(fft.Output, outputNullEnum, SamplingFrequency.Hz48000, 0, 1);
+            WaitHandle.WaitAll(handles);
+            
             Assert.AreEqual(LifecyclePhase.Created, fft.Phase);
             Assert.AreEqual(LifecyclePhase.Invalid, output.Phase);
             Assert.AreEqual(LifecyclePhase.Created, output2.Phase);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
@@ -17,7 +18,7 @@ namespace NewAudio.Nodes
     {
         public AudioNodeConfig Config { get; }
         public string DebugInfo();
-        public string ErrorMessages();
+        public IEnumerable<string> ErrorMessages();
 
     }
     public abstract class AudioNode<TConfig>: IAudioNode, ILifecycleDevice<TConfig, bool> where TConfig: AudioNodeConfig
@@ -39,10 +40,11 @@ namespace NewAudio.Nodes
         private IDisposable _inputLink;
         
         public LifecyclePhase Phase { get; set; }
-        public readonly LifecycleStateMachine<TConfig> Lifecycle = new LifecycleStateMachine<TConfig>();
+        public readonly LifecycleStateMachine<TConfig> Lifecycle;
         protected AudioNode()
         {
             AudioService.Instance.Graph.AddNode(this);
+            Lifecycle = new LifecycleStateMachine<TConfig>(this);
             Config = (TConfig)Activator.CreateInstance(typeof(TConfig));
         }
 
@@ -50,6 +52,7 @@ namespace NewAudio.Nodes
         {
             if (!_exceptions.Exists(e => e.Message == exception.Message))
             {
+                _logger.Error("{e}", exception);
                 _exceptions.Add(exception);
                 // throw exception;
             }
@@ -84,21 +87,23 @@ namespace NewAudio.Nodes
                 {
                     _inputLink = Config.Input.Value.SourceBlock.LinkTo(InputBufferBlock);
                 }
-                else
-                {
-                    _logger.Error("Cant happen!");
-                }
-                Config.Input.Commit();
             }
+
+            var sendPlaying = false;
             if (Config.Playing.HasChanged)
             {
                 Config.Playing.Commit();
-                Lifecycle.EventHappens(Config.Playing.Value ? LifecycleEvents.eStart : LifecycleEvents.eStop, this);
+                sendPlaying = true;
             }
             if (Config.HasChanged)
             {
                 Config.Commit();
-                Lifecycle.EventHappens(LifecycleEvents.eCreate(Config), this);
+                Lifecycle.EventHappens(LifecycleEvents.eCreate(Config));
+            }
+
+            if (sendPlaying)
+            {
+                Lifecycle.EventHappens(Config.Playing.Value ? LifecycleEvents.eStart : LifecycleEvents.eStop);
             }
 
             return Output;
@@ -109,15 +114,15 @@ namespace NewAudio.Nodes
             return null;
         }
 
-        public string ErrorMessages()
+        public IEnumerable<string> ErrorMessages()
         {
-            return _exceptions.Count > 0 ? string.Join(", ", _exceptions) : null;
+            return _exceptions.Select(i=>i.Message);
         }
 
         public abstract Task<bool> Create(TConfig config);
         public abstract Task<bool> Free();
         public abstract bool Start();
-        public abstract bool Stop();
+        public abstract Task<bool> Stop();
 
         public virtual bool IsInputValid(TConfig next)
         {

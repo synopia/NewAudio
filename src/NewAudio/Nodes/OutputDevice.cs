@@ -35,7 +35,7 @@ namespace NewAudio.Nodes
 
         private int _counter;
         private long _lag;
-        private double _lagMs;
+        public double LagMs { get; private set; }
         
         public OutputDevice()
         {
@@ -53,7 +53,7 @@ namespace NewAudio.Nodes
                 _counter++;
                 if (_counter > 100)
                 {
-                    _lagMs = TimeSpan.FromTicks(_lag / 100).TotalMilliseconds;
+                    LagMs = TimeSpan.FromTicks(_lag / 100).TotalMilliseconds;
                     _lag = 0;
                     _counter = 0;
                 }
@@ -124,10 +124,10 @@ namespace NewAudio.Nodes
             return true;
         }
 
-        public override bool Stop()
+        public override async Task<bool> Stop()
         {
             // Output.SourceBlock = null;
-            _audioOutputBlock.Stop();
+            await _audioOutputBlock.Stop();
             _inputBufferLink.Dispose();
             _device.Stop();
             _inputBufferLink = null;

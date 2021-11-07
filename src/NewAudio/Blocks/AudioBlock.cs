@@ -16,7 +16,7 @@ namespace NewAudio.Blocks
 
         protected AudioBlock()
         {
-            Lifecycle.EventHappens(LifecycleEvents.eCreate, this);
+            Lifecycle.EventHappens(LifecycleEvents.eCreate);
         }
 
         public ISourceBlock<AudioDataMessage> Source { get; protected set; }

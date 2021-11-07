@@ -94,6 +94,7 @@ namespace NewAudio.Nodes
             _logger.Information("Created, internal: {outFormat} fft={fftLength} {inFormat}", fftFormat, Config.FFTLength,
                 input.Format);
 
+            Output.Format = input.Format;
             _batchBlock = new BatchBlock<AudioDataMessage>(1 * Config.FFTLength.Value / input.Format.BufferSize);
 
             _link1 = _batchBlock.LinkTo(_processor);
@@ -128,11 +129,11 @@ namespace NewAudio.Nodes
             return true;
         }
 
-        public override bool Stop()
+        public override Task<bool> Stop()
         {
             _inputBufferLink.Dispose();
             Output.SourceBlock = null;
-            return true;
+            return Task.FromResult(true);
         }
 
         /*

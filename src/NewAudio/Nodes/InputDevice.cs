@@ -93,10 +93,10 @@ namespace NewAudio.Nodes
             return true;
         }
 
-        public override bool Stop()
+        public override async Task<bool> Stop()
         {
             Output.SourceBlock = null;
-            _audioInputBlock.Stop();
+            await _audioInputBlock.Stop();
             _device.Stop();
             return true;
         }

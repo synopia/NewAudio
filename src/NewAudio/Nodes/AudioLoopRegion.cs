@@ -157,11 +157,11 @@ namespace NewAudio.Nodes
             return true;
         }
 
-        public override bool Stop()
+        public override Task<bool> Stop()
         {
             _inputBufferLink.Dispose();
             Output.SourceBlock = null;
-            return true;
+            return Task.FromResult(true);
         }
         
 

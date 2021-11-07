@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Abodit.StateMachine;
 using Serilog;
@@ -19,7 +22,7 @@ namespace NewAudio.Core
         LifecyclePhase Phase { get; set; }
         Task<bool> Free();
         bool Start();
-        bool Stop();
+        Task<bool> Stop();
 
         void ExceptionHappened(Exception e, string method);
     }
@@ -165,7 +168,7 @@ namespace NewAudio.Core
                 .When(LifecycleEvents.eCreateIntern, async (m, s, e, c) =>
                 {
                     var config = ((CreateEvent<TConfig>)e).Config;
-                    var res = c.Stop();
+                    var res =await c.Stop();
                     res = res && await c.Free();
                     var inputValid = c.IsInputValid(config);
                     if (!inputValid)
@@ -179,25 +182,62 @@ namespace NewAudio.Core
                 })
                 .When(LifecycleEvents.eFree, async (m, s, e, c) =>
                 {
-                    var res = c.Stop();
+                    var res = await c.Stop();
                     res = res && await c.Free();
                     return res ? Uninitialized : Erroneous;
                 })
                 .When(LifecycleEvents.eStop,
-                    (m, s, e, c) => { return c.Stop() ? Task.FromResult(Created) : Task.FromResult(Erroneous); });
+                    async (m, s, e, c) =>
+                    {
+                        // return c.Stop() ? Task.FromResult(Created) : Task.FromResult(Erroneous);
+                        return await c.Stop() ? Created : Erroneous;
+                    });
         }
 
         private readonly ExceptionHandler _handler = new ExceptionHandler();
+        private Queue<Event> _events = new Queue<Event>();
+        public ManualResetEvent  WaitForEvents = new ManualResetEvent(false); 
 
-        public LifecycleStateMachine() : base(Uninitialized)
-        {
-        }
-
-        public override Task EventHappens(Event @event, ILifecycleDevice<TConfig, bool> context)
+        public LifecycleStateMachine(ILifecycleDevice<TConfig, bool> context) : base(Uninitialized)
         {
             _handler.Device = context;
-            
-            return base.EventHappens(@event, _handler);
+            EventHappened += (arg) =>
+            {
+                Event next=null;
+                lock (_events)
+                {
+                    _events.Dequeue();
+                    if (!_events.IsEmpty())
+                    {
+                        next = _events.Peek();
+                    }
+                }
+
+                if (next != null)
+                {
+                    base.EventHappens(next, _handler);
+                }
+                else
+                {
+                    WaitForEvents.Set();
+                }
+            };
+        }
+
+        public void EventHappens(Event @event)
+        {
+            var empty = false;
+            WaitForEvents.Reset();
+            lock (_events)
+            {
+                empty = _events.IsEmpty();
+                _events.Enqueue(@event);
+            }
+
+            if (empty)
+            {
+                base.EventHappens(@event, _handler);
+            }
         }
 
         private class ExceptionHandler : ILifecycleDevice<TConfig, bool>
@@ -258,7 +298,7 @@ namespace NewAudio.Core
                 }
             }
 
-            public bool Stop()
+            public Task<bool> Stop()
             {
                 try
                 {
@@ -270,7 +310,7 @@ namespace NewAudio.Core
                 catch (Exception e)
                 {
                     ExceptionHappened(e, "StopProcessing");
-                    return false;
+                    return Task.FromResult(false);
                 }
             }
 

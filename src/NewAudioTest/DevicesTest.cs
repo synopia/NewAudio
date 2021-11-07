@@ -29,6 +29,7 @@ namespace NewAudioTest
         {
             public List<string> MethodCalls = new List<string>();
             public List<int> Threads = new List<int>();
+
             public void Dispose()
             {
                 MethodCalls.Add("Dispose");
@@ -63,7 +64,6 @@ namespace NewAudioTest
 
             public bool Start()
             {
-                
                 Threads.Add(Thread.CurrentThread.ManagedThreadId);
                 MethodCalls.Add(_isPlaying ? "Play" : "Record");
                 return true;
@@ -88,7 +88,7 @@ namespace NewAudioTest
                 _isRecording = config.IsRecording;
 
                 // await Task.Delay(1);
-                MethodCalls.Add(_isPlaying ? "InitPlayback" : "InitRecording");
+                MethodCalls.Add(_isPlaying ? $"InitPlayback" : $"InitRecording");
                 return Task.FromResult(new DeviceConfigResponse());
             }
         }
@@ -121,21 +121,29 @@ namespace NewAudioTest
             Assert.AreEqual("TEST OUTPUT", _outputDevice.Name);
         }
 
+        private void Wait()
+        {
+            _input.Lifecycle.WaitForEvents.WaitOne();
+            _output.Lifecycle.WaitForEvents.WaitOne();
+        }
+
         [Test]
         public void TestLifecyclePlayStopPlay()
         {
             var mainThreadId = Thread.CurrentThread.ManagedThreadId;
-            
+
             _input = new InputDevice();
             _output = new OutputDevice();
             _input.Update(null);
             _output.Update(null, null);
+            Wait();
             Assert.AreEqual(LifecyclePhase.Invalid, _output.Phase);
             Assert.AreEqual(LifecyclePhase.Invalid, _input.Phase);
 
             _input.Update(_inputEnum);
             _output.Update(_input.Output, _outputEnum);
 
+            Wait();
             Assert.AreEqual(LifecyclePhase.Created, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Created, _output.Phase);
 
@@ -143,6 +151,7 @@ namespace NewAudioTest
             _output.Config.Playing.Value = true;
             _input.Update(_inputEnum);
             _output.Update(_input.Output, _outputEnum);
+            Wait();
             Assert.AreEqual(LifecyclePhase.Playing, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Playing, _output.Phase);
 
@@ -150,6 +159,7 @@ namespace NewAudioTest
             _output.Config.Playing.Value = true;
             _input.Update(_inputEnum);
             _output.Update(_input.Output, _outputEnum);
+            Wait();
             Assert.AreEqual(LifecyclePhase.Playing, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Playing, _output.Phase);
 
@@ -157,6 +167,7 @@ namespace NewAudioTest
             _output.Config.Playing.Value = false;
             _input.Update(_inputEnum);
             _output.Update(_input.Output, _outputEnum);
+            Wait();
             Assert.AreEqual(LifecyclePhase.Created, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Created, _output.Phase);
 
@@ -164,6 +175,7 @@ namespace NewAudioTest
             _output.Config.Playing.Value = true;
             _input.Update(_inputEnum);
             _output.Update(_input.Output, _outputEnum);
+            Wait();
             Assert.AreEqual(LifecyclePhase.Playing, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Playing, _output.Phase);
 
@@ -172,11 +184,11 @@ namespace NewAudioTest
                 string.Join(", ", _inputDevice.MethodCalls));
             Assert.AreEqual(new[] { "InitPlayback", "Play", "Stop", "Play" }, _outputDevice.MethodCalls,
                 string.Join(", ", _outputDevice.MethodCalls));
-            
-            Assert.AreEqual(1, _inputDevice.Threads.Distinct().Count());
-            Assert.AreEqual(mainThreadId, _inputDevice.Threads[0]);
-            Assert.AreEqual(1, _outputDevice.Threads.Distinct().Count());
-            Assert.AreEqual(mainThreadId, _outputDevice.Threads[0]);
+
+            // Assert.AreEqual(1, _inputDevice.Threads.Distinct().Count());
+            // Assert.AreEqual(mainThreadId, _inputDevice.Threads[0]);
+            // Assert.AreEqual(1, _outputDevice.Threads.Distinct().Count());
+            // Assert.AreEqual(mainThreadId, _outputDevice.Threads[0]);
             _inputDevice.Dispose();
             _outputDevice.Dispose();
         }
@@ -191,50 +203,66 @@ namespace NewAudioTest
 
             _input.Config.Playing.Value = true;
             _output.Config.Playing.Value = true;
-             _input.Update(_inputEnum);
-             _output.Update(_input.Output, _outputEnum);
+            _input.Update(_inputEnum, SamplingFrequency.Hz8000, 1);
+            _output.Update(_input.Output, _outputEnum, SamplingFrequency.Hz8000, 1);
+            Wait();
             Assert.AreEqual(LifecyclePhase.Playing, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Playing, _output.Phase);
-            
+
             _input.Config.Playing.Value = false;
             _output.Config.Playing.Value = false;
-             _input.Update(_inputEnum);
-             _output.Update(_input.Output, _outputEnum);
+            _input.Update(_inputEnum, SamplingFrequency.Hz8000, 1);
+            _output.Update(_input.Output, _outputEnum, SamplingFrequency.Hz8000, 1);
+            Wait();
             Assert.AreEqual(LifecyclePhase.Created, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Created, _output.Phase);
-            
-             _input.Update(_inputNullEnum);
-             _output.Update(_input.Output, _outputNullEnum);
+
+            _input.Update(_inputNullEnum, SamplingFrequency.Hz8000, 2);
+            _output.Update(_input.Output, _outputNullEnum, SamplingFrequency.Hz8000, 2);
+            Wait();
             Assert.AreEqual(LifecyclePhase.Created, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Created, _output.Phase);
 
             _input.Config.Playing.Value = true;
             _output.Config.Playing.Value = true;
-             _input.Update(_inputEnum);
-             _output.Update(_input.Output, _outputEnum);
+            _input.Update(_inputEnum, SamplingFrequency.Hz8000, 1);
+            _output.Update(_input.Output, _outputEnum, SamplingFrequency.Hz8000, 1);
+            Wait();
             Assert.AreEqual(LifecyclePhase.Playing, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Playing, _output.Phase);
 
-             _output.Update(_input.Output, _outputNullEnum);
-             _output.Update(_input.Output, _outputEnum);
+            _output.Update(_input.Output, _outputNullEnum, SamplingFrequency.Hz8000, 2);
+            Wait();
+            _output.Update(_input.Output, _outputEnum, SamplingFrequency.Hz8000, 1);
+            Wait();
 
-             _input.Update(_inputNullEnum);
-             _input.Update(_inputEnum);
+            _input.Update(_inputNullEnum, SamplingFrequency.Hz8000, 2);
+            Wait();
+            _input.Update(_inputEnum, SamplingFrequency.Hz8000, 1);
+
+            Wait();
             Assert.AreEqual(LifecyclePhase.Playing, _input.Phase);
             Assert.AreEqual(LifecyclePhase.Playing, _output.Phase);
 
             Assert.AreEqual(
                 new[]
                 {
-                    "InitRecording", "Record", "Stop","Free", "InitRecording", "Record", "Stop", "Free", "InitRecording", "Record"
+                    "InitRecording", "Record", "Stop", "Free", 
+                    "InitRecording", "Record", "Stop", "Free",
+                    "InitRecording", "Record"
                 }, _inputDevice.MethodCalls, string.Join(", ", _inputDevice.MethodCalls));
             Assert.AreEqual(
-                new[] { "InitPlayback", "Play", "Stop", "Free", "InitPlayback", "Play", "Stop","Free", "InitPlayback", "Play" },
+                new[]
+                {
+                    "InitPlayback", "Play", "Stop", "Free", 
+                    "InitPlayback", "Play", "Stop", "Free", 
+                    "InitPlayback", "Play"
+                },
                 _outputDevice.MethodCalls, string.Join(", ", _outputDevice.MethodCalls));
-            Assert.AreEqual(1, _inputDevice.Threads.Distinct().Count());
-            Assert.AreEqual(mainThreadId, _inputDevice.Threads[0]);
-            Assert.AreEqual(1, _outputDevice.Threads.Distinct().Count());
-            Assert.AreEqual(mainThreadId, _outputDevice.Threads[0]);
+            // Assert.AreEqual(1, _inputDevice.Threads.Distinct().Count());
+            // Assert.AreEqual(mainThreadId, _inputDevice.Threads[0]);
+            // Assert.AreEqual(1, _outputDevice.Threads.Distinct().Count());
+            // Assert.AreEqual(mainThreadId, _outputDevice.Threads[0]);
             _inputDevice.Dispose();
             _outputDevice.Dispose();
         }
