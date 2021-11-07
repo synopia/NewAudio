@@ -117,8 +117,7 @@ namespace NewAudio.Devices
             // {
             // Buffers.WriteAll(RecordingBuffer, evt.Buffer, evt.BytesRecorded, Token);
             // }
-            throw new System.NotImplementedException();
-
+            _logger.Information("{x}", evt.AsioSampleType);
         }
 
         private bool _disposedValue;

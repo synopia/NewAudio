@@ -141,7 +141,16 @@ namespace NewAudio.Devices
                 while (pos < evt.BytesRecorded && !token.IsCancellationRequested && !GenerateSilence)
                 {
                     var toCopy = Math.Min(_temp.Length - _tempPos, remaining);
-                    Array.Copy(evt.Buffer, pos, _temp, _tempPos, toCopy);
+                    if (toCopy < 0 || toCopy>_temp.Length)
+                    {
+                        _logger.Error("HAE???? {l}-{p} = {t}", _temp.Length, _tempPos, toCopy);
+                        break;
+                    }
+                    else
+                    {
+                        Array.Copy(evt.Buffer, pos, _temp, _tempPos, toCopy);
+                    }
+
                     _tempPos += toCopy;
                     pos += toCopy;
                     remaining -= toCopy;
@@ -155,7 +164,8 @@ namespace NewAudio.Devices
                             _logger.Warning("Wrote to few bytes ({wrote}, expected: {expected})", written,
                                 _temp.Length);
                         }
-                    }
+                    } 
+                    
                 }
 
                 if (!GenerateSilence)
@@ -181,6 +191,12 @@ namespace NewAudio.Devices
             {
                 if (disposing)
                 {
+                    CancellationTokenSource.Cancel();
+                    
+                    _loopback?.StopRecording();
+                    _capture?.StopRecording();
+                    _wavePlayer?.Stop();
+                    
                     _loopback?.Dispose();
                     _capture?.Dispose();
                     _wavePlayer?.Dispose();

@@ -57,20 +57,13 @@ namespace NewAudio.Nodes
 
             if (UpdateParams.Input.HasChanged && input!=null)
             {
-                var inputChannels = input.Format.Channels;
-                if (UpdateParams.OutputChannels.Value == 0)
-                {
-                    UpdateParams.OutputChannels.Value = inputChannels;
-                }
-
-                Output.Format = input.Format.WithChannels(UpdateParams.OutputChannels.Value);
-                _logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}",
-                    input.Format, Output.Format);
+               
             }
 
             return Update();
         }
 
+        
         public override bool IsUpdateValid()
         {
             return UpdateParams.Input.Value!=null && 
@@ -78,6 +71,32 @@ namespace NewAudio.Nodes
                    UpdateParams.Input.Value.Format.Channels>0 && 
                    UpdateParams.Input.Value.Format.SampleCount>0;
         }
+        public override bool Play()
+        {
+            var input = UpdateParams.Input.Value;
+            var inputChannels = input.Format.Channels;
+            if (UpdateParams.OutputChannels.Value == 0)
+            {
+                UpdateParams.OutputChannels.Value = inputChannels;
+            }
+
+            Output.Format = input.Format.WithChannels(UpdateParams.OutputChannels.Value);
+            _logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}",
+                input.Format, Output.Format);
+            
+            Output.SourceBlock = _processor;
+            _inputBufferLink = InputBufferBlock.LinkTo(_processor);
+
+            return true;
+        }
+
+        public override bool Stop()
+        {
+            _inputBufferLink.Dispose();
+            Output.SourceBlock = null;
+            return true;
+        }
+
 
         public override Task<bool> Create()
         {
@@ -153,21 +172,7 @@ namespace NewAudio.Nodes
             });
         }
 
-        public override bool Play()
-        {
-            Output.SourceBlock = _processor;
-            _inputBufferLink = InputBufferBlock.LinkTo(_processor);
 
-            return true;
-        }
-
-        public override bool Stop()
-        {
-            _inputBufferLink.Dispose();
-            Output.SourceBlock = null;
-            return true;
-        }
-        
 
         public override string DebugInfo()
         {

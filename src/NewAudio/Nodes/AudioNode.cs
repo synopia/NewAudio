@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
 using Serilog;
+using VL.Core;
+using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Nodes
 {
@@ -107,6 +109,11 @@ namespace NewAudio.Nodes
                 Lifecycle.EventHappens(UpdateParams.Playing.Value ? LifecycleEvents.ePlay : LifecycleEvents.eStop);
             }
 
+            if (IsCreateValid() && IsUpdateValid() && UpdateParams.Playing.Value && Phase != LifecyclePhase.Playing)
+            {
+                Lifecycle.EventHappens(UpdateParams.Playing.Value ? LifecycleEvents.ePlay : LifecycleEvents.eStop);
+            }
+
             return Output;
         }
 
@@ -144,6 +151,7 @@ namespace NewAudio.Nodes
             {
                 if (disposing)
                 {
+                    AudioService.Instance.Graph.RemoveNode(this);
                     _inputLink?.Dispose();
                     Output.Dispose();
                 }

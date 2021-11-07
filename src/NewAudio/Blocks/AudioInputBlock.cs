@@ -20,8 +20,8 @@ namespace NewAudio.Blocks
         private readonly ITargetBlock<AudioDataMessage> _outputBlock = new BufferBlock<AudioDataMessage>(
             new DataflowBlockOptions
             {
-                BoundedCapacity = 100,
-                MaxMessagesPerTask = 4
+                BoundedCapacity = 16,
+                MaxMessagesPerTask = 16,
             });
 
         private CircularBuffer _buffer;
@@ -125,11 +125,15 @@ namespace NewAudio.Blocks
                                 _token.IsCancellationRequested);
                         }
                         var res = _outputBlock.Post(message);
-                        _logger.Verbose("Posted {samples} ", message.BufferSize);
                         if (!res)
                         {
-                            _logger.Warning("Cant deliver message");
-                        }                        
+                            ArrayPool<float>.Shared.Return(message.Data);
+                        }
+                        _logger.Verbose("Posted {samples} ", message.BufferSize);
+                        // if (!res)
+                        // {
+                            // _logger.Warning("Cant deliver message");
+                        // }                        
                     }
 
                 }

@@ -91,7 +91,28 @@ namespace NewAudio.Core
                     }
 
                     return s;
-                });
+                })
+                .When(LifecycleEvents.ePlay,
+                    async (m, s, e, c) =>
+                    {
+                        var res = c.IsCreateValid();
+                        if (!res)
+                        {
+                            return Uninitialized;
+                        }
+                        res = await c.Create();
+                        if (!res)
+                        {
+                            return Invalid;
+                        }
+                        var inputValid = c.IsUpdateValid();
+                        if (!inputValid)
+                        {
+                            return Created;
+                        }
+
+                        return c.Play() ? Playing : Created;
+                    });
             Created
                 .OnEnter((m, s, e, c) =>
                 {
@@ -184,7 +205,7 @@ namespace NewAudio.Core
                 lock (_events)
                 {
                     _events.Dequeue();
-                    if (!_events.IsEmpty())
+                    if (_events.Count>0)
                     {
                         next = _events.Peek();
                     }
@@ -207,7 +228,7 @@ namespace NewAudio.Core
             WaitForEvents.Reset();
             lock (_events)
             {
-                empty = _events.IsEmpty();
+                empty = _events.Count==0;
                 _events.Enqueue(@event);
             }
 

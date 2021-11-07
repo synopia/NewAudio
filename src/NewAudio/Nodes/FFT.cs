@@ -62,7 +62,8 @@ namespace NewAudio.Nodes
         }
         public override bool IsUpdateValid()
         {
-            return UpdateParams.Input.Value is { Format: { Channels: 1 } };
+            return UpdateParams.Input.Value is { Format: { Channels: 1 } }
+                   && UpdateParams.Input.Value.Format.BufferSize > 0;
         }
         public override Task<bool> Create()
         {
@@ -92,10 +93,18 @@ namespace NewAudio.Nodes
                     ExceptionHappened(e, "ActionBlock");
                 }
             });
-            var input = UpdateParams.Input.Value;
+            
             ResizeBuffers(CreateParams.FFTLength.Value, (CreateParams.FFTLength.Value - 1) / 2 + 2);
             Window = FFTUtils.CreateWindow(CreateParams.WindowFunction.Value, CreateParams.FFTLength.Value);
+            Output.SourceBlock = null;
             
+            return Task.FromResult(true);
+        }
+  
+
+        public override bool Play()
+        {
+            var input = UpdateParams.Input.Value;    
             var fftFormat = input.Format.WithSampleCount(CreateParams.FFTLength.Value);
             _logger.Information("Created, internal: {outFormat} fft={fftLength} {inFormat}", fftFormat, CreateParams.FFTLength,
                 input.Format);
@@ -104,9 +113,18 @@ namespace NewAudio.Nodes
             _batchBlock = new BatchBlock<AudioDataMessage>(1 * CreateParams.FFTLength.Value / input.Format.BufferSize);
 
             _link1 = _batchBlock.LinkTo(_processor);
-            return Task.FromResult(true);
+            Output.SourceBlock = Source;
+            _inputBufferLink = InputBufferBlock.LinkTo(_batchBlock);
+            return true;
         }
 
+        public override bool Stop()
+        {
+            _inputBufferLink.Dispose();
+            Output.SourceBlock = null;
+            return true;
+        }
+        
         public override Task<bool> Free()
         {
             if (_processor == null)
@@ -126,20 +144,6 @@ namespace NewAudio.Nodes
                 _logger.Information("ActionBlock stopped, status={status}", t.Status);
                 return true;
             });
-        }
-
-        public override bool Play()
-        {
-            Output.SourceBlock = Source;
-            _inputBufferLink = InputBufferBlock.LinkTo(_batchBlock);
-            return true;
-        }
-
-        public override bool Stop()
-        {
-            _inputBufferLink.Dispose();
-            Output.SourceBlock = null;
-            return true;
         }
 
         /*

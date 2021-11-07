@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Pack>
+    <Topic title="Basic Usage">
+        <VLDocument link="Basic Usage\HowTo Route Audio.vl" title="Routing audio from and to soundcards"/>
+        <VLDocument link="Basic Usage\HowTo FFT.vl" title="Using the FFT and iFFT device"/>
+        <VLDocument link="Basic Usage\HowTo Generate sine wave.vl" title="Generate a sine wave"/>
+        <VLDocument link="Basic Usage\HowTo Additive Synthesis.vl" title="Slightly more complex than just a sine"/>
+        <VLDocument link="Basic Usage\HowTo Splitters and Mixer.vl" title="Split and mix channels of audio"/>
+    </Topic>
+    <Topic title="Filter">
+        <Subtopic title="IIR">
+            <VLDocument link="Filter\HowTo RC Filter.vl" title="The simplest digital filter"/>
+            <VLDocument link="Filter\HowTo First Order.vl" title="First order filters"/>
+            <VLDocument link="Filter\HowTo Second Order.vl" title="Second order filters"/>
+            <VLDocument link="Filter\HowTo Biquad.vl" title="Biquad filter"/>
+        </Subtopic>
+    </Topic>
+</Pack>

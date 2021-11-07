@@ -2,10 +2,12 @@
 using Serilog;
 using Serilog.Formatting.Display;
 using NewAudio.Core;
+using VL.Core;
+using VL.Model;
 
 namespace NewAudio.Core
 {
-    public class AudioService 
+    public class AudioService
     {
         private static AudioService _service;
 
@@ -25,7 +27,9 @@ namespace NewAudio.Core
 
             // Be careful, dont do anything, that needs the AudioService itself! 
             Graph = new AudioGraph(Logger);
-            Log.Logger.Information("Initializing Audio Service");
+
+
+            Log.Logger.Information($"Initializing Audio Service");
         }
 
         public static AudioService Instance => _service ??= new AudioService();
@@ -35,6 +39,7 @@ namespace NewAudio.Core
         public ILogger Logger { get; }
 
         private bool _playing;
+        private ulong _lastFrame;
 
         public void Init()
         {
@@ -42,29 +47,35 @@ namespace NewAudio.Core
 
         public void Update(bool playing)
         {
-            if (playing != _playing)
+            var currentFrame = VLSession.Instance.UserRuntime.Frame;
+
+            if (currentFrame != _lastFrame)
             {
-                Log.Logger.Information("Audio Service: {old} => {new}", _playing, playing);
-                _playing = playing;
-                if (playing)
+                if (playing != _playing)
                 {
-                    Graph.PlayAll();
-                }
-                else
-                {
-                    Graph.StopAll();
+                    Log.Logger.Information("Audio Service: {old} => {new}", _playing, playing);
+                    _playing = playing;
+                    if (playing)
+                    {
+                        Graph.PlayAll();
+                    }
+                    else
+                    {
+                        Graph.StopAll();
+                    }
                 }
             }
 
+            _lastFrame = currentFrame;
         }
 
         public string DebugInfo()
         {
             return Graph.DebugInfo();
         }
-        
+
         public void Dispose() => Dispose(true);
-        
+
         private bool _disposedValue;
 
         private void Dispose(bool disposing)

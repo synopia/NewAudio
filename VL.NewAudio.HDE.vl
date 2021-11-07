@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="OpxxkPbXc2wPwFxI0MdxHx" LanguageVersion="2021.4.0.526" Version="0.128">
-  <NugetDependency Id="BfQ9BqV8poEPnZWKYQROv0" Location="VL.CoreLib" Version="2021.4.0-0526-gd606d93626" />
+<Document xmlns:p="property" Id="OpxxkPbXc2wPwFxI0MdxHx" LanguageVersion="2021.4.0.600" Version="0.128">
+  <NugetDependency Id="BfQ9BqV8poEPnZWKYQROv0" Location="VL.CoreLib" Version="2021.4.0-0600-g01fe282c1c" />
   <Patch Id="DYRuwp4ufPyNyKtULooXvw">
     <Canvas Id="QYFOXjrMgATQTcpBMDj2hQ" DefaultCategory="Audio.HDE" CanvasType="FullCategory">
       <!--
@@ -357,17 +357,22 @@
                 </p:TypeArguments>
               </p:TypeAnnotation>
             </Pad>
-            <Node Bounds="517,451,87,19" Id="PV3mqBC5pMKPcUx95yiE8q">
+            <Node Bounds="725,504,87,19" Id="PV3mqBC5pMKPcUx95yiE8q">
               <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                 <CategoryReference Kind="Category" Name="NewAudio" />
                 <Choice Kind="ProcessAppFlag" Name="AudioBufferOut" />
               </p:NodeReference>
               <Pin Id="Cly7CJeBoD8NMmJJaYUPu3" Name="Input" Kind="InputPin" />
-              <Pin Id="VleUbNyfaOtNszBZ7EreVN" Name="Count" Kind="InputPin" />
+              <Pin Id="G4UwnHXzRiMMElwKSyIUEQ" Name="Buffer Size" Kind="InputPin" />
+              <Pin Id="DKEchesQM3GPUElaodRcSl" Name="Block Size" Kind="InputPin" />
+              <Pin Id="U0DyOsJuC6NPHe2GwkmuVC" Name="Type" Kind="InputPin" DefaultValue="Max" />
+              <Pin Id="AwidExW6UU0LoiwaVFYeRb" Name="Errors" Kind="OutputPin" />
+              <Pin Id="FfRvIS93anZQahQ5c4FPKw" Name="Phase" Kind="OutputPin" />
               <Pin Id="OoCfCTEhbUxP8Qn8GDlpEC" Name="Result" Kind="OutputPin" />
+              <Pin Id="Q9diTsX05NwMIgZTy9b1sW" Name="Debug" Kind="OutputPin" />
             </Node>
-            <Node Bounds="600,415,145,19" Id="PYpqLK4wkqRONiFNMBhpT7">
+            <Node Bounds="720,358,145,19" Id="PYpqLK4wkqRONiFNMBhpT7">
               <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                 <CategoryReference Kind="Category" Name="NewAudio" />
@@ -459,16 +464,7 @@
                 <FullNameCategoryReference ID="Primitive" />
               </p:TypeAnnotation>
             </Pad>
-            <Node Bounds="885,310" Id="HvpINg298fkPIV7c30CvlC">
-              <p:NodeReference LastCategoryFullName="Math" LastSymbolSource="CoreLibBasics.vl">
-                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                <Choice Kind="OperationCallFlag" Name="Min" />
-              </p:NodeReference>
-              <Pin Id="VY7DIzCosGjQA4qrhuFon5" Name="Input" Kind="InputPin" />
-              <Pin Id="IhWeU0oyHHRM74rSBXl1OT" Name="Input 2" Kind="InputPin" />
-              <Pin Id="NMLyA9Lm3fIMG1Zhh3MLwY" Name="Output" Kind="OutputPin" />
-            </Node>
-            <Pad Id="Q8ZYdbuFzYSMQvT32prqzV" Comment="Input 2" Bounds="947,285,35,15" ShowValueBox="true" isIOBox="true" Value="256">
+            <Pad Id="LYCUdt5mvvxMQpEQ0KVMbm" Comment="Block Size" Bounds="788,437,35,15" ShowValueBox="true" isIOBox="true" Value="4">
               <p:TypeAnnotation>
                 <Choice Kind="TypeFlag" Name="Integer32" />
                 <FullNameCategoryReference ID="Primitive" />
@@ -562,9 +558,8 @@
           <Link Id="MlwbNeShVQDL6bjlqvAIzo" Ids="NUs2rke10pXN8QeQfDvVom,VkAA4NAtBFcPfjqT1NQs6o" />
           <Link Id="MbhWHiy0AmTMOFVpZknby9" Ids="LzYhiFBqI1yNjLiDiEXrXP,Q7WFDC1CGUTMK1x7LAniEJ" />
           <Link Id="DqUYHATx4YrNSH2JYXtRnx" Ids="FlHuMfluXchM66DOarBlwr,Ei7dQ5l4v4TQERgWcgBlOJ" />
-          <Link Id="FMgRNsBVfVKLP0dh4LqCxm" Ids="MSe1wkq7dMqM4ceuEQBvMF,VY7DIzCosGjQA4qrhuFon5" />
-          <Link Id="N70iraOso4XQaX37P2rZGz" Ids="Q8ZYdbuFzYSMQvT32prqzV,IhWeU0oyHHRM74rSBXl1OT" />
-          <Link Id="JIrh36eArPhMRyhAHAPac2" Ids="NMLyA9Lm3fIMG1Zhh3MLwY,VleUbNyfaOtNszBZ7EreVN" />
+          <Link Id="L2e2p5DBdztQbB4nuZTqSL" Ids="LYCUdt5mvvxMQpEQ0KVMbm,DKEchesQM3GPUElaodRcSl" />
+          <Link Id="EZbQ5wqWEU1L3lXzk1iKVp" Ids="AX9lJeHmdfVMLQapU4ngZA,G4UwnHXzRiMMElwKSyIUEQ" />
         </Patch>
       </Node>
       <!--
@@ -745,7 +740,7 @@
       </Patch>
     </Node>
   </Patch>
-  <NugetDependency Id="PplJ8M06DDYNWsWk2Slfxl" Location="VL.Skia" Version="2021.4.0-0526-gd606d93626" />
+  <NugetDependency Id="PplJ8M06DDYNWsWk2Slfxl" Location="VL.Skia" Version="2021.4.0-0600-g01fe282c1c" />
   <DocumentDependency Id="URghiwvaui3P5E15Vq7xuF" Location="./VL.NewAudio.vl" IsFriend="true" />
-  <NugetDependency Id="OQCN1kO8xNlP3VNbaCz1Ad" Location="VL.HDE" Version="2021.4.0-0526-gd606d93626" />
+  <NugetDependency Id="OQCN1kO8xNlP3VNbaCz1Ad" Location="VL.HDE" Version="2021.4.0-0600-g01fe282c1c" />
 </Document>
