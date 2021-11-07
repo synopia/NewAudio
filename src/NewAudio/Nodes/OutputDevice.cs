@@ -10,7 +10,7 @@ using Serilog;
 
 namespace NewAudio.Nodes
 {
-    public class OutputDeviceCreateParams : AudioNodeCreateParams
+    public class OutputDeviceInitParams : AudioNodeInitParams
     {
         public AudioParam<WaveOutputDevice> Device;
         public AudioParam<SamplingFrequency> SamplingFrequency;
@@ -18,11 +18,11 @@ namespace NewAudio.Nodes
         public AudioParam<int> ChannelOffset;
         public AudioParam<int> Channels;
     }
-    public class OutputDeviceUpdateParams : AudioNodeUpdateParams
+    public class OutputDevicePlayParams : AudioNodePlayParams
     {
     }
 
-    public class OutputDevice : AudioNode<OutputDeviceCreateParams, OutputDeviceUpdateParams>
+    public class OutputDevice : AudioNode<OutputDeviceInitParams, OutputDevicePlayParams>
     {
         private readonly ILogger _logger;
         private AudioOutputBlock _audioOutputBlock;
@@ -69,29 +69,29 @@ namespace NewAudio.Nodes
             SamplingFrequency samplingFrequency = SamplingFrequency.Hz44100,
             int channelOffset = 0, int channels = 2, int desiredLatency = 250)
         {
-            UpdateParams.Input.Value = input;
-            CreateParams.Device.Value = device;
-            CreateParams.SamplingFrequency.Value = samplingFrequency;
-            CreateParams.DesiredLatency.Value = desiredLatency;
-            CreateParams.ChannelOffset.Value = channelOffset;
-            CreateParams.Channels.Value = channels;
+            PlayParams.Input.Value = input;
+            InitParams.Device.Value = device;
+            InitParams.SamplingFrequency.Value = samplingFrequency;
+            InitParams.DesiredLatency.Value = desiredLatency;
+            InitParams.ChannelOffset.Value = channelOffset;
+            InitParams.Channels.Value = channels;
 
-            return Update();
+            return base.Update();
         }
-        public override bool IsCreateValid()
+        public override bool IsInitValid()
         {
-            return CreateParams.Device.Value != null;
-        }
-
-        public override bool IsUpdateValid()
-        {
-            return UpdateParams.Input.Value != null;
+            return InitParams.Device.Value != null;
         }
 
-        public override async Task<bool> Create()
+        public override bool IsPlayValid()
         {
-            _device = (IDevice)CreateParams.Device.Value.Tag;
-            _format = new AudioFormat((int)CreateParams.SamplingFrequency.Value, 512, CreateParams.Channels.Value);
+            return PlayParams.Input.Value != null;
+        }
+
+        public override async Task<bool> Init()
+        {
+            _device = (IDevice)InitParams.Device.Value.Tag;
+            _format = new AudioFormat((int)InitParams.SamplingFrequency.Value, 512, InitParams.Channels.Value);
             _audioOutputBlock = new AudioOutputBlock();
             _audioOutputBlock.Create(new AudioOutputBlockConfig()
             {
@@ -105,10 +105,10 @@ namespace NewAudio.Nodes
                 Playing = new DeviceConfig()
                 {
                     Buffer = _audioOutputBlock.Buffer,
-                    Latency = CreateParams.DesiredLatency.Value,
+                    Latency = InitParams.DesiredLatency.Value,
                     WaveFormat = WaveFormat,
-                    Channels = CreateParams.Channels.Value,
-                    ChannelOffset = CreateParams.ChannelOffset.Value
+                    Channels = InitParams.Channels.Value,
+                    ChannelOffset = InitParams.ChannelOffset.Value
                 }
             };
             var resp = await _device.Create(req);

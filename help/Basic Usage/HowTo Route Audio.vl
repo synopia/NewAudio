@@ -167,9 +167,9 @@
             <Pin Id="H3ppjBwICmsPjOLmL78Wkm" Name="Sampling Frequency" Kind="InputPin" />
             <Pin Id="AUCTAxZGXqBPPQSe5k8flI" Name="Desired Latency" Kind="InputPin" />
             <Pin Id="V2HfkMiJa11LwoDJNsPwNr" Name="Phase" Kind="OutputPin" />
-            <Pin Id="DkIPz7Ivn81OdkjOWcxePi" Name="Output" Kind="OutputPin" />
             <Pin Id="AskO5BfusIAMRjX3IsqHSU" Name="Debug" Kind="OutputPin" />
             <Pin Id="T4rcApZN5eXQQr2OWs254l" Name="Errors" Kind="OutputPin" />
+            <Pin Id="DkIPz7Ivn81OdkjOWcxePi" Name="Output" Kind="OutputPin" />
           </Node>
           <Node Bounds="578,921,305,19" Id="ASL0XJQEfiNMjXyHHQarJq">
             <p:NodeReference LastCategoryFullName="NewAudio.Output" LastSymbolSource="VL.NewAudio.vl">

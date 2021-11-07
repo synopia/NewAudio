@@ -28,7 +28,7 @@ namespace NewAudio.Core
             {
                 if (_sourceBlock != null)
                 {
-                    _currentLink.Dispose();
+                    _currentLink?.Dispose();
                 }
                 // todo only broadcast if necessary
                 if (value != null)

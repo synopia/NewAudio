@@ -15,18 +15,18 @@ namespace NewAudio.Nodes
         Max,
     }
 
-    public class AudioBufferOutCreateParams : AudioNodeCreateParams
+    public class AudioBufferOutInitParams : AudioNodeInitParams
     {
         public AudioParam<int> BufferSize;
         public AudioParam<int> BlockSize;
         public AudioParam<AudioBufferOutType> Type;
     }
 
-    public class AudioBufferOutUpdateParams : AudioNodeUpdateParams
+    public class AudioBufferOutPlayParams : AudioNodePlayParams
     {
     }
 
-    public class AudioBufferOut : AudioNode<AudioBufferOutCreateParams, AudioBufferOutUpdateParams>
+    public class AudioBufferOut : AudioNode<AudioBufferOutInitParams, AudioBufferOutPlayParams>
     {
         private readonly ILogger _logger;
 
@@ -45,15 +45,15 @@ namespace NewAudio.Nodes
             _logger.Information("AudioBufferOut created");
         }
 
-        public override bool IsUpdateValid()
+        public override bool IsPlayValid()
         {
-            return UpdateParams.Input.Value != null;
+            return PlayParams.Input.Value != null;
         }
 
-        public override bool IsCreateValid()
+        public override bool IsInitValid()
         {
-            return CreateParams.BufferSize.Value>0 &&
-                   CreateParams.BlockSize.Value > 0;
+            return InitParams.BufferSize.Value>0 &&
+                   InitParams.BlockSize.Value > 0;
         }
 
         /// <summary>
@@ -67,26 +67,26 @@ namespace NewAudio.Nodes
         public Spread<float> Update(AudioLink input, int bufferSize = 1024, int blockSize = 8,
             AudioBufferOutType type = AudioBufferOutType.Max)
         {
-            UpdateParams.Input.Value = input;
-            CreateParams.BufferSize.Value = (int)Utils.UpperPow2((uint)bufferSize);
-            CreateParams.BlockSize.Value = blockSize;
-            CreateParams.Type.Value = type;
+            PlayParams.Input.Value = input;
+            InitParams.BufferSize.Value = (int)Utils.UpperPow2((uint)bufferSize);
+            InitParams.BlockSize.Value = blockSize;
+            InitParams.Type.Value = type;
 
             Update();
 
             if (_updated > 0)
             {
                 _spreadBuilder.Clear();
-                _spreadBuilder.AddRangeArray(_outBuffer, CreateParams.BufferSize.Value, 0, false);
+                _spreadBuilder.AddRangeArray(_outBuffer, InitParams.BufferSize.Value, 0, false);
                 _updated--;
             }
 
             return _spreadBuilder.ToSpread();
         }
 
-        public override Task<bool> Create()
+        public override Task<bool> Init()
         {
-            var type = CreateParams.Type.Value;
+            var type = InitParams.Type.Value;
             _batchSize = 0;
             if (type == AudioBufferOutType.Skip)
             {
@@ -147,14 +147,14 @@ namespace NewAudio.Nodes
 
         public override string DebugInfo()
         {
-            return $"[updates={_updated}, input samples={UpdateParams.Input.Value?.Format.BufferSize}, batchSize={_batchSize}, output size={CreateParams.BufferSize.Value}]";
+            return $"[updates={_updated}, input samples={PlayParams.Input.Value?.Format.BufferSize}, batchSize={_batchSize}, output size={InitParams.BufferSize.Value}]";
         }
 
         private int CreateTypeSkip()
         {
-            var bufferSize = CreateParams.BufferSize.Value;
-            var skipSize = CreateParams.BlockSize.Value;
-            var inputBufferSize = UpdateParams.Input.Value.Format.BufferSize;
+            var bufferSize = InitParams.BufferSize.Value;
+            var skipSize = InitParams.BlockSize.Value;
+            var inputBufferSize = PlayParams.Input.Value.Format.BufferSize;
 
             _outBuffer = ArrayPool<float>.Shared.Rent(bufferSize);
             _tempBuffer = ArrayPool<float>.Shared.Rent(bufferSize);
@@ -179,9 +179,9 @@ namespace NewAudio.Nodes
         }
         private int CreateTypeSkipHalf()
         {
-            var bufferSize = CreateParams.BufferSize.Value;
-            var skipSize = CreateParams.BlockSize.Value;
-            var inputBufferSize = UpdateParams.Input.Value.Format.BufferSize;
+            var bufferSize = InitParams.BufferSize.Value;
+            var skipSize = InitParams.BlockSize.Value;
+            var inputBufferSize = PlayParams.Input.Value.Format.BufferSize;
 
             _outBuffer = ArrayPool<float>.Shared.Rent(bufferSize);
             _tempBuffer = ArrayPool<float>.Shared.Rent(bufferSize);
@@ -207,9 +207,9 @@ namespace NewAudio.Nodes
 
         private int CreateTypeMax()
         {
-            var bufferSize = CreateParams.BufferSize.Value;
-            var blockSize = CreateParams.BlockSize.Value;
-            var inputBufferSize = UpdateParams.Input.Value.Format.BufferSize;
+            var bufferSize = InitParams.BufferSize.Value;
+            var blockSize = InitParams.BlockSize.Value;
+            var inputBufferSize = PlayParams.Input.Value.Format.BufferSize;
 
             _outBuffer = ArrayPool<float>.Shared.Rent(bufferSize);
             _tempBuffer = ArrayPool<float>.Shared.Rent(bufferSize);

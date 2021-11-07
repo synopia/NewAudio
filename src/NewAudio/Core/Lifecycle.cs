@@ -11,19 +11,19 @@ namespace NewAudio.Core
     public enum LifecyclePhase
     {
         Uninitialized,
-        Created,
-        Playing,
+        Init,
+        Play,
         Invalid,
     }
 
     public interface ILifecycleDevice
     {
-        Task<bool> Create();
+        Task<bool> Init();
         Task<bool> Free();
         bool Play();
         bool Stop();
-        bool IsCreateValid();
-        bool IsUpdateValid();
+        bool IsInitValid();
+        bool IsPlayValid();
         LifecyclePhase Phase { get; set; }
 
         void ExceptionHappened(Exception e, string method);
@@ -34,7 +34,7 @@ namespace NewAudio.Core
         public static readonly Event ePlay = new Event("Play");
         public static readonly Event eStop = new Event("Stop");
 
-        public static readonly Event eCreate = new Event("Create");
+        public static readonly Event eInit = new Event("Init");
         public static readonly Event eFree = new Event("Free");
     }
 
@@ -54,8 +54,8 @@ namespace NewAudio.Core
         }
 
         public static readonly State Uninitialized = AddState("Uninitialized");
-        public static readonly State Created = AddState("Created");
-        public static readonly State Playing = AddState("Playing");
+        public static readonly State Init = AddState("Init");
+        public static readonly State Play = AddState("Play");
         public static readonly State Invalid = AddState("Invalid");
 
         static LifecycleStateMachine()
@@ -66,12 +66,12 @@ namespace NewAudio.Core
                     c.Phase = LifecyclePhase.Invalid;
                     return Task.CompletedTask;
                 })
-                .When(LifecycleEvents.eCreate, async (m, s, e, c) =>
+                .When(LifecycleEvents.eInit, async (m, s, e, c) =>
                 {
-                    var res = c.IsCreateValid();
+                    var res = c.IsInitValid();
                     if (res)
                     {
-                        return await c.Create() ? Created : s;
+                        return await c.Init() ? Init : s;
                     }
 
                     return s;
@@ -82,12 +82,12 @@ namespace NewAudio.Core
                     c.Phase = LifecyclePhase.Uninitialized;
                     return Task.CompletedTask;
                 })
-                .When(LifecycleEvents.eCreate, async (m, s, e, c) =>
+                .When(LifecycleEvents.eInit, async (m, s, e, c) =>
                 {
-                    var res = c.IsCreateValid();
+                    var res = c.IsInitValid();
                     if (res)
                     {
-                        return await c.Create() ? Created : Invalid;
+                        return await c.Init() ? Init : Invalid;
                     }
 
                     return s;
@@ -95,28 +95,28 @@ namespace NewAudio.Core
                 .When(LifecycleEvents.ePlay,
                     async (m, s, e, c) =>
                     {
-                        var res = c.IsCreateValid();
+                        var res = c.IsInitValid();
                         if (!res)
                         {
                             return Uninitialized;
                         }
-                        res = await c.Create();
+                        res = await c.Init();
                         if (!res)
                         {
                             return Invalid;
                         }
-                        var inputValid = c.IsUpdateValid();
+                        var inputValid = c.IsPlayValid();
                         if (!inputValid)
                         {
-                            return Created;
+                            return Init;
                         }
 
-                        return c.Play() ? Playing : Created;
+                        return c.Play() ? Play : Init;
                     });
-            Created
+            Init
                 .OnEnter((m, s, e, c) =>
                 {
-                    c.Phase = LifecyclePhase.Created;
+                    c.Phase = LifecyclePhase.Init;
                     return Task.CompletedTask;
                 })
 
@@ -126,58 +126,58 @@ namespace NewAudio.Core
                 .When(LifecycleEvents.ePlay,
                     (m, s, e, c) =>
                     {
-                        var inputValid = c.IsUpdateValid();
+                        var inputValid = c.IsPlayValid();
                         if (!inputValid)
                         {
-                            return Task.FromResult(Created);
+                            return Task.FromResult(Init);
                         }
 
-                        return c.Play() ? Task.FromResult(Playing) : Task.FromResult(Created);
+                        return c.Play() ? Task.FromResult(Play) : Task.FromResult(Init);
                     })
-                .When(LifecycleEvents.eCreate, async (m, s, e, c) =>
+                .When(LifecycleEvents.eInit, async (m, s, e, c) =>
                 {
                     var res = await c.Free();
-                    var inputValid = c.IsCreateValid();
+                    var inputValid = c.IsInitValid();
                     if (!inputValid)
                     {
                         return Invalid;
                     }
 
-                    res = res && await c.Create();
+                    res = res && await c.Init();
                     return res ? s : Invalid;
                 });
-            Playing
+            Play
                 .OnEnter((m, s, e, c) =>
                 {
-                    c.Phase = LifecyclePhase.Playing;
+                    c.Phase = LifecyclePhase.Play;
                     return Task.CompletedTask;
                 })
-                .When(LifecycleEvents.eCreate, async (m, s, e, c) =>
+                .When(LifecycleEvents.eInit, async (m, s, e, c) =>
                 {
                     var res = c.Stop();
                     res = res && await c.Free();
-                    var inputValid = c.IsCreateValid();
+                    var inputValid = c.IsInitValid();
                     if (!inputValid)
                     {
                         return Invalid;
                     }
-                    res = res && await c.Create();
-                    inputValid = c.IsUpdateValid();
+                    res = res && await c.Init();
+                    inputValid = c.IsPlayValid();
                     if (!inputValid)
                     {
-                        return Created;
+                        return Init;
                     }
                     res = res && c.Play();
-                    return res ? Playing : Invalid;
+                    return res ? Play : Invalid;
                 })
                 .When(LifecycleEvents.ePlay, (m, s, e, c) =>
                 {
-                    var inputValid = c.IsUpdateValid();
+                    var inputValid = c.IsPlayValid();
                     if (!inputValid)
                     {
-                        return Task.FromResult(Created);
+                        return Task.FromResult(Init);
                     }
-                    return c.Play() ? Task.FromResult(Playing) : Task.FromResult(Invalid);
+                    return c.Play() ? Task.FromResult(Play) : Task.FromResult(Invalid);
                 })
                 .When(LifecycleEvents.eFree, async (m, s, e, c) =>
                 {
@@ -188,7 +188,7 @@ namespace NewAudio.Core
                 .When(LifecycleEvents.eStop,
                     (m, s, e, c) =>
                     {
-                        return c.Stop() ? Task.FromResult(Created) : Task.FromResult(Invalid);
+                        return c.Stop() ? Task.FromResult(Init) : Task.FromResult(Invalid);
                     });
         }
 
@@ -248,11 +248,11 @@ namespace NewAudio.Core
                 set => Device.Phase = value;
             }
 
-            public async Task<bool> Create()
+            public async Task<bool> Init()
             {
                 try
                 {
-                    var result = await Device.Create();
+                    var result = await Device.Init();
                     AudioService.Instance.Logger.Information(
                         "LIFECYLE: {device} Create, result={result}", Device, result);
                     return result;
@@ -310,11 +310,11 @@ namespace NewAudio.Core
                 }
             }
 
-            public bool IsCreateValid()
+            public bool IsInitValid()
             {
                 try
                 {
-                    var result = Device.IsCreateValid();
+                    var result = Device.IsInitValid();
                     AudioService.Instance.Logger.Information(
                         "LIFECYLE: {device} IsInputValid, result={result}", Device, result);
                     return result;
@@ -325,11 +325,11 @@ namespace NewAudio.Core
                     return false;
                 }
             }
-            public bool IsUpdateValid()
+            public bool IsPlayValid()
             {
                 try
                 {
-                    var result = Device.IsUpdateValid();
+                    var result = Device.IsPlayValid();
                     AudioService.Instance.Logger.Information(
                         "LIFECYLE: {device} IsUpdateValid, result={result}", Device, result);
                     return result;

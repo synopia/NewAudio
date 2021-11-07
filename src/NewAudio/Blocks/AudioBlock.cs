@@ -6,31 +6,16 @@ using Serilog;
 
 namespace NewAudio.Blocks
 {
-    public interface IAudioBlock: IDisposable, ILifecycleDevice
+    public abstract class AudioBlock : IPropagatorBlock<AudioDataMessage, AudioDataMessage>
     {
-    }
-    public abstract class AudioBlock : IAudioBlock, IPropagatorBlock<AudioDataMessage, AudioDataMessage>
-    {
-        public LifecyclePhase Phase { get; set; }
-        public readonly LifecycleStateMachine Lifecycle = new LifecycleStateMachine();
-
         protected AudioBlock()
         {
-            Lifecycle.EventHappens(LifecycleEvents.eCreate);
         }
 
         public ISourceBlock<AudioDataMessage> Source { get; protected set; }
         public ITargetBlock<AudioDataMessage> Target { get; protected set; }
+        public AudioFormat OutputFormat { get; protected set; }
 
-        public void ExceptionHappened(Exception e, string method)
-        {
-            throw e;
-        }
-
-        public abstract bool CreateResources();
-        public abstract bool FreeResources();
-        public abstract bool StartProcessing();
-        public abstract bool StopProcessing();
 
         private bool _disposedValue;
         

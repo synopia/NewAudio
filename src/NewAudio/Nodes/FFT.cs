@@ -12,17 +12,17 @@ using Serilog;
 
 namespace NewAudio.Nodes
 {
-    public class FftCreateParams : AudioNodeCreateParams
+    public class FftInitParams : AudioNodeInitParams
     {
         public AudioParam<int> FFTLength;
         public AudioParam<FFTUtils.WindowFunction> WindowFunction;
 
     }
-    public class FftUpdateParams : AudioNodeUpdateParams
+    public class FftPlayParams : AudioNodePlayParams
     {
     }
 
-    public abstract class BaseFFT : AudioNode<FftCreateParams, FftUpdateParams>
+    public abstract class BaseFFT : AudioNode<FftInitParams, FftPlayParams>
     {
         private readonly ILogger _logger = Log.ForContext<BaseFFT>();
         protected double[] Window;
@@ -43,9 +43,9 @@ namespace NewAudio.Nodes
         public AudioLink Update(AudioLink input, int fftLength = 512,
             FFTUtils.WindowFunction windowFunction = FFTUtils.WindowFunction.None)
         {
-            CreateParams.WindowFunction.Value = windowFunction;
-            UpdateParams.Input.Value = input;
-            CreateParams.FFTLength.Value = (int)Utils.UpperPow2((uint)fftLength);;
+            InitParams.WindowFunction.Value = windowFunction;
+            PlayParams.Input.Value = input;
+            InitParams.FFTLength.Value = (int)Utils.UpperPow2((uint)fftLength);;
 
             return Update();
         }
@@ -55,17 +55,17 @@ namespace NewAudio.Nodes
             Source.Post(buf);
         }
 
-        public override bool IsCreateValid()
+        public override bool IsInitValid()
         {
-            return CreateParams.FFTLength.Value > 0;
+            return InitParams.FFTLength.Value > 0;
 
         }
-        public override bool IsUpdateValid()
+        public override bool IsPlayValid()
         {
-            return UpdateParams.Input.Value is { Format: { Channels: 1 } }
-                   && UpdateParams.Input.Value.Format.BufferSize > 0;
+            return PlayParams.Input.Value is { Format: { Channels: 1 } }
+                   && PlayParams.Input.Value.Format.BufferSize > 0;
         }
-        public override Task<bool> Create()
+        public override Task<bool> Init()
         {
             if (_processor != null)
             {
@@ -94,8 +94,8 @@ namespace NewAudio.Nodes
                 }
             });
             
-            ResizeBuffers(CreateParams.FFTLength.Value, (CreateParams.FFTLength.Value - 1) / 2 + 2);
-            Window = FFTUtils.CreateWindow(CreateParams.WindowFunction.Value, CreateParams.FFTLength.Value);
+            ResizeBuffers(InitParams.FFTLength.Value, (InitParams.FFTLength.Value - 1) / 2 + 2);
+            Window = FFTUtils.CreateWindow(InitParams.WindowFunction.Value, InitParams.FFTLength.Value);
             Output.SourceBlock = null;
             
             return Task.FromResult(true);
@@ -104,13 +104,13 @@ namespace NewAudio.Nodes
 
         public override bool Play()
         {
-            var input = UpdateParams.Input.Value;    
-            var fftFormat = input.Format.WithSampleCount(CreateParams.FFTLength.Value);
-            _logger.Information("Created, internal: {outFormat} fft={fftLength} {inFormat}", fftFormat, CreateParams.FFTLength,
+            var input = PlayParams.Input.Value;    
+            var fftFormat = input.Format.WithSampleCount(InitParams.FFTLength.Value);
+            _logger.Information("Created, internal: {outFormat} fft={fftLength} {inFormat}", fftFormat, InitParams.FFTLength,
                 input.Format);
 
             Output.Format = input.Format;
-            _batchBlock = new BatchBlock<AudioDataMessage>(1 * CreateParams.FFTLength.Value / input.Format.BufferSize);
+            _batchBlock = new BatchBlock<AudioDataMessage>(1 * InitParams.FFTLength.Value / input.Format.BufferSize);
 
             _link1 = _batchBlock.LinkTo(_processor);
             Output.SourceBlock = Source;
@@ -175,14 +175,14 @@ namespace NewAudio.Nodes
                 Time = _time
             };
             // todo
-            _time += new AudioTime(outLength, (double)outLength / UpdateParams.Input.Value.Format.SampleRate);
+            _time += new AudioTime(outLength, (double)outLength / PlayParams.Input.Value.Format.SampleRate);
             return buf;
         }
 
 
         public override string DebugInfo()
         {
-            return $"curr={CreateParams.FFTLength}, {_processor?.Completion.Status}, {Source?.Completion.Status}/ {Source?.Count}";
+            return $"curr={InitParams.FFTLength}, {_processor?.Completion.Status}, {Source?.Completion.Status}/ {Source?.Count}";
         }
 
         protected abstract void OnDataReceived(AudioDataMessage[] input);
@@ -214,7 +214,7 @@ namespace NewAudio.Nodes
         {
             var block = 0;
             var j = 0;
-            for (var i = 0; i < CreateParams.FFTLength.Value; i++)
+            for (var i = 0; i < InitParams.FFTLength.Value; i++)
             {
                 _pinIn[i] = input[block].Data[j++] * Window[i];
                 if (input[block].Data.Length == j)
@@ -231,10 +231,10 @@ namespace NewAudio.Nodes
 
         private void CopyOutputComplex()
         {
-            var outLength = UpdateParams.Input.Value.Format.SampleCount;
+            var outLength = PlayParams.Input.Value.Format.SampleCount;
             var outputBuffer = GetBuffer(outLength);
             var written = 0;
-            for (var i = 0; i < CreateParams.FFTLength.Value / 2; i++)
+            for (var i = 0; i < InitParams.FFTLength.Value / 2; i++)
             {
                 if (written == outLength)
                 {
@@ -312,10 +312,10 @@ namespace NewAudio.Nodes
 
         private void CopyOutputReal()
         {
-            var outLength = UpdateParams.Input.Value.Format.SampleCount;
+            var outLength = PlayParams.Input.Value.Format.SampleCount;
             var written = 0;
             var outputBuffer = GetBuffer(outLength);
-            for (var b = 0; b < CreateParams.FFTLength.Value; b++)
+            for (var b = 0; b < InitParams.FFTLength.Value; b++)
             {
                 if (written == outLength)
                 {
@@ -324,7 +324,7 @@ namespace NewAudio.Nodes
                     written = 0;
                 }
 
-                outputBuffer.Data[written++] = (float)_pinOut[b] / CreateParams.FFTLength.Value;
+                outputBuffer.Data[written++] = (float)_pinOut[b] / InitParams.FFTLength.Value;
             }
 
             Post(outputBuffer);

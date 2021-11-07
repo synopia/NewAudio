@@ -10,16 +10,16 @@ using VL.Lib.Animation;
 
 namespace NewAudio.Nodes
 {
-    public class AudioLoopRegionCreateParams : AudioNodeCreateParams
+    public class AudioLoopRegionInitParams : AudioNodeInitParams
     {
     }
-    public class AudioLoopRegionUpdateParams : AudioNodeUpdateParams
+    public class AudioLoopRegionPlayParams : AudioNodePlayParams
     {
         public AudioParam<bool> Bypass;
         public AudioParam<int> OutputChannels;
     }
     
-    public class AudioLoopRegion<TState> : AudioNode<AudioLoopRegionCreateParams, AudioLoopRegionUpdateParams> where TState : class
+    public class AudioLoopRegion<TState> : AudioNode<AudioLoopRegionInitParams, AudioLoopRegionPlayParams> where TState : class
     {
         private readonly ILogger _logger;
         private TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
@@ -51,11 +51,11 @@ namespace NewAudio.Nodes
             }
             _updateFunc = update;
 
-            UpdateParams.Bypass.Value = bypass;
-            UpdateParams.OutputChannels.Value = outputChannels > 0 ? outputChannels : input?.Format.Channels ?? 0;
-            UpdateParams.Input.Value = input;
+            PlayParams.Bypass.Value = bypass;
+            PlayParams.OutputChannels.Value = outputChannels > 0 ? outputChannels : input?.Format.Channels ?? 0;
+            PlayParams.Input.Value = input;
 
-            if (UpdateParams.Input.HasChanged && input!=null)
+            if (PlayParams.Input.HasChanged && input!=null)
             {
                
             }
@@ -64,23 +64,23 @@ namespace NewAudio.Nodes
         }
 
         
-        public override bool IsUpdateValid()
+        public override bool IsPlayValid()
         {
-            return UpdateParams.Input.Value!=null && 
-                   UpdateParams.OutputChannels.Value>0 && 
-                   UpdateParams.Input.Value.Format.Channels>0 && 
-                   UpdateParams.Input.Value.Format.SampleCount>0;
+            return PlayParams.Input.Value!=null && 
+                   PlayParams.OutputChannels.Value>0 && 
+                   PlayParams.Input.Value.Format.Channels>0 && 
+                   PlayParams.Input.Value.Format.SampleCount>0;
         }
         public override bool Play()
         {
-            var input = UpdateParams.Input.Value;
+            var input = PlayParams.Input.Value;
             var inputChannels = input.Format.Channels;
-            if (UpdateParams.OutputChannels.Value == 0)
+            if (PlayParams.OutputChannels.Value == 0)
             {
-                UpdateParams.OutputChannels.Value = inputChannels;
+                PlayParams.OutputChannels.Value = inputChannels;
             }
 
-            Output.Format = input.Format.WithChannels(UpdateParams.OutputChannels.Value);
+            Output.Format = input.Format.WithChannels(PlayParams.OutputChannels.Value);
             _logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}",
                 input.Format, Output.Format);
             
@@ -98,7 +98,7 @@ namespace NewAudio.Nodes
         }
 
 
-        public override Task<bool> Create()
+        public override Task<bool> Init()
         {
             if (_processor != null)
             {
@@ -106,7 +106,7 @@ namespace NewAudio.Nodes
             }
             _processor = new TransformBlock<AudioDataMessage, AudioDataMessage>(input =>
             {
-                if (UpdateParams.Bypass.Value)
+                if (PlayParams.Bypass.Value)
                 {
                     Array.Clear(input.Data, 0, input.BufferSize);
                     return input;
@@ -120,23 +120,23 @@ namespace NewAudio.Nodes
                 {
                     var channels = new AudioChannels();
 
-                    var inputBufferSize = UpdateParams.Input.Value.Format.BufferSize;
+                    var inputBufferSize = PlayParams.Input.Value.Format.BufferSize;
                     if (input.BufferSize != inputBufferSize)
                     {
                         throw new Exception($"Expected Input size: {inputBufferSize}, actual: {input.BufferSize}");
                     }
 
-                    var samples = UpdateParams.Input.Value.Format.SampleCount;
+                    var samples = PlayParams.Input.Value.Format.SampleCount;
                     var outputBufferSize = Output.Format.BufferSize;
                     var outputChannels = Output.Format.Channels;
-                    var inputChannels = UpdateParams.Input.Value.Format.Channels;
+                    var inputChannels = PlayParams.Input.Value.Format.Channels;
 
                     _clock.Init(input.Time.DTime);
 
                     if (_state != null && _updateFunc != null)
                     {
                         channels.Update(output.Data, input.Data, outputChannels, inputChannels);
-                        var increment = 1.0d / UpdateParams.Input.Value.Format.SampleRate;
+                        var increment = 1.0d / PlayParams.Input.Value.Format.SampleRate;
                         for (var i = 0; i < samples; i++)
                         {
                             channels.UpdateLoop(i, i);

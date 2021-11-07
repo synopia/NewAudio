@@ -179,6 +179,7 @@ namespace NewAudio.Devices
             catch (Exception e)
             {
                 _logger.Error("DataAvailable: {e}", e);
+                throw;
             }
         }
 

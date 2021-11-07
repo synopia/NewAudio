@@ -28,10 +28,10 @@ namespace NewAudioTest
             Assert.IsEmpty(output.ErrorMessages());
             Assert.IsEmpty(output2.ErrorMessages());
             Assert.IsEmpty(fft.ErrorMessages());
-            input.UpdateParams.Playing.Value = true;
-            output.UpdateParams.Playing.Value = true;
-            output2.UpdateParams.Playing.Value = true;
-            fft.UpdateParams.Playing.Value = true;
+            input.PlayParams.Playing.Value = true;
+            output.PlayParams.Playing.Value = true;
+            output2.PlayParams.Playing.Value = true;
+            fft.PlayParams.Playing.Value = true;
 
             input.Update(inputNullEnum, SamplingFrequency.Hz48000, 0, 1);
             fft.Update(input.Output, 1024);
@@ -43,9 +43,9 @@ namespace NewAudioTest
             Assert.IsEmpty(output2.ErrorMessages());
             Assert.IsEmpty(output.ErrorMessages());
 
-            Assert.AreEqual(LifecyclePhase.Playing, fft.Phase);
-            Assert.AreEqual(LifecyclePhase.Created, output2.Phase);
-            Assert.AreEqual(LifecyclePhase.Playing, output.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, fft.Phase);
+            Assert.AreEqual(LifecyclePhase.Init, output2.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, output.Phase);
 
             input.Update(inputNullEnum, SamplingFrequency.Hz48000, 0, 1);
             WaitHandle.WaitAll(handles);
@@ -57,9 +57,9 @@ namespace NewAudioTest
             output2.Update(fft.Output, outputNullEnum, SamplingFrequency.Hz48000, 0, 1);
             WaitHandle.WaitAll(handles);
             
-            Assert.AreEqual(LifecyclePhase.Playing, fft.Phase);
-            Assert.AreEqual(LifecyclePhase.Created, output.Phase);
-            Assert.AreEqual(LifecyclePhase.Playing, output2.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, fft.Phase);
+            Assert.AreEqual(LifecyclePhase.Init, output.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, output2.Phase);
         }
     }
 }

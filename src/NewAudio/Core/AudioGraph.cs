@@ -29,14 +29,14 @@ namespace NewAudio.Core
             foreach (var node in _nodes)
             {
                 
-                node.UpdateParams.Playing.Value = true;
+                node.PlayParams.Playing.Value = true;
             }
         }
         public void StopAll()
         {
             foreach (var node in _nodes)
             {
-                node.UpdateParams.Playing.Value = false;
+                node.PlayParams.Playing.Value = false;
             }
         }
 

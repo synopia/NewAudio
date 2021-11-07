@@ -24,16 +24,16 @@ namespace NewAudioTest
                 Calls.Add($"Exception in {method}");
             }
 
-            public bool IsCreateValid()
+            public bool IsInitValid()
             {
                 return true;
             }
-            public bool IsUpdateValid()
+            public bool IsPlayValid()
             {
                 return true;
             }
 
-            public async Task<bool> Create()
+            public async Task<bool> Init()
             {
                 Calls.Add("Create");
                 await Task.Delay(10);
@@ -66,21 +66,21 @@ namespace NewAudioTest
         {
             var device = new TestDevice();
             var lf = new LifecycleStateMachine(device);
-            lf.EventHappens(LifecycleEvents.eCreate);
+            lf.EventHappens(LifecycleEvents.eInit);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Created, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Init, device.Phase);
             lf.EventHappens(LifecycleEvents.ePlay);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Playing, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, device.Phase);
             lf.EventHappens(LifecycleEvents.eStop);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Created, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Init, device.Phase);
             lf.EventHappens(LifecycleEvents.ePlay);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Playing, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, device.Phase);
             lf.EventHappens(LifecycleEvents.eStop);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Created, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Init, device.Phase);
             lf.EventHappens(LifecycleEvents.eFree);
             lf.WaitForEvents.WaitOne();
             Assert.AreEqual(LifecyclePhase.Uninitialized, device.Phase);
@@ -97,14 +97,14 @@ namespace NewAudioTest
         {
             var device = new TestDevice();
             var lf = new LifecycleStateMachine(device);
-            lf.EventHappens(LifecycleEvents.eCreate);
+            lf.EventHappens(LifecycleEvents.eInit);
             lf.EventHappens(LifecycleEvents.ePlay);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Playing, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, device.Phase);
             lf.EventHappens(LifecycleEvents.ePlay);
             lf.EventHappens(LifecycleEvents.eStop);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Created, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Init, device.Phase);
             lf.EventHappens(LifecycleEvents.eStop);
             lf.EventHappens(LifecycleEvents.eFree);
             lf.WaitForEvents.WaitOne();
@@ -120,15 +120,15 @@ namespace NewAudioTest
         {
             var device = new TestDevice();
             var lf = new LifecycleStateMachine(device);
-            lf.EventHappens(LifecycleEvents.eCreate);
+            lf.EventHappens(LifecycleEvents.eInit);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Created, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Init, device.Phase);
             lf.EventHappens(LifecycleEvents.ePlay);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Playing, device.Phase);
-            lf.EventHappens(LifecycleEvents.eCreate);
+            Assert.AreEqual(LifecyclePhase.Play, device.Phase);
+            lf.EventHappens(LifecycleEvents.eInit);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Playing, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, device.Phase);
             lf.EventHappens(LifecycleEvents.eFree);
             lf.WaitForEvents.WaitOne();
             Assert.AreEqual(LifecyclePhase.Uninitialized, device.Phase);

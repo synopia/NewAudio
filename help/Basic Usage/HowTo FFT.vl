@@ -241,7 +241,7 @@
             <Pin Id="QkuNn9q1oZCPwn6qzBse14" Name="Average Bytes Per Second" Kind="OutputPin" />
             <Pin Id="ReVHsYJ2R4VNYmdHg6ePwv" Name="Encoding" Kind="OutputPin" />
           </Node>
-          <Pad Id="NjNlC8nOeaBLHpcQwiGzlU" Comment="Play" Bounds="996,260,84,73" ShowValueBox="true" isIOBox="true" Value="True">
+          <Pad Id="NjNlC8nOeaBLHpcQwiGzlU" Comment="Play" Bounds="996,260,84,73" ShowValueBox="true" isIOBox="true" Value="False">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Boolean" />
               <FullNameCategoryReference ID="Primitive" />
@@ -418,9 +418,9 @@
             <Pin Id="DbcSOPRRrm8Ln7rHLRUBAq" Name="Sampling Frequency" Kind="InputPin" />
             <Pin Id="THL7NuGMJRHOLxihzrThn7" Name="Desired Latency" Kind="InputPin" />
             <Pin Id="IgoXYusA45aLioxyYUumJV" Name="Phase" Kind="OutputPin" />
-            <Pin Id="JBTY1ti4MAeNAzYisx9Mj3" Name="Output" Kind="OutputPin" />
             <Pin Id="KAWippLy7t8PXmpwKd8x9l" Name="Debug" Kind="OutputPin" />
             <Pin Id="Kl097mtpYYONNhBVERCVAq" Name="Errors" Kind="OutputPin" />
+            <Pin Id="JBTY1ti4MAeNAzYisx9Mj3" Name="Output" Kind="OutputPin" />
           </Node>
           <Node Bounds="740,152,105,19" Id="ImN3FunuXUPPj8ggmeS5Uh">
             <p:NodeReference LastCategoryFullName="NewAudio.Output" LastSymbolSource="VL.NewAudio.vl">

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="U3bVYI0uILvPxXgbHoYQOT" LanguageVersion="2021.4.0.526" Version="0.128">
-  <NugetDependency Id="Karzca3RHEMP33W7Z2vdkb" Location="VL.CoreLib" Version="2021.4.0-0526-gd606d93626" />
+<Document xmlns:p="property" Id="U3bVYI0uILvPxXgbHoYQOT" LanguageVersion="2021.4.0.600" Version="0.128">
+  <NugetDependency Id="Karzca3RHEMP33W7Z2vdkb" Location="VL.CoreLib" Version="2021.4.0-0600-g01fe282c1c" />
   <Patch Id="PvyxW6UL2wsPbsk2MghI54">
     <Canvas Id="Ie77yoTwJBuQAtDZf6VEfF" DefaultCategory="NewAudio.Filter" CanvasType="FullCategory">
       <!--
@@ -89,7 +89,7 @@
                   <Pin Id="NuhTqffuVRwOICRkXhDAyx" Name="Output" Kind="StateOutputPin" />
                   <Pin Id="Po9XczFH2A5QNdtsBUMD98" Name="Result" Kind="OutputPin" />
                 </Node>
-                <Node Bounds="633,591" Id="E7INKZSwEHJPBPsw4Cx3Md">
+                <Node Bounds="652,606,25,19" Id="E7INKZSwEHJPBPsw4Cx3Md">
                   <p:NodeReference LastCategoryFullName="Math" LastSymbolSource="CoreLibBasics.vl">
                     <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                     <Choice Kind="OperationCallFlag" Name="-" />
@@ -115,7 +115,8 @@
               <Pin Id="PTNs8Y3YedXPIqV7bJlpQT" Name="Bypass" Kind="InputPin" />
               <Pin Id="MgDwe7Ha1oANVZN7eHo5hO" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
               <Pin Id="IThw6cj47D3MiwsLTIPNn1" Name="Result" Kind="OutputPin" />
-              <Pin Id="Pn3yg9TLDtYOuZuzuogxh4" Name="In Progress" Kind="OutputPin" />
+              <Pin Id="DgfvG9nlYNdNgmk1tchxyX" Name="Phase" Kind="OutputPin" />
+              <Pin Id="TI8tTTqWf1qNrKTtIASrLv" Name="Errors" Kind="OutputPin" />
             </Node>
             <ControlPoint Id="AAoZiiiXFMrPQhGZsNIGzT" Bounds="504,855" />
             <ControlPoint Id="NrBgZS0DkvyNNGJR7unTFj" Bounds="577,201" />
@@ -210,6 +211,12 @@
           <Choice Kind="ClassDefinition" Name="Class" />
           <FullNameCategoryReference ID="Primitive" />
         </p:NodeReference>
+        <p:Interfaces>
+          <TypeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
+            <CategoryReference Kind="Category" Name="NewAudio" />
+            <Choice Kind="MutableInterfaceType" Name="IAudioProcessor" />
+          </TypeReference>
+        </p:Interfaces>
         <Patch Id="SJ2F1CggwxmLwTpXspU7wV">
           <Canvas Id="FmfyBcNVOEsP4ljHndk4km" CanvasType="Group">
             <Node Bounds="498,482,25,19" Id="ThC0HumkdjWQPP5WZituje">
@@ -611,7 +618,8 @@
               <Pin Id="VuFafanU2hkQKuiG3oTlpx" Name="Bypass" Kind="InputPin" />
               <Pin Id="R4MiPVPs1kOOK3busv4bBS" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
               <Pin Id="TreuKOu7LqrNvmxM00s6u0" Name="Result" Kind="OutputPin" />
-              <Pin Id="Q2epErwPeZTPQdEuKlW6IR" Name="In Progress" Kind="OutputPin" />
+              <Pin Id="Ufbp2T13sabQNzGz197Rbh" Name="Phase" Kind="OutputPin" />
+              <Pin Id="HVzcOC39DzYMSI8Zdqprgn" Name="Errors" Kind="OutputPin" />
             </Node>
             <ControlPoint Id="TmTRRGihlwBQVfb7ZsXWhI" Bounds="380,905" />
             <ControlPoint Id="KQ3WRslZ62APqxB0jkP8JH" Bounds="512,230" />
@@ -1066,7 +1074,8 @@
               <Pin Id="SB3kln1P2A5QAjVA96b5SV" Name="Bypass" Kind="InputPin" />
               <Pin Id="MGjhsvTPOTcMrHvjd6Unis" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
               <Pin Id="GZ2zSedSMjcPKlPzQkZJkW" Name="Result" Kind="OutputPin" />
-              <Pin Id="MNmQbwUfGp0QcGaaNQceGL" Name="In Progress" Kind="OutputPin" />
+              <Pin Id="JIok4RkkgTsPydlHahoNA7" Name="Phase" Kind="OutputPin" />
+              <Pin Id="RlItwaOWN4WPV9VSsqe4lK" Name="Errors" Kind="OutputPin" />
             </Node>
             <ControlPoint Id="OGMGnYg1T5aPJNFKM1jcng" Bounds="253,855" />
             <ControlPoint Id="CmRRDwhtKqRMj2QWoOKAnZ" Bounds="385,180" />
@@ -1643,7 +1652,8 @@
               <Pin Id="HZUIUItJmyNM5qf3jCN3Rx" Name="Bypass" Kind="InputPin" />
               <Pin Id="Jt8wwb7CcjZOasRpjt4JgO" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
               <Pin Id="P68F8LOMLB3P0RNuw6oCWn" Name="Result" Kind="OutputPin" />
-              <Pin Id="OOYs91q6kV0PmLTyMEaRi5" Name="In Progress" Kind="OutputPin" />
+              <Pin Id="GCSQjeYELb2ObKSzLYlucE" Name="Phase" Kind="OutputPin" />
+              <Pin Id="HZjw2PrAQbyMMmMOMmuxdq" Name="Errors" Kind="OutputPin" />
             </Node>
             <ControlPoint Id="SVy0cvSo3ipNaIDnRGkDWa" Bounds="275,802" />
             <ControlPoint Id="PtFToAMm2N8Lyk5XkgLvug" Bounds="407,127" />
@@ -2304,7 +2314,8 @@
               <Pin Id="T4tMK3YdW0nO1SZf7YqrQq" Name="Bypass" Kind="InputPin" />
               <Pin Id="Lk3Fp3sj4HtNE5py4HfSXR" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
               <Pin Id="V8Gw4u1nCo7NMkUTodmvox" Name="Result" Kind="OutputPin" />
-              <Pin Id="N0TGHAG6hzTQI6RJoiWM9G" Name="In Progress" Kind="OutputPin" />
+              <Pin Id="Tgoz0Xjgj9oLZwSZNbo91s" Name="Phase" Kind="OutputPin" />
+              <Pin Id="IvqwwmP07HYNilL5GjBscb" Name="Errors" Kind="OutputPin" />
             </Node>
             <ControlPoint Id="UCuSuhCnuJXLafREeCYZyq" Bounds="124,799" />
             <ControlPoint Id="QWFCD3iQd7LMCOmisQmKzN" Bounds="256,124" />
@@ -2675,7 +2686,7 @@
       </Patch>
     </Node>
   </Patch>
-  <NugetDependency Id="TDkojnZcyMAQZhPTN6qXcp" Location="VL.CoreLib" Version="2021.4.0-0526-gd606d93626" />
+  <NugetDependency Id="TDkojnZcyMAQZhPTN6qXcp" Location="VL.CoreLib" Version="2021.4.0-0600-g01fe282c1c" />
   <NugetDependency Id="AzXHsFow6rQNzThUCapm9x" Location="VL.NewAudio" Version="0.3.0-alpha" />
   <DocumentDependency Id="BTLh5AnCDllPqX9dVLD13g" Location="./Helpers.vl" />
 </Document>

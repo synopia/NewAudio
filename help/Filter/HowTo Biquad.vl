@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="Fq8Gx7v40vAPK5BHkG66UJ" LanguageVersion="2021.4.0.526" Version="0.128">
-  <NugetDependency Id="UxZ8D8AKvO4QOsvtEcue7q" Location="VL.CoreLib" Version="2021.4.0-0526-gd606d93626" />
+<Document xmlns:p="property" Id="Fq8Gx7v40vAPK5BHkG66UJ" LanguageVersion="2021.4.0.600" Version="0.128">
+  <NugetDependency Id="UxZ8D8AKvO4QOsvtEcue7q" Location="VL.CoreLib" Version="2021.4.0-0600-g01fe282c1c" />
   <Patch Id="TYumICGirjOLXqm2nQy5hb">
     <Canvas Id="PJRlhiUAsw2L3LZfwsV5A2" DefaultCategory="Main" CanvasType="FullCategory" />
     <!--
@@ -92,8 +92,8 @@
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
               <Choice Kind="ProcessAppFlag" Name="RCFilter" />
             </p:NodeReference>
-            <Pin Id="Cev3ylQEWbrLvtBix4vFSG" Name="High Pass" Kind="InputPin" DefaultValue="False" />
             <Pin Id="HmT3ySBJiNRM4SzkpzlYU8" Name="Input" Kind="InputPin" />
+            <Pin Id="Cev3ylQEWbrLvtBix4vFSG" Name="High Pass" Kind="InputPin" DefaultValue="False" />
             <Pin Id="Ffest9OancsMvuwjXk5R21" Name="RC" Kind="InputPin" />
             <Pin Id="DmifoKGzjTdNAAI5xHbnT8" Name="Result" Kind="OutputPin" />
           </Node>
@@ -144,6 +144,6 @@
       </Patch>
     </Node>
   </Patch>
-  <NugetDependency Id="RwUKimHv8XOPOEVndDfbZW" Location="VL.CoreLib" Version="2021.4.0-0526-gd606d93626" />
+  <NugetDependency Id="RwUKimHv8XOPOEVndDfbZW" Location="VL.CoreLib" Version="2021.4.0-0600-g01fe282c1c" />
   <NugetDependency Id="CieiZnzQnfTNpU80T3BUKO" Location="VL.NewAudio" Version="0.3.0-alpha" />
 </Document>
