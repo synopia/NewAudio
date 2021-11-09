@@ -12,7 +12,6 @@ namespace NewAudio.Nodes
 {
     public class AudioLoopRegionInitParams : AudioNodeInitParams
     {
-        public AudioParam<ExecutionDataflowBlockOptions> InternalOptions;
    
     }
     public class AudioLoopRegionPlayParams : AudioNodePlayParams
@@ -26,7 +25,7 @@ namespace NewAudio.Nodes
         private readonly ILogger _logger;
         private TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
         private IDisposable _inputBufferLink;
-
+        private AudioDataflowOptions InternalOptions;
         private readonly AudioSampleFrameClock _clock = new AudioSampleFrameClock();
         
         private Func<TState, AudioChannels, TState> _updateFunc;
@@ -36,18 +35,16 @@ namespace NewAudio.Nodes
         {
             _logger = AudioService.Instance.Logger.ForContext<AudioLoopRegion<TState>>();
             _logger.Information("Audio loop region created");
+            InternalOptions = (AudioDataflowOptions)Activator.CreateInstance(typeof(AudioDataflowOptions));
         }
 
-        public void UpdateOptions(AudioDataflowOptions inputOptions,
-            AudioDataflowOptions outputOptions,
-            AudioDataflowOptions internalOptions)
+        public void UpdateInternalOptions(int bufferCount, int maxBuffersPerTask, int maxDegreeOfParallelism,
+            bool singleProducerConstrained, bool ensureOrdered)
         {
-            UpdateOptions(inputOptions, outputOptions);
-            if (internalOptions is { HasChanged: true })
-            {
-                InitParams.InternalOptions.Value = internalOptions.GetAudioExecutionOptions();
-            }
+            InternalOptions.UpdateAudioExecutionOptions(bufferCount, maxBuffersPerTask, maxBuffersPerTask,
+                singleProducerConstrained, ensureOrdered);
             
+
         }
         public  AudioLink Update(
             AudioLink input,
@@ -159,7 +156,7 @@ namespace NewAudio.Nodes
                     ExceptionHappened(e, "TransformBlock");
                 }
                 return output;
-            }, InitParams.InternalOptions.Value);
+            }, InternalOptions.ExecutionDataflowBlockOptions);
 
             return Task.FromResult(true);
         }

@@ -10,9 +10,30 @@ namespace NewAudio.Core
         public AudioParam<bool> SingleProducerConstrained;
         public AudioParam<int> MaxDegreeOfParallelism;
 
-        private DataflowBlockOptions _options;
+        public DataflowBlockOptions DataflowBlockOptions =>  new()
+        {
+            BoundedCapacity = BufferCount.Value,
+            MaxMessagesPerTask = MaxBuffersPerTask.Value,
+            EnsureOrdered = EnsureOrdered.Value
+        };
+        public ExecutionDataflowBlockOptions ExecutionDataflowBlockOptions => new()
+        {
+            BoundedCapacity = BufferCount.Value,
+            MaxMessagesPerTask = MaxBuffersPerTask.Value,
+            EnsureOrdered = EnsureOrdered.Value,
+            SingleProducerConstrained = SingleProducerConstrained.Value,
+            MaxDegreeOfParallelism = MaxDegreeOfParallelism.Value
+        };
         
-        public bool UpdateOptions(int bufferCount, int maxBuffersPerTask, int maxDegreeOfParallelism,
+        public bool UpdateAudioDataflowOptions(int bufferCount, int maxBuffersPerTask, bool ensureOrdered)
+        {
+            BufferCount.Value = bufferCount;
+            MaxBuffersPerTask.Value = maxBuffersPerTask;
+            EnsureOrdered.Value = ensureOrdered;
+
+            return HasChanged;
+        }
+        public bool UpdateAudioExecutionOptions(int bufferCount, int maxBuffersPerTask, int maxDegreeOfParallelism,
             bool singleProducerConstrained, bool ensureOrdered)
         {
             BufferCount.Value = bufferCount;
@@ -20,39 +41,7 @@ namespace NewAudio.Core
             EnsureOrdered.Value = ensureOrdered;
             SingleProducerConstrained.Value = singleProducerConstrained;
             MaxDegreeOfParallelism.Value = maxDegreeOfParallelism;
-
             return HasChanged;
-        }
-
-        public DataflowBlockOptions GetAudioDataflowOptions()
-        {
-            if (_options == null || HasChanged)
-            {
-                _options = new DataflowBlockOptions()
-                {
-                    BoundedCapacity = BufferCount.Value,
-                    MaxMessagesPerTask = MaxBuffersPerTask.Value,
-                    EnsureOrdered = EnsureOrdered.Value
-                };
-            }
-
-            return _options;
-        }
-        public ExecutionDataflowBlockOptions GetAudioExecutionOptions()
-        {
-            if (_options == null || HasChanged)
-            {
-                _options = new ExecutionDataflowBlockOptions()
-                {
-                    BoundedCapacity = BufferCount.Value,
-                    MaxMessagesPerTask = MaxBuffersPerTask.Value,
-                    EnsureOrdered = EnsureOrdered.Value,
-                    SingleProducerConstrained = SingleProducerConstrained.Value,
-                    MaxDegreeOfParallelism = MaxDegreeOfParallelism.Value
-                };
-            }
-
-            return (ExecutionDataflowBlockOptions)_options;
         }
     }
 }

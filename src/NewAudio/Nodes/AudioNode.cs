@@ -17,8 +17,6 @@ namespace NewAudio.Nodes
     {
         public AudioParam<bool> Playing;
         public AudioParam<AudioLink> Input;
-        public AudioParam<DataflowBlockOptions> InputOptions;
-        public AudioParam<DataflowBlockOptions> OutputOptions;
     }
 
     public interface IAudioNode : IDisposable, ILifecycleDevice
@@ -34,7 +32,8 @@ namespace NewAudio.Nodes
         private readonly ILogger _logger = AudioService.Instance.Logger.ForContext<AudioNode<TInit, TPlay>>();
         
         private List<Exception> _exceptions = new();
-        
+        private AudioDataflowOptions InputOptions;
+        private AudioDataflowOptions OutputOptions;
         public TInit InitParams { get; }
         public TPlay PlayParams { get; }
         AudioNodeInitParams IAudioNode.InitParams => InitParams;
@@ -54,6 +53,8 @@ namespace NewAudio.Nodes
             Lifecycle = new LifecycleStateMachine(this);
             InitParams = (TInit)Activator.CreateInstance(typeof(TInit));
             PlayParams = (TPlay)Activator.CreateInstance(typeof(TPlay));
+            InputOptions = (AudioDataflowOptions)Activator.CreateInstance(typeof(AudioDataflowOptions));
+            OutputOptions = (AudioDataflowOptions)Activator.CreateInstance(typeof(AudioDataflowOptions));
         }
 
         public void ExceptionHappened(Exception exception, string method)
@@ -66,22 +67,15 @@ namespace NewAudio.Nodes
             }
         }
 
-        public void UpdateOptions(AudioDataflowOptions inputOptions, AudioDataflowOptions outputOptions)
+        public void UpdateInputOptions(int bufferCount, int maxBuffersPerTask, bool ensureOrdered)
         {
-            if (inputOptions is { HasChanged: true })
-            {
-                PlayParams.InputOptions.Value = inputOptions.GetAudioDataflowOptions();
-                inputOptions.Commit();
-
-            }
-
-            if (outputOptions is { HasChanged: true })
-            {
-                PlayParams.OutputOptions.Value = outputOptions.GetAudioDataflowOptions();
-                outputOptions.Commit();
-            }
+            InputOptions.UpdateAudioDataflowOptions(bufferCount, maxBuffersPerTask, ensureOrdered);
         }
-        
+        public void UpdateOutputOptions(int bufferCount, int maxBuffersPerTask, bool ensureOrdered)
+        {
+            OutputOptions.UpdateAudioDataflowOptions(bufferCount, maxBuffersPerTask, ensureOrdered);
+        }
+
         protected AudioLink Update()
         {
             // TODO
@@ -93,19 +87,20 @@ namespace NewAudio.Nodes
                     // Config.Input = null;
                 // }
             // }
+            if (InputOptions.HasChanged)
+            {
+                InputOptions.Commit();
+                InputBufferBlock.SetBlockOptions(InputOptions.DataflowBlockOptions);
+            }
+
+            if (OutputOptions.HasChanged)
+            {
+                OutputOptions.Commit();
+                Output.TargetBlock.SetBlockOptions(OutputOptions.DataflowBlockOptions);
+            }    
             if (PlayParams.HasChanged)
             {
-                if (PlayParams.InputOptions.HasChanged)
-                {
-                    PlayParams.InputOptions.Commit();
-                    InputBufferBlock.SetBlockOptions(PlayParams.InputOptions.Value);
-                }
-
-                if (PlayParams.OutputOptions.HasChanged)
-                {
-                    PlayParams.OutputOptions.Commit();
-                    Output.TargetBlock.SetBlockOptions(PlayParams.OutputOptions.Value);
-                }
+               
             }
             if( InitParams.HasChanged){
                 InitParams.Commit();
@@ -135,9 +130,7 @@ namespace NewAudio.Nodes
             {
                 PlayParams.Commit();
                 Lifecycle.EventHappens(PlayParams.Playing.Value ? LifecycleEvents.ePlay : LifecycleEvents.eStop);
-            }
-
-            if (IsInitValid() && IsPlayValid() && PlayParams.Playing.Value && Phase != LifecyclePhase.Play)
+            } else if (IsInitValid() && IsPlayValid() && PlayParams.Playing.Value && Phase != LifecyclePhase.Play)
             {
                 Lifecycle.EventHappens(PlayParams.Playing.Value ? LifecycleEvents.ePlay : LifecycleEvents.eStop);
             }
@@ -179,9 +172,9 @@ namespace NewAudio.Nodes
             {
                 if (disposing)
                 {
-                    AudioService.Instance.Graph.RemoveNode(this);
                     _inputLink?.Dispose();
                     Output.Dispose();
+                    AudioService.Instance.Graph.RemoveNode(this);
                 }
 
                 _disposedValue = true;

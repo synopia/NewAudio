@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using Abodit.StateMachine;
 using Serilog;
 
@@ -39,7 +40,7 @@ namespace NewAudio.Core
     }
 
     [Serializable]
-    public class LifecycleStateMachine : StateMachineAsync<LifecycleStateMachine, Event, ILifecycleDevice>
+    public class LifecycleStateMachine : StateMachineAsync<LifecycleStateMachine, Event, ILifecycleDevice>, IDisposable
     {
         protected override void OnStateChanging(ILifecycleDevice device, State oldState, State newState)
         {
@@ -192,49 +193,66 @@ namespace NewAudio.Core
                     });
         }
 
-        private readonly ExceptionHandler _handler = new ExceptionHandler();
-        private Queue<Event> _events = new Queue<Event>();
-        public ManualResetEvent  WaitForEvents = new ManualResetEvent(false); 
+        private readonly ExceptionHandler _handler = new();
+        private ActionBlock<Event> _actionBlock;
+        public ManualResetEvent WaitForEvents = new ManualResetEvent(false);
+        private int _eventsInProcess = 0;
+        private IDisposable _link;
+        private BufferBlock<Event> _inputQueue = new(new DataflowBlockOptions()
+        {
+            MaxMessagesPerTask = 1
+        });
 
         public LifecycleStateMachine(ILifecycleDevice context) : base(Uninitialized)
         {
             _handler.Device = context;
-            EventHappened += (arg) =>
+            _actionBlock = new ActionBlock<Event>(async evt =>
             {
-                Event next=null;
-                lock (_events)
-                {
-                    _events.Dequeue();
-                    if (_events.Count>0)
-                    {
-                        next = _events.Peek();
-                    }
-                }
-
-                if (next != null)
-                {
-                    base.EventHappens(next, _handler);
-                }
-                else
+                await base.EventHappens(evt, _handler);
+                var r = Interlocked.Decrement(ref _eventsInProcess);
+                if (r == 0)
                 {
                     WaitForEvents.Set();
                 }
-            };
+            }, new ExecutionDataflowBlockOptions()
+            {
+                BoundedCapacity = 1,
+                SingleProducerConstrained = true,
+                MaxDegreeOfParallelism = 1,
+                MaxMessagesPerTask = 1
+            });
+            _link = _inputQueue.LinkTo(_actionBlock);
         }
 
         public void EventHappens(Event @event)
         {
-            var empty = false;
-            WaitForEvents.Reset();
-            lock (_events)
+            
+            var r= Interlocked.Increment(ref _eventsInProcess);
+            if (r == 1)
             {
-                empty = _events.Count==0;
-                _events.Enqueue(@event);
+                WaitForEvents.Reset();
             }
+            _inputQueue.Post(@event);
+        }
 
-            if (empty)
+        private bool _disposedValue;
+
+        public void Dispose()
+        {
+            if (!_disposedValue)
             {
-                base.EventHappens(@event, _handler);
+                _eventsInProcess = 0;
+                WaitForEvents.Dispose();
+                _link.Dispose();
+                _inputQueue.Complete();
+                _actionBlock.Complete();
+                Task.WaitAll(new[] { _actionBlock.Completion, _inputQueue.Completion });
+
+                _link = null;
+                WaitForEvents = null;
+                _inputQueue = null;
+                _actionBlock = null;
+                _disposedValue = true;
             }
         }
 
@@ -248,7 +266,7 @@ namespace NewAudio.Core
                 set => Device.Phase = value;
             }
 
-            public async Task<bool> Init()
+            async Task<bool> ILifecycleDevice.Init()
             {
                 try
                 {
@@ -278,7 +296,8 @@ namespace NewAudio.Core
                     return false;
                 }
             }
-            public bool Play()
+
+            bool ILifecycleDevice.Play()
             {
                 try
                 {

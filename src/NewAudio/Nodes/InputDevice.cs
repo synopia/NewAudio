@@ -75,13 +75,11 @@ namespace NewAudio.Nodes
             };
             var resp = await _device.Create(req);
             _logger.Information("Input device changed: {device} Channels={channels}, Driver Channels={driver}, Latency={latency}, Frame size={frameSize}", _device, resp.RecordingChannels, resp.DriverRecordingChannels, resp.Latency, resp.FrameSize);
-            _device.Start();
             return true;
         }
 
         public override async Task<bool> Free()
         {
-            _device.Stop();
             _device.Free();
             await _audioInputBlock.Free();
             return true;

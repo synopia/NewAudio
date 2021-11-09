@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using NAudio.Wave;
 using NewAudio.Core;
 using NewAudio.Devices;
@@ -16,255 +14,159 @@ namespace NewAudioTest
     [TestFixture]
     public class DevicesTest
     {
-        private TestDevice _inputDevice;
-        private TestDevice _outputDevice;
-        private WaveInputDevice _inputEnum;
-        private WaveOutputDevice _outputEnum;
-        private WaveOutputDevice _outputNullEnum;
-        private WaveInputDevice _inputNullEnum;
-        private InputDevice _input;
-        private OutputDevice _output;
-
-        public class TestDevice : IDevice
+        private void Wait(InputDevice input, OutputDevice output)
         {
-            public List<string> MethodCalls = new List<string>();
-            public List<int> Threads = new List<int>();
-
-            public void Dispose()
-            {
-                MethodCalls.Add("Dispose");
-            }
-
-            public string Name { get; }
-            public bool IsInputDevice => true;
-            public bool IsOutputDevice => true;
-            private bool _isPlaying;
-            private bool _isRecording;
-
-            public AudioDataProvider AudioDataProvider { get; set; }
-
-            public TestDevice(string name)
-            {
-                Name = name;
-            }
-
-            public LifecyclePhase Phase { get; set; }
-
-            public bool IsInputValid(DeviceConfigRequest config)
-            {
-                return true;
-            }
-
-            public bool Free()
-            {
-                Threads.Add(Thread.CurrentThread.ManagedThreadId);
-                MethodCalls.Add("Free");
-                return true;
-            }
-
-            public bool Start()
-            {
-                Threads.Add(Thread.CurrentThread.ManagedThreadId);
-                MethodCalls.Add(_isPlaying ? "Play" : "Record");
-                return true;
-            }
-
-            public bool Stop()
-            {
-                Threads.Add(Thread.CurrentThread.ManagedThreadId);
-                MethodCalls.Add("Stop");
-                return true;
-            }
-
-            public void ExceptionHappened(Exception e, string method)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<DeviceConfigResponse> Create(DeviceConfigRequest config)
-            {
-                Threads.Add(Thread.CurrentThread.ManagedThreadId);
-                _isPlaying = config.IsPlaying;
-                _isRecording = config.IsRecording;
-
-                // await Task.Delay(1);
-                MethodCalls.Add(_isPlaying ? $"InitPlayback" : $"InitRecording");
-                return Task.FromResult(new DeviceConfigResponse());
-            }
-        }
-
-        public class TestDriver : IDriver
-        {
-            public string Name => "TEST";
-
-            public IEnumerable<IDevice> GetDevices()
-            {
-                return new[] { new TestDevice("TEST INPUT"), new TestDevice("TEST OUTPUT"), };
-            }
-        }
-
-        [SetUp]
-        protected void Setup()
-        {
-            AudioService.Instance.Init();
-
-            DriverManager.Instance.AddDriver(new TestDriver());
-            _inputEnum = new WaveInputDevice("TEST INPUT");
-            _outputEnum = new WaveOutputDevice("TEST OUTPUT");
-            _inputNullEnum = new WaveInputDevice("Null: Input");
-            _outputNullEnum = new WaveOutputDevice("Null: Output");
-            _inputDevice = ((TestDevice)_inputEnum.Tag);
-            _outputDevice = ((TestDevice)_outputEnum.Tag);
-            _inputDevice.MethodCalls.Clear();
-            _outputDevice.MethodCalls.Clear();
-            Assert.AreEqual("TEST INPUT", _inputDevice.Name);
-            Assert.AreEqual("TEST OUTPUT", _outputDevice.Name);
-        }
-
-        private void Wait()
-        {
-            _input.Lifecycle.WaitForEvents.WaitOne();
-            _output.Lifecycle.WaitForEvents.WaitOne();
+            input.Lifecycle.WaitForEvents.WaitOne();
+            output.Lifecycle.WaitForEvents.WaitOne();
         }
 
         [Test]
         public void TestLifecyclePlayStopPlay()
         {
-            var mainThreadId = Thread.CurrentThread.ManagedThreadId;
+            AudioService.Instance.Init();
+            TestDeviceSetup.Init();
+            using var input = new InputDevice();
+            using var output = new OutputDevice();
+            input.Update(null);
+            output.Update(null, null);
+            Wait(input, output);
+            Assert.AreEqual(LifecyclePhase.Uninitialized, output.Phase);
+            Assert.AreEqual(LifecyclePhase.Uninitialized, input.Phase);
 
-            _input = new InputDevice();
-            _output = new OutputDevice();
-            _input.Update(null);
-            _output.Update(null, null);
-            Wait();
-            Assert.AreEqual(LifecyclePhase.Uninitialized, _output.Phase);
-            Assert.AreEqual(LifecyclePhase.Uninitialized, _input.Phase);
+            input.Update(TestDeviceSetup.InputEnum);
+            output.Update(input.Output, TestDeviceSetup.OutputEnum);
 
-            _input.Update(_inputEnum);
-            _output.Update(_input.Output, _outputEnum);
+            Wait(input, output);;
+            Assert.AreEqual(LifecyclePhase.Init, input.Phase);
+            Assert.AreEqual(LifecyclePhase.Init, output.Phase);
+            Assert.AreEqual(new[] { "InitRecording" }, TestDeviceSetup.InputDevice.MethodCalls,
+                string.Join(", ", TestDeviceSetup.InputDevice.MethodCalls));
+            Assert.AreEqual(new[] { "InitPlayback" }, TestDeviceSetup.OutputDevice.MethodCalls,
+                string.Join(", ", TestDeviceSetup.OutputDevice.MethodCalls));
 
-            Wait();
-            Assert.AreEqual(LifecyclePhase.Init, _input.Phase);
-            Assert.AreEqual(LifecyclePhase.Init, _output.Phase);
+            input.PlayParams.Playing.Value = true;
+            output.PlayParams.Playing.Value = true;
+            input.Update(TestDeviceSetup.InputEnum);
+            output.Update(input.Output, TestDeviceSetup.OutputEnum);
+            Wait(input, output);;
+            Assert.AreEqual(LifecyclePhase.Play, input.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, output.Phase);
+            Assert.AreEqual(new[] { "InitRecording", "Record" }, TestDeviceSetup.InputDevice.MethodCalls,
+                string.Join(", ", TestDeviceSetup.InputDevice.MethodCalls));
+            Assert.AreEqual(new[] { "InitPlayback", "Play" }, TestDeviceSetup.OutputDevice.MethodCalls,
+                string.Join(", ", TestDeviceSetup.OutputDevice.MethodCalls));
 
-            _input.PlayParams.Playing.Value = true;
-            _output.PlayParams.Playing.Value = true;
-            _input.Update(_inputEnum);
-            _output.Update(_input.Output, _outputEnum);
-            Wait();
-            Assert.AreEqual(LifecyclePhase.Play, _input.Phase);
-            Assert.AreEqual(LifecyclePhase.Play, _output.Phase);
+            input.PlayParams.Playing.Value = true;
+            output.PlayParams.Playing.Value = true;
+            input.Update(TestDeviceSetup.InputEnum);
+            output.Update(input.Output, TestDeviceSetup.OutputEnum);
+            Wait(input, output);;
+            Assert.AreEqual(LifecyclePhase.Play, input.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, output.Phase);
+            Assert.AreEqual(new[] { "InitRecording", "Record" }, TestDeviceSetup.InputDevice.MethodCalls,
+                string.Join(", ", TestDeviceSetup.InputDevice.MethodCalls));
+            Assert.AreEqual(new[] { "InitPlayback", "Play" }, TestDeviceSetup.OutputDevice.MethodCalls,
+                string.Join(", ", TestDeviceSetup.OutputDevice.MethodCalls));
 
-            _input.PlayParams.Playing.Value = true;
-            _output.PlayParams.Playing.Value = true;
-            _input.Update(_inputEnum);
-            _output.Update(_input.Output, _outputEnum);
-            Wait();
-            Assert.AreEqual(LifecyclePhase.Play, _input.Phase);
-            Assert.AreEqual(LifecyclePhase.Play, _output.Phase);
+            input.PlayParams.Playing.Value = false;
+            output.PlayParams.Playing.Value = false;
+            input.Update(TestDeviceSetup.InputEnum);
+            output.Update(input.Output, TestDeviceSetup.OutputEnum);
+            Wait(input, output);;
+            Assert.AreEqual(LifecyclePhase.Init, input.Phase);
+            Assert.AreEqual(LifecyclePhase.Init, output.Phase);
+            Assert.AreEqual(new[] { "InitRecording", "Record", "Stop" }, TestDeviceSetup.InputDevice.MethodCalls,
+                string.Join(", ", TestDeviceSetup.InputDevice.MethodCalls));
+            Assert.AreEqual(new[] { "InitPlayback", "Play", "Stop" }, TestDeviceSetup.OutputDevice.MethodCalls,
+                string.Join(", ", TestDeviceSetup.OutputDevice.MethodCalls));
 
-            _input.PlayParams.Playing.Value = false;
-            _output.PlayParams.Playing.Value = false;
-            _input.Update(_inputEnum);
-            _output.Update(_input.Output, _outputEnum);
-            Wait();
-            Assert.AreEqual(LifecyclePhase.Init, _input.Phase);
-            Assert.AreEqual(LifecyclePhase.Init, _output.Phase);
-
-            _input.PlayParams.Playing.Value = true;
-            _output.PlayParams.Playing.Value = true;
-            _input.Update(_inputEnum);
-            _output.Update(_input.Output, _outputEnum);
-            Wait();
-            Assert.AreEqual(LifecyclePhase.Play, _input.Phase);
-            Assert.AreEqual(LifecyclePhase.Play, _output.Phase);
-
-            Log.Logger.Warning("{x}", _inputDevice.MethodCalls);
-            Assert.AreEqual(new[] { "InitRecording", "Record" }, _inputDevice.MethodCalls,
-                string.Join(", ", _inputDevice.MethodCalls));
-            Assert.AreEqual(new[] { "InitPlayback", "Play" }, _outputDevice.MethodCalls,
-                string.Join(", ", _outputDevice.MethodCalls));
-
-            // Assert.AreEqual(1, _inputDevice.Threads.Distinct().Count());
-            // Assert.AreEqual(mainThreadId, _inputDevice.Threads[0]);
-            // Assert.AreEqual(1, _outputDevice.Threads.Distinct().Count());
-            // Assert.AreEqual(mainThreadId, _outputDevice.Threads[0]);
-            _inputDevice.Dispose();
-            _outputDevice.Dispose();
+            input.PlayParams.Playing.Value = true;
+            output.PlayParams.Playing.Value = true;
+            input.Update(TestDeviceSetup.InputEnum);
+            output.Update(input.Output, TestDeviceSetup.OutputEnum);
+            Wait(input, output);;
+            Assert.AreEqual(LifecyclePhase.Play, input.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, output.Phase);
+            Assert.AreEqual(new[] { "InitRecording", "Record", "Stop", "Record" }, TestDeviceSetup.InputDevice.MethodCalls,
+                string.Join(", ", TestDeviceSetup.InputDevice.MethodCalls));
+            Assert.AreEqual(new[] { "InitPlayback", "Play", "Stop", "Play" }, TestDeviceSetup.OutputDevice.MethodCalls,
+                string.Join(", ", TestDeviceSetup.OutputDevice.MethodCalls));
         }
 
 
         [Test]
         public void TestLifecycleChangeDevice()
         {
+            AudioService.Instance.Init();
+            TestDeviceSetup.Init();
+            using var output = new OutputDevice();
+            using var input = new InputDevice();
             var mainThreadId = Thread.CurrentThread.ManagedThreadId;
-            _input = new InputDevice();
-            _output = new OutputDevice();
 
-            _input.PlayParams.Playing.Value = true;
-            _output.PlayParams.Playing.Value = true;
-            _input.Update(_inputEnum, SamplingFrequency.Hz8000, 1);
-            _output.Update(_input.Output, _outputEnum, SamplingFrequency.Hz8000, 1);
-            Wait();
-            Assert.AreEqual(LifecyclePhase.Play, _input.Phase);
-            Assert.AreEqual(LifecyclePhase.Play, _output.Phase);
+            input.PlayParams.Playing.Value = true;
+            output.PlayParams.Playing.Value = true;
+            input.Update(TestDeviceSetup.InputEnum, SamplingFrequency.Hz8000, 1);
+            output.Update(input.Output, TestDeviceSetup.OutputEnum, SamplingFrequency.Hz8000, 1);
+            Wait(input, output);;
+            Assert.AreEqual(LifecyclePhase.Play, input.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, output.Phase);
 
-            _input.PlayParams.Playing.Value = false;
-            _output.PlayParams.Playing.Value = false;
-            _input.Update(_inputEnum, SamplingFrequency.Hz8000, 1);
-            _output.Update(_input.Output, _outputEnum, SamplingFrequency.Hz8000, 1);
-            Wait();
-            Assert.AreEqual(LifecyclePhase.Init, _input.Phase);
-            Assert.AreEqual(LifecyclePhase.Init, _output.Phase);
+            input.PlayParams.Playing.Value = false;
+            output.PlayParams.Playing.Value = false;
+            input.Update(TestDeviceSetup.InputEnum, SamplingFrequency.Hz8000, 1);
+            output.Update(input.Output, TestDeviceSetup.OutputEnum, SamplingFrequency.Hz8000, 1);
+            Wait(input, output);;
+            Assert.AreEqual(LifecyclePhase.Init, input.Phase);
+            Assert.AreEqual(LifecyclePhase.Init, output.Phase);
 
-            _input.Update(_inputNullEnum, SamplingFrequency.Hz8000, 2);
-            _output.Update(_input.Output, _outputNullEnum, SamplingFrequency.Hz8000, 2);
-            Wait();
-            Assert.AreEqual(LifecyclePhase.Init, _input.Phase);
-            Assert.AreEqual(LifecyclePhase.Init, _output.Phase);
+            input.Update(TestDeviceSetup.InputNullEnum, SamplingFrequency.Hz8000, 2);
+            output.Update(input.Output, TestDeviceSetup.OutputNullEnum, SamplingFrequency.Hz8000, 2);
+            Wait(input, output);;
+            Assert.AreEqual(LifecyclePhase.Init, input.Phase);
+            Assert.AreEqual(LifecyclePhase.Init, output.Phase);
 
-            _input.PlayParams.Playing.Value = true;
-            _output.PlayParams.Playing.Value = true;
-            _input.Update(_inputEnum, SamplingFrequency.Hz8000, 1);
-            _output.Update(_input.Output, _outputEnum, SamplingFrequency.Hz8000, 1);
-            Wait();
-            Assert.AreEqual(LifecyclePhase.Play, _input.Phase);
-            Assert.AreEqual(LifecyclePhase.Play, _output.Phase);
+            input.PlayParams.Playing.Value = true;
+            output.PlayParams.Playing.Value = true;
+            input.Update(TestDeviceSetup.InputEnum, SamplingFrequency.Hz8000, 1);
+            output.Update(input.Output, TestDeviceSetup.OutputEnum, SamplingFrequency.Hz8000, 1);
+            Wait(input, output);;
+            Assert.AreEqual(LifecyclePhase.Play, input.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, output.Phase);
 
-            _output.Update(_input.Output, _outputNullEnum, SamplingFrequency.Hz8000, 2);
-            Wait();
-            _output.Update(_input.Output, _outputEnum, SamplingFrequency.Hz8000, 1);
-            Wait();
+            output.Update(input.Output, TestDeviceSetup.OutputNullEnum, SamplingFrequency.Hz8000, 2);
+            Wait(input, output);;
+            output.Update(input.Output, TestDeviceSetup.OutputEnum, SamplingFrequency.Hz8000, 1);
+            Wait(input, output);;
 
-            _input.Update(_inputNullEnum, SamplingFrequency.Hz8000, 2);
-            Wait();
-            _input.Update(_inputEnum, SamplingFrequency.Hz8000, 1);
+            input.Update(TestDeviceSetup.InputNullEnum, SamplingFrequency.Hz8000, 2);
+            Wait(input, output);;
+            input.Update(TestDeviceSetup.InputEnum, SamplingFrequency.Hz8000, 1);
 
-            Wait();
-            Assert.AreEqual(LifecyclePhase.Play, _input.Phase);
-            Assert.AreEqual(LifecyclePhase.Play, _output.Phase);
+            Wait(input, output);;
+            Assert.AreEqual(LifecyclePhase.Play, input.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, output.Phase);
 
             Assert.AreEqual(
                 new[]
                 {
-                    "InitRecording", "Record", "Stop", "Free", 
+                    "InitRecording", "Record", "Stop", "Free",
                     "InitRecording", "Record", "Stop", "Free",
                     "InitRecording", "Record"
-                }, _inputDevice.MethodCalls, string.Join(", ", _inputDevice.MethodCalls));
+                }, TestDeviceSetup.InputDevice.MethodCalls, string.Join(", ", TestDeviceSetup.InputDevice.MethodCalls));
             Assert.AreEqual(
                 new[]
                 {
-                    "InitPlayback", "Play", "Stop", "Free", 
-                    "InitPlayback", "Play", "Stop", "Free", 
+                    "InitPlayback", "Play", "Stop", "Free",
+                    "InitPlayback", "Play", "Stop", "Free",
                     "InitPlayback", "Play"
                 },
-                _outputDevice.MethodCalls, string.Join(", ", _outputDevice.MethodCalls));
-            // Assert.AreEqual(1, _inputDevice.Threads.Distinct().Count());
-            // Assert.AreEqual(mainThreadId, _inputDevice.Threads[0]);
-            // Assert.AreEqual(1, _outputDevice.Threads.Distinct().Count());
-            // Assert.AreEqual(mainThreadId, _outputDevice.Threads[0]);
-            _inputDevice.Dispose();
-            _outputDevice.Dispose();
+                TestDeviceSetup.OutputDevice.MethodCalls, string.Join(", ", TestDeviceSetup.OutputDevice.MethodCalls));
+            // Assert.AreEqual(1, TestDeviceSetup.InputDevice.Threads.Distinct().Count());
+            // Assert.AreEqual(mainThreadId, TestDeviceSetup.InputDevice.Threads[0]);
+            // Assert.AreEqual(1, TestDeviceSetup.OutputDevice.Threads.Distinct().Count());
+            // Assert.AreEqual(mainThreadId, TestDeviceSetup.OutputDevice.Threads[0]);
+            // _input.Dispose();
+            // _output.Dispose();
         }
     }
 }

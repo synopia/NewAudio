@@ -144,6 +144,8 @@ namespace NewAudio.Blocks
                     _cancellationTokenSource?.Cancel();
                     _thread.Join();
                     Buffer.Dispose();
+                    _thread = null;
+                    Buffer = null;
                 }
 
                 _disposedValue = disposing;
@@ -152,15 +154,16 @@ namespace NewAudio.Blocks
 
         public void Complete()
         {
-            throw new Exception("This should not be called!");
+            Stop();
         }
 
         public void Fault(Exception exception)
         {
-            throw new Exception("This should not be called!", exception);
+            _logger.Error("{e}", exception);
+            _thread.Abort();
         }
 
-        public Task Completion => _outputBlock.Completion;
+        public Task Completion => Task.Run(() => _thread.Join());
 
         public IDisposable LinkTo(ITargetBlock<AudioDataMessage> target, DataflowLinkOptions linkOptions)
         {
