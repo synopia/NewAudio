@@ -45,7 +45,7 @@ namespace NewAudio.Core
         {
         }
 
-        public void Update(bool playing)
+        public void Update(bool playing, int buffersCount=6)
         {
             var currentFrame = VLSession.Instance.UserRuntime.Frame;
 

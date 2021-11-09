@@ -3,20 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using NewAudio.Blocks;
 using NewAudio.Core;
 using Serilog;
-using VL.Core;
-using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Nodes
 {
     public class AudioNodeInitParams: AudioParams
     {
+
     }
     public class AudioNodePlayParams: AudioParams
     {
         public AudioParam<bool> Playing;
         public AudioParam<AudioLink> Input;
+        public AudioParam<DataflowBlockOptions> InputOptions;
+        public AudioParam<DataflowBlockOptions> OutputOptions;
     }
 
     public interface IAudioNode : IDisposable, ILifecycleDevice
@@ -31,7 +33,7 @@ namespace NewAudio.Nodes
     {
         private readonly ILogger _logger = AudioService.Instance.Logger.ForContext<AudioNode<TInit, TPlay>>();
         
-        private List<Exception> _exceptions = new List<Exception>();
+        private List<Exception> _exceptions = new();
         
         public TInit InitParams { get; }
         public TPlay PlayParams { get; }
@@ -39,16 +41,13 @@ namespace NewAudio.Nodes
         AudioNodePlayParams IAudioNode.PlayParams => PlayParams;
         public AudioLink Output { get; } = new();
 
-        public BufferBlock<AudioDataMessage> InputBufferBlock { get; } = new BufferBlock<AudioDataMessage>(
-            new DataflowBlockOptions
-            {
-                BoundedCapacity = 16
-            });
+        public DynamicBufferBlock InputBufferBlock { get; } = new();
 
         private IDisposable _inputLink;
         
         public LifecyclePhase Phase { get; set; }
         public readonly LifecycleStateMachine Lifecycle;
+
         protected AudioNode()
         {
             AudioService.Instance.Graph.AddNode(this);
@@ -67,6 +66,22 @@ namespace NewAudio.Nodes
             }
         }
 
+        public void UpdateOptions(AudioDataflowOptions inputOptions, AudioDataflowOptions outputOptions)
+        {
+            if (inputOptions is { HasChanged: true })
+            {
+                PlayParams.InputOptions.Value = inputOptions.GetAudioDataflowOptions();
+                inputOptions.Commit();
+
+            }
+
+            if (outputOptions is { HasChanged: true })
+            {
+                PlayParams.OutputOptions.Value = outputOptions.GetAudioDataflowOptions();
+                outputOptions.Commit();
+            }
+        }
+        
         protected AudioLink Update()
         {
             // TODO
@@ -78,8 +93,21 @@ namespace NewAudio.Nodes
                     // Config.Input = null;
                 // }
             // }
-            if (InitParams.HasChanged)
+            if (PlayParams.HasChanged)
             {
+                if (PlayParams.InputOptions.HasChanged)
+                {
+                    PlayParams.InputOptions.Commit();
+                    InputBufferBlock.SetBlockOptions(PlayParams.InputOptions.Value);
+                }
+
+                if (PlayParams.OutputOptions.HasChanged)
+                {
+                    PlayParams.OutputOptions.Commit();
+                    Output.TargetBlock.SetBlockOptions(PlayParams.OutputOptions.Value);
+                }
+            }
+            if( InitParams.HasChanged){
                 InitParams.Commit();
                 Lifecycle.EventHappens(LifecycleEvents.eInit);
             }
@@ -119,7 +147,7 @@ namespace NewAudio.Nodes
 
         public virtual string DebugInfo()
         {
-            return null;
+            return  $"node:[ Input count={InputBufferBlock?.BufferUsage}, Output count={Output?.TargetBlock?.BufferUsage}]";
         }
 
         public IEnumerable<string> ErrorMessages()

@@ -11,6 +11,12 @@ namespace NewAudio.Blocks
         private readonly ILogger _logger = AudioService.Instance.Logger.ForContext<JoinAudioBlock>();
         private IDisposable _link1;
         private IDisposable _link2;
+        public int? OutputBufferCount => _joinOneAndTwo?.OutputCount;
+
+        public override ISourceBlock<AudioDataMessage> Source { get; set; }
+        public override ITargetBlock<AudioDataMessage> Target { get; set; }
+        
+        private JoinBlock<AudioDataMessage, AudioDataMessage> _joinOneAndTwo;
 
         public JoinAudioBlock()
         {
@@ -39,7 +45,7 @@ namespace NewAudio.Blocks
             
                 var joinOneAndTwo = new JoinBlock<AudioDataMessage, AudioDataMessage>(new GroupingDataflowBlockOptions()
                 {
-                    Greedy = true
+                    Greedy = true,
                 });
                 
                 var oneAndTwoAction = new ActionBlock<Tuple<AudioDataMessage, AudioDataMessage>>(input =>
@@ -75,18 +81,23 @@ namespace NewAudio.Blocks
                         }
                     }
                     output.Post(buf);
+                }, new ExecutionDataflowBlockOptions()
+                {
+                    BoundedCapacity = 1,
+                    // todo
                 });
-            
-                _link1 = one.SourceBlock.LinkTo(joinOneAndTwo.Target1);
-                _link2 = two.SourceBlock.LinkTo(joinOneAndTwo.Target2);
-            
-                joinOneAndTwo.LinkTo(oneAndTwoAction);
 
+                _joinOneAndTwo = joinOneAndTwo;
+                _link1 = one.SourceBlock.LinkTo(_joinOneAndTwo.Target1);
+                _link2 = two.SourceBlock.LinkTo(_joinOneAndTwo.Target2);
+            
+                _joinOneAndTwo.LinkTo(oneAndTwoAction);
+                
                 OutputFormat = outputFormat;
                 Source = output;
             }
         }
-
+        
         private bool _disposedValue;
 
         protected override void Dispose(bool disposing)

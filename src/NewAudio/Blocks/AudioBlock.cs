@@ -12,8 +12,8 @@ namespace NewAudio.Blocks
         {
         }
 
-        public ISourceBlock<AudioDataMessage> Source { get; protected set; }
-        public ITargetBlock<AudioDataMessage> Target { get; protected set; }
+        public abstract ISourceBlock<AudioDataMessage> Source { get; set; }
+        public abstract ITargetBlock<AudioDataMessage> Target { get; set; }
         public AudioFormat OutputFormat { get; protected set; }
 
 

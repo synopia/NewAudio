@@ -59,11 +59,7 @@ namespace NewAudio.Nodes
             _device = (IDevice)InitParams.Device.Value.Tag;
             _format = new AudioFormat((int)InitParams.SamplingFrequency.Value, 512, InitParams.Channels.Value);
             _audioInputBlock = new AudioInputBlock();
-            _audioInputBlock.Create(new AudioInputBlockConfig()
-            {
-                AudioFormat = _format,
-                NodeCount = 32
-            });
+            _audioInputBlock.Create(Output.TargetBlock, _format, 32);
             Output.Format = _format;
 
             var req = new DeviceConfigRequest()
@@ -93,7 +89,7 @@ namespace NewAudio.Nodes
 
         public override bool Play()
         {
-            Output.SourceBlock = _audioInputBlock;
+            Output.Play();
             _device.Start();
    
             return true;
@@ -101,7 +97,7 @@ namespace NewAudio.Nodes
 
         public override bool Stop()
         {
-            Output.SourceBlock = null;
+            Output.Stop();
             _device.Stop();
     
             return true;
@@ -109,7 +105,7 @@ namespace NewAudio.Nodes
 
         public override string DebugInfo()
         {
-            return null;
+            return $"Input device:[ {base.DebugInfo()} ]";
         }
 
 

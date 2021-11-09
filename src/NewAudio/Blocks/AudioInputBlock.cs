@@ -9,20 +9,11 @@ using SharedMemory;
 
 namespace NewAudio.Blocks
 {
-    public struct AudioInputBlockConfig
-    {
-        public AudioFormat AudioFormat;
-        public int NodeCount;
-    }
+    
     public class AudioInputBlock : ISourceBlock<AudioDataMessage>
     {
         private readonly ILogger _logger;
-        private readonly ITargetBlock<AudioDataMessage> _outputBlock = new BufferBlock<AudioDataMessage>(
-            new DataflowBlockOptions
-            {
-                BoundedCapacity = 16,
-                MaxMessagesPerTask = 16,
-            });
+        private ITargetBlock<AudioDataMessage> _outputBlock;
 
         private CircularBuffer _buffer;
         public CircularBuffer Buffer { get; private set; }
@@ -36,17 +27,16 @@ namespace NewAudio.Blocks
             _logger = AudioService.Instance.Logger.ForContext<AudioInputBlock>();
         }
 
-        public bool Create(AudioInputBlockConfig config)
+        public void Create(ITargetBlock<AudioDataMessage> outputBlock, AudioFormat audioFormat, int nodeCount)
         {
-            OutputFormat = config.AudioFormat;
+            OutputFormat = audioFormat;
+            _outputBlock = outputBlock;
             
             var name = $"Input Block {AudioService.Instance.Graph.GetNextId()}";
-            Buffer = new CircularBuffer(name, config.NodeCount, 4 * config.AudioFormat.BufferSize);
+            Buffer = new CircularBuffer(name, nodeCount, 4 * audioFormat.BufferSize);
             _buffer = new CircularBuffer(name);
             
             Start();
-
-            return true;
         }
 
         public async Task<bool> Free()
@@ -87,12 +77,8 @@ namespace NewAudio.Blocks
                 _logger.Warning("Already stopping!");
             }
             _cancellationTokenSource.Cancel();
-            // return _task.ContinueWith(t =>
-            // {
-                // _logger.Information("Task stopped, status={status}", t.Status);
-                // _task = null;
-                // return true;
-            // });
+            _thread.Join();
+            _logger.Information("Audio input reading thread finished");
             return Task.FromResult(true);
         }
 
@@ -131,10 +117,6 @@ namespace NewAudio.Blocks
                             ArrayPool<float>.Shared.Return(message.Data);
                         }
                         _logger.Verbose("Posted {samples} ", message.BufferSize);
-                        // if (!res)
-                        // {
-                            // _logger.Warning("Cant deliver message");
-                        // }                        
                     }
 
                 }
@@ -145,6 +127,8 @@ namespace NewAudio.Blocks
             }
 
         }
+        
+        
 
         public void Dispose() => Dispose(true);
 
@@ -158,6 +142,7 @@ namespace NewAudio.Blocks
                 if (disposing)
                 {
                     _cancellationTokenSource?.Cancel();
+                    _thread.Join();
                     Buffer.Dispose();
                 }
 

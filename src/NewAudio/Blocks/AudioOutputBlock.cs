@@ -27,6 +27,7 @@ namespace NewAudio.Blocks
 
         private CancellationTokenSource _cancellationTokenSource;
         private CancellationToken _token;
+        public int? InputBufferCount => _actionBlock?.InputCount;
 
         private bool _firstLoop;
 
@@ -35,17 +36,15 @@ namespace NewAudio.Blocks
             _logger = AudioService.Instance.Logger.ForContext<AudioOutputBlock>();
         }
 
-        public bool Create(AudioOutputBlockConfig config)
+        public void Create(AudioFormat audioFormat, int nodeCount)
         {
-            InputFormat = config.AudioFormat;
+            InputFormat = audioFormat;
 
             var name = $"Output Buffer {AudioService.Instance.Graph.GetNextId()}";
-            _buffer = new CircularBuffer(name, config.NodeCount, 4 * InputFormat.BufferSize);
+            _buffer = new CircularBuffer(name, nodeCount, 4 * InputFormat.BufferSize);
             Buffer = new CircularBuffer(name);
 
             Start();
-            
-            return true;
         }
 
         public async Task<bool> Free()
@@ -122,6 +121,7 @@ namespace NewAudio.Blocks
             }, new ExecutionDataflowBlockOptions
             {
                 MaxDegreeOfParallelism = 1,
+                BoundedCapacity = 2,
                 CancellationToken = _token
             });
         }

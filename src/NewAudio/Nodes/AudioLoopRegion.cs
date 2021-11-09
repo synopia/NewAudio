@@ -12,6 +12,8 @@ namespace NewAudio.Nodes
 {
     public class AudioLoopRegionInitParams : AudioNodeInitParams
     {
+        public AudioParam<ExecutionDataflowBlockOptions> InternalOptions;
+   
     }
     public class AudioLoopRegionPlayParams : AudioNodePlayParams
     {
@@ -36,12 +38,24 @@ namespace NewAudio.Nodes
             _logger.Information("Audio loop region created");
         }
 
+        public void UpdateOptions(AudioDataflowOptions inputOptions,
+            AudioDataflowOptions outputOptions,
+            AudioDataflowOptions internalOptions)
+        {
+            UpdateOptions(inputOptions, outputOptions);
+            if (internalOptions is { HasChanged: true })
+            {
+                InitParams.InternalOptions.Value = internalOptions.GetAudioExecutionOptions();
+            }
+            
+        }
         public  AudioLink Update(
             AudioLink input,
             Func<IFrameClock, TState> create,
             Func<TState, AudioChannels, TState> update,
             bool reset,
             bool bypass,
+            
             int outputChannels = 0
         )
         {
@@ -50,15 +64,10 @@ namespace NewAudio.Nodes
                 _state = create(_clock);
             }
             _updateFunc = update;
-
+            
             PlayParams.Bypass.Value = bypass;
             PlayParams.OutputChannels.Value = outputChannels > 0 ? outputChannels : input?.Format.Channels ?? 0;
             PlayParams.Input.Value = input;
-
-            if (PlayParams.Input.HasChanged && input!=null)
-            {
-               
-            }
 
             return Update();
         }
@@ -150,8 +159,7 @@ namespace NewAudio.Nodes
                     ExceptionHappened(e, "TransformBlock");
                 }
                 return output;
-            });
-           
+            }, InitParams.InternalOptions.Value);
 
             return Task.FromResult(true);
         }
@@ -171,12 +179,10 @@ namespace NewAudio.Nodes
                 return true;
             });
         }
-
-
-
+        
         public override string DebugInfo()
         {
-            return $"LOOP [{_processor?.InputCount}/{_processor?.OutputCount}, {_processor?.Completion.Status}]";
+            return $"LOOP: [ in/out={_processor?.InputCount}/{_processor?.OutputCount}, {base.DebugInfo()} ]";
         }
 
         private bool _disposedValue;

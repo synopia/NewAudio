@@ -39,7 +39,6 @@ namespace NewAudio.Core
                 node.PlayParams.Playing.Value = false;
             }
         }
-
         
         public void AddLink(AudioLink link)
         {
@@ -64,7 +63,7 @@ namespace NewAudio.Core
             _nodes.Remove(node);
             _logger.Debug("Removing node {node}", node);
         }
-
+        
         public string DebugInfo()
         {
             var nodes = "";
@@ -121,5 +120,6 @@ namespace NewAudio.Core
             }
         }
 
+        
     }
 }

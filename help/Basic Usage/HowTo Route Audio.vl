@@ -31,13 +31,6 @@
               <Choice Kind="ProcessAppFlag" Name="AudioLoopRegion" />
               <Choice Kind="StatefulRegion" Name="Region (Stateful)" Fixed="true" />
             </p:NodeReference>
-            <Pin Id="TE50F9a48cVNd19pTBZ0HG" Name="Input" Kind="InputPin" />
-            <Pin Id="H8jnpTlyiTJLwKXCOwjFHW" Name="Reset" Kind="InputPin" />
-            <Pin Id="DEIt3uoxK4QNvBklALqfHH" Name="Bypass" Kind="InputPin" />
-            <Pin Id="DYia53rbKDvPTNlMjSFApf" Name="Output Channels" Kind="InputPin" DefaultValue="2" />
-            <Pin Id="FwagbNcguLLMF2mG5oiawb" Name="Result" Kind="OutputPin" />
-            <Pin Id="UMr0yKIoqhoOd7k4HcymRG" Name="Phase" Kind="OutputPin" />
-            <Pin Id="DqNtfDannJ1MBjNoURSGBH" Name="Errors" Kind="OutputPin" />
             <Patch Id="LQeDfT7CKXVO4Sce3RHrPI" ManuallySortedPins="true">
               <ControlPoint Id="BGqgLvb0X1lOSyEuxwixok" Bounds="701,508" />
               <ControlPoint Id="CCjTvaYfgRaMPAvlmpWcGL" Bounds="723,523" />
@@ -88,6 +81,19 @@
                 <Pin Id="VJUq7SVDPeLPtlHkSGR4UC" Name="Input 1" Kind="InputPin" />
               </Patch>
             </Patch>
+            <Pin Id="BkHEvf5cSOSNWZpPl3EdRZ" Name="Input" Kind="InputPin" />
+            <Pin Id="H8jnpTlyiTJLwKXCOwjFHW" Name="Reset" Kind="InputPin" />
+            <Pin Id="DEIt3uoxK4QNvBklALqfHH" Name="Bypass" Kind="InputPin" />
+            <Pin Id="DYia53rbKDvPTNlMjSFApf" Name="Output Channels" Kind="InputPin" DefaultValue="2" />
+            <Pin Id="TE50F9a48cVNd19pTBZ0HG" Name="Output 2" Kind="InputPin" />
+            <Pin Id="Sl9wK6BhZr2Mj34WKnIMHv" Name="Input Count" Kind="InputPin" DefaultValue="6" />
+            <Pin Id="B8JMJdat1jkMzo6ANehLUz" Name="Output 3" Kind="InputPin" />
+            <Pin Id="D3T3m3TgJT2NvG0sdgc2cu" Name="Output Count" Kind="InputPin" DefaultValue="2" />
+            <Pin Id="TB3UJsH0nIlLraGXdAckRR" Name="Output 2" Kind="OutputPin" />
+            <Pin Id="CGAVtqvRDeJMbenCpS2uRQ" Name="Output 3" Kind="OutputPin" />
+            <Pin Id="FwagbNcguLLMF2mG5oiawb" Name="Result" Kind="OutputPin" />
+            <Pin Id="UMr0yKIoqhoOd7k4HcymRG" Name="Phase" Kind="OutputPin" />
+            <Pin Id="DqNtfDannJ1MBjNoURSGBH" Name="Errors" Kind="OutputPin" />
           </Node>
           <Pad Id="EOHVwzngHO7LAjAcAAe1Es" Comment="Gain" Bounds="1025,593,65,206" ShowValueBox="true" isIOBox="true" Value="1">
             <p:TypeAnnotation>
@@ -100,7 +106,7 @@
               <p:showslider p:Type="Boolean">true</p:showslider>
             </p:ValueBoxSettings>
           </Pad>
-          <Pad Id="Nl1sf3kVeNwP5rchtFIR6V" Comment="Logs" Bounds="110,1065,299,65" ShowValueBox="true" />
+          <Pad Id="Nl1sf3kVeNwP5rchtFIR6V" Comment="Logs" Bounds="110,1065,381,176" ShowValueBox="true" />
           <Pad Id="FT7fiMZQwtNLAu1Vl0zj3R" Comment="Channel Offset" Bounds="753,221,35,15" ShowValueBox="true" isIOBox="true" Value="0">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Integer32" />
@@ -152,6 +158,7 @@
             </p:NodeReference>
             <Pin Id="QklD0fpcFP7LpjQGqFYjBA" Name="Debug" Kind="InputPin" />
             <Pin Id="QwJFtyDTEAfMtwUDJkMzaI" Name="Play" Kind="InputPin" />
+            <Pin Id="HQ7QXREn6f3PF1kv2pYA6o" Name="Buffers Count" Kind="InputPin" />
             <Pin Id="Fa7JQiHTKhJLGYMYNkSRDm" Name="Debug" Kind="OutputPin" />
           </Node>
           <Node Bounds="605,249,290,19" Id="F3oVPbNFPveQYAt5tsaHs3">
@@ -161,6 +168,7 @@
               <CategoryReference Kind="Category" Name="Input" />
               <Choice Kind="ProcessAppFlag" Name="InputDevice" />
             </p:NodeReference>
+            <Pin Id="DrafTrJj3x7MP3sONnqS7B" Name="Output Count" Kind="InputPin" DefaultValue="6" />
             <Pin Id="J4bIlIw215aL8TU0McxdaS" Name="Device" Kind="InputPin" />
             <Pin Id="B7898V962zvNHeogjSKzsv" Name="Channels" Kind="InputPin" />
             <Pin Id="Vw64LMufsakLecOt3tO3x8" Name="Channel Offset" Kind="InputPin" />
@@ -178,6 +186,7 @@
               <CategoryReference Kind="Category" Name="Output" />
               <Choice Kind="ProcessAppFlag" Name="OutputDevice" />
             </p:NodeReference>
+            <Pin Id="PtJHkeBiFWePxL1A3GdyOf" Name="Input Count" Kind="InputPin" DefaultValue="4" />
             <Pin Id="Vdy5CN8DH6cPh30dO3vI7x" Name="Input" Kind="InputPin" />
             <Pin Id="CfXV1DqY0yYMYI8pfhAX53" Name="Device" Kind="InputPin" />
             <Pin Id="UiJy3NIa9fIM9wMUcHZoAf" Name="Channels" Kind="InputPin" />
@@ -185,7 +194,9 @@
             <Pin Id="TQsomDcPzVBPPVN8zmN8Vq" Name="Sampling Frequency" Kind="InputPin" />
             <Pin Id="Ga8tXaFUWmRMKci3iwP92e" Name="Desired Latency" Kind="InputPin" />
             <Pin Id="GlcV25OXIQ6Mj1mq2qltkb" Name="Phase" Kind="OutputPin" />
+            <Pin Id="UGJfIeHrg9mN8zXuFi8iLI" Name="Input Usage" Kind="OutputPin" />
             <Pin Id="OLeFB12KOQHMEHzcqdjt2U" Name="Debug" Kind="OutputPin" />
+            <Pin Id="GYqMIbLfw2aNfxbOhqLacX" Name="Lag Ms" Kind="OutputPin" />
             <Pin Id="BWq2Ik4qcdnPfgfEnggb6m" Name="Errors" Kind="OutputPin" />
           </Node>
           <Pad Id="SpVcOMDgq7sPSqouH8TY2U" Comment="Logs" SlotId="GgGeAxVgweYNDaMeOtCijH" Bounds="889,299,299,65" ShowValueBox="true" />
@@ -208,7 +219,12 @@
           </Pad>
           <Pad Id="DBtxStXUNYOM3FPlV0o8DK" Comment="Sampling Frequency" Bounds="823,187,76,15" ShowValueBox="true" Value="Hz48000" />
           <Pad Id="KJNpeCTT81wLEH0kuS9OjP" Comment="Sampling Frequency" Bounds="823,889,76,15" ShowValueBox="true" Value="Hz48000" />
-          <ControlPoint Id="NAO1ewERZdnMlAZlAXvS8R" Bounds="584,702" />
+          <Pad Id="Ouv4D8NW8lELegFiiZfUaS" Bounds="203,839,35,15" ShowValueBox="true" isIOBox="true" Value="8">
+            <p:TypeAnnotation>
+              <Choice Kind="TypeFlag" Name="Integer32" />
+              <FullNameCategoryReference ID="Primitive" />
+            </p:TypeAnnotation>
+          </Pad>
         </Canvas>
         <Patch Id="FtcyHEjHfbENNsBNjAzlVm" Name="Create" />
         <Patch Id="LFfutnTQqz6O8nLTSTxni5" Name="Update" />
@@ -228,13 +244,11 @@
         <Link Id="BpA2wjv98n6OUeQn07m3Q6" Ids="S8mMn4H41Y5LNOb8oVJJvz,B7898V962zvNHeogjSKzsv" />
         <Link Id="QEl3cjRTupQQdyWSNDmPcO" Ids="FT7fiMZQwtNLAu1Vl0zj3R,Vw64LMufsakLecOt3tO3x8" />
         <Link Id="NC14WARCr6QPxDDPQCXC1V" Ids="DkIPz7Ivn81OdkjOWcxePi,U34Tou40TR8QaUgQu34Wkq" />
-        <Link Id="CD4kdwvSD8aQaWBp3OXZRF" Ids="DkIPz7Ivn81OdkjOWcxePi,TE50F9a48cVNd19pTBZ0HG" />
         <Link Id="HJ3wu0X92URPhGWOTOmm2v" Ids="NQmAmWQgOJbLNteY0UEiXb,CfXV1DqY0yYMYI8pfhAX53" />
         <Link Id="HMYpVI1UDsiMGcxWHkKIVJ" Ids="HJM7t5VBA7QP9wSpCACxJG,JNuC0E657Y7Qb55v8uPQUg" />
         <Link Id="PyuoTrCDCsrMIUL8HEB3F2" Ids="CzGzxcdSTOXMOG6KarH4dQ,H4NpwDWzGmOMQ5CU4qyOop" />
         <Link Id="PBkt61GfPZ1NwwKmSpZ8C7" Ids="RdqHWLSoM4LLVkjOw4ExWo,JPidfAjSYtaLmSDsf4Gbve" />
         <Link Id="RY8dbMLg65bLFVZCjPckWI" Ids="JinSdJOvfBBMUYxcxaJ5Ei,CnKqcaUrVyxNGGjOyiG6Ct" />
-        <Link Id="HlPs2tlTjRCMmjTTWSRbB4" Ids="FwagbNcguLLMF2mG5oiawb,NAO1ewERZdnMlAZlAXvS8R,Vdy5CN8DH6cPh30dO3vI7x" />
         <Link Id="DQ1xozl7huIMm77ZYRxqhE" Ids="T4rcApZN5eXQQr2OWs254l,SpVcOMDgq7sPSqouH8TY2U" />
         <Link Id="Ogh5Cr21lqxPXL7XiDLnI7" Ids="BWq2Ik4qcdnPfgfEnggb6m,FCfMXTROwCHPSvsRH8DcGq" />
         <Slot Id="GgGeAxVgweYNDaMeOtCijH" Name="Errors" />
@@ -243,6 +257,11 @@
         <Link Id="G7pJtrXLpyQL2t5slreBUb" Ids="V2HfkMiJa11LwoDJNsPwNr,GDRTyiYqtTPMKgmbWnY3Ed" />
         <Link Id="K5LixpJYzCNP9RqdyM9QJs" Ids="DBtxStXUNYOM3FPlV0o8DK,H3ppjBwICmsPjOLmL78Wkm" />
         <Link Id="IqcoB1vlNj4MQud9VcDQey" Ids="KJNpeCTT81wLEH0kuS9OjP,TQsomDcPzVBPPVN8zmN8Vq" />
+        <Link Id="TxArwHvWGaHM5bmRBTBsf5" Ids="EOHVwzngHO7LAjAcAAe1Es,TWhHyuGp1Q3MwebGBdaIva" />
+        <Link Id="HWvGehZBQhbMddxgL9VXfU" Ids="Ouv4D8NW8lELegFiiZfUaS,HQ7QXREn6f3PF1kv2pYA6o" />
+        <Link Id="B6DweSKor90NVTEHAUrZSY" Ids="RvD4euYud1tO2KpqVfYxZM,QklD0fpcFP7LpjQGqFYjBA" />
+        <Link Id="CS65dEfqu0cMHaQ9pcy3vD" Ids="FwagbNcguLLMF2mG5oiawb,Vdy5CN8DH6cPh30dO3vI7x" />
+        <Link Id="ABsrvtkzf32Pw1fDUd4ysT" Ids="DkIPz7Ivn81OdkjOWcxePi,BkHEvf5cSOSNWZpPl3EdRZ" />
       </Patch>
     </Node>
   </Patch>

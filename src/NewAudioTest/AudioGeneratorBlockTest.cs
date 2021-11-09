@@ -15,9 +15,8 @@ namespace NewAudioTest
         {
             AudioService.Instance.Init();
             var log = AudioService.Instance.Logger.ForContext<AudioGeneratorBlockTest>();
-            var b = new AudioGeneratorBlock();
+            
             var f = new AudioFormat(48000, 512, 2);
-            b.Create(f);
             var sw = new Stopwatch();
             long samples = 0;
             var sink = new ActionBlock<AudioDataMessage>(input =>
@@ -25,11 +24,11 @@ namespace NewAudioTest
                 samples += input.SampleCount;
                 // log.Information("{time}: {input}", sw.Elapsed.TotalSeconds, input.BufferSize);
             });
-            
-            b.LinkTo(sink);
+            var b = new AudioGeneratorBlock();
+            b.Create(sink, f);
 
             sw.Start();
-            Task.Delay(10000).Wait();
+            Task.Delay(1000).Wait();
             sw.Stop();
             log.Information("{s}", samples/sw.Elapsed.TotalSeconds);
         }

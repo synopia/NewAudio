@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
@@ -18,6 +17,7 @@ namespace NewAudio.Nodes
         public AudioParam<int> ChannelOffset;
         public AudioParam<int> Channels;
     }
+
     public class OutputDevicePlayParams : AudioNodePlayParams
     {
     }
@@ -26,7 +26,7 @@ namespace NewAudio.Nodes
     {
         private readonly ILogger _logger;
         private AudioOutputBlock _audioOutputBlock;
-        
+
         private IDevice _device;
         private AudioFormat _format;
         public WaveFormat WaveFormat => _format.WaveFormat;
@@ -34,18 +34,18 @@ namespace NewAudio.Nodes
         private readonly TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
         private IDisposable _link;
         private IDisposable _inputBufferLink;
-        
+
 
         private int _counter;
         private long _lag;
         public double LagMs { get; private set; }
-        
+
         public OutputDevice()
         {
             _logger = AudioService.Instance.Logger.ForContext<OutputDevice>();
             _logger.Information("Output device created");
             _format = new AudioFormat(48000, 512, 2);
-            
+
             _processor = new TransformBlock<AudioDataMessage, AudioDataMessage>(msg =>
             {
                 var now = DateTime.Now.Ticks;
@@ -78,6 +78,7 @@ namespace NewAudio.Nodes
 
             return base.Update();
         }
+
         public override bool IsInitValid()
         {
             return InitParams.Device.Value != null;
@@ -93,11 +94,7 @@ namespace NewAudio.Nodes
             _device = (IDevice)InitParams.Device.Value.Tag;
             _format = new AudioFormat((int)InitParams.SamplingFrequency.Value, 512, InitParams.Channels.Value);
             _audioOutputBlock = new AudioOutputBlock();
-            _audioOutputBlock.Create(new AudioOutputBlockConfig()
-            {
-                AudioFormat = _format,
-                NodeCount = 32
-            });
+            _audioOutputBlock.Create(_format, 2);
             _link = _processor.LinkTo(_audioOutputBlock);
 
             var req = new DeviceConfigRequest()
@@ -112,7 +109,9 @@ namespace NewAudio.Nodes
                 }
             };
             var resp = await _device.Create(req);
-            _logger.Information("Output device changed: {device} Channels={channels}, Driver Channels={driver}, Latency={latency}, Frame size={frameSize}", _device, resp.PlayingChannels, resp.DriverPlayingChannels, resp.Latency, resp.FrameSize);
+            _logger.Information(
+                "Output device changed: {device} Channels={channels}, Driver Channels={driver}, Latency={latency}, Frame size={frameSize}",
+                _device, resp.PlayingChannels, resp.DriverPlayingChannels, resp.Latency, resp.FrameSize);
             return true;
         }
 
@@ -141,7 +140,7 @@ namespace NewAudio.Nodes
 
         public override string DebugInfo()
         {
-            return null;
+            return $"Output device:[ Count={_audioOutputBlock?.InputBufferCount}, {base.DebugInfo()} ]";
         }
 
 

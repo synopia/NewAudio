@@ -1,24 +1,26 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using NewAudio.Blocks;
 using Serilog;
 
 namespace NewAudio.Core
 {
     public class AudioLink : IDisposable
     {
-        private readonly BroadcastBlock<AudioDataMessage>
-            _broadcastBlock = new BroadcastBlock<AudioDataMessage>(i => i);
-
         private readonly ILogger _logger = Log.ForContext<AudioLink>();
-        private IDisposable _currentLink;
-
-        private ISourceBlock<AudioDataMessage> _sourceBlock;
+        private readonly BroadcastBlock<AudioDataMessage> _broadcastBlock= new(i=>i);
+        public readonly DynamicBufferBlock TargetBlock = new();
+        private ISourceBlock<AudioDataMessage> _currentSourceBlock;
+        private IDisposable _currentSourceLink;
+        private IDisposable _targetLink;
 
         public AudioFormat Format { get; set; }
 
         public AudioLink()
         {
             AudioService.Instance.Graph.AddLink(this);
+            _targetLink = TargetBlock.LinkTo(_broadcastBlock);
         }
 
         public ISourceBlock<AudioDataMessage> SourceBlock
@@ -26,17 +28,29 @@ namespace NewAudio.Core
             get => _broadcastBlock;
             set
             {
-                if (_sourceBlock != null)
+                if (_currentSourceBlock != null)
                 {
-                    _currentLink?.Dispose();
+                    _currentSourceLink?.Dispose();
                 }
+
                 // todo only broadcast if necessary
                 if (value != null)
                 {
-                    _sourceBlock = value;
-                    _currentLink = _sourceBlock.LinkTo(_broadcastBlock);
+                    _currentSourceBlock = value;
+                    _currentSourceLink = _currentSourceBlock.LinkTo(TargetBlock);
                 }
             }
+        }
+
+        public void Play()
+        {
+            _targetLink = TargetBlock.LinkTo(_broadcastBlock);
+        }
+
+        public void Stop()
+        {
+            _targetLink?.Dispose();
+            _targetLink = null;
         }
 
         public void Dispose() => Dispose(true);
@@ -51,13 +65,17 @@ namespace NewAudio.Core
                 if (disposing)
                 {
                     AudioService.Instance.Graph.RemoveLink(this);
-                    _currentLink?.Dispose();
-                    
+                    _targetLink.Dispose();
+                    _currentSourceLink?.Dispose();
+                    TargetBlock.Dispose();
+
+                    _currentSourceLink = null;
                 }
 
                 _disposedValue = disposing;
             }
         }
 
+   
     }
 }

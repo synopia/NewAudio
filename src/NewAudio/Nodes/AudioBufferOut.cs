@@ -36,7 +36,7 @@ namespace NewAudio.Nodes
         private IDisposable _link1;
         private IDisposable _inputBufferLink;
         private ActionBlock<AudioDataMessage[]> _processor;
-        private SpreadBuilder<float> _spreadBuilder = new SpreadBuilder<float>();
+        private SpreadBuilder<float> _spreadBuilder = new();
         private int _updated;
         
         public AudioBufferOut()

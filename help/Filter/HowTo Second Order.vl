@@ -15,7 +15,7 @@
       </p:NodeReference>
       <Patch Id="Hg04wezqvrBNlgcJVuraSO">
         <Canvas Id="TiSrQBy6IayQXCalCMLMhq" CanvasType="Group">
-          <Pad Id="AXDRH1ckdjUQAqbfOFtnBe" Comment="Play" Bounds="70,129,62,70" ShowValueBox="true" isIOBox="true" Value="False">
+          <Pad Id="AXDRH1ckdjUQAqbfOFtnBe" Comment="Play" Bounds="70,129,62,70" ShowValueBox="true" isIOBox="true" Value="True">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Boolean" />
               <FullNameCategoryReference ID="Primitive" />
@@ -34,7 +34,7 @@
               <Choice Kind="TypeFlag" Name="WaveOutputDevice" />
             </p:TypeAnnotation>
           </Pad>
-          <Pad Id="TnlwOqEOpjZPfrCKxgDBkS" Comment="Cutoff Freq" Bounds="779,252,33,188" ShowValueBox="true" isIOBox="true" Value="12550">
+          <Pad Id="TnlwOqEOpjZPfrCKxgDBkS" Comment="Cutoff Freq" Bounds="779,252,33,188" ShowValueBox="true" isIOBox="true" Value="560.0004">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Float32" />
               <FullNameCategoryReference ID="Primitive" />
@@ -46,7 +46,7 @@
               <p:stepsize p:Type="Single">10</p:stepsize>
             </p:ValueBoxSettings>
           </Pad>
-          <Node Bounds="448,258,25,19" Id="Qp2qRe61y1uQdkJkMujBtm">
+          <Node Bounds="401,263,77,19" Id="Qp2qRe61y1uQdkJkMujBtm">
             <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
               <Choice Kind="ProcessAppFlag" Name="StereoSplitter" />
@@ -64,13 +64,13 @@
             <Pin Id="K77mGiNdxijODxSRC4PMVZ" Name="Right" Kind="InputPin" />
             <Pin Id="JHxxhy9ZN31PppPxnz0Tw4" Name="Stereo" Kind="OutputPin" />
           </Node>
-          <Pad Id="NXJBNicFJMrMDrPtJUSHLw" Comment="Gain" Bounds="676,265,35,15" ShowValueBox="true" isIOBox="true" Value="-1">
+          <Pad Id="NXJBNicFJMrMDrPtJUSHLw" Comment="Gain" Bounds="704,223,35,15" ShowValueBox="true" isIOBox="true" Value="-1">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Float32" />
               <FullNameCategoryReference ID="Primitive" />
             </p:TypeAnnotation>
           </Pad>
-          <Pad Id="OZdhQvi3RQUP7OlwZj6vyD" Comment="High Pass" Bounds="618,274,35,35" ShowValueBox="true" isIOBox="true" Value="True">
+          <Pad Id="OZdhQvi3RQUP7OlwZj6vyD" Comment="High Pass" Bounds="618,274,35,35" ShowValueBox="true" isIOBox="true" Value="False">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Boolean" />
               <FullNameCategoryReference ID="Primitive" />
@@ -79,13 +79,13 @@
               <p:buttonmode p:Assembly="VL.UI.Forms" p:Type="VL.HDE.PatchEditor.Editors.ButtonModeEnum">Toggle</p:buttonmode>
             </p:ValueBoxSettings>
           </Pad>
-          <Pad Id="NrKnI4RFnVoLXMluIeSgQz" Comment="Q" Bounds="580,215,35,15" ShowValueBox="true" isIOBox="true" Value="5">
+          <Pad Id="NrKnI4RFnVoLXMluIeSgQz" Comment="Q" Bounds="580,215,35,15" ShowValueBox="true" isIOBox="true" Value="2.99">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Float32" />
               <FullNameCategoryReference ID="Primitive" />
             </p:TypeAnnotation>
           </Pad>
-          <Node Bounds="436,414,98,19" Id="VZ94Dju5We5Mgpu1CFPhfb">
+          <Node Bounds="548,379,98,19" Id="VZ94Dju5We5Mgpu1CFPhfb">
             <p:NodeReference LastCategoryFullName="NewAudio.Filter" LastSymbolSource="IIR Filter.vl">
               <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
               <CategoryReference Kind="Category" Name="NewAudio" />
@@ -140,8 +140,26 @@
             <Pin Id="U5IEGYBltE7O3BR1IzuU7u" Name="Desired Latency" Kind="InputPin" />
             <Pin Id="IBpnLUUC1CIOPsYwcLNKl2" Name="Phase" Kind="OutputPin" />
             <Pin Id="FME5oORSk3iLgQPoxse5rq" Name="Debug" Kind="OutputPin" />
+            <Pin Id="PHZn3cwDcRYOApa3Z70XA6" Name="Lag Ms" Kind="OutputPin" />
             <Pin Id="UzaSgU7JwGpN7ccExnpaYO" Name="Errors" Kind="OutputPin" />
           </Node>
+          <Node Bounds="432,404,52,19" Id="MPIFCpcCwYiLBo7pklqskr">
+            <p:NodeReference LastCategoryFullName="NewAudio.Filter" LastSymbolSource="IIR Filter.vl">
+              <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+              <Choice Kind="ProcessAppFlag" Name="RCFilter" />
+            </p:NodeReference>
+            <Pin Id="B6gmzU1CeFgP0SNW5aFr2r" Name="Input" Kind="InputPin" />
+            <Pin Id="K35dEdksXZfPV87dZ9qSgI" Name="High Pass" Kind="InputPin" />
+            <Pin Id="BDSdCRRGQFSMf3g2z4FZKC" Name="RC" Kind="InputPin" />
+            <Pin Id="L3wpSz9lxJGOEIovhMNUU6" Name="Result" Kind="OutputPin" />
+          </Node>
+          <Pad Id="HW95gHQpa3vLA9RBLsyHoL" Comment="Desired Latency" Bounds="644,637,35,15" ShowValueBox="true" isIOBox="true" Value="27">
+            <p:TypeAnnotation>
+              <Choice Kind="TypeFlag" Name="Integer32" />
+              <FullNameCategoryReference ID="Primitive" />
+            </p:TypeAnnotation>
+          </Pad>
+          <Pad Id="FhU4pjT3YjPMZ6sNCN4tkY" Comment="Sampling Frequency" Bounds="565,579,76,15" ShowValueBox="true" Value="Hz48000" />
         </Canvas>
         <ProcessDefinition Id="ULV96Glo4tzO2Ni7R5Rfo4">
           <Fragment Id="MurYefHBnsDMtyEZpXA4i3" Patch="DVz6M3pcnL0NrNQ23EPrbT" Enabled="true" />
@@ -152,14 +170,18 @@
         <Link Id="Ukh4yVYbFC0L5zCYiGQK0m" Ids="TnlwOqEOpjZPfrCKxgDBkS,QVgg7ci4vktPof7xAG0eL0" />
         <Link Id="MetLF8Tfm6mPpH3cc9K05a" Ids="NrKnI4RFnVoLXMluIeSgQz,PKi8HGnXcVQMSY8IPUOSC6" />
         <Link Id="FNI1ewPjO2dMYKPpaeRjdL" Ids="Rhnoxf557I8O88KPaEmiz6,FFDZswA9zYVLEHkjBz9QVf" />
-        <Link Id="Svril2AnUTWNMPFaLJF0FQ" Ids="LxCym24H67HNAmv57XQBAR,K2JqeYbjgG9M0FBpZVoSj2" />
-        <Link Id="QhZqyClooqzLjWb2P7bUVv" Ids="LxCym24H67HNAmv57XQBAR,K77mGiNdxijODxSRC4PMVZ" />
         <Link Id="DKYO3w1htOiNeWuHJpTSOf" Ids="OZdhQvi3RQUP7OlwZj6vyD,HdVfVDIiS6dOW2q0tzpkyD" />
         <Link Id="T11EqjWtaHVP5La8dEamJB" Ids="AXDRH1ckdjUQAqbfOFtnBe,HqZS0n8Hkx4O0sUzfpuEol" />
         <Link Id="AMpnXJTRN3ANA0m6PeR3ev" Ids="LUVDjMkGnUCQCGi4I2zho8,FipAEvy3wlRQVGBVIGT9Oc" />
         <Link Id="D7pa0YzRZVjM6C7TYfbKuX" Ids="McKdOy2KBaiPfBtU6ZdvK1,DkFTh10CFoxNyQ717eSIah" />
-        <Link Id="SEVINRaCu1DOlEvF652ro0" Ids="JHxxhy9ZN31PppPxnz0Tw4,BGdN3MgT5d6PhO9KUBwXeF" />
         <Link Id="JTTvhOKVe5GL5FbUGkKTPv" Ids="SQMKeQgy2zhNIFnh3S7y7H,TsCAXUXDsxhLBdgXAdkaQS" />
+        <Link Id="Ef0IOHKEffiQcm0qBC0Ucm" Ids="JHxxhy9ZN31PppPxnz0Tw4,BGdN3MgT5d6PhO9KUBwXeF" />
+        <Link Id="K3f9Gd9rvoKN1pITgHVNvn" Ids="Rhnoxf557I8O88KPaEmiz6,B6gmzU1CeFgP0SNW5aFr2r" />
+        <Link Id="FdqsF3WM0pkPEpTObuifxA" Ids="TnlwOqEOpjZPfrCKxgDBkS,BDSdCRRGQFSMf3g2z4FZKC" />
+        <Link Id="HTylxLSxpLAOXvj7L8oGYB" Ids="LxCym24H67HNAmv57XQBAR,K2JqeYbjgG9M0FBpZVoSj2" />
+        <Link Id="PeOSqTkId0dNfexuJziqHK" Ids="LxCym24H67HNAmv57XQBAR,K77mGiNdxijODxSRC4PMVZ" />
+        <Link Id="KH4Rao9pYFwLonY1PqZsk9" Ids="HW95gHQpa3vLA9RBLsyHoL,U5IEGYBltE7O3BR1IzuU7u" />
+        <Link Id="ChcGy14jbCcLRm35D9NJTg" Ids="FhU4pjT3YjPMZ6sNCN4tkY,Sh68ZxoQri5LPZsIdu0aE0" />
       </Patch>
     </Node>
   </Patch>

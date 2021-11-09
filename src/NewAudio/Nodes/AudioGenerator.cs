@@ -59,7 +59,7 @@ namespace NewAudio.Nodes
             _format = new AudioFormat((int)InitParams.SamplingFrequency.Value, InitParams.SampleCount.Value, InitParams.Channels.Value, InitParams.Interleaved.Value);
             _audioGeneratorBlock = new AudioGeneratorBlock();
             Output.Format = _format;
-            _audioGeneratorBlock.Create(_format);
+            _audioGeneratorBlock.Create(Output.TargetBlock, _format);
             
             return Task.FromResult(true);
         }
@@ -72,13 +72,15 @@ namespace NewAudio.Nodes
 
         public override bool Play()
         {
-            Output.SourceBlock = _audioGeneratorBlock;
+            // Output.Source = _audioGeneratorBlock;
+            Output.Play();
             return true;
         }
 
         public override bool Stop()
         {
-            Output.SourceBlock = null;
+            Output.Stop();
+            // Output.Source = null;
             return true;
         }
         

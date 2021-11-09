@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using NAudio.Wave;
+﻿using System.Threading.Tasks;
 using NewAudio.Blocks;
 using NewAudio.Core;
 using Serilog;
@@ -11,6 +8,7 @@ namespace NewAudio.Nodes
     public class AudioJoinerInitParams : AudioNodeInitParams
     {
     }
+
     public class AudioJoinerPlayParams : AudioNodePlayParams
     {
         public AudioParam<AudioLink> Input2;
@@ -19,6 +17,7 @@ namespace NewAudio.Nodes
     public class AudioJoiner : AudioNode<AudioJoinerInitParams, AudioJoinerPlayParams>
     {
         private readonly ILogger _logger;
+
         private JoinAudioBlock _joinAudioBlock;
         // private AudioFormat _format;
         // public WaveFormat WaveFormat => _format.WaveFormat;
@@ -28,7 +27,6 @@ namespace NewAudio.Nodes
         {
             _logger = AudioService.Instance.Logger.ForContext<AudioJoiner>();
             _logger.Information("AudioJoiner device created");
-
         }
 
         public AudioLink Update(AudioLink input, AudioLink input2)
@@ -70,7 +68,12 @@ namespace NewAudio.Nodes
         {
             return Task.FromResult(true);
         }
-        
+
+        public override string DebugInfo()
+        {
+            return $"JOIN: [ out={_joinAudioBlock?.OutputBufferCount} {base.DebugInfo()} ]";
+        }
+
         private bool _disposedValue;
 
         protected override void Dispose(bool disposing)

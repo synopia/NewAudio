@@ -12,12 +12,7 @@ namespace NewAudio.Blocks
     public class AudioGeneratorBlock : ISourceBlock<AudioDataMessage>
     {
         private readonly ILogger _logger;
-        private readonly ITargetBlock<AudioDataMessage> _outputBlock = new BufferBlock<AudioDataMessage>(
-            new DataflowBlockOptions
-            {
-                BoundedCapacity = 16,
-                MaxMessagesPerTask = 16,
-            });
+        private ITargetBlock<AudioDataMessage> _outputBlock;
         public AudioFormat OutputFormat { get; private set; }
         private CancellationTokenSource _cancellationTokenSource;
         private CancellationToken _token;
@@ -27,16 +22,14 @@ namespace NewAudio.Blocks
         public AudioGeneratorBlock()
         {
             _logger = AudioService.Instance.Logger.ForContext<AudioGeneratorBlock>();
-            
         }
 
-        public bool Create(AudioFormat format)
+        public void Create(ITargetBlock<AudioDataMessage> outputBlock, AudioFormat format)
         {
+            _outputBlock = outputBlock;
             OutputFormat = format;
-
             _bufferToSend = new float[format.BufferSize];
             Start();
-            return true;
         }
         
         public async Task<bool> Free()
@@ -77,7 +70,8 @@ namespace NewAudio.Blocks
 
             }
             _cancellationTokenSource.Cancel();
-            
+            _thread.Join();
+            _logger.Information("Audio generator thread finished");
             return Task.FromResult(true);
         }
 
@@ -132,6 +126,7 @@ namespace NewAudio.Blocks
                 if (disposing)
                 {
                     _cancellationTokenSource?.Cancel();
+                    _thread.Join();
                 }
 
                 _disposedValue = disposing;
