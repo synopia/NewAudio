@@ -14,6 +14,11 @@ namespace NewAudioTest
     [TestFixture]
     public class DevicesTest
     {
+        [SetUp]
+        public void Setup()
+        {
+            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+        }
         private void Wait(InputDevice input, OutputDevice output)
         {
             input.Lifecycle.WaitForEvents.WaitOne();

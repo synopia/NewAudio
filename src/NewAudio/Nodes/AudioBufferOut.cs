@@ -17,7 +17,7 @@ namespace NewAudio.Nodes
 
     public class AudioBufferOutInitParams : AudioNodeInitParams
     {
-        public AudioParam<int> BufferSize;
+        public AudioParam<int> OutputSize;
         public AudioParam<int> BlockSize;
         public AudioParam<AudioBufferOutType> Type;
     }
@@ -34,7 +34,6 @@ namespace NewAudio.Nodes
         private float[] _tempBuffer;
         private BatchBlock<AudioDataMessage> _batchBlock;
         private IDisposable _link1;
-        private IDisposable _inputBufferLink;
         private ActionBlock<AudioDataMessage[]> _processor;
         private SpreadBuilder<float> _spreadBuilder = new();
         private int _updated;
@@ -52,7 +51,7 @@ namespace NewAudio.Nodes
 
         public override bool IsInitValid()
         {
-            return InitParams.BufferSize.Value>0 &&
+            return InitParams.OutputSize.Value>0 &&
                    InitParams.BlockSize.Value > 0;
         }
 
@@ -60,15 +59,16 @@ namespace NewAudio.Nodes
         /// Takes audio samples from an audio link and returns a spread of float32
         /// </summary>
         /// <param name="input">The audio link to get samples from</param>
-        /// <param name="bufferSize">The resulting total size of the spread (needs to be a power of two)</param>
+        /// <param name="outputSize">The resulting total size of the spread (needs to be a power of two)</param>
         /// <param name="blockSize">Number of samples from the input, to be merged into one output sample</param>
         /// <param name="type">Skip: take first sample, skip until blockSize is reached, SkipHalf: take samples until 1/blocksize of input is reached, skip the rest, Max: output the max of a block</param>
         /// <returns></returns>
-        public Spread<float> Update(AudioLink input, int bufferSize = 1024, int blockSize = 8,
-            AudioBufferOutType type = AudioBufferOutType.Max)
+        public Spread<float> Update(AudioLink input, int outputSize = 1024, int blockSize = 8,
+            AudioBufferOutType type = AudioBufferOutType.Max, int bufferSize=4)
         {
+            PlayParams.BufferSize.Value = bufferSize;
             PlayParams.Input.Value = input;
-            InitParams.BufferSize.Value = (int)Utils.UpperPow2((uint)bufferSize);
+            InitParams.OutputSize.Value = (int)Utils.UpperPow2((uint)outputSize);
             InitParams.BlockSize.Value = blockSize;
             InitParams.Type.Value = type;
 
@@ -77,7 +77,7 @@ namespace NewAudio.Nodes
             if (_updated > 0)
             {
                 _spreadBuilder.Clear();
-                _spreadBuilder.AddRangeArray(_outBuffer, InitParams.BufferSize.Value, 0, false);
+                _spreadBuilder.AddRangeArray(_outBuffer, InitParams.OutputSize.Value, 0, false);
                 _updated--;
             }
 
@@ -104,18 +104,19 @@ namespace NewAudio.Nodes
             _batchBlock = new BatchBlock<AudioDataMessage>(_batchSize);
             _link1 = _batchBlock.LinkTo(_processor);
 
+            TargetBlock = _batchBlock;
             return Task.FromResult(true);
         }
 
         public override bool Play()
         {
-            _inputBufferLink = InputBufferBlock.LinkTo(_batchBlock);
+            TargetBlock = _batchBlock;
             return true;
         }
 
         public override bool Stop()
         {
-            _inputBufferLink.Dispose();
+            TargetBlock = null;
             return true;
         }
 
@@ -147,12 +148,12 @@ namespace NewAudio.Nodes
 
         public override string DebugInfo()
         {
-            return $"[updates={_updated}, input samples={PlayParams.Input.Value?.Format.BufferSize}, batchSize={_batchSize}, output size={InitParams.BufferSize.Value}]";
+            return $"[updates={_updated}, input samples={PlayParams.Input.Value?.Format.BufferSize}, batchSize={_batchSize}, output size={InitParams.OutputSize.Value}]";
         }
 
         private int CreateTypeSkip()
         {
-            var bufferSize = InitParams.BufferSize.Value;
+            var bufferSize = InitParams.OutputSize.Value;
             var skipSize = InitParams.BlockSize.Value;
             var inputBufferSize = PlayParams.Input.Value.Format.BufferSize;
 
@@ -179,7 +180,7 @@ namespace NewAudio.Nodes
         }
         private int CreateTypeSkipHalf()
         {
-            var bufferSize = InitParams.BufferSize.Value;
+            var bufferSize = InitParams.OutputSize.Value;
             var skipSize = InitParams.BlockSize.Value;
             var inputBufferSize = PlayParams.Input.Value.Format.BufferSize;
 
@@ -207,7 +208,7 @@ namespace NewAudio.Nodes
 
         private int CreateTypeMax()
         {
-            var bufferSize = InitParams.BufferSize.Value;
+            var bufferSize = InitParams.OutputSize.Value;
             var blockSize = InitParams.BlockSize.Value;
             var inputBufferSize = PlayParams.Input.Value.Format.BufferSize;
 

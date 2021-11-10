@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using NewAudio.Core;
 using NewAudio.Devices;
 using NewAudio.Nodes;
@@ -9,6 +11,11 @@ namespace NewAudioTest
     [TestFixture]
     public class AudioBufferOutTest
     {
+        [SetUp]
+        public void Setup()
+        {
+            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+        }
         [Test]
         public void TestIt()
         {

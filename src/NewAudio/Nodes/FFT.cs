@@ -31,7 +31,6 @@ namespace NewAudio.Nodes
         private AudioTime _time;
         private BatchBlock<AudioDataMessage> _batchBlock;
         private ActionBlock<AudioDataMessage[]> _processor;
-        private IDisposable _inputBufferLink;
         private IDisposable _link1;
 
         protected BaseFFT()
@@ -41,8 +40,9 @@ namespace NewAudio.Nodes
         }
 
         public AudioLink Update(AudioLink input, int fftLength = 512,
-            FFTUtils.WindowFunction windowFunction = FFTUtils.WindowFunction.None)
+            FFTUtils.WindowFunction windowFunction = FFTUtils.WindowFunction.None, int bufferSize=4)
         {
+            PlayParams.BufferSize.Value = bufferSize;
             InitParams.WindowFunction.Value = windowFunction;
             PlayParams.Input.Value = input;
             InitParams.FFTLength.Value = (int)Utils.UpperPow2((uint)fftLength);;
@@ -114,13 +114,13 @@ namespace NewAudio.Nodes
 
             _link1 = _batchBlock.LinkTo(_processor);
             Output.SourceBlock = Source;
-            _inputBufferLink = InputBufferBlock.LinkTo(_batchBlock);
+            TargetBlock = _batchBlock;
             return true;
         }
 
         public override bool Stop()
         {
-            _inputBufferLink.Dispose();
+            TargetBlock = null;
             Output.SourceBlock = null;
             return true;
         }

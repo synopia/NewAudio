@@ -24,8 +24,6 @@ namespace NewAudio.Nodes
     {
         private readonly ILogger _logger;
         private TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
-        private IDisposable _inputBufferLink;
-        private AudioDataflowOptions InternalOptions;
         private readonly AudioSampleFrameClock _clock = new AudioSampleFrameClock();
         
         private Func<TState, AudioChannels, TState> _updateFunc;
@@ -35,17 +33,8 @@ namespace NewAudio.Nodes
         {
             _logger = AudioService.Instance.Logger.ForContext<AudioLoopRegion<TState>>();
             _logger.Information("Audio loop region created");
-            InternalOptions = (AudioDataflowOptions)Activator.CreateInstance(typeof(AudioDataflowOptions));
         }
 
-        public void UpdateInternalOptions(int bufferCount, int maxBuffersPerTask, int maxDegreeOfParallelism,
-            bool singleProducerConstrained, bool ensureOrdered)
-        {
-            InternalOptions.UpdateAudioExecutionOptions(bufferCount, maxBuffersPerTask, maxBuffersPerTask,
-                singleProducerConstrained, ensureOrdered);
-            
-
-        }
         public  AudioLink Update(
             AudioLink input,
             Func<IFrameClock, TState> create,
@@ -53,7 +42,8 @@ namespace NewAudio.Nodes
             bool reset,
             bool bypass,
             
-            int outputChannels = 0
+            int outputChannels = 0,
+            int bufferSize = 4
         )
         {
             if (_state == null && create != null)
@@ -61,7 +51,8 @@ namespace NewAudio.Nodes
                 _state = create(_clock);
             }
             _updateFunc = update;
-            
+
+            PlayParams.BufferSize.Value = bufferSize;
             PlayParams.Bypass.Value = bypass;
             PlayParams.OutputChannels.Value = outputChannels > 0 ? outputChannels : input?.Format.Channels ?? 0;
             PlayParams.Input.Value = input;
@@ -91,14 +82,13 @@ namespace NewAudio.Nodes
                 input.Format, Output.Format);
             
             Output.SourceBlock = _processor;
-            _inputBufferLink = InputBufferBlock.LinkTo(_processor);
-
+            TargetBlock = _processor;
             return true;
         }
 
         public override bool Stop()
         {
-            _inputBufferLink.Dispose();
+            TargetBlock = null;
             Output.SourceBlock = null;
             return true;
         }
@@ -110,6 +100,7 @@ namespace NewAudio.Nodes
             {
                 _logger.Warning("TransformBlock != null!");
             }
+
             _processor = new TransformBlock<AudioDataMessage, AudioDataMessage>(input =>
             {
                 if (PlayParams.Bypass.Value)
@@ -155,8 +146,9 @@ namespace NewAudio.Nodes
                 {
                     ExceptionHappened(e, "TransformBlock");
                 }
+
                 return output;
-            }, InternalOptions.ExecutionDataflowBlockOptions);
+            }); //, InternalOptions.ExecutionDataflowBlockOptions);
 
             return Task.FromResult(true);
         }

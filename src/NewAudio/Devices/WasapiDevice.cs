@@ -193,11 +193,12 @@ namespace NewAudio.Devices
                 if (disposing)
                 {
                     CancellationTokenSource.Cancel();
-                    
+                    _logger.Warning("STOP RECORDING ");
                     _loopback?.StopRecording();
                     _capture?.StopRecording();
                     _wavePlayer?.Stop();
                     
+                    _logger.Warning("DISPOSE RECORDING ");
                     _loopback?.Dispose();
                     _capture?.Dispose();
                     _wavePlayer?.Dispose();

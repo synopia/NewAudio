@@ -76,9 +76,11 @@ namespace NewAudio.Blocks
             {
                 _logger.Warning("Already stopping!");
             }
+            _logger.Warning("STOP IN READING");
             _cancellationTokenSource.Cancel();
             _thread.Join();
-            _logger.Information("Audio input reading thread finished");
+            _logger.Information("Audio input reading thread finished (Reading from {reading} ({owner}))", _buffer?.Name,
+                _buffer?.IsOwnerOfSharedMemory);
             return Task.FromResult(true);
         }
 
@@ -141,6 +143,7 @@ namespace NewAudio.Blocks
             {
                 if (disposing)
                 {
+                    _logger.Warning("WAIT FOR IN READING");
                     _cancellationTokenSource?.Cancel();
                     _thread.Join();
                     Buffer.Dispose();

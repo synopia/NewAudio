@@ -195,7 +195,7 @@ namespace NewAudio.Core
 
         private readonly ExceptionHandler _handler = new();
         private ActionBlock<Event> _actionBlock;
-        public ManualResetEvent WaitForEvents = new ManualResetEvent(false);
+        public ManualResetEvent WaitForEvents = new(false);
         private int _eventsInProcess = 0;
         private IDisposable _link;
         private BufferBlock<Event> _inputQueue = new(new DataflowBlockOptions()
@@ -219,7 +219,8 @@ namespace NewAudio.Core
                 BoundedCapacity = 1,
                 SingleProducerConstrained = true,
                 MaxDegreeOfParallelism = 1,
-                MaxMessagesPerTask = 1
+                MaxMessagesPerTask = 1,
+                TaskScheduler = TaskScheduler.FromCurrentSynchronizationContext()
             });
             _link = _inputQueue.LinkTo(_actionBlock);
         }

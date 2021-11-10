@@ -85,7 +85,7 @@ namespace NewAudio.Core
             {
                 if (disposing)
                 {
-                    // Graph.Dispose();
+                    //Graph.Dispose();
                 }
 
                 _disposedValue = disposing;

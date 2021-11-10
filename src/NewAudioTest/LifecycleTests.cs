@@ -13,7 +13,11 @@ namespace NewAudioTest
     [TestFixture]
     public class LifecycleTests
     {
-
+        [SetUp]
+        public void Setup()
+        {
+            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+        }
         private class TestDevice : ILifecycleDevice
         {
             public IList<string> Calls = new List<string>();

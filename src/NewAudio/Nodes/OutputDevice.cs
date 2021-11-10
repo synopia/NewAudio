@@ -33,7 +33,6 @@ namespace NewAudio.Nodes
 
         private readonly TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
         private IDisposable _link;
-        private IDisposable _inputBufferLink;
 
 
         private int _counter;
@@ -67,8 +66,9 @@ namespace NewAudio.Nodes
 
         public AudioLink Update(AudioLink input, WaveOutputDevice device,
             SamplingFrequency samplingFrequency = SamplingFrequency.Hz44100,
-            int channelOffset = 0, int channels = 2, int desiredLatency = 250)
+            int channelOffset = 0, int channels = 2, int desiredLatency = 250, int bufferSize=4)
         {
+            PlayParams.BufferSize.Value = bufferSize;
             PlayParams.Input.Value = input;
             InitParams.Device.Value = device;
             InitParams.SamplingFrequency.Value = samplingFrequency;
@@ -126,15 +126,14 @@ namespace NewAudio.Nodes
         public override bool Play()
         {
             _device.Start();
-            _inputBufferLink = InputBufferBlock.LinkTo(_processor);
+            TargetBlock = _processor;
             return true;
         }
 
         public override bool Stop()
         {
+            TargetBlock = null;
             _device.Stop();
-            _inputBufferLink.Dispose();
-            _inputBufferLink = null;
             return true;
         }
 
@@ -153,10 +152,8 @@ namespace NewAudio.Nodes
                 if (disposing)
                 {
                     _device?.Dispose();
-                    _inputBufferLink?.Dispose();
                     _audioOutputBlock?.Dispose();
                     _device = null;
-                    _inputBufferLink = null;
                     _audioOutputBlock = null;
                 }
 

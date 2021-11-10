@@ -73,13 +73,11 @@ namespace NewAudio.Nodes
         public override bool Play()
         {
             // Output.Source = _audioGeneratorBlock;
-            Output.Play();
             return true;
         }
 
         public override bool Stop()
         {
-            Output.Stop();
             // Output.Source = null;
             return true;
         }

@@ -10,6 +10,12 @@ namespace NewAudioTest
     [TestFixture]
     public class FFTTest
     {
+        [SetUp]
+        public void Setup()
+        {
+            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+        }
+        
         [Test]
         public void TestIt()
         {

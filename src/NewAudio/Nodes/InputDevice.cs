@@ -87,7 +87,6 @@ namespace NewAudio.Nodes
 
         public override bool Play()
         {
-            Output.Play();
             _device.Start();
    
             return true;
@@ -95,7 +94,6 @@ namespace NewAudio.Nodes
 
         public override bool Stop()
         {
-            Output.Stop();
             _device.Stop();
     
             return true;
@@ -115,7 +113,13 @@ namespace NewAudio.Nodes
             {
                 if (disposing)
                 {
+                    _logger.Warning("DISPOSE DEVICE");
                     _device?.Dispose();
+                    if (_audioInputBlock != null)
+                    {
+                        _logger.Information("Free AudioInputBlock...");
+                        _audioInputBlock.Free().GetAwaiter().GetResult();
+                    }
                     _audioInputBlock?.Dispose();
                     _device = null;
                     _audioInputBlock = null;

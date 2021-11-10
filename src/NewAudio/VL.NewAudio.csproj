@@ -56,13 +56,13 @@
         <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0526-gd606d93626\lib\Microsoft.VisualStudio.Threading.dll</HintPath>
       </Reference>
       <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0600-g01fe282c1c\lib\VL.Core.dll</HintPath>
+        <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0613-g3afe96c078\lib\VL.Core.dll</HintPath>
       </Reference>
       <Reference Include="VL.CoreLib, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0600-g01fe282c1c\lib\VL.CoreLib.dll</HintPath>
+        <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0613-g3afe96c078\lib\VL.CoreLib.dll</HintPath>
       </Reference>
       <Reference Include="VL.Lang, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0600-g01fe282c1c\lib\VL.Lang.dll</HintPath>
+        <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0613-g3afe96c078\lib\VL.Lang.dll</HintPath>
       </Reference>
     </ItemGroup>
 

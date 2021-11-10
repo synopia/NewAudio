@@ -106,6 +106,7 @@
             </p:NodeReference>
             <Pin Id="QcS2JbMaVt5OzWGOxjcQE6" Name="Debug" Kind="InputPin" />
             <Pin Id="HqZS0n8Hkx4O0sUzfpuEol" Name="Play" Kind="InputPin" />
+            <Pin Id="RTCT9WFCfjSPZRxHas7Pht" Name="Buffers Count" Kind="InputPin" />
             <Pin Id="KwiOSuQG9kFNgcznTmMIpp" Name="Debug" Kind="OutputPin" />
           </Node>
           <Node Bounds="411,167" Id="Ld8M0AQN2soOze6F7kEgW5">
@@ -115,6 +116,8 @@
               <CategoryReference Kind="Category" Name="Input" />
               <Choice Kind="ProcessAppFlag" Name="InputDevice" />
             </p:NodeReference>
+            <Pin Id="Bv2aeOnVQOgOLEiPqmrq6L" Name="Output Count" Kind="InputPin" />
+            <Pin Id="J2aAaT3vuGILdtIzPlFcHt" Name="Max Buffers Per Task" Kind="InputPin" />
             <Pin Id="FipAEvy3wlRQVGBVIGT9Oc" Name="Device" Kind="InputPin" />
             <Pin Id="LUdlhcNGDmiPh8cQThMOHj" Name="Channels" Kind="InputPin" />
             <Pin Id="M7l5KrL3305PuReXrJQotW" Name="Channel Offset" Kind="InputPin" />
@@ -132,6 +135,8 @@
               <CategoryReference Kind="Category" Name="Output" />
               <Choice Kind="ProcessAppFlag" Name="OutputDevice" />
             </p:NodeReference>
+            <Pin Id="KZglquFoG1LNSZgNb8VTaB" Name="Input Count" Kind="InputPin" />
+            <Pin Id="CY3gUkHrzDqQKLJCv9RSVb" Name="Max Buffers Per Task" Kind="InputPin" />
             <Pin Id="BGdN3MgT5d6PhO9KUBwXeF" Name="Input" Kind="InputPin" />
             <Pin Id="TsCAXUXDsxhLBdgXAdkaQS" Name="Device" Kind="InputPin" />
             <Pin Id="IQ7ruIxAP1sLpKBTn2zefe" Name="Channels" Kind="InputPin" />
@@ -139,6 +144,7 @@
             <Pin Id="Sh68ZxoQri5LPZsIdu0aE0" Name="Sampling Frequency" Kind="InputPin" />
             <Pin Id="U5IEGYBltE7O3BR1IzuU7u" Name="Desired Latency" Kind="InputPin" />
             <Pin Id="IBpnLUUC1CIOPsYwcLNKl2" Name="Phase" Kind="OutputPin" />
+            <Pin Id="GUrSafAFgqrOBwdT3y9wVq" Name="Input Usage" Kind="OutputPin" />
             <Pin Id="FME5oORSk3iLgQPoxse5rq" Name="Debug" Kind="OutputPin" />
             <Pin Id="PHZn3cwDcRYOApa3Z70XA6" Name="Lag Ms" Kind="OutputPin" />
             <Pin Id="UzaSgU7JwGpN7ccExnpaYO" Name="Errors" Kind="OutputPin" />
@@ -160,6 +166,12 @@
             </p:TypeAnnotation>
           </Pad>
           <Pad Id="FhU4pjT3YjPMZ6sNCN4tkY" Comment="Sampling Frequency" Bounds="565,579,76,15" ShowValueBox="true" Value="Hz48000" />
+          <Pad Id="V2nm0q1yTKUNiiBevKhqbu" Comment="Debug" Bounds="116,385,254,323" ShowValueBox="true" isIOBox="true" Value="text">
+            <p:TypeAnnotation>
+              <Choice Kind="TypeFlag" Name="String" />
+              <FullNameCategoryReference ID="Primitive" />
+            </p:TypeAnnotation>
+          </Pad>
         </Canvas>
         <ProcessDefinition Id="ULV96Glo4tzO2Ni7R5Rfo4">
           <Fragment Id="MurYefHBnsDMtyEZpXA4i3" Patch="DVz6M3pcnL0NrNQ23EPrbT" Enabled="true" />
@@ -175,13 +187,15 @@
         <Link Id="AMpnXJTRN3ANA0m6PeR3ev" Ids="LUVDjMkGnUCQCGi4I2zho8,FipAEvy3wlRQVGBVIGT9Oc" />
         <Link Id="D7pa0YzRZVjM6C7TYfbKuX" Ids="McKdOy2KBaiPfBtU6ZdvK1,DkFTh10CFoxNyQ717eSIah" />
         <Link Id="JTTvhOKVe5GL5FbUGkKTPv" Ids="SQMKeQgy2zhNIFnh3S7y7H,TsCAXUXDsxhLBdgXAdkaQS" />
-        <Link Id="Ef0IOHKEffiQcm0qBC0Ucm" Ids="JHxxhy9ZN31PppPxnz0Tw4,BGdN3MgT5d6PhO9KUBwXeF" />
         <Link Id="K3f9Gd9rvoKN1pITgHVNvn" Ids="Rhnoxf557I8O88KPaEmiz6,B6gmzU1CeFgP0SNW5aFr2r" />
         <Link Id="FdqsF3WM0pkPEpTObuifxA" Ids="TnlwOqEOpjZPfrCKxgDBkS,BDSdCRRGQFSMf3g2z4FZKC" />
         <Link Id="HTylxLSxpLAOXvj7L8oGYB" Ids="LxCym24H67HNAmv57XQBAR,K2JqeYbjgG9M0FBpZVoSj2" />
         <Link Id="PeOSqTkId0dNfexuJziqHK" Ids="LxCym24H67HNAmv57XQBAR,K77mGiNdxijODxSRC4PMVZ" />
         <Link Id="KH4Rao9pYFwLonY1PqZsk9" Ids="HW95gHQpa3vLA9RBLsyHoL,U5IEGYBltE7O3BR1IzuU7u" />
         <Link Id="ChcGy14jbCcLRm35D9NJTg" Ids="FhU4pjT3YjPMZ6sNCN4tkY,Sh68ZxoQri5LPZsIdu0aE0" />
+        <Link Id="Fb9XKOXxEAJPresGO5umec" Ids="McKdOy2KBaiPfBtU6ZdvK1,BGdN3MgT5d6PhO9KUBwXeF" />
+        <Link Id="RlbGLiTO42ZLMWmIDr4HVN" Ids="AXDRH1ckdjUQAqbfOFtnBe,QcS2JbMaVt5OzWGOxjcQE6" />
+        <Link Id="GjllgAua9kLLZVBz6lMaeG" Ids="KwiOSuQG9kFNgcznTmMIpp,V2nm0q1yTKUNiiBevKhqbu" />
       </Patch>
     </Node>
   </Patch>
