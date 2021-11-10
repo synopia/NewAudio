@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="PgQeCyK3TssP3oGbL7KaOU" LanguageVersion="2021.4.0.600" Version="0.128">
-  <NugetDependency Id="Hb9C78g1kMyMFLO02PiqLd" Location="VL.CoreLib" Version="2021.4.0-0600-g01fe282c1c" />
+<Document xmlns:p="property" Id="PgQeCyK3TssP3oGbL7KaOU" LanguageVersion="2021.4.0.613" Version="0.128">
+  <NugetDependency Id="Hb9C78g1kMyMFLO02PiqLd" Location="VL.CoreLib" Version="2021.4.0-0613-g3afe96c078" />
   <Patch Id="Nq8YmeVPxUTOnzjPHaQg0N">
     <Canvas Id="UVodregYOV1O409KaBJP5r" DefaultCategory="Main" CanvasType="FullCategory" />
     <!--
@@ -403,7 +403,6 @@
             </p:NodeReference>
             <Pin Id="DdTKXAn69k0NFKXhwaej4M" Name="Debug" Kind="InputPin" />
             <Pin Id="HU9R0J2u06fM4E7ZXeULUj" Name="Play" Kind="InputPin" />
-            <Pin Id="MO7441KQimPNhiZnaPRYtj" Name="Buffers Count" Kind="InputPin" />
             <Pin Id="HPUcaS7XItCLHLmM9TXxbu" Name="Debug" Kind="OutputPin" />
           </Node>
           <Node Bounds="306,152,85,19" Id="SZI1U30zEtELEY7XirCNMe">
@@ -413,8 +412,6 @@
               <CategoryReference Kind="Category" Name="Input" />
               <Choice Kind="ProcessAppFlag" Name="InputDevice" />
             </p:NodeReference>
-            <Pin Id="HTnGz5HteyIM63lyILe9v1" Name="Output Count" Kind="InputPin" />
-            <Pin Id="AxeEJati3sJPARGwrvNxBF" Name="Max Buffers Per Task" Kind="InputPin" />
             <Pin Id="KA7ShyhY7pfLUUDXA3lnfR" Name="Device" Kind="InputPin" />
             <Pin Id="L8xpZkevcuQNFotzmEAPyc" Name="Channels" Kind="InputPin" />
             <Pin Id="JZDeAalfs3oPdYCeNY0kAL" Name="Channel Offset" Kind="InputPin" />
@@ -432,16 +429,14 @@
               <CategoryReference Kind="Category" Name="Output" />
               <Choice Kind="ProcessAppFlag" Name="OutputDevice" />
             </p:NodeReference>
-            <Pin Id="OCkiS081WT5OpaY0ITkWx2" Name="Input Count" Kind="InputPin" />
-            <Pin Id="D9M7YtTaNDhMQlez4BlKMP" Name="Max Buffers Per Task" Kind="InputPin" />
             <Pin Id="IfiSw9lw8uCN50rHJCC8Ue" Name="Input" Kind="InputPin" />
             <Pin Id="AXdLBnMvbwXOjK3VjvcUer" Name="Device" Kind="InputPin" />
             <Pin Id="Q3sCgyX3K0SPnjpq892xgc" Name="Channels" Kind="InputPin" />
             <Pin Id="RqOtrcfyhTNMuLcjl9sT4s" Name="Channel Offset" Kind="InputPin" />
             <Pin Id="BGNATMDUAazQNNrSvo0Rve" Name="Sampling Frequency" Kind="InputPin" />
+            <Pin Id="NHoMv2wxbq2N70QSIIFHwQ" Name="Buffer Size" Kind="InputPin" />
             <Pin Id="FHofd5qN48JQF0ViWN9Tm2" Name="Desired Latency" Kind="InputPin" />
             <Pin Id="Qmy8D8XjJOqOuhEnr2J4Ss" Name="Phase" Kind="OutputPin" />
-            <Pin Id="FPwwqhCpjfBNdJO7g4E0Uf" Name="Input Usage" Kind="OutputPin" />
             <Pin Id="NE6cZf9roT8Pz3yYtJAIa3" Name="Debug" Kind="OutputPin" />
             <Pin Id="VmOHDXCgo2PL8N5wpmbeeT" Name="Lag Ms" Kind="OutputPin" />
             <Pin Id="CFGC7AzhCebPnOqHcarPeb" Name="Errors" Kind="OutputPin" />
@@ -537,10 +532,7 @@
             <Pin Id="C6ikAJQ6AqJO66o340teCP" Name="Reset" Kind="InputPin" />
             <Pin Id="CD6ShNOTag2LpaPr9PgEdK" Name="Bypass" Kind="InputPin" />
             <Pin Id="MiCO94ODf86PVViRKkXMMX" Name="Output Channels" Kind="InputPin" DefaultValue="2" />
-            <Pin Id="QIZJs0aiMzsO0Lo9ivjb6f" Name="Input Count" Kind="InputPin" />
-            <Pin Id="RNQiuFkKMJSPSDpfJOY0Ah" Name="Max Buffers Per Task" Kind="InputPin" />
-            <Pin Id="O0Nu13Y5vB1MqIvhBnEGra" Name="Output Count" Kind="InputPin" />
-            <Pin Id="I9r18v5gfO0M6uxF92nwSb" Name="Max Buffers Per Task 2" Kind="InputPin" />
+            <Pin Id="LyXJxItxIAYMJ5NFKlGaSL" Name="Buffer Size" Kind="InputPin" />
             <Pin Id="F55Y7owrMLDPCrD8opP5W1" Name="Result" Kind="OutputPin" />
             <Pin Id="RPb8S3QUIVXN6xUSRGM4oV" Name="Phase" Kind="OutputPin" />
             <Pin Id="UW6z6AzREjYPgR76J1gntH" Name="Errors" Kind="OutputPin" />
@@ -553,6 +545,12 @@
               <p:fontsize p:Type="Int32">10</p:fontsize>
               <p:stringtype p:Assembly="VL.Core" p:Type="VL.Core.StringType">Comment</p:stringtype>
             </p:ValueBoxSettings>
+          </Pad>
+          <Pad Id="CgqArZGZi39OC1vEiW9nUN" Comment="Buffer Size" Bounds="843,90,35,15" ShowValueBox="true" isIOBox="true" Value="8">
+            <p:TypeAnnotation>
+              <Choice Kind="TypeFlag" Name="Integer32" />
+              <FullNameCategoryReference ID="Primitive" />
+            </p:TypeAnnotation>
           </Pad>
         </Canvas>
         <ProcessDefinition Id="OhvjURylezfQIOP9W7zkGV">
@@ -623,9 +621,10 @@
         <Link Id="VSFVNygjqJNMBudI9YLdYk" Ids="GGQPLy3mN00QZ81mp48iNm,QFtzxkLTw2hP1u10e8bQa1" />
         <Link Id="C1Q92XuYIxRQEg1Fnmwt63" Ids="JBTY1ti4MAeNAzYisx9Mj3,IfiSw9lw8uCN50rHJCC8Ue" />
         <Link Id="BZeqeRpzWO0LeRj8q9WlSl" Ids="NjNlC8nOeaBLHpcQwiGzlU,DdTKXAn69k0NFKXhwaej4M" />
+        <Link Id="IgwYHvt5T2EPDeQKuxFtud" Ids="CgqArZGZi39OC1vEiW9nUN,NHoMv2wxbq2N70QSIIFHwQ" />
       </Patch>
     </Node>
   </Patch>
-  <NugetDependency Id="BEVE3AtDi2yLhfOqaiZthl" Location="VL.Skia" Version="2021.4.0-0600-g01fe282c1c" />
+  <NugetDependency Id="BEVE3AtDi2yLhfOqaiZthl" Location="VL.Skia" Version="2021.4.0-0613-g3afe96c078" />
   <NugetDependency Id="TGVRhhYer7iMrkfGNmHpOE" Location="VL.NewAudio" Version="0.3.0-alpha" />
 </Document>

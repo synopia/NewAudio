@@ -148,7 +148,11 @@ namespace NewAudio.Nodes
                 }
 
                 return output;
-            }); //, InternalOptions.ExecutionDataflowBlockOptions);
+            }, new ExecutionDataflowBlockOptions()
+            {
+                BoundedCapacity = 1,
+                MaxDegreeOfParallelism = 1
+            }); 
 
             return Task.FromResult(true);
         }
@@ -171,7 +175,7 @@ namespace NewAudio.Nodes
         
         public override string DebugInfo()
         {
-            return $"LOOP: [ in/out={_processor?.InputCount}/{_processor?.OutputCount}, {base.DebugInfo()} ]";
+            return $"LOOP: [in/out={_processor?.InputCount}/{_processor?.OutputCount}, {base.DebugInfo()}]";
         }
 
         private bool _disposedValue;

@@ -101,7 +101,7 @@ namespace NewAudio.Nodes
 
         public override string DebugInfo()
         {
-            return $"Input device:[ {base.DebugInfo()} ]";
+            return $"Input device:[{base.DebugInfo()}]";
         }
 
 

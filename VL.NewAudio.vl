@@ -224,7 +224,7 @@
     ************************ IAudioProcessor ************************
 
 -->
-      <Node Name="IAudioProcessor" Bounds="110,662" Id="CDuI7PU12QdMMzToJvc4yg">
+      <Node Name="IAudioProcessor" Bounds="67,609" Id="CDuI7PU12QdMMzToJvc4yg">
         <p:NodeReference>
           <Choice Kind="ForwardDefinition" Name="Forward" />
           <FullNameCategoryReference ID="Primitive" />
@@ -812,7 +812,11 @@
               <Pin Id="LWPTKEcPqDdORlu7ZlKOmW" Name="Device" Kind="InputPin" />
               <Pin Id="OspbRsuYxyNQLopGpxXsBV" Name="Channels" Kind="InputPin" />
               <Pin Id="SGiB9KQ9kMwOjSYW4Y0xTt" Name="Channel Offset" Kind="InputPin" />
-              <Pin Id="HfQWsq9ujfeOWxhxVJwhS3" Name="Sampling Frequency" Kind="InputPin" />
+              <Pin Id="HfQWsq9ujfeOWxhxVJwhS3" Name="Sampling Frequency" Kind="InputPin">
+                <p:TypeAnnotation>
+                  <Choice Kind="TypeFlag" Name="SamplingFrequency" />
+                </p:TypeAnnotation>
+              </Pin>
               <Pin Id="LmJKi2CFelmONa3neHz9m5" Name="Buffer Size" Kind="InputPin" />
               <Pin Id="G4a4AIOwCw5Lp3v7xANjnz" Name="Desired Latency" Kind="InputPin" />
               <Pin Id="QJfkTiyK22OMcRTUj7nKSV" Name="Phase" Kind="OutputPin" />
@@ -1038,6 +1042,16 @@
                 <ControlPoint Id="TXKBXzPauz6Ojby13rXaLj" Bounds="423,414" Alignment="Bottom" />
                 <ControlPoint Id="OwsjfV9RIReO6myxQFExui" Bounds="423,346" Alignment="Top" />
               </Node>
+              <ControlPoint Id="JfZRroSYmQ0NxgSqEbB5rj" Bounds="865,819" />
+              <Node Bounds="845,755" Id="EegwTE4MQ0INXB2ON2CcRX">
+                <p:NodeReference LastCategoryFullName="Primitive.Enum" LastSymbolSource="CoreLibBasics.vl">
+                  <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                  <CategoryReference Kind="ClassType" Name="Enum" />
+                  <Choice Kind="OperationCallFlag" Name="Ord2Enum" />
+                </p:NodeReference>
+                <Pin Id="FeTKZqR2Ak0LHpEktLTcNP" Name="Input" Kind="StateInputPin" />
+                <Pin Id="MDbTUtBfRUzQA2PInt6kKD" Name="Result" Kind="OutputPin" />
+              </Node>
             </Canvas>
             <ProcessDefinition Id="UZBHa4vYF55O5xRJMXyNQK">
               <Fragment Id="P8chUMOq4PuPPWOScVflYw" Patch="J3Xt2pVKDy5L0sLvY9QtEj" Enabled="true" />
@@ -1061,18 +1075,6 @@
             <Link Id="IuZDMEzMexmOK0XITdoatD" Ids="KUuHeb1fuCYNWFy1xkFi22,C2L39GKoE9PLaNs98L9qas" />
             <Link Id="RbjFWtoHMOSLNEzoj6EOAp" Ids="BI0ftgSC1K0OQueLMm4tcA,P0a2Y3JQ5l9NoG3jRYgToR" IsHidden="true" />
             <Link Id="UmYJ4qVl5pQL8YumLAEidt" Ids="L9673Y2TKQzQbMpJazkFpe,UEs08QaueS9LhbkavM3r9v" IsHidden="true" />
-            <Patch Id="J3Xt2pVKDy5L0sLvY9QtEj" Name="Create" />
-            <Patch Id="C6OlyIp5LR6Mvq6ZYN6KnU" Name="Update">
-              <Pin Id="SuddoUq6hcuNySdEsoOMOb" Name="Input" Kind="InputPin" />
-              <Pin Id="FJvPcEnAIwWLIWOOI0mBcc" Name="Buffer Size" Kind="OutputPin" />
-              <Pin Id="CSOn8lSkfICPkxp29AYJdX" Name="Channels" Kind="OutputPin" />
-              <Pin Id="A4E0zqCX2bDLSyaRUJhCfJ" Name="Sample Count" Kind="OutputPin" />
-              <Pin Id="USwQHRnmFaJMLIh6vkKZkQ" Name="Sample Rate" Kind="OutputPin" />
-              <Pin Id="BNX24uHFxxkOua77qDHdMx" Name="As String" Kind="OutputPin" />
-              <Pin Id="UEs08QaueS9LhbkavM3r9v" Name="Bits Per Sample" Kind="OutputPin" />
-              <Pin Id="P0a2Y3JQ5l9NoG3jRYgToR" Name="Average Bytes Per Second" Kind="OutputPin" />
-              <Pin Id="PuRJK5YMBNXMO793WTFVyq" Name="Encoding" Kind="OutputPin" />
-            </Patch>
             <Link Id="NkOekkSnKwQOmf8LvXrSXX" Ids="NPQ1cSYRy2zMcvSdyJ5eIG,PuRJK5YMBNXMO793WTFVyq" IsHidden="true" />
             <Link Id="IGxbGbgm51jMINtkJdE8rx" Ids="UJjMb0y9SvoQV5Qq1EaxpQ,NPQ1cSYRy2zMcvSdyJ5eIG" />
             <Slot Id="DQUF7m7n1WuONeLou4ljEQ" Name="NULL" />
@@ -1097,6 +1099,26 @@
             <Link Id="TRFyecm2lMhPDDS1ymhwZo" Ids="OwsjfV9RIReO6myxQFExui,TXKBXzPauz6Ojby13rXaLj" IsFeedback="true" />
             <Link Id="FjraXtB6KXmPteAjRdeoR7" Ids="P53DiWhDAIiO31c5pbAEE0,TXKBXzPauz6Ojby13rXaLj" />
             <Link Id="CEyFhWCpbpbPcLWU5IMaAF" Ids="TXKBXzPauz6Ojby13rXaLj,IVrc2ThGmn3LOZPTvPW61E" />
+            <Link Id="HhePcGsO57RPsq7YsJ9Qb3" Ids="JfZRroSYmQ0NxgSqEbB5rj,PlHDbJ9G8r1Lw2lIFAmpmo" IsHidden="true" />
+            <Patch Id="J3Xt2pVKDy5L0sLvY9QtEj" Name="Create" />
+            <Patch Id="C6OlyIp5LR6Mvq6ZYN6KnU" Name="Update">
+              <Pin Id="SuddoUq6hcuNySdEsoOMOb" Name="Input" Kind="InputPin" />
+              <Pin Id="FJvPcEnAIwWLIWOOI0mBcc" Name="Buffer Size" Kind="OutputPin" />
+              <Pin Id="CSOn8lSkfICPkxp29AYJdX" Name="Channels" Kind="OutputPin" />
+              <Pin Id="A4E0zqCX2bDLSyaRUJhCfJ" Name="Sample Count" Kind="OutputPin" />
+              <Pin Id="USwQHRnmFaJMLIh6vkKZkQ" Name="Sample Rate" Kind="OutputPin" />
+              <Pin Id="BNX24uHFxxkOua77qDHdMx" Name="As String" Kind="OutputPin" />
+              <Pin Id="PlHDbJ9G8r1Lw2lIFAmpmo" Name="Sample Rate Enum" Kind="OutputPin">
+                <p:TypeAnnotation>
+                  <Choice Kind="TypeFlag" Name="SamplingFrequency" />
+                </p:TypeAnnotation>
+              </Pin>
+              <Pin Id="UEs08QaueS9LhbkavM3r9v" Name="Bits Per Sample" Kind="OutputPin" />
+              <Pin Id="P0a2Y3JQ5l9NoG3jRYgToR" Name="Average Bytes Per Second" Kind="OutputPin" />
+              <Pin Id="PuRJK5YMBNXMO793WTFVyq" Name="Encoding" Kind="OutputPin" />
+            </Patch>
+            <Link Id="KgfSc4ZYbARPxQjKKmwPGW" Ids="MDbTUtBfRUzQA2PInt6kKD,JfZRroSYmQ0NxgSqEbB5rj" />
+            <Link Id="A7AZkEefmkMLupdODRB9us" Ids="R5JQfmFw8CSQTL6Wmo1CaI,FeTKZqR2Ak0LHpEktLTcNP" />
           </Patch>
         </Node>
         <!--
@@ -1564,7 +1586,7 @@
                 <Pin Id="NePiQpU6vh7QOxvoOCLEfl" Name="Reset" Kind="InputPin" />
                 <Pin Id="T4qq4iay0PEOxMqiY57lh2" Name="Bypass" Kind="InputPin" />
                 <Pin Id="AcCYVL3C0qJMlp5bXSx2Ns" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
-                <Pin Id="D20MLHE3FslOiQ46FgvXdb" Name="Buffer Size" Kind="InputPin" />
+                <Pin Id="D20MLHE3FslOiQ46FgvXdb" Name="Buffer Size" Kind="InputPin" DefaultValue="2" />
                 <Pin Id="Hr3d9dLQDMLMglArcr1Y9i" Name="Result" Kind="OutputPin" />
                 <Pin Id="BL2I76kOpuxL7keRBLgv0q" Name="Phase" Kind="OutputPin" />
                 <Pin Id="OGbyMxgJGv6P7gq05cQyVU" Name="Errors" Kind="OutputPin" />
@@ -1610,7 +1632,7 @@
                 <Pin Id="JgxPZKEsnBVNFIjgjWDFNa" Name="Reset" Kind="InputPin" />
                 <Pin Id="QmlnlZjzPT0LO5pZv27eQV" Name="Bypass" Kind="InputPin" />
                 <Pin Id="AWn7XQM2g7mL9A89lZXaC7" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
-                <Pin Id="CeSlRNUuh9OMkKaZxvKyOv" Name="Buffer Size" Kind="InputPin" />
+                <Pin Id="CeSlRNUuh9OMkKaZxvKyOv" Name="Buffer Size" Kind="InputPin" DefaultValue="2" />
                 <Pin Id="Gjs1NVLhkpBNogDJOcWGzL" Name="Result" Kind="OutputPin" />
                 <Pin Id="FMmyUx4MPEUQYvgyTEsCsD" Name="Phase" Kind="OutputPin" />
                 <Pin Id="TS9BYq2XYMUL93VRj4tfNd" Name="Errors" Kind="OutputPin" />
@@ -1671,13 +1693,8 @@
                 <Pin Id="CGV1NETMIU7MpPYmmhpI8S" Name="Errors" Kind="OutputPin" />
                 <Pin Id="EIwWU0MlMQmLb1P5sIzuz2" Name="Output" Kind="OutputPin" />
               </Node>
+              <ControlPoint Id="HJuwQz0gSZKOHquAE1jVBS" Bounds="456,442" />
             </Canvas>
-            <Patch Id="Ub4MKQbfwV9NocziwBRCOX" Name="Create" />
-            <Patch Id="TkNuZQneFavMdmurDw8FJ8" Name="Update">
-              <Pin Id="MMQuV0RlNerNyYliEXqFLi" Name="Left" Kind="InputPin" />
-              <Pin Id="GHn7bueAyhjM47yUPfwYz0" Name="Right" Kind="InputPin" />
-              <Pin Id="Jt2CkO5XKMiMV8XdvamgRc" Name="Stereo" Kind="OutputPin" />
-            </Patch>
             <ProcessDefinition Id="CsNIa8f507CPTvxFeuLwTl">
               <Fragment Id="IAajemfFAJZLSRNZ2KSKFB" Patch="Ub4MKQbfwV9NocziwBRCOX" Enabled="true" />
               <Fragment Id="MAS7dqaOQu4MbwLaPzP8Lv" Patch="TkNuZQneFavMdmurDw8FJ8" Enabled="true" />
@@ -1688,6 +1705,15 @@
             <Link Id="L9BLJb5jg1hLC66aTJXXMe" Ids="HJMZaJfRdKdLYPCTv9PZw6,RdywNeMF8NaOcFBTqiRnFq" />
             <Link Id="QDR1eHKAwX0OGjBwbqLerz" Ids="UeTunsRrtOwNRNsjI5cfY3,PiXGHWithtgNkfqEm4p2IP" />
             <Link Id="PeP15hJOkYqMGgfaMQWVQJ" Ids="EIwWU0MlMQmLb1P5sIzuz2,JC2okDROCxbM3cghFIEvOd" />
+            <Link Id="B7YLskLOcS3Pi7fO2M3R7S" Ids="HJuwQz0gSZKOHquAE1jVBS,OmQ0u1Nw0aDPT2PJossUkz" IsHidden="true" />
+            <Link Id="PHKGxQxwoDjNO4j13TK14V" Ids="HvYBnSYwhPoLagESXq92BI,HJuwQz0gSZKOHquAE1jVBS" />
+            <Patch Id="Ub4MKQbfwV9NocziwBRCOX" Name="Create" />
+            <Patch Id="TkNuZQneFavMdmurDw8FJ8" Name="Update">
+              <Pin Id="MMQuV0RlNerNyYliEXqFLi" Name="Left" Kind="InputPin" />
+              <Pin Id="GHn7bueAyhjM47yUPfwYz0" Name="Right" Kind="InputPin" />
+              <Pin Id="OmQ0u1Nw0aDPT2PJossUkz" Name="Phase" Kind="OutputPin" />
+              <Pin Id="Jt2CkO5XKMiMV8XdvamgRc" Name="Stereo" Kind="OutputPin" />
+            </Patch>
           </Patch>
         </Node>
         <!--
@@ -2232,6 +2258,24 @@
         <Patch Id="SDLeIkSKmSKMUIYGLqL3Xe">
           <Canvas Id="N1ZCotl6TEcL6b44g7mPi6" BordersChecked="false" CanvasType="Group" />
           <ProcessDefinition Id="R6Iv66XlEJAPMicvdihyrH" IsHidden="true" />
+        </Patch>
+      </Node>
+      <!--
+
+    ************************ SamplingFrequency ************************
+
+-->
+      <Node Name="SamplingFrequency" Bounds="839,902" Id="Pe2M81vR3CtPXTcgXLMwO1">
+        <p:NodeReference>
+          <Choice Kind="ForwardRecordDefinition" Name="Immutable Forward" />
+          <FullNameCategoryReference ID="Primitive" />
+        </p:NodeReference>
+        <p:TypeAnnotation LastCategoryFullName="NewAudio.Core" LastSymbolSource="VL.NewAudio.dll">
+          <Choice Kind="TypeFlag" Name="SamplingFrequency" />
+        </p:TypeAnnotation>
+        <Patch Id="RgjS1Wpw2xFOT8ZbHTJL9G">
+          <Canvas Id="HIYTovJwHzlMNvK6GgXjVZ" BordersChecked="false" CanvasType="Group" />
+          <ProcessDefinition Id="GJRTuWrVjWdNXEUnJ5ZlHY" IsHidden="true" />
         </Patch>
       </Node>
     </Canvas>

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="U3bVYI0uILvPxXgbHoYQOT" LanguageVersion="2021.4.0.600" Version="0.128">
-  <NugetDependency Id="Karzca3RHEMP33W7Z2vdkb" Location="VL.CoreLib" Version="2021.4.0-0600-g01fe282c1c" />
+<Document xmlns:p="property" Id="U3bVYI0uILvPxXgbHoYQOT" LanguageVersion="2021.4.0.613" Version="0.128">
+  <NugetDependency Id="Karzca3RHEMP33W7Z2vdkb" Location="VL.CoreLib" Version="2021.4.0-0613-g3afe96c078" />
   <Patch Id="PvyxW6UL2wsPbsk2MghI54">
     <Canvas Id="Ie77yoTwJBuQAtDZf6VEfF" DefaultCategory="NewAudio.Filter" CanvasType="FullCategory">
       <!--
@@ -41,7 +41,7 @@
               <Pin Id="BknQTdM7ePfNHM4Bd1xAUi" Name="Output" Kind="OutputPin" />
             </Node>
             <Pad Id="PZwAzUSrIhbMNMNlUNcPaa" Bounds="1061,357" />
-            <Node Bounds="505,321,206,434" Id="O6OI5VTRSPcM0gxd2cOZAS">
+            <Node Bounds="505,321,203,423" Id="O6OI5VTRSPcM0gxd2cOZAS">
               <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
                 <CategoryReference Kind="Category" Name="NewAudio" />
                 <Choice Kind="ProcessAppFlag" Name="AudioLoopRegion" />
@@ -67,17 +67,6 @@
                   <Pin Id="QwiMhOeeQjkPH8FBYyiLhA" Name="Output" Kind="StateOutputPin" />
                   <Pin Id="CbIhNnRfWtLOsvLVHSs7SS" Name="Result" Kind="OutputPin" />
                 </Node>
-                <Node Bounds="574,709,111,26" Id="Ox7N61qxGThPRrnB1tWk0y">
-                  <p:NodeReference LastCategoryFullName="NewAudio.AudioChannels" LastSymbolSource="VL.NewAudio.vl">
-                    <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                    <Choice Kind="OperationCallFlag" Name="SetSampleToChannel" />
-                    <CategoryReference Kind="ClassType" Name="AudioChannels" NeedsToBeDirectParent="true" />
-                  </p:NodeReference>
-                  <Pin Id="QQj88Jn629vPb6IEr7xu2A" Name="Input" Kind="StateInputPin" />
-                  <Pin Id="MucPV7m07VnLlNHuiR5of4" Name="Channel" Kind="InputPin" />
-                  <Pin Id="QD6DP3XOf7bQCJwPBydqdJ" Name="Value" Kind="InputPin" />
-                  <Pin Id="M2OpjINvt5rNw2ustjahkp" Name="Output" Kind="StateOutputPin" />
-                </Node>
                 <Node Bounds="605,515,83,26" Id="IBHI01URkTIOw2e6ZszgdC">
                   <p:NodeReference LastCategoryFullName="NewAudio.Filter.FirstOrder" LastSymbolSource="IIR Filter.vl">
                     <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
@@ -89,7 +78,7 @@
                   <Pin Id="NuhTqffuVRwOICRkXhDAyx" Name="Output" Kind="StateOutputPin" />
                   <Pin Id="Po9XczFH2A5QNdtsBUMD98" Name="Result" Kind="OutputPin" />
                 </Node>
-                <Node Bounds="652,606,25,19" Id="E7INKZSwEHJPBPsw4Cx3Md">
+                <Node Bounds="666,648,25,19" Id="E7INKZSwEHJPBPsw4Cx3Md">
                   <p:NodeReference LastCategoryFullName="Math" LastSymbolSource="CoreLibBasics.vl">
                     <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                     <Choice Kind="OperationCallFlag" Name="-" />
@@ -98,22 +87,24 @@
                   <Pin Id="UuE9cwlTbwJMzmdv5qT0iH" Name="Input 2" Kind="InputPin" />
                   <Pin Id="U0fLFhs9dBePp0q9ldtJpP" Name="Output" Kind="OutputPin" />
                 </Node>
-                <Node Bounds="622,647" Id="RTmhVgPD3LnQJ4EjcvYyow">
-                  <p:NodeReference LastCategoryFullName="Control" LastSymbolSource="CoreLibBasics.vl">
+                <Node Bounds="549,705" Id="THrVRkdD2B8O2BCyOfkTXu">
+                  <p:NodeReference LastCategoryFullName="NewAudio.Loop" LastSymbolSource="VL.NewAudio.vl">
                     <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
-                    <Choice Kind="OperationCallFlag" Name="SwitchOutput" />
+                    <CategoryReference Kind="Category" Name="NewAudio" />
+                    <CategoryReference Kind="Category" Name="Loop" />
+                    <Choice Kind="ProcessAppFlag" Name="SetAllSamples" />
                   </p:NodeReference>
-                  <Pin Id="ThlsqE3EGs3QQ9FlF7fPQG" Name="Condition" Kind="InputPin" />
-                  <Pin Id="VSqHqzWwCXuQIyYfiHYALQ" Name="Input" Kind="InputPin" />
-                  <Pin Id="AgCvZFDOAzQOOspfxImYud" Name="Default" Kind="InputPin" />
-                  <Pin Id="HBHA2znfYy2PFcLNwhkZaz" Name="True" Kind="OutputPin" />
-                  <Pin Id="FaC05soGUgvOO8xt3Jabj3" Name="False" Kind="OutputPin" />
+                  <Pin Id="R8S5VjDHUXRPoWejVCs5sq" Name="Input" Kind="InputPin" />
+                  <Pin Id="QusP5r7lLRYPcHJ5Najtf8" Name="Samples" Kind="InputPin" />
+                  <Pin Id="TlL7fhwduiUOSjZRgv4N2d" Name="Input" Kind="OutputPin" />
+                  <Pin Id="Qxhoo23ujOeO1359CS8Aqd" Name="Samples 2" Kind="InputPin" />
                 </Node>
               </Patch>
               <Pin Id="UgeGAy4dLcCP8se7NZKtj6" Name="Input" Kind="InputPin" />
               <Pin Id="DD2YQOMG2XKLJuuRhlvVjv" Name="Reset" Kind="InputPin" DefaultValue="False" />
               <Pin Id="PTNs8Y3YedXPIqV7bJlpQT" Name="Bypass" Kind="InputPin" />
-              <Pin Id="MgDwe7Ha1oANVZN7eHo5hO" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
+              <Pin Id="MgDwe7Ha1oANVZN7eHo5hO" Name="Output Channels" Kind="InputPin" DefaultValue="2" />
+              <Pin Id="MVsdxRoFqXQNO785HjUTUB" Name="Buffer Size" Kind="InputPin" DefaultValue="6" />
               <Pin Id="IThw6cj47D3MiwsLTIPNn1" Name="Result" Kind="OutputPin" />
               <Pin Id="DgfvG9nlYNdNgmk1tchxyX" Name="Phase" Kind="OutputPin" />
               <Pin Id="TI8tTTqWf1qNrKTtIASrLv" Name="Errors" Kind="OutputPin" />
@@ -150,6 +141,7 @@
               <Pin Id="E0a2azFGyiDL0CkisRhq98" Name="Sample Count" Kind="OutputPin" />
               <Pin Id="IRNaXpUDvHRNm9dGFfWARj" Name="Sample Rate" Kind="OutputPin" />
               <Pin Id="SCB9ZBw05SEMLI8gQQSBmV" Name="As String" Kind="OutputPin" />
+              <Pin Id="IyEZ0GjJ8XkMxvku3w6Pep" Name="Sample Rate Enum" Kind="OutputPin" />
               <Pin Id="BsnTVwEKK3XQAiRCYmrB38" Name="Bits Per Sample" Kind="OutputPin" />
               <Pin Id="VtlFDxDqiweNvKk5rmMesM" Name="Average Bytes Per Second" Kind="OutputPin" />
               <Pin Id="Rb0NPSolNLOOQxfGn9bVDM" Name="Encoding" Kind="OutputPin" />
@@ -176,14 +168,9 @@
           <Link Id="L7fCwUP0u0hMO8CvxxWmoV" Ids="IRNaXpUDvHRNm9dGFfWARj,Tm1qnVoN7VILIzNQpASK2D" />
           <Link Id="MgdLGVPndXwN1ySb33gZ6q" Ids="IRNaXpUDvHRNm9dGFfWARj,I4KVPImCY3MOoWYb3kUiag" />
           <Link Id="HqCJfdgNZXbOBxeHZ3ZuC3" Ids="Sj8RNqzmeuvOv0WwoW6eT0,EZBGVk5TDvaOUyXckiwGZE" />
-          <Link Id="FsB8F6D6oyvOM5NA9XNQvK" Ids="QwiMhOeeQjkPH8FBYyiLhA,QQj88Jn629vPb6IEr7xu2A" />
           <Link Id="QKouRSCOhZEOlIXsZ6EmFi" Ids="PZwAzUSrIhbMNMNlUNcPaa,ExJEX68YLGqOY8XeqFeU7w" />
           <Link Id="P5OTXdbiwBIMSqSQUmeWzo" Ids="CbIhNnRfWtLOsvLVHSs7SS,HOponEclh5gQF673hbD7TV" />
           <Link Id="GBLWpr1gCMtLKrp6dnp8Qr" Ids="Po9XczFH2A5QNdtsBUMD98,UuE9cwlTbwJMzmdv5qT0iH" />
-          <Link Id="SiAr12w4b8ZPd11tOaFixK" Ids="I36Jyzjw2t0M9tC1g4qR41,ThlsqE3EGs3QQ9FlF7fPQG" />
-          <Link Id="E9PZpzJxdBuMJUGEj8fqcW" Ids="U0fLFhs9dBePp0q9ldtJpP,VSqHqzWwCXuQIyYfiHYALQ" />
-          <Link Id="UKhQ0wBIpcSOinmEMvEhHE" Ids="Po9XczFH2A5QNdtsBUMD98,AgCvZFDOAzQOOspfxImYud" />
-          <Link Id="JjdUsOZv6IXOVtjT1CKq76" Ids="HBHA2znfYy2PFcLNwhkZaz,QD6DP3XOf7bQCJwPBydqdJ" />
           <Patch Id="Dhe3L9MDXK6LyiLvsLZX0U" Name="Create" ParticipatingElements="QpNLPJNpcEwMrjdhppILte" />
           <Patch Id="UqN3B7XSoBsPyOkbriX32T" Name="Update" ParticipatingElements="Fer0ZE4EC2HO8dYaVHxBDS,O020hCakxEHO6EOdaXb9Z2">
             <Pin Id="A5uBsLyDnnTPAkhjnYH7cc" Name="Input" Kind="InputPin" />
@@ -199,6 +186,10 @@
             </Pin>
             <Pin Id="SVQtPaOv9xPN7j4OAOqdsO" Name="Result" Kind="OutputPin" />
           </Patch>
+          <Link Id="Lb5cKXB8J3IO4WNPvrDMdV" Ids="QwiMhOeeQjkPH8FBYyiLhA,R8S5VjDHUXRPoWejVCs5sq" />
+          <Link Id="F6SebwG2O4IOTL2MtKwAHs" Ids="CbIhNnRfWtLOsvLVHSs7SS,FieXMkyF0OfQTvAuofIC6G" />
+          <Link Id="LaEELeTPhEMNEL8FSM8Y1B" Ids="U0fLFhs9dBePp0q9ldtJpP,QusP5r7lLRYPcHJ5Najtf8" />
+          <Link Id="OSTC5IDYtUNPSncg8wSYlS" Ids="U0fLFhs9dBePp0q9ldtJpP,Qxhoo23ujOeO1359CS8Aqd" />
         </Patch>
       </Node>
       <!--
@@ -617,6 +608,7 @@
               <Pin Id="JTpx1oYesFNPGIycZifiex" Name="Reset" Kind="InputPin" DefaultValue="False" />
               <Pin Id="VuFafanU2hkQKuiG3oTlpx" Name="Bypass" Kind="InputPin" />
               <Pin Id="R4MiPVPs1kOOK3busv4bBS" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
+              <Pin Id="KaPpU3nqwscMbL68wLCpr1" Name="Buffer Size" Kind="InputPin" />
               <Pin Id="TreuKOu7LqrNvmxM00s6u0" Name="Result" Kind="OutputPin" />
               <Pin Id="Ufbp2T13sabQNzGz197Rbh" Name="Phase" Kind="OutputPin" />
               <Pin Id="HVzcOC39DzYMSI8Zdqprgn" Name="Errors" Kind="OutputPin" />
@@ -634,6 +626,7 @@
               <Pin Id="AehOhh5UQlDNEIACXRuFXJ" Name="Sample Count" Kind="OutputPin" />
               <Pin Id="OlUxNwU7awdLBx89Lbkpn6" Name="Sample Rate" Kind="OutputPin" />
               <Pin Id="FJnxDva5gjdOeLjbbbE2xs" Name="As String" Kind="OutputPin" />
+              <Pin Id="J2FZCIgqKSQQd8xEOKoJvJ" Name="Sample Rate Enum" Kind="OutputPin" />
               <Pin Id="EZ6dQLiY81BMX13K8UjQYb" Name="Bits Per Sample" Kind="OutputPin" />
               <Pin Id="KNjzuOjY5jyNOyLIpHqxOw" Name="Average Bytes Per Second" Kind="OutputPin" />
               <Pin Id="Gawbh5O1QdkQSO9vpnKpeo" Name="Encoding" Kind="OutputPin" />
@@ -1073,6 +1066,7 @@
               <Pin Id="RdIkVVj1zR7LfaxVLzU1KS" Name="Reset" Kind="InputPin" DefaultValue="False" />
               <Pin Id="SB3kln1P2A5QAjVA96b5SV" Name="Bypass" Kind="InputPin" />
               <Pin Id="MGjhsvTPOTcMrHvjd6Unis" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
+              <Pin Id="TXNesVbGJ2sLrqwegEnW0v" Name="Buffer Size" Kind="InputPin" />
               <Pin Id="GZ2zSedSMjcPKlPzQkZJkW" Name="Result" Kind="OutputPin" />
               <Pin Id="JIok4RkkgTsPydlHahoNA7" Name="Phase" Kind="OutputPin" />
               <Pin Id="RlItwaOWN4WPV9VSsqe4lK" Name="Errors" Kind="OutputPin" />
@@ -1090,6 +1084,7 @@
               <Pin Id="KOzbOp8VBBVLLZfWzqrF8V" Name="Sample Count" Kind="OutputPin" />
               <Pin Id="KMalkRKiWtSL5IMCzfaR4T" Name="Sample Rate" Kind="OutputPin" />
               <Pin Id="DrqttGhM4C2Pi8iT1Iqb4V" Name="As String" Kind="OutputPin" />
+              <Pin Id="O7VereKpoVyNwNy2b0mQis" Name="Sample Rate Enum" Kind="OutputPin" />
               <Pin Id="TeSmohInuSRPBMUbxUv0N1" Name="Bits Per Sample" Kind="OutputPin" />
               <Pin Id="Mu3zS06J8e6PnUd05YLbX6" Name="Average Bytes Per Second" Kind="OutputPin" />
               <Pin Id="MzQw88Nhr7FN3RGvvrGkdG" Name="Encoding" Kind="OutputPin" />
@@ -1651,6 +1646,7 @@
               <Pin Id="RbFw7MMUvdsNYvF8XWRnZa" Name="Reset" Kind="InputPin" DefaultValue="False" />
               <Pin Id="HZUIUItJmyNM5qf3jCN3Rx" Name="Bypass" Kind="InputPin" />
               <Pin Id="Jt8wwb7CcjZOasRpjt4JgO" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
+              <Pin Id="Gx98mO647fzLye404GimrK" Name="Buffer Size" Kind="InputPin" />
               <Pin Id="P68F8LOMLB3P0RNuw6oCWn" Name="Result" Kind="OutputPin" />
               <Pin Id="GCSQjeYELb2ObKSzLYlucE" Name="Phase" Kind="OutputPin" />
               <Pin Id="HZjw2PrAQbyMMmMOMmuxdq" Name="Errors" Kind="OutputPin" />
@@ -1668,6 +1664,7 @@
               <Pin Id="JVcqqTFfkqNN5AZsRTpRto" Name="Sample Count" Kind="OutputPin" />
               <Pin Id="Ve2bv4X1wvfNBHyyuBmvw6" Name="Sample Rate" Kind="OutputPin" />
               <Pin Id="NbQQuRJX8VKMlSxtOYmKgd" Name="As String" Kind="OutputPin" />
+              <Pin Id="TuXPDoEylb0L9hhVBw1kNR" Name="Sample Rate Enum" Kind="OutputPin" />
               <Pin Id="U2UNUm5TJrILmVcIxkVBhU" Name="Bits Per Sample" Kind="OutputPin" />
               <Pin Id="F4W0lKgDgDmMfdmRr56j70" Name="Average Bytes Per Second" Kind="OutputPin" />
               <Pin Id="FqLk269yWizNtSqw2y3zdS" Name="Encoding" Kind="OutputPin" />
@@ -2253,6 +2250,7 @@
               <Pin Id="KQ1gcUTWA64QMYvlYnMMd6" Name="Reset" Kind="InputPin" DefaultValue="False" />
               <Pin Id="T4tMK3YdW0nO1SZf7YqrQq" Name="Bypass" Kind="InputPin" />
               <Pin Id="Lk3Fp3sj4HtNE5py4HfSXR" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
+              <Pin Id="EXjseQ2rkNCL5nc5f8izRm" Name="Buffer Size" Kind="InputPin" />
               <Pin Id="V8Gw4u1nCo7NMkUTodmvox" Name="Result" Kind="OutputPin" />
               <Pin Id="Tgoz0Xjgj9oLZwSZNbo91s" Name="Phase" Kind="OutputPin" />
               <Pin Id="IvqwwmP07HYNilL5GjBscb" Name="Errors" Kind="OutputPin" />
@@ -2270,6 +2268,7 @@
               <Pin Id="DLs991lllF5OPbyUe9DaJZ" Name="Sample Count" Kind="OutputPin" />
               <Pin Id="QJh8l60UGKnPfw7FouHhvf" Name="Sample Rate" Kind="OutputPin" />
               <Pin Id="TtmHFdHfxo8MGWU0vaDDTc" Name="As String" Kind="OutputPin" />
+              <Pin Id="FLzmV5ZKRXQLpwLY98jGIV" Name="Sample Rate Enum" Kind="OutputPin" />
               <Pin Id="VBymt6jijXIP8JQq1hT8Jk" Name="Bits Per Sample" Kind="OutputPin" />
               <Pin Id="OhTWVKOYKABNn1x9Fj2HGD" Name="Average Bytes Per Second" Kind="OutputPin" />
               <Pin Id="ODvfVT1YhPqNH9RfuDwstA" Name="Encoding" Kind="OutputPin" />
@@ -2626,7 +2625,7 @@
       </Patch>
     </Node>
   </Patch>
-  <NugetDependency Id="TDkojnZcyMAQZhPTN6qXcp" Location="VL.CoreLib" Version="2021.4.0-0600-g01fe282c1c" />
+  <NugetDependency Id="TDkojnZcyMAQZhPTN6qXcp" Location="VL.CoreLib" Version="2021.4.0-0613-g3afe96c078" />
   <NugetDependency Id="AzXHsFow6rQNzThUCapm9x" Location="VL.NewAudio" Version="0.3.0-alpha" />
   <DocumentDependency Id="BTLh5AnCDllPqX9dVLD13g" Location="./Helpers.vl" />
 </Document>

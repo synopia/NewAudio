@@ -139,7 +139,7 @@ namespace NewAudio.Nodes
 
         public override string DebugInfo()
         {
-            return $"Output device:[ Count={_audioOutputBlock?.InputBufferCount}, {base.DebugInfo()} ]";
+            return $"Output device:[{base.DebugInfo()}]";
         }
 
 

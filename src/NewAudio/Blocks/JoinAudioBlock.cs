@@ -83,7 +83,6 @@ namespace NewAudio.Blocks
                     output.Post(buf);
                 }, new ExecutionDataflowBlockOptions()
                 {
-                    BoundedCapacity = 1,
                     // todo
                 });
 

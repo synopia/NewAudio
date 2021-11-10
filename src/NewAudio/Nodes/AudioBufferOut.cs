@@ -148,7 +148,7 @@ namespace NewAudio.Nodes
 
         public override string DebugInfo()
         {
-            return $"[updates={_updated}, input samples={PlayParams.Input.Value?.Format.BufferSize}, batchSize={_batchSize}, output size={InitParams.OutputSize.Value}]";
+            return $"[batchSize={_batchSize}, {base.DebugInfo()}]";
         }
 
         private int CreateTypeSkip()

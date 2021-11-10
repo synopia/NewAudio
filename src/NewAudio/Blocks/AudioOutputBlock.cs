@@ -27,7 +27,6 @@ namespace NewAudio.Blocks
 
         private CancellationTokenSource _cancellationTokenSource;
         private CancellationToken _token;
-        public int? InputBufferCount => _actionBlock?.InputCount;
 
         private bool _firstLoop;
 
@@ -121,7 +120,7 @@ namespace NewAudio.Blocks
             }, new ExecutionDataflowBlockOptions
             {
                 MaxDegreeOfParallelism = 1,
-                BoundedCapacity = 2,
+                BoundedCapacity = 1,
                 CancellationToken = _token
             });
         }

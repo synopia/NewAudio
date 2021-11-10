@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="KmAyiLLcXQdMpaub7RNY4E" LanguageVersion="2021.4.0.600" Version="0.128">
-  <NugetDependency Id="Hb9C78g1kMyMFLO02PiqLd" Location="VL.CoreLib" Version="2021.4.0-0600-g01fe282c1c" />
+<Document xmlns:p="property" Id="KmAyiLLcXQdMpaub7RNY4E" LanguageVersion="2021.4.0.613" Version="0.128">
+  <NugetDependency Id="Hb9C78g1kMyMFLO02PiqLd" Location="VL.CoreLib" Version="2021.4.0-0613-g3afe96c078" />
   <Patch Id="Nq8YmeVPxUTOnzjPHaQg0N">
     <Canvas Id="UVodregYOV1O409KaBJP5r" DefaultCategory="Main" CanvasType="FullCategory" />
     <!--
@@ -97,6 +97,7 @@
             <Pin Id="C24qlQLwcemQWYA9EGFj9C" Name="Reset" Kind="InputPin" />
             <Pin Id="QktEnQk7xFnPwbSTExFAtQ" Name="Bypass" Kind="InputPin" />
             <Pin Id="JPIKnZ90gIJLvtuC2p4EOg" Name="Output Channels" Kind="InputPin" DefaultValue="1" />
+            <Pin Id="HwSQ1JoyrnVN02xPhlbkOK" Name="Buffer Size" Kind="InputPin" />
             <Pin Id="H2bF31U2K1dLPcC0Yj9yZq" Name="Result" Kind="OutputPin" />
             <Pin Id="GvyzSuLFo1FOvWaKnL8yhG" Name="Phase" Kind="OutputPin" />
             <Pin Id="MU43VbPQWdXOB8DClQH6xW" Name="Errors" Kind="OutputPin" />
@@ -142,6 +143,7 @@
             <Pin Id="HySCumZlsnDNBhwk8qRdg9" Name="Reset" Kind="InputPin" />
             <Pin Id="PCJehrfnjVINBAleDZaT00" Name="Bypass" Kind="InputPin" />
             <Pin Id="BfuQJ2ZfRksMRzwBT84Rg9" Name="Output Channels" Kind="InputPin" DefaultValue="2" />
+            <Pin Id="FgomfmcdPRZMeL1MSfJVsr" Name="Buffer Size" Kind="InputPin" />
             <Pin Id="E2VFuXjeAL7PmUIZ3nCVZJ" Name="Result" Kind="OutputPin" />
             <Pin Id="FBSC4rZdUPMOJmlwKbZsUD" Name="Phase" Kind="OutputPin" />
             <Pin Id="UCXIwE5pig0M6mR9eBGw9h" Name="Errors" Kind="OutputPin" />
@@ -218,7 +220,7 @@
             <Pin Id="B4wfkuxlRzFQUVi0RKkfer" Name="Average Bytes Per Second" Kind="OutputPin" />
             <Pin Id="VSuAeaLQnVkPzDpkhhanDB" Name="Encoding" Kind="OutputPin" />
           </Node>
-          <Pad Id="M0Hi9YDaCXHLlb8A2yY3cQ" Comment="Play" Bounds="63,905,67,69" ShowValueBox="true" isIOBox="true" Value="True">
+          <Pad Id="M0Hi9YDaCXHLlb8A2yY3cQ" Comment="Play" Bounds="63,905,67,69" ShowValueBox="true" isIOBox="true" Value="False">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Boolean" />
               <FullNameCategoryReference ID="Primitive" />
@@ -266,9 +268,11 @@
             <Pin Id="RKFx4nin0QILClTusIMuFj" Name="Channels" Kind="InputPin" />
             <Pin Id="VhVKXL7VRGkPUHdWQM9pTQ" Name="Channel Offset" Kind="InputPin" />
             <Pin Id="JHp9nWSSWo1PwIiJjZxHAS" Name="Sampling Frequency" Kind="InputPin" />
+            <Pin Id="G6vAZckTa7uNLXuxIp7izj" Name="Buffer Size" Kind="InputPin" DefaultValue="8" />
             <Pin Id="GLhD2JJ7hdkN4HgrN8EIHv" Name="Desired Latency" Kind="InputPin" DefaultValue="100" />
             <Pin Id="OCbuDL71zMuNPAsIE88jrk" Name="Phase" Kind="OutputPin" />
             <Pin Id="RBYDy3OPQ7yL4Lujg4SToY" Name="Debug" Kind="OutputPin" />
+            <Pin Id="RFZOQEbn9FhLXRwbpWFbro" Name="Lag Ms" Kind="OutputPin" />
             <Pin Id="E6Fhl3T6cTFM1XlnjiUzr6" Name="Errors" Kind="OutputPin" />
           </Node>
           <Node Bounds="65,978,75,19" Id="SP8m6vrb1pMQYzlO9bftEU">
@@ -303,6 +307,12 @@
               <p:stringtype p:Assembly="VL.Core" p:Type="VL.Core.StringType">Comment</p:stringtype>
             </p:ValueBoxSettings>
           </Pad>
+          <Pad Id="A3JX9Ltzh6iPRLwkkZpB0b" Bounds="542,428,35,15" ShowValueBox="true" isIOBox="true" Value="8">
+            <p:TypeAnnotation>
+              <Choice Kind="TypeFlag" Name="Integer32" />
+              <FullNameCategoryReference ID="Primitive" />
+            </p:TypeAnnotation>
+          </Pad>
         </Canvas>
         <Patch Id="JdAy5MF5KDhNtNuNEZgjhT" Name="Create" />
         <Patch Id="NG4NXUivOn9LivaheS2qoP" Name="Update" />
@@ -317,7 +327,6 @@
         <Link Id="D04Ji7xwvqvPzM35M7ycIb" Ids="QT1qxXRc7kXPtawLVZac9y,NCsw4A79RdvNbxhcymeIXz" IsHidden="true" />
         <Link Id="FFyvGx0U15oN2ZpJP2TigK" Ids="NCsw4A79RdvNbxhcymeIXz,McaNIXTR0yMPfc0nu2jIVe" />
         <Link Id="EAvgRGbN3faM4UH9VDsx5d" Ids="MSx9q916V6EQEQcIdhCaKn,JPIKnZ90gIJLvtuC2p4EOg" />
-        <Link Id="MUbfBy9p3WSPDIUYMkb6R9" Ids="MSx9q916V6EQEQcIdhCaKn,BfuQJ2ZfRksMRzwBT84Rg9" />
         <Link Id="GHmvJpyxjviPdm2oaeAvU5" Ids="QJmuu5dk9d7MPyPJrMRPfd,P4B54N3fVfgLPf0MKLVXiZ" />
         <Link Id="TZWw91a6jyoQSZeBjhjOV4" Ids="H2bF31U2K1dLPcC0Yj9yZq,ACse8ZxPqdhOVGcrBre5km" />
         <Link Id="SAD7WXblKBzNHbwCwCWZFE" Ids="S6xRM8O9qCtMT8UztmUOEc,KowTdQ2kmPQNwKLWFYVJ4C" />
@@ -339,9 +348,12 @@
         <Link Id="IWoYHbsSwpRNnLdcwSzTnc" Ids="ESzU1DJ5mteQb4NLu3QSia,DZHnpMgbEPtLAhRND84I6X" />
         <Link Id="JZc71BUCCnFOygHWQ8VCaV" Ids="NMJZbOdCrWJPAQMHQr49v4,QGTcRPSwnTMLrHa5lDl2Rq" />
         <Link Id="NKCGjUZzjzvMCMDopYe6Vs" Ids="STlCNBVCQwANZ1LVVjiWxu,HKpVQrOhew4Nc75Tn2fHEn" />
+        <Link Id="I61uZWF4RMPMm4wnSGqZNr" Ids="MSx9q916V6EQEQcIdhCaKn,BfuQJ2ZfRksMRzwBT84Rg9" />
+        <Link Id="JqOWrp1T3Q1O4bIyJGrJPX" Ids="A3JX9Ltzh6iPRLwkkZpB0b,FgomfmcdPRZMeL1MSfJVsr" />
+        <Link Id="I9fF6ACI3SoOmFHsn9G6Wv" Ids="A3JX9Ltzh6iPRLwkkZpB0b,HwSQ1JoyrnVN02xPhlbkOK" />
       </Patch>
     </Node>
   </Patch>
-  <NugetDependency Id="BEVE3AtDi2yLhfOqaiZthl" Location="VL.Skia" Version="2021.4.0-0600-g01fe282c1c" />
+  <NugetDependency Id="BEVE3AtDi2yLhfOqaiZthl" Location="VL.Skia" Version="2021.4.0-0613-g3afe96c078" />
   <NugetDependency Id="TGVRhhYer7iMrkfGNmHpOE" Location="VL.NewAudio" Version="0.3.0-alpha" />
 </Document>

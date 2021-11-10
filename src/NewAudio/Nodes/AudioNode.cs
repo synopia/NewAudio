@@ -164,7 +164,7 @@ namespace NewAudio.Nodes
 
         public virtual string DebugInfo()
         {
-            return  $"node:[ Input count={_bufferBlock?.Count}]";
+            return  $"Buffer usage={_bufferBlock?.Count}";
         }
 
         public IEnumerable<string> ErrorMessages()

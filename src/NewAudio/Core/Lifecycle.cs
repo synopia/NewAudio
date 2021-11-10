@@ -176,6 +176,7 @@ namespace NewAudio.Core
                     var inputValid = c.IsPlayValid();
                     if (!inputValid)
                     {
+                        c.Stop();
                         return Task.FromResult(Init);
                     }
                     return c.Play() ? Task.FromResult(Play) : Task.FromResult(Invalid);
