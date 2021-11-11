@@ -192,6 +192,7 @@ namespace NewAudio.Nodes
 
     public class ForwardFFT : BaseFFT
     {
+        public override string NodeName => "FFT";
         private readonly ILogger _logger = Log.ForContext<ForwardFFT>();
 
         private PinnedArray<double> _pinIn;
@@ -276,6 +277,7 @@ namespace NewAudio.Nodes
 
     public class BackwardFFT : BaseFFT
     {
+        public override string NodeName => "iFFT";
         private readonly ILogger _logger = Log.ForContext<ForwardFFT>();
         private PinnedArray<Complex> _pinIn;
         private PinnedArray<double> _pinOut;

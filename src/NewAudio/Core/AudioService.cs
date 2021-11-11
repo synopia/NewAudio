@@ -24,20 +24,11 @@ namespace NewAudio.Core
                 .CreateLogger();
             Log.Logger = _logger;
 
-            // Be careful, dont do anything, that needs the AudioService itself! 
-            // Graph = new AudioGraph(Logger);
-
-
             Log.Logger.Information($"Initializing Audio Service");
         }
 
-      
         private readonly ILogger _logger;
-        private ulong _lastFrame;
         private int _nextId;
-        
-        public int BufferSize { get; private set; }
-        public int BufferCount { get; private set; }
 
         public ILogger GetLogger<T>()
         {

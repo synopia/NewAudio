@@ -23,6 +23,7 @@ namespace NewAudio.Blocks
         private CancellationTokenSource _cancellationTokenSource;
         private CancellationToken _token;
         private Thread _thread;
+        private long _messagesSent;
 
         public AudioInputBlock(): this(VLApi.Instance){}
 
@@ -116,6 +117,10 @@ namespace NewAudio.Blocks
                         {
                             ArrayPool<float>.Shared.Return(message.Data);
                         }
+                        else
+                        {
+                            _messagesSent++;
+                        }
                         _logger.Verbose("Posted {samples} ", message.BufferSize);
                     }
 
@@ -128,6 +133,11 @@ namespace NewAudio.Blocks
 
         }
 
+        public string DebugInfo()
+        {
+            return $"{Buffer?.Name}, thread={_thread?.IsAlive}, sent={_messagesSent}";
+        }
+        
         public void Dispose() => Dispose(true);
 
         private bool _disposedValue;

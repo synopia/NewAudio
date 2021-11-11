@@ -28,6 +28,7 @@ namespace NewAudio.Nodes
 
     public class AudioBufferOut : AudioNode<AudioBufferOutInitParams, AudioBufferOutPlayParams>
     {
+        public override string NodeName => "Buffer Out";
         private float[] _outBuffer;
         private float[] _tempBuffer;
         private BatchBlock<AudioDataMessage> _batchBlock;
@@ -147,7 +148,7 @@ namespace NewAudio.Nodes
 
         public override string DebugInfo()
         {
-            return $"[batchSize={_batchSize}, {base.DebugInfo()}]";
+            return $"[{this}, batchSize={_batchSize}, {base.DebugInfo()}]";
         }
 
         private int CreateTypeSkip()

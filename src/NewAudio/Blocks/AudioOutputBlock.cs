@@ -31,6 +31,7 @@ namespace NewAudio.Blocks
         private CancellationToken _token;
 
         private bool _firstLoop;
+        private long _messagesReceived;
 
         public AudioOutputBlock(): this(VLApi.Instance){}
         public AudioOutputBlock(IVLApi api)
@@ -119,12 +120,21 @@ namespace NewAudio.Blocks
                 {
                     _logger.Warning("pos!=msg {pos}!={msg}", pos, message.BufferSize);
                 }
+                else
+                {
+                    _messagesReceived++;
+                }
             }, new ExecutionDataflowBlockOptions
             {
                 MaxDegreeOfParallelism = 1,
                 BoundedCapacity = 1,
                 CancellationToken = _token
             });
+        }
+
+        public string DebugInfo()
+        {
+            return $"{_buffer?.Name}, recv={_messagesReceived}";
         }
 
         public void Dispose() => Dispose(true);

@@ -25,6 +25,7 @@ namespace NewAudio.Nodes
 
     public class OutputDevice : AudioNode<OutputDeviceInitParams, OutputDevicePlayParams>
     {
+        public override string NodeName => "Output";
         private AudioOutputBlock _audioOutputBlock;
         private IResourceHandle<DriverManager> _driverManager;
 

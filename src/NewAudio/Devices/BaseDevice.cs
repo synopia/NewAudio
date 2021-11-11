@@ -148,6 +148,20 @@ namespace NewAudio.Devices
                 SupportedSamplingFrequencies = Enum.GetValues(typeof(SamplingFrequency)).Cast<SamplingFrequency>()
             };
         }
+
+        public virtual string DebugInfo()
+        {
+            var dir = IsPlaying && IsRecording ? "FD" : IsPlaying ? "P" : IsRecording ? "R" : "-";
+            var input = IsRecording ? AudioInputBlock?.DebugInfo() : "";
+            var output = IsPlaying ? AudioOutputBlock?.DebugInfo() : "";
+            return $"{dir}, cancelled={CancellationTokenSource?.Token.IsCancellationRequested}, in={input}, out={output}";
+        }
+
+        public override string ToString()
+        {
+            return Name;
+        }
+
         protected abstract Task<bool> Init();
         public abstract bool Start();
         public abstract bool Stop();

@@ -79,6 +79,12 @@ namespace NewAudio.Devices
             GenerateSilence = true;
             return true;
         }
+        public override string DebugInfo()
+        {
+            var info = IsPlaying ? $"{_wavePlayer?.PlaybackState}" :
+                IsLoopback ? $"{_loopback?.CaptureState}" : $"{_capture?.CaptureState}";
+            return $"[{this}, {info}, {base.DebugInfo()}]";
+        }
 
         private void DataAvailable(object sender, WaveInEventArgs evt)
         {

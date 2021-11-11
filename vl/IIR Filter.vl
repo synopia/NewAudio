@@ -129,7 +129,6 @@
               <Pin Id="Kv0k991B4KQPwsRQmzAtRE" Name="alpha" Kind="InputPin" />
               <Pin Id="FwJyt9NuUQbO9hboxNr5rr" Name="Output" Kind="StateOutputPin" />
             </Node>
-            <ControlPoint Id="I36Jyzjw2t0M9tC1g4qR41" Bounds="907,131" />
             <Node Bounds="716,243" Id="IV3etb5dJjfM8TXPbKVjcR">
               <p:NodeReference LastCategoryFullName="NewAudio" LastSymbolSource="VL.NewAudio.vl">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
@@ -163,7 +162,6 @@
           <Link Id="QpNLPJNpcEwMrjdhppILte" Ids="IYwbpbj0vO4Na6frlLTnT2,PZwAzUSrIhbMNMNlUNcPaa" />
           <Link Id="VyzjoiTuPx0LzBQBeHnwvr" Ids="PZwAzUSrIhbMNMNlUNcPaa,BovijJqnLQ0OEXeih81fu5" />
           <Link Id="IPxOSc5SmbmNb46Fj46d3O" Ids="BknQTdM7ePfNHM4Bd1xAUi,Kv0k991B4KQPwsRQmzAtRE" />
-          <Link Id="CYO0LgsMMlFPggn09Md50h" Ids="VaOzTa5OiwAMdxRgoIwlMl,I36Jyzjw2t0M9tC1g4qR41" IsHidden="true" />
           <Link Id="FZYI56JEIkBQUUf1If98Bg" Ids="NrBgZS0DkvyNNGJR7unTFj,M5V1Ix7uvDvN6UiuMFiu6f" />
           <Link Id="L7fCwUP0u0hMO8CvxxWmoV" Ids="IRNaXpUDvHRNm9dGFfWARj,Tm1qnVoN7VILIzNQpASK2D" />
           <Link Id="MgdLGVPndXwN1ySb33gZ6q" Ids="IRNaXpUDvHRNm9dGFfWARj,I4KVPImCY3MOoWYb3kUiag" />
@@ -174,11 +172,6 @@
           <Patch Id="Dhe3L9MDXK6LyiLvsLZX0U" Name="Create" ParticipatingElements="QpNLPJNpcEwMrjdhppILte" />
           <Patch Id="UqN3B7XSoBsPyOkbriX32T" Name="Update" ParticipatingElements="Fer0ZE4EC2HO8dYaVHxBDS,O020hCakxEHO6EOdaXb9Z2">
             <Pin Id="A5uBsLyDnnTPAkhjnYH7cc" Name="Input" Kind="InputPin" />
-            <Pin Id="VaOzTa5OiwAMdxRgoIwlMl" Name="High Pass" Kind="InputPin">
-              <p:TypeAnnotation>
-                <Choice Kind="TypeFlag" Name="Boolean" />
-              </p:TypeAnnotation>
-            </Pin>
             <Pin Id="PAiCflExm5GNNgqzTQA3SS" Name="RC" Kind="InputPin">
               <p:TypeAnnotation>
                 <Choice Kind="TypeFlag" Name="Float32" />

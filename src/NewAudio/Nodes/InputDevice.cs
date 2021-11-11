@@ -24,6 +24,8 @@ namespace NewAudio.Nodes
 
     public class InputDevice : AudioNode<InputDeviceInitParams, InputDevicePlayParams>
     {
+        public override string NodeName => "Input";
+        
         private IResourceHandle<DriverManager> _driverManager;
 
         private IResourceHandle<IDevice> _device;
@@ -107,7 +109,7 @@ namespace NewAudio.Nodes
 
         public override string DebugInfo()
         {
-            return $"Input device:[{base.DebugInfo()}]";
+            return $"[{this}, {base.DebugInfo()}, {_device?.Resource?.DebugInfo()}]";
         }
 
 

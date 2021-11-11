@@ -134,9 +134,9 @@ namespace NewAudio.Devices
             base.Dispose(disposing);
         }
 
-        public override string ToString()
+        public override string DebugInfo()
         {
-            return Name;
+            return $"[{this}, {_asioOut?.PlaybackState}, {base.DebugInfo()}]";
         }
     }
 }

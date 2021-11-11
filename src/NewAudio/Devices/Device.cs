@@ -42,5 +42,7 @@ namespace NewAudio.Devices
 
         public bool Start();
         public bool Stop();
+
+        public string DebugInfo();
     }
 }

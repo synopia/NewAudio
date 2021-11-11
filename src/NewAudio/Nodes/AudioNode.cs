@@ -30,6 +30,8 @@ namespace NewAudio.Nodes
     }
     public abstract class AudioNode<TInit, TPlay>: IAudioNode where TInit: AudioNodeInitParams where TPlay: AudioNodePlayParams
     {
+        public abstract string NodeName { get; }
+        public int Id { get; }
         
         private List<Exception> _exceptions = new();
         public TInit InitParams { get; }
@@ -70,7 +72,7 @@ namespace NewAudio.Nodes
         private AudioNode(IVLApi api)
         {
             _graph = api.GetAudioGraph();
-            Graph.AddNode(this);
+            Id = Graph.AddNode(this);
             Logger = Graph.GetLogger<AudioNode<TInit, TPlay>>();
             
             Lifecycle = new LifecycleStateMachine(this);
@@ -176,7 +178,12 @@ namespace NewAudio.Nodes
 
         public virtual string DebugInfo()
         {
-            return  $"Buffer usage={_bufferBlock?.Count}";
+            return  $"Buffer: {_bufferBlock?.Count}";
+        }
+
+        public override string ToString()
+        {
+            return $"{NodeName} ({Id})";
         }
 
         public IEnumerable<string> ErrorMessages()

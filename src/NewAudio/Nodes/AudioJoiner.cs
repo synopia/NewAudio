@@ -16,6 +16,8 @@ namespace NewAudio.Nodes
 
     public class AudioJoiner : AudioNode<AudioJoinerInitParams, AudioJoinerPlayParams>
     {
+        public override string NodeName => "Join";
+
         private JoinAudioBlock _joinAudioBlock;
         // private AudioFormat _format;
         // public WaveFormat WaveFormat => _format.WaveFormat;
@@ -69,7 +71,7 @@ namespace NewAudio.Nodes
 
         public override string DebugInfo()
         {
-            return $"JOIN: [ out={_joinAudioBlock?.OutputBufferCount} {base.DebugInfo()} ]";
+            return $"[{this}, out={_joinAudioBlock?.OutputBufferCount}, {base.DebugInfo()}]";
         }
 
         private bool _disposedValue;

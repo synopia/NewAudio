@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using NewAudio.Nodes;
 using Serilog;
 using VL.Core;
@@ -19,6 +20,9 @@ namespace NewAudio.Core
         private bool _playing;
         private int _nextId;
         private ulong _lastFrame;
+        
+        public int BufferSize { get; private set; }
+        public int BufferCount { get; private set; }
 
         public AudioGraph() : this(VLApi.Instance)
         {
@@ -47,12 +51,10 @@ namespace NewAudio.Core
                     _playing = playing;
                     if (playing)
                     {
-                        _logger.Information("Starting audio");
                         PlayAll();
                     }
                     else
                     {
-                        _logger.Information("Stopping audio");
                         StopAll();
                     }
                 }
@@ -66,14 +68,15 @@ namespace NewAudio.Core
 
         public void PlayAll()
         {
+            _logger.Information("Starting all audio nodes");
             foreach (var node in _nodes)
             {
-                
                 node.PlayParams.Playing.Value = true;
             }
         }
         public void StopAll()
         {
+            _logger.Information("Stopping all audio nodes");
             foreach (var node in _nodes)
             {
                 node.PlayParams.Playing.Value = false;
@@ -83,36 +86,37 @@ namespace NewAudio.Core
         public void AddLink(AudioLink link)
         {
             _links.Add(link);
-            _logger.Debug("Added link {node}", link);
+            _logger.Verbose("Added link {node}", link);
         }
 
         public void RemoveLink(AudioLink link)
         {
             _links.Remove(link);
-            _logger.Debug("Removed link {node}", link);
+            _logger.Verbose("Removed link {node}", link);
         }
 
-        public void AddNode(IAudioNode node)
+        public int AddNode(IAudioNode node)
         {
             _nodes.Add(node);
-            _logger.Debug("Added node {node}", node);
+            _logger.Verbose("Added node {node}", node);
+            return _nodes.Count;
         }
 
         public void RemoveNode(IAudioNode node)
         {
             _nodes.Remove(node);
-            _logger.Debug("Removing node {node}", node);
+            _logger.Verbose("Removing node {node}", node);
         }
         
         public string DebugInfo()
         {
-            var nodes = "";
+            var nodes = new StringBuilder("");
             foreach (var node in _nodes)
             {
                 var debugInfo = node.DebugInfo();
                 if (debugInfo != null)
                 {
-                    nodes += $", {debugInfo}";
+                    nodes.Append(", ").Append(debugInfo);
                 }
             }
             return $"Nodes: {_nodes.Count}, Links: {_links.Count}{nodes}";

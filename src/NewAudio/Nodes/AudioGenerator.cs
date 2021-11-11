@@ -25,6 +25,7 @@ namespace NewAudio.Nodes
 
     public class AudioGenerator : AudioNode<AudioGeneratorInitParams, AudioGeneratorPlayParams>
     {
+        public override string NodeName => "Gen";
         private AudioGeneratorBlock _audioGeneratorBlock;
         private AudioFormat _format;
         public WaveFormat WaveFormat => _format.WaveFormat;
@@ -97,6 +98,11 @@ namespace NewAudio.Nodes
             }
 
             base.Dispose(disposing);
+        }
+
+        public override string DebugInfo()
+        {
+            return $"[{this}, {base.DebugInfo()}]";
         }
     }
 

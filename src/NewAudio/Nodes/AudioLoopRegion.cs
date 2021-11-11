@@ -22,6 +22,7 @@ namespace NewAudio.Nodes
     
     public class AudioLoopRegion<TState> : AudioNode<AudioLoopRegionInitParams, AudioLoopRegionPlayParams> where TState : class
     {
+        public override string NodeName => "Loop";
         private TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
         private readonly AudioSampleFrameClock _clock = new AudioSampleFrameClock();
         
@@ -174,7 +175,7 @@ namespace NewAudio.Nodes
         
         public override string DebugInfo()
         {
-            return $"LOOP: [in/out={_processor?.InputCount}/{_processor?.OutputCount}, {base.DebugInfo()}]";
+            return $"[{this}, in/out={_processor?.InputCount}/{_processor?.OutputCount}, {base.DebugInfo()}]";
         }
 
         private bool _disposedValue;

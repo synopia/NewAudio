@@ -18,6 +18,11 @@ namespace NewAudio.Nodes
             _graph.Resource.Update(playing, bufferSize, buffersCount);
         }
 
+        public string DebugInfo()
+        {
+            return _graph.Resource.DebugInfo();
+        }
+
         public void Dispose()
         {
             _graph.Dispose();
