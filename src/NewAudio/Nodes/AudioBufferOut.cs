@@ -28,8 +28,6 @@ namespace NewAudio.Nodes
 
     public class AudioBufferOut : AudioNode<AudioBufferOutInitParams, AudioBufferOutPlayParams>
     {
-        private readonly ILogger _logger;
-
         private float[] _outBuffer;
         private float[] _tempBuffer;
         private BatchBlock<AudioDataMessage> _batchBlock;
@@ -40,8 +38,8 @@ namespace NewAudio.Nodes
         
         public AudioBufferOut()
         {
-            _logger = AudioService.Instance.Logger.ForContext<AudioBufferOut>();
-            _logger.Information("AudioBufferOut created");
+            InitLogger<AudioBufferOut>();
+            Logger.Information("AudioBufferOut created");
         }
 
         public override bool IsPlayValid()
@@ -61,6 +59,7 @@ namespace NewAudio.Nodes
         /// <param name="input">The audio link to get samples from</param>
         /// <param name="outputSize">The resulting total size of the spread (needs to be a power of two)</param>
         /// <param name="blockSize">Number of samples from the input, to be merged into one output sample</param>
+        /// <param name="bufferSize">Size of input buffer</param>
         /// <param name="type">Skip: take first sample, skip until blockSize is reached, SkipHalf: take samples until 1/blocksize of input is reached, skip the rest, Max: output the max of a block</param>
         /// <returns></returns>
         public Spread<float> Update(AudioLink input, int outputSize = 1024, int blockSize = 8,
@@ -124,12 +123,12 @@ namespace NewAudio.Nodes
         {
             if (_processor == null)
             {
-                _logger.Error("ActionBlock == null!");
+                Logger.Error("ActionBlock == null!");
             }
 
             if (_link1 == null)
             {
-                _logger.Error("Link == null!");
+                Logger.Error("Link == null!");
             }
 
             _link1?.Dispose();
@@ -141,7 +140,7 @@ namespace NewAudio.Nodes
             return _processor?.Completion.ContinueWith(t =>
             {
                 _processor = null;
-                _logger.Information("ActionBlock stopped, status={status}", t.Status);
+                Logger.Information("ActionBlock stopped, status={status}", t.Status);
                 return true;
             });
         }

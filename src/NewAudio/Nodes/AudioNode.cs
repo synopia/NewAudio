@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
 using Serilog;
+using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Nodes
 {
@@ -29,7 +30,6 @@ namespace NewAudio.Nodes
     }
     public abstract class AudioNode<TInit, TPlay>: IAudioNode where TInit: AudioNodeInitParams where TPlay: AudioNodePlayParams
     {
-        private readonly ILogger _logger = AudioService.Instance.Logger.ForContext<AudioNode<TInit, TPlay>>();
         
         private List<Exception> _exceptions = new();
         public TInit InitParams { get; }
@@ -42,7 +42,13 @@ namespace NewAudio.Nodes
         private IDisposable _currentInputLink;
         private IDisposable _currentOutputLink;
         private BufferBlock<AudioDataMessage> _bufferBlock;
-        public ITargetBlock<AudioDataMessage> TargetBlock
+        public LifecyclePhase Phase { get; set; }
+        public readonly LifecycleStateMachine Lifecycle;
+        private readonly IResourceHandle<AudioGraph> _graph;
+        public AudioGraph Graph => _graph.Resource;
+        public ILogger Logger { get; private set; }
+
+        protected ITargetBlock<AudioDataMessage> TargetBlock
         {
             set
             {
@@ -59,12 +65,14 @@ namespace NewAudio.Nodes
             }
         }
 
-        public LifecyclePhase Phase { get; set; }
-        public readonly LifecycleStateMachine Lifecycle;
+        protected AudioNode() : this(VLApi.Instance){}
 
-        protected AudioNode()
+        private AudioNode(IVLApi api)
         {
-            AudioService.Instance.Graph.AddNode(this);
+            _graph = api.GetAudioGraph();
+            Graph.AddNode(this);
+            Logger = Graph.GetLogger<AudioNode<TInit, TPlay>>();
+            
             Lifecycle = new LifecycleStateMachine(this);
             InitParams = (TInit)Activator.CreateInstance(typeof(TInit));
             PlayParams = (TPlay)Activator.CreateInstance(typeof(TPlay));
@@ -73,13 +81,17 @@ namespace NewAudio.Nodes
             CreateBuffer();
         }
 
-      
+        protected void InitLogger<T>()
+        {
+            Logger = Graph.GetLogger<T>();
+        }
+
 
         public void ExceptionHappened(Exception exception, string method)
         {
             if (!_exceptions.Exists(e => e.Message == exception.Message))
             {
-                _logger.Error("{e}", exception);
+                Logger.Error("{e}", exception);
                 _exceptions.Add(exception);
                 // throw exception;
             }
@@ -115,7 +127,7 @@ namespace NewAudio.Nodes
                     _currentInputLink = null;
                 } else if (_currentInputLink != null || PlayParams.Input.LastValue != null)
                 {
-                    _logger.Warning("Illegal input link found!");
+                    Logger.Warning("Illegal input link found!");
                     _currentInputLink?.Dispose();
                     _currentInputLink = null;
                 }
@@ -191,14 +203,15 @@ namespace NewAudio.Nodes
         public void Dispose() => Dispose(true);
         protected virtual void Dispose(bool disposing)
         {
-            AudioService.Instance.Logger.Information("Dispose called for AudioNode {t} ({d})", this, disposing);
+            Logger.Information("Dispose called for AudioNode {t} ({d})", this, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
                 {
                     _currentInputLink?.Dispose();
                     Output.Dispose();
-                    AudioService.Instance.Graph.RemoveNode(this);
+                    Graph.RemoveNode(this);
+                    _graph.Dispose();
                 }
 
                 _disposedValue = true;

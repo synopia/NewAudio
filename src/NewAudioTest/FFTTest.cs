@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace NewAudioTest
 {
     [TestFixture]
-    public class FFTTest
+    public class FFTTest : BaseTest
     {
         [SetUp]
         public void Setup()
@@ -19,7 +19,6 @@ namespace NewAudioTest
         [Test]
         public void TestIt()
         {
-            AudioService.Instance.Init();
             var inputNullEnum = new WaveInputDevice("Null: Input");
             var outputNullEnum = new WaveOutputDevice("Null: Output");
             var input = new InputDevice();

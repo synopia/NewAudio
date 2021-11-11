@@ -51,5 +51,10 @@ namespace NewAudio.Core
         {
             return new AudioFormat(SampleRate, sampleCount, Channels, IsInterleaved);
         }
+
+        public AudioFormat WithWaveFormat(WaveFormat waveFormat)
+        {
+            return new AudioFormat(waveFormat.SampleRate, SampleCount, waveFormat.Channels, IsInterleaved);
+        }
     }
 }

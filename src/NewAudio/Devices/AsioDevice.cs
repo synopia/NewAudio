@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NAudio.Wave;
+using NewAudio.Blocks;
 using NewAudio.Core;
 using Serilog;
 using SharedMemory;
@@ -14,88 +15,77 @@ namespace NewAudio.Devices
     {
         private AsioOut _asioOut;
         private readonly string _driverName;
-        private readonly ILogger _logger;
 
         public AsioDevice(string name, string driverName)
         {
             Name = name;
+            InitLogger<AsioDevice>();
             _driverName = driverName;
             IsInputDevice = true;
             IsOutputDevice = true;
-            _logger = AudioService.Instance.Logger.ForContext<AsioDevice>();
         }
 
-        public override Task<DeviceConfigResponse> Create(DeviceConfigRequest config)
+        protected override DeviceConfigResponse PrepareRecording(DeviceConfigRequest request)
         {
-            _asioOut = new AsioOut(_driverName);
-            var srs = Enum.GetValues(typeof(SamplingFrequency)).Cast<SamplingFrequency>()
-                .Where(sr => _asioOut.IsSampleRateSupported((int)sr)).ToList();
-            var configResponse = new DeviceConfigResponse
+            if (_asioOut == null)
             {
-                DriverRecordingChannels = _asioOut.DriverInputChannelCount,
-                DriverPlayingChannels = _asioOut.DriverOutputChannelCount,
-                SupportedSamplingFrequencies = srs
+                _asioOut = new AsioOut(_driverName);
+            }
+            return base.PrepareRecording(request);
+        }
+
+        protected override DeviceConfigResponse PreparePlaying(DeviceConfigRequest request)
+        {
+            if (_asioOut == null)
+            {
+                _asioOut = new AsioOut(_driverName);
+            }
+
+            return new DeviceConfigResponse()
+            {
+                Channels = 2,
+                AudioFormat = request.AudioFormat,
+                ChannelOffset = 0,
+                Latency = 0,
+                DriverChannels = _asioOut.DriverOutputChannelCount,
+                FrameSize = request.AudioFormat.BufferSize,
+                SupportedSamplingFrequencies = Enum.GetValues(typeof(SamplingFrequency)).Cast<SamplingFrequency>()
+                    .Where(sr => _asioOut.IsSampleRateSupported((int)sr)).ToList()
             };
-            CancellationTokenSource = new CancellationTokenSource();
-            
-            if (config.IsPlaying && config.IsRecording)
+        }
+
+        protected override Task<bool> Init()
+        {
+            if (IsPlaying && IsRecording)
             {
-                AudioDataProvider = new AudioDataProvider(config.Playing.WaveFormat, config.Playing.Buffer)
-                    {
-                        CancellationToken = CancellationTokenSource.Token,
-                        GenerateSilence = GenerateSilence
-                    };
-
-                _asioOut.InitRecordAndPlayback(AudioDataProvider, config.Recording.Channels,
-                    config.Recording.WaveFormat.SampleRate);
-                _asioOut.InputChannelOffset = config.Recording.ChannelOffset;
-                _asioOut.ChannelOffset = config.Playing.ChannelOffset;
+                _asioOut.InitRecordAndPlayback(AudioDataProvider, RecordingConfig.Channels,
+                    RecordingConfig.AudioFormat.SampleRate);
+                _asioOut.InputChannelOffset = RecordingConfig.ChannelOffset;
+                _asioOut.ChannelOffset = PlayingConfig.ChannelOffset;
                 _asioOut.AudioAvailable += OnAsioData;
-
-                configResponse.RecordingChannels = _asioOut.NumberOfInputChannels;
-                configResponse.PlayingChannels = _asioOut.NumberOfOutputChannels;
-                configResponse.Latency = _asioOut.PlaybackLatency;
+                RecordingConfig.Channels = _asioOut.NumberOfInputChannels;
+                PlayingConfig.Channels = _asioOut.NumberOfOutputChannels;
+                PlayingConfig.Latency = _asioOut.PlaybackLatency;
+                RecordingConfig.Latency = _asioOut.PlaybackLatency;
                 // todo
-                configResponse.PlayingWaveFormat = config.Playing.WaveFormat;
-                configResponse.RecordingWaveFormat = config.Recording.WaveFormat;
-                configResponse.FrameSize = _asioOut.FramesPerBuffer;
-            }
-            else if (config.IsRecording)
+                PlayingConfig.FrameSize = _asioOut.FramesPerBuffer;
+                RecordingConfig.FrameSize = _asioOut.FramesPerBuffer;
+            } else if (IsRecording)
             {
-                _asioOut.InitRecordAndPlayback(null, config.Recording.Channels, config.Recording.WaveFormat.SampleRate);
+                _asioOut.InitRecordAndPlayback(null, RecordingConfig.Channels, RecordingConfig.AudioFormat.SampleRate);
                 _asioOut.AudioAvailable += OnAsioData;
-
-                configResponse.RecordingChannels = _asioOut.NumberOfInputChannels;
-                configResponse.Latency = _asioOut.PlaybackLatency;
-                configResponse.FrameSize = _asioOut.FramesPerBuffer;
-            }
-            else if (config.IsPlaying)
+                RecordingConfig.Channels = _asioOut.NumberOfInputChannels;
+                RecordingConfig.Latency = _asioOut.PlaybackLatency;
+                RecordingConfig.FrameSize = _asioOut.FramesPerBuffer;
+            } else if (IsPlaying)
             {
-                AudioDataProvider = new AudioDataProvider(config.Playing.WaveFormat, config.Playing.Buffer)
-                    {
-                        CancellationToken = CancellationTokenSource.Token,
-                        GenerateSilence = GenerateSilence
-                    };
-
                 _asioOut.Init(AudioDataProvider);
-
-                configResponse.PlayingChannels = _asioOut.NumberOfOutputChannels;
-                configResponse.Latency = _asioOut.PlaybackLatency;
-                configResponse.FrameSize = _asioOut.FramesPerBuffer;
+                PlayingConfig.Channels = _asioOut.NumberOfOutputChannels;
+                PlayingConfig.Latency = _asioOut.PlaybackLatency;
+                PlayingConfig.FrameSize = _asioOut.FramesPerBuffer;
             }
             _asioOut.Play();
-            return Task.FromResult(configResponse);
-        }
-
-        public override bool Free()
-        {
-            CancellationTokenSource?.Cancel();
-            if (_asioOut != null && _asioOut.PlaybackState != PlaybackState.Stopped)
-            {
-                _asioOut.Stop();
-            }
-            _asioOut?.Dispose();
-            return true;
+            return Task.FromResult(_asioOut.PlaybackState==PlaybackState.Playing);
         }
 
         public override bool Start()
@@ -127,9 +117,14 @@ namespace NewAudio.Devices
             {
                 if (disposing)
                 {
-                    CancellationTokenSource.Cancel();
-                    _asioOut?.Stop();
-                    _asioOut?.Dispose();
+                    CancellationTokenSource?.Cancel();
+                    if (_asioOut != null)
+                    {
+                        _asioOut.Stop();
+                        _asioOut.AudioAvailable -= OnAsioData;
+                        _asioOut?.Dispose();
+                    }
+
                     _asioOut = null;
                 }
 

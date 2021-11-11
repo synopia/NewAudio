@@ -19,6 +19,7 @@ namespace NewAudio.Core
 
     public interface ILifecycleDevice
     {
+        ILogger Logger { get; }
         Task<bool> Init();
         Task<bool> Free();
         bool Play();
@@ -50,7 +51,7 @@ namespace NewAudio.Core
         {
             base.OnStateChanged(context, oldState, newState);
             var device = (ExceptionHandler)context;
-            AudioService.Instance.Logger.Information("LIFECYLE: {device} STATE CHANGE {old}=>{new}, P={phase}",
+            context.Logger.Information("LIFECYLE: {device} STATE CHANGE {old}=>{new}, P={phase}",
                 device.Device, oldState.Name, newState.Name, device.Device.Phase);
         }
 
@@ -101,11 +102,13 @@ namespace NewAudio.Core
                         {
                             return Uninitialized;
                         }
+
                         res = await c.Init();
                         if (!res)
                         {
                             return Invalid;
                         }
+
                         var inputValid = c.IsPlayValid();
                         if (!inputValid)
                         {
@@ -120,10 +123,8 @@ namespace NewAudio.Core
                     c.Phase = LifecyclePhase.Init;
                     return Task.CompletedTask;
                 })
-
                 .When(LifecycleEvents.eFree,
                     async (m, s, e, c) => { return await c.Free() ? Uninitialized : Invalid; })
-
                 .When(LifecycleEvents.ePlay,
                     (m, s, e, c) =>
                     {
@@ -162,12 +163,14 @@ namespace NewAudio.Core
                     {
                         return Invalid;
                     }
+
                     res = res && await c.Init();
                     inputValid = c.IsPlayValid();
                     if (!inputValid)
                     {
                         return Init;
                     }
+
                     res = res && c.Play();
                     return res ? Play : Invalid;
                 })
@@ -179,6 +182,7 @@ namespace NewAudio.Core
                         c.Stop();
                         return Task.FromResult(Init);
                     }
+
                     return c.Play() ? Task.FromResult(Play) : Task.FromResult(Invalid);
                 })
                 .When(LifecycleEvents.eFree, async (m, s, e, c) =>
@@ -188,10 +192,7 @@ namespace NewAudio.Core
                     return res ? Uninitialized : Invalid;
                 })
                 .When(LifecycleEvents.eStop,
-                    (m, s, e, c) =>
-                    {
-                        return c.Stop() ? Task.FromResult(Init) : Task.FromResult(Invalid);
-                    });
+                    (m, s, e, c) => { return c.Stop() ? Task.FromResult(Init) : Task.FromResult(Invalid); });
         }
 
         private readonly ExceptionHandler _handler = new();
@@ -199,6 +200,7 @@ namespace NewAudio.Core
         public ManualResetEvent WaitForEvents = new(false);
         private int _eventsInProcess = 0;
         private IDisposable _link;
+
         private BufferBlock<Event> _inputQueue = new(new DataflowBlockOptions()
         {
             MaxMessagesPerTask = 1
@@ -228,12 +230,12 @@ namespace NewAudio.Core
 
         public void EventHappens(Event @event)
         {
-            
-            var r= Interlocked.Increment(ref _eventsInProcess);
+            var r = Interlocked.Increment(ref _eventsInProcess);
             if (r == 1)
             {
                 WaitForEvents.Reset();
             }
+
             _inputQueue.Post(@event);
         }
 
@@ -268,12 +270,14 @@ namespace NewAudio.Core
                 set => Device.Phase = value;
             }
 
+            public ILogger Logger => Device.Logger;
+
             async Task<bool> ILifecycleDevice.Init()
             {
                 try
                 {
                     var result = await Device.Init();
-                    AudioService.Instance.Logger.Information(
+                    Logger.Information(
                         "LIFECYLE: {device} Create, result={result}", Device, result);
                     return result;
                 }
@@ -283,12 +287,13 @@ namespace NewAudio.Core
                     return false;
                 }
             }
+
             public async Task<bool> Free()
             {
                 try
                 {
                     var result = await Device.Free();
-                    AudioService.Instance.Logger.Information(
+                    Logger.Information(
                         "LIFECYLE: {device} Free, result={result}", Device, result);
                     return result;
                 }
@@ -304,7 +309,7 @@ namespace NewAudio.Core
                 try
                 {
                     var result = Device.Play();
-                    AudioService.Instance.Logger.Information(
+                    Logger.Information(
                         "LIFECYLE: {device} Play, result={result}", Device, result);
                     return result;
                 }
@@ -320,7 +325,7 @@ namespace NewAudio.Core
                 try
                 {
                     var result = Device.Stop();
-                    AudioService.Instance.Logger.Information(
+                    Logger.Information(
                         "LIFECYLE: {device} Stop, result={result}", Device, result);
                     return result;
                 }
@@ -336,7 +341,7 @@ namespace NewAudio.Core
                 try
                 {
                     var result = Device.IsInitValid();
-                    AudioService.Instance.Logger.Information(
+                    Logger.Information(
                         "LIFECYLE: {device} IsInputValid, result={result}", Device, result);
                     return result;
                 }
@@ -346,12 +351,13 @@ namespace NewAudio.Core
                     return false;
                 }
             }
+
             public bool IsPlayValid()
             {
                 try
                 {
                     var result = Device.IsPlayValid();
-                    AudioService.Instance.Logger.Information(
+                    Logger.Information(
                         "LIFECYLE: {device} IsUpdateValid, result={result}", Device, result);
                     return result;
                 }
@@ -364,7 +370,7 @@ namespace NewAudio.Core
 
             public void ExceptionHappened(Exception e, string method)
             {
-                AudioService.Instance.Logger.Error("ERROR {device}.{method} {e}", Device, method, e);
+                Logger.Error("ERROR {device}.{method} {e}", Device, method, e);
                 Device.ExceptionHappened(e, method);
             }
         }

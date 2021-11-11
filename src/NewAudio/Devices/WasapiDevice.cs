@@ -16,96 +16,58 @@ namespace NewAudio.Devices
         private WasapiCapture _capture;
         private bool _firstLoop = true;
 
-        private readonly ILogger _logger;
         private WasapiLoopbackCapture _loopback;
         private WasapiOut _wavePlayer;
-        private DeviceConfig _recording;
 
         private byte[] _temp;
         private int _tempPos;
 
         public WasapiDevice(string name, bool isInputDevice, bool isLoopback, string deviceId)
         {
+            InitLogger<WasapiDevice>();
             Name = name;
             IsInputDevice = isInputDevice;
             IsOutputDevice = !isInputDevice;
             IsLoopback = isLoopback;
             _deviceId = deviceId;
-            _logger = AudioService.Instance.Logger.ForContext<WasapiDevice>();
         }
 
         private bool IsLoopback { get; }
 
-        public override Task<DeviceConfigResponse> Create(DeviceConfigRequest config)
+        protected override Task<bool> Init()
         {
-            CancellationTokenSource = new CancellationTokenSource();
             _firstLoop = true;
-            var configResponse = new DeviceConfigResponse()
+            if (IsOutputDevice && IsPlaying)
             {
-                SupportedSamplingFrequencies = Enum.GetValues(typeof(SamplingFrequency)).Cast<SamplingFrequency>()
-            };
-
-            if (IsOutputDevice && config.IsPlaying)
-            {
-                AudioDataProvider = new AudioDataProvider(config.Playing.WaveFormat, config.Playing.Buffer)
-                {
-                    CancellationToken = CancellationTokenSource.Token
-                };
                 var device = new MMDeviceEnumerator().GetDevice(_deviceId);
-                _wavePlayer = new WasapiOut(device, AudioClientShareMode.Shared, true, config.Playing.Latency);
+                _wavePlayer = new WasapiOut(device, AudioClientShareMode.Shared, true, PlayingConfig.Latency);
                 _wavePlayer.Init(AudioDataProvider);
-                configResponse.PlayingWaveFormat = _wavePlayer.OutputWaveFormat;
-                configResponse.PlayingChannels = 2;
-                configResponse.DriverPlayingChannels = 2;
                 _wavePlayer.Play();
-            }
-            else if (IsInputDevice && config.IsRecording)
+            } else if (IsInputDevice && IsRecording)
             {
-                configResponse.RecordingChannels = 2;
-                configResponse.DriverRecordingChannels = 2;
-
                 if (IsLoopback)
                 {
                     var device = new MMDeviceEnumerator().GetDevice(_deviceId);
                     _loopback = new WasapiLoopbackCapture(device);
                     _loopback.DataAvailable += DataAvailable;
-                    config.Recording.WaveFormat = _loopback.WaveFormat;
+                    RecordingConfig.AudioFormat = RecordingConfig.AudioFormat.WithWaveFormat(_loopback.WaveFormat);
                     _loopback.StartRecording();
                 }
-                else if (IsInputDevice)
+                else 
                 {
                     var device = new MMDeviceEnumerator().GetDevice(_deviceId);
                     _capture = new WasapiCapture(device)
                     {
-                        WaveFormat = config.Recording.WaveFormat
+                        WaveFormat = RecordingConfig.AudioFormat.WaveFormat
                     };
                     _capture.DataAvailable += DataAvailable;
-                    config.Recording.WaveFormat = _capture.WaveFormat;
+                    RecordingConfig.AudioFormat = RecordingConfig.AudioFormat.WithWaveFormat(_capture.WaveFormat);
                     _capture.StartRecording();
                 }
-
-                _recording = new DeviceConfig()
-                {
-                    Buffer = config.Recording.Buffer
-                };
             }
-            
-            return Task.FromResult(configResponse);
+            return Task.FromResult(true); 
         }
-
-        public override bool Free()
-        {
-            CancellationTokenSource?.Cancel();
-
-            _loopback?.StopRecording();
-            _capture?.StopRecording();
-            _wavePlayer?.Stop();
-            _loopback?.Dispose();
-            _capture?.Dispose();
-            _wavePlayer?.Dispose();
-            return true;
-        }
-
+        
         public override bool Start()
         {
             GenerateSilence = false;
@@ -122,15 +84,15 @@ namespace NewAudio.Devices
         {
             if (_firstLoop)
             {
-                _logger.Information("Wasapi AudioIn Thread started (Writing to {recording} ({owner}))",
-                    _recording.Buffer.Name, _recording.Buffer.IsOwnerOfSharedMemory);
+                Logger.Information("Wasapi AudioIn Thread started (Writing to {recording} ({owner}))",
+                    RecordingBuffer.Name, RecordingBuffer.IsOwnerOfSharedMemory);
                 _firstLoop = false;
-                _temp = new byte[_recording.Buffer.NodeBufferSize];
+                _temp = new byte[RecordingBuffer.NodeBufferSize];
                 _tempPos = 0;
             }
 
             // AudioService.Instance.Flow.PostRequest(new AudioDataRequestMessage(evt.BytesRecorded/4));
-            _logger.Verbose("DataAvailable {bytes}", evt.BytesRecorded / 4);
+            Logger.Verbose("DataAvailable {bytes}", evt.BytesRecorded / 4);
 
             try
             {
@@ -143,7 +105,7 @@ namespace NewAudio.Devices
                     var toCopy = Math.Min(_temp.Length - _tempPos, remaining);
                     if (toCopy < 0 || toCopy>_temp.Length)
                     {
-                        _logger.Error("HAE???? {l}-{p} = {t}", _temp.Length, _tempPos, toCopy);
+                        Logger.Error("HAE???? {l}-{p} = {t}", _temp.Length, _tempPos, toCopy);
                         break;
                     }
                     else
@@ -157,11 +119,11 @@ namespace NewAudio.Devices
 
                     if (_tempPos == _temp.Length)
                     {
-                        var written = _recording.Buffer.Write(_temp);
+                        var written = RecordingBuffer.Write(_temp);
                         _tempPos = 0;
                         if (written != _temp.Length && !GenerateSilence)
                         {
-                            _logger.Warning("Wrote to few bytes ({wrote}, expected: {expected})", written,
+                            Logger.Warning("Wrote to few bytes ({wrote}, expected: {expected})", written,
                                 _temp.Length);
                         }
                     } 
@@ -172,13 +134,13 @@ namespace NewAudio.Devices
                 {
                     if (pos != evt.BytesRecorded && !token.IsCancellationRequested)
                     {
-                        _logger.Warning("pos!=buf {p}!={inc}", pos, evt.BytesRecorded);
+                        Logger.Warning("pos!=buf {p}!={inc}", pos, evt.BytesRecorded);
                     }
                 }
             }
             catch (Exception e)
             {
-                _logger.Error("DataAvailable: {e}", e);
+                Logger.Error("DataAvailable: {e}", e);
                 throw;
             }
         }
@@ -192,16 +154,28 @@ namespace NewAudio.Devices
             {
                 if (disposing)
                 {
-                    CancellationTokenSource.Cancel();
-                    _logger.Warning("STOP RECORDING ");
-                    _loopback?.StopRecording();
-                    _capture?.StopRecording();
-                    _wavePlayer?.Stop();
+                    CancellationTokenSource?.Cancel();
+                    if (_loopback != null)
+                    {
+                        _loopback.StopRecording();
+                        _loopback.DataAvailable -= DataAvailable;
+                        _loopback.Dispose();
+                    }
+
+                    if (_capture != null)
+                    {
+                        _capture.StopRecording();
+                        _capture.DataAvailable -= DataAvailable;
+                        _capture.Dispose();
+                    }
+
+                    if (_wavePlayer != null)
+                    {
+                        _wavePlayer.Stop();
+                        _wavePlayer.Dispose();
+                    }
+
                     
-                    _logger.Warning("DISPOSE RECORDING ");
-                    _loopback?.Dispose();
-                    _capture?.Dispose();
-                    _wavePlayer?.Dispose();
                     _loopback = null;
                     _capture = null;
                     _wavePlayer = null;

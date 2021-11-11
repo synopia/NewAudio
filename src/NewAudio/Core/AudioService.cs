@@ -3,17 +3,16 @@ using Serilog;
 using Serilog.Formatting.Display;
 using NewAudio.Core;
 using VL.Core;
+using VL.Lib.Basics.Resources;
 using VL.Model;
 
 namespace NewAudio.Core
 {
     public class AudioService
     {
-        private static AudioService _service;
-
-        private AudioService()
+        public AudioService()
         {
-            Logger = new LoggerConfiguration()
+            _logger = new LoggerConfiguration()
                 .Enrich.WithThreadId()
                 .WriteTo.Console(new MessageTemplateTextFormatter(
                     "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}"))
@@ -23,55 +22,30 @@ namespace NewAudio.Core
                 // "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}")
                 .MinimumLevel.Debug()
                 .CreateLogger();
-            Log.Logger = Logger;
+            Log.Logger = _logger;
 
             // Be careful, dont do anything, that needs the AudioService itself! 
-            Graph = new AudioGraph(Logger);
+            // Graph = new AudioGraph(Logger);
 
 
             Log.Logger.Information($"Initializing Audio Service");
         }
 
-        public static AudioService Instance => _service ??= new AudioService();
-
-        public AudioGraph Graph { get; private set; }
-
-        public ILogger Logger { get; }
-
-        private bool _playing;
+      
+        private readonly ILogger _logger;
         private ulong _lastFrame;
+        private int _nextId;
+        
+        public int BufferSize { get; private set; }
+        public int BufferCount { get; private set; }
 
-        public void Init()
+        public ILogger GetLogger<T>()
         {
+            return _logger.ForContext<T>();
         }
-
-        public void Update(bool playing, int buffersCount=6)
+        public int GetNextId()
         {
-            var currentFrame = VLSession.Instance.UserRuntime.Frame;
-
-            if (currentFrame != _lastFrame)
-            {
-                if (playing != _playing)
-                {
-                    Log.Logger.Information("Audio Service: {old} => {new}", _playing, playing);
-                    _playing = playing;
-                    if (playing)
-                    {
-                        Graph.PlayAll();
-                    }
-                    else
-                    {
-                        Graph.StopAll();
-                    }
-                }
-            }
-
-            _lastFrame = currentFrame;
-        }
-
-        public string DebugInfo()
-        {
-            return Graph.DebugInfo();
+            return _nextId++;
         }
 
         public void Dispose() => Dispose(true);
@@ -80,12 +54,11 @@ namespace NewAudio.Core
 
         private void Dispose(bool disposing)
         {
-            Logger.Information("Dispose called for AudioService {t} ({d})", this, disposing);
+            _logger.Information("Dispose called for AudioService {t} ({d})", this, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
                 {
-                    //Graph.Dispose();
                 }
 
                 _disposedValue = disposing;

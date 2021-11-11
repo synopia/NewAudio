@@ -8,7 +8,6 @@ namespace NewAudio.Blocks
 {
     public class JoinAudioBlock : AudioBlock
     {
-        private readonly ILogger _logger = AudioService.Instance.Logger.ForContext<JoinAudioBlock>();
         private IDisposable _link1;
         private IDisposable _link2;
         public int? OutputBufferCount => _joinOneAndTwo?.OutputCount;
@@ -52,18 +51,18 @@ namespace NewAudio.Blocks
                 {
                     if (input.Item1.BufferSize != sampleCount*channels1)
                     {
-                        _logger.Error("Expected Input size: {inputSize}, actual: {actualSize}", sampleCount*channels1, input.Item1.BufferSize);
+                        Logger.Error("Expected Input size: {inputSize}, actual: {actualSize}", sampleCount*channels1, input.Item1.BufferSize);
                     }
                     if (input.Item2.BufferSize != sampleCount*channels2)
                     {
-                        _logger.Error("Expected Input size: {inputSize}, actual: {actualSize}", sampleCount*channels2, input.Item2.BufferSize);
+                        Logger.Error("Expected Input size: {inputSize}, actual: {actualSize}", sampleCount*channels2, input.Item2.BufferSize);
                     }
 
                     var time1 = input.Item1.Time;
                     var time2 = input.Item2.Time;
                     if (time1 != time2)
                     {
-                        _logger.Warning("TIME DIFF {time1}!={time2}", time1, time2);
+                        Logger.Warning("TIME DIFF {time1}!={time2}", time1, time2);
                     }
                     var buf = new AudioDataMessage(outputFormat, sampleCount)
                     {

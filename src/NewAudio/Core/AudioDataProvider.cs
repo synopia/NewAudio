@@ -4,13 +4,14 @@ using NAudio.Wave;
 using NewAudio.Core;
 using Serilog;
 using SharedMemory;
+using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Core
 {
     public sealed class AudioDataProvider : IWaveProvider
     {
-        private readonly CircularBuffer _buffer;
         private readonly ILogger _logger;
+        private readonly CircularBuffer _buffer;
         private bool _firstLoop = true;
         public bool GenerateSilence { get; set; }
 
@@ -26,11 +27,11 @@ namespace NewAudio.Core
             }
         }
 
-        public AudioDataProvider(WaveFormat waveFormat, CircularBuffer buffer)
+        public AudioDataProvider(ILogger logger, WaveFormat waveFormat, CircularBuffer buffer)
         {
+            _logger = logger;
             _buffer = buffer;
             WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(waveFormat.SampleRate, waveFormat.Channels);
-            _logger = AudioService.Instance.Logger.ForContext<AudioDataProvider>();
             GenerateSilence = true;
         }
 
@@ -47,7 +48,7 @@ namespace NewAudio.Core
                     _firstLoop = false;
                 }
 
-                AudioService.Instance.Logger.Verbose("IN AUDIO THREAD: {count}", count / 4);
+                _logger.Verbose("IN AUDIO THREAD: {count}", count / 4);
                 // AudioService.Instance.Flow.PostRequest(new AudioDataRequestMessage(count/4/WaveFormat.Channels));
 
                 var pos = 0;
@@ -81,7 +82,7 @@ namespace NewAudio.Core
             }
             catch (Exception e)
             {
-                AudioService.Instance.Logger.Error("{e}", e);
+                _logger.Error("{e}", e);
                 return count;
             }
         }

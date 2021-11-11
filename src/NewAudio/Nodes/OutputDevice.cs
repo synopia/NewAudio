@@ -6,6 +6,7 @@ using NewAudio.Blocks;
 using NewAudio.Core;
 using NewAudio.Devices;
 using Serilog;
+using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Nodes
 {
@@ -24,10 +25,10 @@ namespace NewAudio.Nodes
 
     public class OutputDevice : AudioNode<OutputDeviceInitParams, OutputDevicePlayParams>
     {
-        private readonly ILogger _logger;
         private AudioOutputBlock _audioOutputBlock;
+        private IResourceHandle<DriverManager> _driverManager;
 
-        private IDevice _device;
+        private IResourceHandle<IDevice> _device;
         private AudioFormat _format;
         public WaveFormat WaveFormat => _format.WaveFormat;
 
@@ -41,8 +42,9 @@ namespace NewAudio.Nodes
 
         public OutputDevice()
         {
-            _logger = AudioService.Instance.Logger.ForContext<OutputDevice>();
-            _logger.Information("Output device created");
+            InitLogger<OutputDevice>();
+            _driverManager = VLApi.Instance.GetDriverManager();
+            Logger.Information("Output device created");
             _format = new AudioFormat(48000, 512, 2);
 
             _processor = new TransformBlock<AudioDataMessage, AudioDataMessage>(msg =>
@@ -91,41 +93,48 @@ namespace NewAudio.Nodes
 
         public override async Task<bool> Init()
         {
-            _device = (IDevice)InitParams.Device.Value.Tag;
-            _format = new AudioFormat((int)InitParams.SamplingFrequency.Value, 512, InitParams.Channels.Value);
-            _audioOutputBlock = new AudioOutputBlock();
-            _audioOutputBlock.Create(_format, 2);
-            _link = _processor.LinkTo(_audioOutputBlock);
-
+            _device = _driverManager.Resource.GetOutputDevice(InitParams.Device.Value);
+            if (_device.Resource == null)
+            {
+                return false;
+            }
             var req = new DeviceConfigRequest()
             {
-                Playing = new DeviceConfig()
-                {
-                    Buffer = _audioOutputBlock.Buffer,
-                    Latency = InitParams.DesiredLatency.Value,
-                    WaveFormat = WaveFormat,
-                    Channels = InitParams.Channels.Value,
-                    ChannelOffset = InitParams.ChannelOffset.Value
-                }
+                Latency = InitParams.DesiredLatency.Value,
+                AudioFormat = new AudioFormat((int)InitParams.SamplingFrequency.Value, 512, InitParams.Channels.Value),
+                Channels = InitParams.Channels.Value,
+                ChannelOffset = InitParams.ChannelOffset.Value
             };
-            var resp = await _device.Create(req);
-            _logger.Information(
+            var res = await _device.Resource.CreateOutput(req);
+            if (res == null)
+            {
+                return false;
+            }
+            var resp = res.Item1;
+            Logger.Information(
                 "Output device changed: {device} Channels={channels}, Driver Channels={driver}, Latency={latency}, Frame size={frameSize}",
-                _device, resp.PlayingChannels, resp.DriverPlayingChannels, resp.Latency, resp.FrameSize);
+                _device, resp.Channels, resp.DriverChannels, resp.Latency, resp.FrameSize);
+            
+            _format = resp.AudioFormat;
+            var output = res.Item2;
+            // _audioOutputBlock = new AudioOutputBlock();
+            // _audioOutputBlock.Create(_format, 2);
+            _link = _processor.LinkTo(output);
+
             return true;
         }
 
-        public override async Task<bool> Free()
+        public override  Task<bool> Free()
         {
             _link.Dispose();
-            _device.Free();
-            await _audioOutputBlock.Free();
-            return true;
+            _device.Dispose();
+            // await _audioOutputBlock.Free();
+            return Task.FromResult(true);
         }
 
         public override bool Play()
         {
-            _device.Start();
+            _device.Resource.Start();
             TargetBlock = _processor;
             return true;
         }
@@ -133,7 +142,7 @@ namespace NewAudio.Nodes
         public override bool Stop()
         {
             TargetBlock = null;
-            _device.Stop();
+            _device.Resource.Stop();
             return true;
         }
 
@@ -152,9 +161,10 @@ namespace NewAudio.Nodes
                 if (disposing)
                 {
                     _device?.Dispose();
-                    _audioOutputBlock?.Dispose();
+                    // _audioOutputBlock?.Dispose();
                     _device = null;
                     _audioOutputBlock = null;
+                    _driverManager.Dispose();
                 }
 
                 _disposedValue = disposing;

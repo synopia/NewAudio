@@ -2,34 +2,40 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
 using NewAudio.Devices;
+using NUnit.Framework;
 using SharedMemory;
+using VL.Lib.Basics.Resources;
 
 namespace NewAudioTest
 {
-    public static class TestDeviceSetup
+    public class BaseDeviceTest : BaseTest
     {
-        public  static TestDevice InputDevice;
-        public  static TestDevice OutputDevice;
-        public  static WaveInputDevice InputEnum;
-        public  static WaveOutputDevice OutputEnum;
-        public  static WaveOutputDevice OutputNullEnum;
-        public static WaveInputDevice InputNullEnum;
+        private IResourceHandle<DriverManager> _driverManager; 
+        public TestDevice InputDevice;
+        public TestDevice OutputDevice;
+        public WaveInputDevice InputEnum;
+        public WaveOutputDevice OutputEnum;
+        public WaveOutputDevice OutputNullEnum;
+        public WaveInputDevice InputNullEnum;
         
-        static TestDeviceSetup()
+        protected BaseDeviceTest()
         {
-            DriverManager.Instance.AddDriver(new TestDriver());
+            _driverManager = VLApi.Instance.GetDriverManager();
+            _driverManager.Resource.AddDriver(new TestDriver());
+            
             InputEnum = new WaveInputDevice("TEST INPUT");
             OutputEnum = new WaveOutputDevice("TEST OUTPUT");
             InputNullEnum = new WaveInputDevice("Null: Input");
             OutputNullEnum = new WaveOutputDevice("Null: Output");
             InputDevice = ((TestDevice)InputEnum.Tag);
             OutputDevice = ((TestDevice)OutputEnum.Tag);
-            
         }
 
-        public static void Init()
+        [SetUp]
+        public void Init()
         {
             InputDevice.MethodCalls.Clear();
             OutputDevice.MethodCalls.Clear();
@@ -44,51 +50,43 @@ namespace NewAudioTest
             return new[] { new TestDevice("TEST INPUT"), new TestDevice("TEST OUTPUT"), };
         }
     }
-    public class TestDevice : IDevice
+    public class TestDevice : BaseDevice
     {
-        public List<string> MethodCalls = new List<string>();
+        public List<string> MethodCalls = new();
 
-        public CircularBuffer PlayBuffer;
-        public CircularBuffer RecordBuffer;
-
-        public void Dispose()
+        protected override void Dispose(bool dispose)
         {
             MethodCalls.Add("Dispose");
         }
 
-        public string Name { get; }
-        public bool IsInputDevice => true;
-        public bool IsOutputDevice => true;
-        private bool _isPlaying;
-        private bool _isRecording;
-
-        public AudioDataProvider AudioDataProvider { get; set; }
-
         public TestDevice(string name)
         {
             Name = name;
+            IsInputDevice = true;
+            IsOutputDevice = true;
         }
 
-        public LifecyclePhase Phase { get; set; }
-
-        public bool IsInputValid(DeviceConfigRequest config)
+        protected override Task<bool> Init()
         {
+            if (IsRecording)
+            {
+                MethodCalls.Add($"InitRecording");
+            }
+
+            if (IsPlaying)
+            {
+                MethodCalls.Add($"InitPlayback");
+            }
+            return  Task.FromResult<bool>(true);
+        }
+
+        public override bool Start()
+        {
+            MethodCalls.Add(IsPlaying ? "Play" : "Record");
             return true;
         }
 
-        public bool Free()
-        {
-            MethodCalls.Add("Free");
-            return true;
-        }
-
-        public bool Start()
-        {
-            MethodCalls.Add(_isPlaying ? "Play" : "Record");
-            return true;
-        }
-
-        public bool Stop()
+        public override bool Stop()
         {
             MethodCalls.Add("Stop");
             return true;
@@ -101,11 +99,7 @@ namespace NewAudioTest
 
         public Task<DeviceConfigResponse> Create(DeviceConfigRequest config)
         {
-            _isPlaying = config.IsPlaying;
-            _isRecording = config.IsRecording;
-            MethodCalls.Add(_isPlaying ? $"InitPlayback" : $"InitRecording");
-            PlayBuffer = config.Playing?.Buffer;
-            RecordBuffer = config.Recording?.Buffer;
+            
             return Task.FromResult(new DeviceConfigResponse());
         }
     }

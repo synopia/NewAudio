@@ -6,6 +6,7 @@ using NewAudio.Blocks;
 using NewAudio.Core;
 using NewAudio.Devices;
 using Serilog;
+using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Nodes
 {
@@ -23,17 +24,16 @@ namespace NewAudio.Nodes
 
     public class InputDevice : AudioNode<InputDeviceInitParams, InputDevicePlayParams>
     {
-        private readonly ILogger _logger;
-        private AudioInputBlock _audioInputBlock;
+        private IResourceHandle<DriverManager> _driverManager;
 
-        private IDevice _device;
+        private IResourceHandle<IDevice> _device;
         private AudioFormat _format;
-        public WaveFormat WaveFormat => _format.WaveFormat;
 
         public InputDevice()
         {
-            _logger = AudioService.Instance.Logger.ForContext<InputDevice>();
-            _logger.Information("Input device created");
+            InitLogger<InputDevice>();
+            _driverManager = VLApi.Instance.GetDriverManager();
+            Logger.Information("Input device created");
             _format = new AudioFormat(48000, 512, 2);
         }
         
@@ -56,45 +56,51 @@ namespace NewAudio.Nodes
 
         public override async Task<bool> Init()
         {
-            _device = (IDevice)InitParams.Device.Value.Tag;
-            _format = new AudioFormat((int)InitParams.SamplingFrequency.Value, 512, InitParams.Channels.Value);
-            _audioInputBlock = new AudioInputBlock();
-            _audioInputBlock.Create(Output.TargetBlock, _format, 32);
-            Output.Format = _format;
+            _device = _driverManager.Resource.GetInputDevice(InitParams.Device.Value);
 
+            if (_device.Resource == null)
+            {
+                return false;
+            }
             var req = new DeviceConfigRequest()
             {
-                Recording = new DeviceConfig()
-                {
-                    Buffer = _audioInputBlock.Buffer,
-                    Latency = InitParams.DesiredLatency.Value,
-                    WaveFormat = WaveFormat,
-                    Channels = InitParams.Channels.Value,
-                    ChannelOffset = InitParams.ChannelOffset.Value
-                }
+                Latency = InitParams.DesiredLatency.Value,
+                AudioFormat = new AudioFormat((int)InitParams.SamplingFrequency.Value, 512, InitParams.Channels.Value),
+                Channels = InitParams.Channels.Value,
+                ChannelOffset = InitParams.ChannelOffset.Value
             };
-            var resp = await _device.Create(req);
-            _logger.Information("Input device changed: {device} Channels={channels}, Driver Channels={driver}, Latency={latency}, Frame size={frameSize}", _device, resp.RecordingChannels, resp.DriverRecordingChannels, resp.Latency, resp.FrameSize);
+            var res = await _device.Resource.CreateInput(req);
+            if (res == null)
+            {
+                return false;
+            }
+            var resp = res.Item1;
+            Logger.Information("Input device changed: {device} Channels={channels}, Driver Channels={driver}, Latency={latency}, Frame size={frameSize}", _device?.Resource, resp.Channels, resp.DriverChannels, resp.Latency, resp.FrameSize);
+
+            _format = resp.AudioFormat;
+            Output.SourceBlock = res.Item2;
+            Output.Format = _format;
+
             return true;
         }
 
-        public override async Task<bool> Free()
+        public override Task<bool> Free()
         {
-            _device.Free();
-            await _audioInputBlock.Free();
-            return true;
+            _device?.Dispose();
+            Output.SourceBlock = null;
+            return Task.FromResult(true);
         }
 
         public override bool Play()
         {
-            _device.Start();
+            _device.Resource.Start();
    
             return true;
         }
 
         public override bool Stop()
         {
-            _device.Stop();
+            _device.Resource.Stop();
     
             return true;
         }
@@ -113,16 +119,9 @@ namespace NewAudio.Nodes
             {
                 if (disposing)
                 {
-                    _logger.Warning("DISPOSE DEVICE");
                     _device?.Dispose();
-                    if (_audioInputBlock != null)
-                    {
-                        _logger.Information("Free AudioInputBlock...");
-                        _audioInputBlock.Free().GetAwaiter().GetResult();
-                    }
-                    _audioInputBlock?.Dispose();
                     _device = null;
-                    _audioInputBlock = null;
+                    _driverManager.Dispose();
                 }
 
                 _disposedValue = disposing;

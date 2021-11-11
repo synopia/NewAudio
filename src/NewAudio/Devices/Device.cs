@@ -1,38 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
+using NewAudio.Blocks;
 using SharedMemory;
 using NewAudio.Core;
 
 namespace NewAudio.Devices
 {
-    public class DeviceConfig
+    public struct DeviceConfigRequest
     {
-        public CircularBuffer Buffer { get; set; }
-        public WaveFormat WaveFormat { get; set; }
+        public AudioFormat AudioFormat { get; set; }
         public int ChannelOffset { get; set; }
         public int Channels { get; set; }
         public int Latency { get; set; }
     }
-    public class DeviceConfigRequest
-    {
-        public DeviceConfig Recording { get; set; }
-        public DeviceConfig Playing { get; set; }
-        public bool IsPlaying => Playing != null;
-        public bool IsRecording => Recording != null;
-    }
     public struct DeviceConfigResponse
     {
-        public WaveFormat PlayingWaveFormat;
-        public WaveFormat RecordingWaveFormat;
-        public int DriverRecordingChannels;
-        public int DriverPlayingChannels;
-        public int RecordingChannels;
-        public int PlayingChannels;
-        public int FrameSize;
-        public int Latency;
+        public AudioFormat AudioFormat { get; set; }
+        public int ChannelOffset { get; set; }
+        public int Channels { get; set; }
+        public int Latency { get; set; }
+
+        public int DriverChannels { get; set; }
+        public int FrameSize { get; set; }
+        
         public IEnumerable<SamplingFrequency> SupportedSamplingFrequencies;
     }
 
@@ -44,57 +37,10 @@ namespace NewAudio.Devices
         public bool IsOutputDevice { get; }
         AudioDataProvider AudioDataProvider { get; }
 
-        public Task<DeviceConfigResponse> Create(DeviceConfigRequest request);
+        public Task<Tuple<DeviceConfigResponse, ISourceBlock<AudioDataMessage>>> CreateInput(DeviceConfigRequest request);
+        public Task<Tuple<DeviceConfigResponse, ITargetBlock<AudioDataMessage>>> CreateOutput(DeviceConfigRequest request);
 
-        public bool Free();
         public bool Start();
         public bool Stop();
-    }
-
-    public abstract class BaseDevice : IDevice
-    {
-        public AudioDataProvider AudioDataProvider { get; protected set; }
-
-        private bool _generateSilence;
-        public bool GenerateSilence
-        {
-            get => _generateSilence;
-            set
-            {
-                _generateSilence = value;
-                if (AudioDataProvider != null)
-                {
-                    AudioDataProvider.GenerateSilence = value;
-                }
-            }
-        }
-
-        public string Name { get; protected set; }
-
-        public bool IsInputDevice { get; protected set; }
-
-        public bool IsOutputDevice { get; protected set; }
-        protected CancellationTokenSource CancellationTokenSource;
-        
-        public abstract Task<DeviceConfigResponse> Create(DeviceConfigRequest config);
-        public abstract bool Free();
-        public abstract bool Start();
-        public abstract bool Stop();
-        
-        private bool _disposedValue;
-        public void Dispose() => Dispose(true);
-        protected virtual void Dispose(bool disposing)
-        {
-            AudioService.Instance.Logger.Information("Dispose called for Device {t} ({d})", this, disposing);
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    
-                }
-
-                _disposedValue = true;
-            }
-        }
     }
 }

@@ -7,26 +7,43 @@ using Abodit.StateMachine;
 using NewAudio.Core;
 using NUnit.Framework;
 using Serilog;
+using ServiceWire;
+using VL.Lib.Basics.Resources;
 
 namespace NewAudioTest
 {
     [TestFixture]
-    public class LifecycleTests
+    public class LifecycleTests: BaseTest
     {
+        public LifecycleTests()
+        {
+            InitLogger<LifecycleTests>();
+        }
+
         [SetUp]
         public void Setup()
         {
             SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
         }
+
+
         private class TestDevice : ILifecycleDevice
         {
             public IList<string> Calls = new List<string>();
-
+            private ILogger _logger;
             public LifecyclePhase Phase { get; set; }
+
+            public TestDevice(ILogger logger)
+            {
+                _logger = logger;
+            }
+
             public void ExceptionHappened(Exception e, string method)
             {
                 Calls.Add($"Exception in {method}");
             }
+
+            public ILogger Logger => _logger;
 
             public bool IsInitValid()
             {
@@ -63,12 +80,11 @@ namespace NewAudioTest
             }
         }
 
-        private ILogger log = AudioService.Instance.Logger;
-
         [Test]
         public void TestSimple()
         {
-            var device = new TestDevice();
+            
+            var device = new TestDevice(Logger);
             var lf = new LifecycleStateMachine(device);
             lf.EventHappens(LifecycleEvents.eInit);
             lf.WaitForEvents.WaitOne();
@@ -99,7 +115,7 @@ namespace NewAudioTest
         [Test]
         public void TestFast()
         {
-            var device = new TestDevice();
+            var device = new TestDevice(Logger);
             var lf = new LifecycleStateMachine(device);
             lf.EventHappens(LifecycleEvents.eInit);
             lf.EventHappens(LifecycleEvents.ePlay);
@@ -122,7 +138,7 @@ namespace NewAudioTest
         [Test]
         public void TestReplay()
         {
-            var device = new TestDevice();
+            var device = new TestDevice(Logger);
             var lf = new LifecycleStateMachine(device);
             lf.EventHappens(LifecycleEvents.eInit);
             lf.WaitForEvents.WaitOne();

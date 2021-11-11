@@ -9,18 +9,14 @@ namespace NewAudio.Devices
         public NullDevice(string name, bool isInputDevice, bool isOutputDevice)
         {
             Name = name;
+            InitLogger<NullDevice>();
             IsInputDevice = isInputDevice;
             IsOutputDevice = isOutputDevice;
         }
 
-        public override Task<DeviceConfigResponse> Create(DeviceConfigRequest config)
+        protected override Task<bool> Init()
         {
-            return Task.FromResult(new DeviceConfigResponse());
-        }
-
-        public override bool Free()
-        {
-            return true;
+            return Task.FromResult(true);
         }
 
         public override bool Start()

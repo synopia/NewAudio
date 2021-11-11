@@ -1,23 +1,27 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using NewAudio.Blocks;
 using Serilog;
+using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Core
 {
     public class AudioLink : IDisposable
     {
-        private readonly ILogger _logger = Log.ForContext<AudioLink>();
+        private readonly ILogger _logger;
+        private readonly IResourceHandle<AudioGraph> _graph;
+        
         public readonly BroadcastBlock<AudioDataMessage> TargetBlock= new(i=>i);
         private ISourceBlock<AudioDataMessage> _currentSourceBlock;
         private IDisposable _currentSourceLink;
 
         public AudioFormat Format { get; set; }
 
-        public AudioLink()
+        public AudioLink(): this(VLApi.Instance){}
+        public AudioLink(IVLApi api)
         {
-            AudioService.Instance.Graph.AddLink(this);
+            _graph = api.GetAudioGraph();
+            _graph.Resource.AddLink(this);
+            _logger = _graph.Resource.GetLogger<AudioLink>();
         }
 
         public ISourceBlock<AudioDataMessage> SourceBlock
@@ -46,12 +50,12 @@ namespace NewAudio.Core
 
         private void Dispose(bool disposing)
         {
-            AudioService.Instance.Logger.Information("Dispose called for AudioLink {t} ({d})", this, disposing);
+            _logger.Information("Dispose called for AudioLink {t} ({d})", this, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
                 {
-                    AudioService.Instance.Graph.RemoveLink(this);
+                    _graph.Resource.RemoveLink(this);
                     _currentSourceLink?.Dispose();
                     _currentSourceLink = null;
                 }

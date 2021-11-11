@@ -3,14 +3,31 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
 using Serilog;
+using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Blocks
 {
     public abstract class AudioBlock : IPropagatorBlock<AudioDataMessage, AudioDataMessage>
     {
-        protected AudioBlock()
+        private IResourceHandle<AudioService> _audioService;
+        protected ILogger Logger;
+
+        protected AudioService AudioService => _audioService.Resource;
+
+        protected AudioBlock(): this(VLApi.Instance)
         {
         }
+
+        private AudioBlock(IVLApi api)
+        {
+            _audioService = api.GetAudioService();
+        }
+        
+        public void InitLogger<T>()
+        {
+            Logger = AudioService.GetLogger<T>();
+        }
+
 
         public abstract ISourceBlock<AudioDataMessage> Source { get; set; }
         public abstract ITargetBlock<AudioDataMessage> Target { get; set; }
@@ -26,6 +43,7 @@ namespace NewAudio.Blocks
             {
                 if (disposing)
                 {
+                    _audioService.Dispose();
                 }
 
                 _disposedValue = true;

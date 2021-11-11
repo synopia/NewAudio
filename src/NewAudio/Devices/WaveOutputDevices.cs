@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using NewAudio.Core;
 using VL.Lib;
 using VL.Lib.Collections;
 
@@ -24,7 +25,10 @@ namespace NewAudio.Devices
         protected override IReadOnlyDictionary<string, object> GetEntries()
         {
             var devices = new Dictionary<string, object>();
-            foreach (var device in DriverManager.Instance.GetOutputDevices())
+            // todo
+            var driverManager = VLApi.Instance.GetDriverManager().Resource;
+
+            foreach (var device in driverManager.GetOutputDevices())
             {
                 devices[device.Name] = device;
             }
@@ -36,5 +40,7 @@ namespace NewAudio.Devices
         {
             return HardwareChangedEvents.HardwareChanged;
         }
+        protected override bool AutoSortAlphabetically => false;
+
     }
 }

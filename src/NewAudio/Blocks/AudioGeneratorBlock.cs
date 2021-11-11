@@ -6,29 +6,32 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
 using Serilog;
+using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Blocks
 {
     public class AudioGeneratorBlock : ISourceBlock<AudioDataMessage>
     {
         private readonly ILogger _logger;
+        private readonly IResourceHandle<AudioService> _audioService;
+
         private ITargetBlock<AudioDataMessage> _outputBlock;
         public AudioFormat OutputFormat { get; private set; }
         private CancellationTokenSource _cancellationTokenSource;
         private CancellationToken _token;
         private Thread _thread;
-        private float[] _bufferToSend;
 
-        public AudioGeneratorBlock()
+        public AudioGeneratorBlock(): this(VLApi.Instance){}
+        public AudioGeneratorBlock(IVLApi api)
         {
-            _logger = AudioService.Instance.Logger.ForContext<AudioGeneratorBlock>();
+            _audioService = api.GetAudioService();
+            _logger = _audioService.Resource.GetLogger<AudioGeneratorBlock>();
         }
 
         public void Create(ITargetBlock<AudioDataMessage> outputBlock, AudioFormat format)
         {
             _outputBlock = outputBlock;
             OutputFormat = format;
-            _bufferToSend = new float[format.BufferSize];
             Start();
         }
         
@@ -79,8 +82,6 @@ namespace NewAudio.Blocks
         {
             try
             {
-                var bytesPerSecond = OutputFormat.WaveFormat.AverageBytesPerSecond;
-                var messagesPerSecond = bytesPerSecond / 4 / OutputFormat.BufferSize;
                 long samplesSent = 0;
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
@@ -95,7 +96,7 @@ namespace NewAudio.Blocks
 
                     double timeDiff;
                     samplesSent += message.SampleCount;
-                    var timeSent = (double)samplesSent * 1000.0 / OutputFormat.SampleRate;
+                    var timeSent = samplesSent * 1000.0 / OutputFormat.SampleRate;
                     do
                     {
                         timeDiff = timeSent - stopwatch.Elapsed.TotalMilliseconds;
@@ -120,13 +121,14 @@ namespace NewAudio.Blocks
 
         private void Dispose(bool disposing)
         {
-            AudioService.Instance.Logger.Information("Dispose called for AudioGeneratorBlock {t} ({d})", this, disposing);
+            _logger.Information("Dispose called for AudioGeneratorBlock {t} ({d})", this, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
                 {
                     _cancellationTokenSource?.Cancel();
                     _thread.Join();
+                    _audioService.Dispose();
                 }
 
                 _disposedValue = disposing;

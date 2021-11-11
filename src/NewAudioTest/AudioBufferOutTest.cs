@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace NewAudioTest
 {
     [TestFixture]
-    public class AudioBufferOutTest
+    public class AudioBufferOutTest : BaseDeviceTest
     {
         [SetUp]
         public void Setup()
@@ -19,13 +19,10 @@ namespace NewAudioTest
         [Test]
         public void TestIt()
         {
-            AudioService.Instance.Init();
-            TestDeviceSetup.Init();
-            
             var buf = new AudioBufferOut();
             using var input = new InputDevice();
             
-            input.Update(TestDeviceSetup.InputEnum, SamplingFrequency.Hz48000, 0, 1);
+            input.Update(InputEnum, SamplingFrequency.Hz48000, 0, 1);
             input.Lifecycle.WaitForEvents.WaitOne();
         
             buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
@@ -33,14 +30,14 @@ namespace NewAudioTest
             
             input.PlayParams.Playing.Value = true;
             buf.PlayParams.Playing.Value = true;
-            input.Update(TestDeviceSetup.InputEnum, SamplingFrequency.Hz48000, 0, 1);
+            input.Update(InputEnum, SamplingFrequency.Hz48000, 0, 1);
             input.Lifecycle.WaitForEvents.WaitOne();
             buf.Lifecycle.WaitForEvents.WaitOne();
 
             var spread = buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
             buf.Lifecycle.WaitForEvents.WaitOne();
-            TestDeviceSetup.InputDevice.RecordBuffer.Write(new byte[512 * 2 * 4]);
-            TestDeviceSetup.InputDevice.RecordBuffer.Write(new byte[512 * 2 * 4]);
+            InputDevice.RecordingBuffer.Write(new byte[512 * 2 * 4]);
+            InputDevice.RecordingBuffer.Write(new byte[512 * 2 * 4]);
             Task.Delay(100).Wait();
             spread = buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
             

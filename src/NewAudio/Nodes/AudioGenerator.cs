@@ -25,15 +25,14 @@ namespace NewAudio.Nodes
 
     public class AudioGenerator : AudioNode<AudioGeneratorInitParams, AudioGeneratorPlayParams>
     {
-        private readonly ILogger _logger;
         private AudioGeneratorBlock _audioGeneratorBlock;
         private AudioFormat _format;
         public WaveFormat WaveFormat => _format.WaveFormat;
 
         public AudioGenerator()
         {
-            _logger = AudioService.Instance.Logger.ForContext<AudioGenerator>();
-            _logger.Information("AudioGenerator created");
+            InitLogger<AudioGenerator>();
+            Logger.Information("AudioGenerator created");
             _format = new AudioFormat(48000, 512, 1);
         }
 

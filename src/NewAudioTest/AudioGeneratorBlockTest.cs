@@ -8,14 +8,16 @@ using NUnit.Framework;
 namespace NewAudioTest
 {
     [TestFixture]
-    public class AudioGeneratorBlockTest
+    public class AudioGeneratorBlockTest : BaseTest
     {
+        public AudioGeneratorBlockTest()
+        {
+            InitLogger<AudioGeneratorBlockTest>();
+        }
+
         [Test]
         public void TestIt()
         {
-            AudioService.Instance.Init();
-            var log = AudioService.Instance.Logger.ForContext<AudioGeneratorBlockTest>();
-            
             var f = new AudioFormat(48000, 512, 2);
             var sw = new Stopwatch();
             long samples = 0;
@@ -30,7 +32,7 @@ namespace NewAudioTest
             sw.Start();
             Task.Delay(1000).Wait();
             sw.Stop();
-            log.Information("{s}", samples/sw.Elapsed.TotalSeconds);
+            Logger.Information("{s}", samples/sw.Elapsed.TotalSeconds);
         }
     }
 }

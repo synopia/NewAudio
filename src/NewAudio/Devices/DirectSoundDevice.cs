@@ -13,11 +13,10 @@ namespace NewAudio.Devices
         private DirectSoundOut _directSoundOut;
 
         private readonly Guid _guid;
-        private readonly ILogger _logger;
 
         public DirectSoundDevice(string name, Guid guid)
         {
-            _logger = AudioService.Instance.Logger.ForContext<DirectSoundDevice>();
+            InitLogger<DirectSoundDevice>();
             Name = name;
             _guid = guid;
             IsOutputDevice = true;
@@ -33,7 +32,7 @@ namespace NewAudio.Devices
             if (config.IsPlaying && config.IsPlaying)
             {
                 
-                AudioDataProvider = new AudioDataProvider(config.Playing.WaveFormat, config.Playing.Buffer);
+                AudioDataProvider = new AudioDataProvider(Logger, config.Playing.WaveFormat, config.Playing.Buffer);
                 CancellationTokenSource = new CancellationTokenSource();
                 AudioDataProvider.CancellationToken = CancellationTokenSource.Token;
                 _directSoundOut = new DirectSoundOut(_guid, config.Playing.Latency);
@@ -41,7 +40,7 @@ namespace NewAudio.Devices
                 configResponse.PlayingChannels = 2;
                 configResponse.DriverPlayingChannels = 2;
                 configResponse.PlayingWaveFormat = config.Playing.WaveFormat;
-                _logger.Information("DirectSound Out initialized.. ");
+                Logger.Information("DirectSound Out initialized.. ");
             }
             _directSoundOut?.Play();
             return Task.FromResult(configResponse);

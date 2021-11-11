@@ -16,8 +16,6 @@ namespace NewAudio.Nodes
 
     public class AudioJoiner : AudioNode<AudioJoinerInitParams, AudioJoinerPlayParams>
     {
-        private readonly ILogger _logger;
-
         private JoinAudioBlock _joinAudioBlock;
         // private AudioFormat _format;
         // public WaveFormat WaveFormat => _format.WaveFormat;
@@ -25,8 +23,8 @@ namespace NewAudio.Nodes
 
         public AudioJoiner()
         {
-            _logger = AudioService.Instance.Logger.ForContext<AudioJoiner>();
-            _logger.Information("AudioJoiner device created");
+            InitLogger<AudioJoiner>();
+            Logger.Information("AudioJoiner device created");
         }
 
         public AudioLink Update(AudioLink input, AudioLink input2)

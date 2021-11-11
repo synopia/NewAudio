@@ -22,7 +22,6 @@ namespace NewAudio.Nodes
     
     public class AudioLoopRegion<TState> : AudioNode<AudioLoopRegionInitParams, AudioLoopRegionPlayParams> where TState : class
     {
-        private readonly ILogger _logger;
         private TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
         private readonly AudioSampleFrameClock _clock = new AudioSampleFrameClock();
         
@@ -31,8 +30,8 @@ namespace NewAudio.Nodes
 
         public AudioLoopRegion()
         {
-            _logger = AudioService.Instance.Logger.ForContext<AudioLoopRegion<TState>>();
-            _logger.Information("Audio loop region created");
+            InitLogger<AudioLoopRegion<TState>>();
+            Logger.Information("Audio loop region created");
         }
 
         public  AudioLink Update(
@@ -78,7 +77,7 @@ namespace NewAudio.Nodes
             }
 
             Output.Format = input.Format.WithChannels(PlayParams.OutputChannels.Value);
-            _logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}",
+            Logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}",
                 input.Format, Output.Format);
             
             Output.SourceBlock = _processor;
@@ -98,7 +97,7 @@ namespace NewAudio.Nodes
         {
             if (_processor != null)
             {
-                _logger.Warning("TransformBlock != null!");
+                Logger.Warning("TransformBlock != null!");
             }
 
             _processor = new TransformBlock<AudioDataMessage, AudioDataMessage>(input =>
@@ -161,14 +160,14 @@ namespace NewAudio.Nodes
         {
             if (_processor == null)
             {
-                _logger.Error("TransformBlock == null!");
+                Logger.Error("TransformBlock == null!");
                 return Task.FromResult(false);
             }
             _processor.Complete();
             return _processor.Completion.ContinueWith((t)=>
             {
                 _processor = null;
-                _logger.Information("Transform block stopped, status={status}", t.Status);
+                Logger.Information("Transform block stopped, status={status}", t.Status);
                 return true;
             });
         }

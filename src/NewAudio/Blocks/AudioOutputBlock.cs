@@ -6,6 +6,7 @@ using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
 using Serilog;
 using SharedMemory;
+using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Blocks
 {
@@ -18,6 +19,7 @@ namespace NewAudio.Blocks
     public sealed class AudioOutputBlock : ITargetBlock<AudioDataMessage>
     {
         private readonly ILogger _logger;
+        private readonly IResourceHandle<AudioService> _audioService;
 
         private ActionBlock<AudioDataMessage> _actionBlock;
         private CircularBuffer _buffer;
@@ -30,29 +32,23 @@ namespace NewAudio.Blocks
 
         private bool _firstLoop;
 
-        public AudioOutputBlock()
+        public AudioOutputBlock(): this(VLApi.Instance){}
+        public AudioOutputBlock(IVLApi api)
         {
-            _logger = AudioService.Instance.Logger.ForContext<AudioOutputBlock>();
+            _audioService = api.GetAudioService();
+            _logger = _audioService.Resource.GetLogger<AudioOutputBlock>();
         }
 
         public void Create(AudioFormat audioFormat, int nodeCount)
         {
             InputFormat = audioFormat;
 
-            var name = $"Output Buffer {AudioService.Instance.Graph.GetNextId()}";
+            var name = $"Output Buffer {_audioService.Resource.GetNextId()}";
             _buffer = new CircularBuffer(name, nodeCount, 4 * InputFormat.BufferSize);
             Buffer = new CircularBuffer(name);
 
             Start();
         }
-
-        public async Task<bool> Free()
-        {
-            await Stop();
-            _buffer.Dispose();
-            return true;
-        }
-
 
         private void Start()
         {
@@ -68,26 +64,32 @@ namespace NewAudio.Blocks
             CreateActionBlock();
         }
 
-        private Task<bool> Stop()
+        private bool Stop()
         {
             if (_actionBlock == null)
             {
                 _logger.Error("ActionBlock == null!");
-                return Task.FromResult(false);
+                return false;
             }
             if (_token.IsCancellationRequested)
             {
                 _logger.Warning("Already stopping!");
             }
             _cancellationTokenSource.Cancel();
-            _actionBlock.Complete();
-
-            return _actionBlock.Completion.ContinueWith(t =>
+            var completion = _actionBlock.Completion;
+            if (completion.Status == TaskStatus.Running)
             {
-                _logger.Information("ActionBlock stopped, status={status}", t.Status);
-                _actionBlock = null;
-                return true;
-            });
+                var t = completion.ContinueWith(t =>
+                {
+                    _logger.Information("ActionBlock stopped, status={status}", t.Status);
+                    _actionBlock = null;
+                    return true;
+                });
+                _actionBlock.Complete();
+                return t.GetAwaiter().GetResult();
+            }
+
+            return true;
         }
 
         private void CreateActionBlock()
@@ -131,14 +133,14 @@ namespace NewAudio.Blocks
 
         private void Dispose(bool disposing)
         {
-            AudioService.Instance.Logger.Information("Dispose called for OutputBlock {t} ({d})", this, disposing);
+            _logger.Information("Dispose called for OutputBlock {t} ({d})", this, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
                 {
-                    _cancellationTokenSource?.Cancel();
-                    _actionBlock?.Complete();
+                    Stop();
                     Buffer.Dispose();
+                    _audioService.Dispose();
                 }
 
                 _disposedValue = disposing;

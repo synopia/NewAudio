@@ -12,13 +12,12 @@ namespace NewAudio.Devices
     public class WaveDevice : BaseDevice
     {
         private readonly int _handle;
-        private readonly ILogger _logger;
         private WaveInEvent _waveIn;
         private WaveOutEvent _waveOut;
 
         public WaveDevice(string name, bool isInputDevice, int handle)
         {
-            _logger = AudioService.Instance.Logger.ForContext<WaveDevice>();
+            InitLogger<WaveDevice>();
             Name = name;
             IsInputDevice = isInputDevice;
             IsOutputDevice = !isInputDevice;
@@ -36,7 +35,7 @@ namespace NewAudio.Devices
 
             if (IsOutputDevice && config.IsPlaying)
             {
-                AudioDataProvider = new AudioDataProvider(config.Playing.WaveFormat, config.Playing.Buffer)
+                AudioDataProvider = new AudioDataProvider(Logger, config.Playing.WaveFormat, config.Playing.Buffer)
                 {
                     CancellationToken = CancellationTokenSource.Token
                 };

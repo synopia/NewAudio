@@ -2,23 +2,63 @@
 using System.Collections.Generic;
 using NewAudio.Nodes;
 using Serilog;
+using VL.Core;
+using VL.Lib.Adaptive;
+using VL.Lib.Basics.Resources;
+using VL.Model;
 using IList = System.Collections.IList;
 
 namespace NewAudio.Core
 {
-    public class AudioGraph 
+    public class AudioGraph : IDisposable
     {
+        private readonly IResourceHandle<AudioService> _audioService;
         private readonly IList<IAudioNode> _nodes = new List<IAudioNode>();
         private readonly IList<AudioLink> _links = new List<AudioLink>();
         private readonly ILogger _logger;
-
+        private bool _playing;
         private int _nextId;
+        private ulong _lastFrame;
 
-        public AudioGraph(ILogger logger)
+        public AudioGraph() : this(VLApi.Instance)
         {
-            _logger = logger;
         }
 
+        public AudioGraph(IVLApi api)
+        {
+            _audioService = api.GetAudioService();
+            _logger = _audioService.Resource.GetLogger<AudioGraph>();
+            _nextId = _audioService.Resource.GetNextId() * 1 >> 10;
+        }
+
+        public ILogger GetLogger<T>()
+        {
+            return _audioService.Resource.GetLogger<T>();
+        }
+        public void Update(bool playing, int bufferSize = 512, int buffersCount = 6)
+        {
+            var currentFrame = VLSession.Instance.UserRuntime.Frame;
+
+            if (currentFrame != _lastFrame)
+            {
+                _lastFrame = currentFrame;
+                if (playing != _playing)
+                {
+                    _playing = playing;
+                    if (playing)
+                    {
+                        _logger.Information("Starting audio");
+                        PlayAll();
+                    }
+                    else
+                    {
+                        _logger.Information("Stopping audio");
+                        StopAll();
+                    }
+                }
+            }
+        }
+        
         public int GetNextId()
         {
             return _nextId++;
@@ -89,31 +129,7 @@ namespace NewAudio.Core
             {
                 if (disposing)
                 {
-                    var linkCopy = new List<AudioLink>(_links);
-                    
-                    foreach (var link in linkCopy)
-                    {
-                        try
-                        {
-                            link?.Dispose();
-                        }
-                        catch (ObjectDisposedException e)
-                        {
-                        }
-                    }
-                    _links.Clear();
-                    var nodeCopy = new List<IAudioNode>(_nodes);
-                    foreach (var node in nodeCopy)
-                    {
-                        try
-                        {
-                            node?.Dispose();
-                        }
-                        catch (ObjectDisposedException e)
-                        {
-                        }
-                    }
-                    _nodes.Clear();
+                    _audioService.Dispose();
                 }
 
                 _disposedValue = disposing;

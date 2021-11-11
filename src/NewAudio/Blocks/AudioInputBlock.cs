@@ -6,6 +6,7 @@ using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
 using Serilog;
 using SharedMemory;
+using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Blocks
 {
@@ -13,6 +14,7 @@ namespace NewAudio.Blocks
     public class AudioInputBlock : ISourceBlock<AudioDataMessage>
     {
         private readonly ILogger _logger;
+        private readonly IResourceHandle<AudioService> _audioService;
         private ITargetBlock<AudioDataMessage> _outputBlock;
 
         private CircularBuffer _buffer;
@@ -22,9 +24,12 @@ namespace NewAudio.Blocks
         private CancellationToken _token;
         private Thread _thread;
 
-        public AudioInputBlock()
+        public AudioInputBlock(): this(VLApi.Instance){}
+
+        private AudioInputBlock(IVLApi api)
         {
-            _logger = AudioService.Instance.Logger.ForContext<AudioInputBlock>();
+            _audioService = api.GetAudioService();
+            _logger = _audioService.Resource.GetLogger<AudioInputBlock>();
         }
 
         public void Create(ITargetBlock<AudioDataMessage> outputBlock, AudioFormat audioFormat, int nodeCount)
@@ -32,18 +37,11 @@ namespace NewAudio.Blocks
             OutputFormat = audioFormat;
             _outputBlock = outputBlock;
             
-            var name = $"Input Block {AudioService.Instance.Graph.GetNextId()}";
+            var name = $"Input Block {_audioService.Resource.GetNextId()}";
             Buffer = new CircularBuffer(name, nodeCount, 4 * audioFormat.BufferSize);
             _buffer = new CircularBuffer(name);
             
             Start();
-        }
-
-        public async Task<bool> Free()
-        {
-            await Stop();
-            Buffer.Dispose();
-            return true;
         }
 
         private void Start()
@@ -64,12 +62,12 @@ namespace NewAudio.Blocks
             _thread.Start();
         }
 
-        private Task<bool> Stop()
+        private bool Stop()
         {
             if (_thread== null)
             {
                 _logger.Error("Thread == null {task}", _thread);
-                return Task.FromResult(false);
+                return false;
             }
 
             if (_token.IsCancellationRequested)
@@ -81,7 +79,7 @@ namespace NewAudio.Blocks
             _thread.Join();
             _logger.Information("Audio input reading thread finished (Reading from {reading} ({owner}))", _buffer?.Name,
                 _buffer?.IsOwnerOfSharedMemory);
-            return Task.FromResult(true);
+            return true;
         }
 
         private void Loop()
@@ -129,8 +127,6 @@ namespace NewAudio.Blocks
             }
 
         }
-        
-        
 
         public void Dispose() => Dispose(true);
 
@@ -138,17 +134,17 @@ namespace NewAudio.Blocks
 
         private void Dispose(bool disposing)
         {
-            AudioService.Instance.Logger.Information("Dispose called for InputBlock {t} ({d})", this, disposing);
+            _logger.Information("Dispose called for InputBlock {t} ({d})", this, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
                 {
                     _logger.Warning("WAIT FOR IN READING");
-                    _cancellationTokenSource?.Cancel();
-                    _thread.Join();
+                    Stop();
                     Buffer.Dispose();
                     _thread = null;
                     Buffer = null;
+                    _audioService.Dispose();
                 }
 
                 _disposedValue = disposing;
