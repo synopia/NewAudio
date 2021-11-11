@@ -21,8 +21,8 @@ namespace NewAudio.Blocks
         private CancellationToken _token;
         private Thread _thread;
 
-        public AudioGeneratorBlock(): this(VLApi.Instance){}
-        public AudioGeneratorBlock(IVLApi api)
+        public AudioGeneratorBlock(): this(Factory.Instance){}
+        public AudioGeneratorBlock(IFactory api)
         {
             _audioService = api.GetAudioService();
             _logger = _audioService.Resource.GetLogger<AudioGeneratorBlock>();

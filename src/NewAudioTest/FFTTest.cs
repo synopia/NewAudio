@@ -19,8 +19,8 @@ namespace NewAudioTest
         [Test]
         public void TestIt()
         {
-            var inputNullEnum = new WaveInputDevice("Null: Input");
-            var outputNullEnum = new WaveOutputDevice("Null: Output");
+            var inputNullEnum = new InputDeviceSelection("Null: Input");
+            var outputNullEnum = new OutputDeviceSelection("Null: Output");
             var input = new InputDevice();
             var output = new OutputDevice();
             var output2 = new OutputDevice();

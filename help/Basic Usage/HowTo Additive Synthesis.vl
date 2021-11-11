@@ -227,7 +227,7 @@
           </Pad>
           <Pad Id="E6IKL98hoYDPMUuM6C5W9T" Bounds="302,1007,374,15" ShowValueBox="true" isIOBox="true" Value="ASIO: ASIO4ALL v2">
             <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="WaveOutputDevice" />
+              <Choice Kind="TypeFlag" Name="OutputDeviceSelection" />
             </p:TypeAnnotation>
           </Pad>
           <Node Bounds="282,401,280,424" Id="VjpVLI2LfaxOXZn4B9EfQJ">

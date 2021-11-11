@@ -7,23 +7,24 @@ using VL.Lib.Collections;
 
 namespace NewAudio.Devices
 {
+    
     [Serializable]
-    public class WaveInputDevice : DynamicEnumBase<WaveInputDevice, WaveInputDeviceDefinition>
+    public class InputDeviceSelection : DynamicEnumBase<InputDeviceSelection, InputDeviceDefinition>
     {
-        public WaveInputDevice(string value) : base(value)
+        public InputDeviceSelection(string value) : base(value)
         {
         }
 
-        public static WaveInputDevice CreateDefault()
+        public static InputDeviceSelection CreateDefault()
         {
             return CreateDefaultBase("Null: Input");
         }
         
     }
 
-    public class WaveInputDeviceDefinition : DynamicEnumDefinitionBase<WaveInputDeviceDefinition>
+    public class InputDeviceDefinition : DynamicEnumDefinitionBase<InputDeviceDefinition>
     {
-        public WaveInputDeviceDefinition()
+        public InputDeviceDefinition()
         {
             
         }
@@ -32,11 +33,11 @@ namespace NewAudio.Devices
         {
             var devices = new Dictionary<string, object>();
             // todo
-            var driverManager = VLApi.Instance.GetDriverManager().Resource;
+            var driverManager = Factory.Instance.GetDriverManager().Resource;
 
             foreach (var device in driverManager.GetInputDevices())
             {
-                devices[device.Name] = device;
+                devices[device.Name] = null;
             }
 
             return devices;

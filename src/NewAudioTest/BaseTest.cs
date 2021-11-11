@@ -20,7 +20,7 @@ namespace NewAudioTest
 
         public T Resource { get; }
     }
-    public class VLTestApi : IVLApi
+    public class VLTestApi : IFactory
     {
         private DriverManager _driverManager = new DriverManager();
         private AudioService _audioService= new AudioService();
@@ -41,14 +41,14 @@ namespace NewAudioTest
             return new TestResourceHandle<DriverManager>(_driverManager);
         }
 
-        public IResourceHandle<IDevice> GetInputDevice(WaveInputDevice device)
+        public IResourceHandle<IDevice> GetInputDevice(InputDeviceSelection deviceSelection)
         {
-            return new TestResourceHandle<IDevice>((IDevice)device.Tag);
+            return new TestResourceHandle<IDevice>((IDevice)deviceSelection.Tag);
         }
 
-        public IResourceHandle<IDevice> GetOutputDevice(WaveOutputDevice device)
+        public IResourceHandle<IDevice> GetOutputDevice(OutputDeviceSelection deviceSelection)
         {
-            return new TestResourceHandle<IDevice>((IDevice)device.Tag);
+            return new TestResourceHandle<IDevice>((IDevice)deviceSelection.Tag);
         }
     }
     public class BaseTest : IDisposable
@@ -58,8 +58,8 @@ namespace NewAudioTest
 
         protected BaseTest()
         {
-            VLApi.Instance = new VLTestApi();
-            _audioService = VLApi.Instance.GetAudioService();
+            Factory.Instance = new VLTestApi();
+            _audioService = Factory.Instance.GetAudioService();
         }
         
         protected void InitLogger<T>()

@@ -16,8 +16,8 @@ namespace NewAudio.Core
 
         public AudioFormat Format { get; set; }
 
-        public AudioLink(): this(VLApi.Instance){}
-        public AudioLink(IVLApi api)
+        public AudioLink(): this(Factory.Instance){}
+        public AudioLink(IFactory api)
         {
             _graph = api.GetAudioGraph();
             _graph.Resource.AddLink(this);

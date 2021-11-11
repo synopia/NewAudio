@@ -17,7 +17,7 @@
         <Canvas Id="RqGQSjV7ytGLSqra8c3MMc" CanvasType="Group">
           <Pad Id="Mm6zRNJzIpiPLWBirt9Fu5" Comment="Device" Bounds="503,891,348,16" ShowValueBox="true" isIOBox="true" Value="DS: Audio 2 DJ (Ch A, Out 1|2) (Audio 2 DJ WDM Audio)">
             <p:TypeAnnotation LastCategoryFullName="Main.VL.NewAudioApplication" LastSymbolSource="VL.NewAudio.vl">
-              <Choice Kind="TypeFlag" Name="WaveOutputDevice" />
+              <Choice Kind="TypeFlag" Name="OutputDeviceSelection" />
             </p:TypeAnnotation>
           </Pad>
           <Pad Id="It1sdMwLnV1OrAt9pXQHO0" Comment="Cpu Usage" Bounds="502,1025,58,18" ShowValueBox="true" isIOBox="true" />

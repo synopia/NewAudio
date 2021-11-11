@@ -7,6 +7,8 @@ namespace NewAudio.Devices
         public string Name { get; }
 
 
-        public IEnumerable<IDevice> GetDevices();
+        public IEnumerable<DeviceSelection> GetDeviceSelections();
+
+        public IDevice CreateDevice(DeviceSelection selection);
     }
 }

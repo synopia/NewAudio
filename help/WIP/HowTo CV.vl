@@ -818,7 +818,7 @@
           </Node>
           <Pad Id="SKpetDXLmsUN9y4bMXfPUt" Comment="Device" Bounds="9,935,309,21" ShowValueBox="true" isIOBox="true" Value="ASIO: Audio 2 DJ">
             <p:TypeAnnotation LastCategoryFullName="Main.VL.NewAudioApplication" LastSymbolSource="VL.NewAudio.vl">
-              <Choice Kind="TypeFlag" Name="WaveOutputDevice" />
+              <Choice Kind="TypeFlag" Name="OutputDeviceSelection" />
             </p:TypeAnnotation>
             <p:ValueBoxSettings />
           </Pad>

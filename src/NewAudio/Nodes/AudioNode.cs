@@ -67,9 +67,9 @@ namespace NewAudio.Nodes
             }
         }
 
-        protected AudioNode() : this(VLApi.Instance){}
+        protected AudioNode() : this(Factory.Instance){}
 
-        private AudioNode(IVLApi api)
+        private AudioNode(IFactory api)
         {
             _graph = api.GetAudioGraph();
             Id = Graph.AddNode(this);

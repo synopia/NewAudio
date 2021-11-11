@@ -14,11 +14,11 @@ namespace NewAudio.Blocks
 
         protected AudioService AudioService => _audioService.Resource;
 
-        protected AudioBlock(): this(VLApi.Instance)
+        protected AudioBlock(): this(Factory.Instance)
         {
         }
 
-        private AudioBlock(IVLApi api)
+        private AudioBlock(IFactory api)
         {
             _audioService = api.GetAudioService();
         }

@@ -9,11 +9,15 @@ using NUnit.Framework;
 using Serilog;
 using SharedMemory;
 
+
 namespace NewAudioTest
 {
+    using  NewAudioTest;
+    
     [TestFixture]
     public class DevicesTest : BaseDeviceTest
     {
+        
         [SetUp]
         public void Setup()
         {
@@ -43,10 +47,10 @@ namespace NewAudioTest
             Wait(input, output);;
             Assert.AreEqual(LifecyclePhase.Init, input.Phase);
             Assert.AreEqual(LifecyclePhase.Init, output.Phase);
-            Assert.AreEqual(new[] { "InitRecording" }, InputDevice.MethodCalls,
-                string.Join(", ", InputDevice.MethodCalls));
-            Assert.AreEqual(new[] { "InitPlayback" }, OutputDevice.MethodCalls,
-                string.Join(", ", OutputDevice.MethodCalls));
+            Assert.AreEqual(new[] { "InitRecording" }, InputDevice.MethodCalls(),
+                string.Join(", ", InputDevice.MethodCalls()));
+            Assert.AreEqual(new[] { "InitPlayback" }, OutputDevice.MethodCalls(),
+                string.Join(", ", OutputDevice.MethodCalls()));
 
             input.PlayParams.Playing.Value = true;
             output.PlayParams.Playing.Value = true;
@@ -55,10 +59,10 @@ namespace NewAudioTest
             Wait(input, output);;
             Assert.AreEqual(LifecyclePhase.Play, input.Phase);
             Assert.AreEqual(LifecyclePhase.Play, output.Phase);
-            Assert.AreEqual(new[] { "InitRecording", "Record" }, InputDevice.MethodCalls,
-                string.Join(", ",InputDevice.MethodCalls));
-            Assert.AreEqual(new[] { "InitPlayback", "Play" }, OutputDevice.MethodCalls,
-                string.Join(", ", OutputDevice.MethodCalls));
+            Assert.AreEqual(new[] { "InitRecording", "Record" }, InputDevice.MethodCalls(),
+                string.Join(", ",InputDevice.MethodCalls()));
+            Assert.AreEqual(new[] { "InitPlayback", "Play" }, OutputDevice.MethodCalls(),
+                string.Join(", ", OutputDevice.MethodCalls()));
 
             input.PlayParams.Playing.Value = true;
             output.PlayParams.Playing.Value = true;
@@ -67,10 +71,10 @@ namespace NewAudioTest
             Wait(input, output);;
             Assert.AreEqual(LifecyclePhase.Play, input.Phase);
             Assert.AreEqual(LifecyclePhase.Play, output.Phase);
-            Assert.AreEqual(new[] { "InitRecording", "Record" }, InputDevice.MethodCalls,
-                string.Join(", ", InputDevice.MethodCalls));
-            Assert.AreEqual(new[] { "InitPlayback", "Play" }, OutputDevice.MethodCalls,
-                string.Join(", ", OutputDevice.MethodCalls));
+            Assert.AreEqual(new[] { "InitRecording", "Record" }, InputDevice.MethodCalls(),
+                string.Join(", ", InputDevice.MethodCalls()));
+            Assert.AreEqual(new[] { "InitPlayback", "Play" }, OutputDevice.MethodCalls(),
+                string.Join(", ", OutputDevice.MethodCalls()));
 
             input.PlayParams.Playing.Value = false;
             output.PlayParams.Playing.Value = false;
@@ -79,10 +83,10 @@ namespace NewAudioTest
             Wait(input, output);;
             Assert.AreEqual(LifecyclePhase.Init, input.Phase);
             Assert.AreEqual(LifecyclePhase.Init, output.Phase);
-            Assert.AreEqual(new[] { "InitRecording", "Record", "Stop" }, InputDevice.MethodCalls,
-                string.Join(", ", InputDevice.MethodCalls));
-            Assert.AreEqual(new[] { "InitPlayback", "Play", "Stop" }, OutputDevice.MethodCalls,
-                string.Join(", ", OutputDevice.MethodCalls));
+            Assert.AreEqual(new[] { "InitRecording", "Record", "Stop" }, InputDevice.MethodCalls(),
+                string.Join(", ", InputDevice.MethodCalls()));
+            Assert.AreEqual(new[] { "InitPlayback", "Play", "Stop" }, OutputDevice.MethodCalls(),
+                string.Join(", ", OutputDevice.MethodCalls()));
 
             input.PlayParams.Playing.Value = true;
             output.PlayParams.Playing.Value = true;
@@ -91,10 +95,10 @@ namespace NewAudioTest
             Wait(input, output);;
             Assert.AreEqual(LifecyclePhase.Play, input.Phase);
             Assert.AreEqual(LifecyclePhase.Play, output.Phase);
-            Assert.AreEqual(new[] { "InitRecording", "Record", "Stop", "Record" }, InputDevice.MethodCalls,
-                string.Join(", ", InputDevice.MethodCalls));
-            Assert.AreEqual(new[] { "InitPlayback", "Play", "Stop", "Play" }, OutputDevice.MethodCalls,
-                string.Join(", ", OutputDevice.MethodCalls));
+            Assert.AreEqual(new[] { "InitRecording", "Record", "Stop", "Record" }, InputDevice.MethodCalls(),
+                string.Join(", ", InputDevice.MethodCalls()));
+            Assert.AreEqual(new[] { "InitPlayback", "Play", "Stop", "Play" }, OutputDevice.MethodCalls(),
+                string.Join(", ", OutputDevice.MethodCalls()));
         }
 
 
@@ -155,7 +159,7 @@ namespace NewAudioTest
                     "InitRecording", "Record", "Stop", "Free",
                     "InitRecording", "Record", "Stop", "Free",
                     "InitRecording", "Record"
-                }, InputDevice.MethodCalls, string.Join(", ", InputDevice.MethodCalls));
+                }, InputDevice.MethodCalls(), string.Join(", ", InputDevice.MethodCalls()));
             Assert.AreEqual(
                 new[]
                 {
@@ -163,7 +167,7 @@ namespace NewAudioTest
                     "InitPlayback", "Play", "Stop", "Free",
                     "InitPlayback", "Play"
                 },
-                OutputDevice.MethodCalls, string.Join(", ", OutputDevice.MethodCalls));
+                OutputDevice.MethodCalls(), string.Join(", ", OutputDevice.MethodCalls()));
             // Assert.AreEqual(1, TestDeviceSetup.InputDevice.Threads.Distinct().Count());
             // Assert.AreEqual(mainThreadId, TestDeviceSetup.InputDevice.Threads[0]);
             // Assert.AreEqual(1, TestDeviceSetup.OutputDevice.Threads.Distinct().Count());

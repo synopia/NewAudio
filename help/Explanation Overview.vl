@@ -98,7 +98,7 @@
           </Pad>
           <Pad Id="SEWQr5w4kgZMmD5gAl77jr" Comment="Device" Bounds="755,503,327,15" ShowValueBox="true" isIOBox="true" Value="Null: Output">
             <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="WaveOutputDevice" />
+              <Choice Kind="TypeFlag" Name="OutputDeviceSelection" />
             </p:TypeAnnotation>
           </Pad>
           <Pad Id="Vb7RDaGUQBJMx37FrncBtV" Bounds="708,394,132,29" ShowValueBox="true" isIOBox="true" Value="Output Device">
@@ -226,7 +226,7 @@
           </Node>
           <Pad Id="RJ2alJb1jfVMpIEGarzIuh" Comment="Device" Bounds="116,502,374,15" ShowValueBox="true" isIOBox="true" Value="Null: Input">
             <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="WaveInputDevice" />
+              <Choice Kind="TypeFlag" Name="InputDeviceSelection" />
             </p:TypeAnnotation>
           </Pad>
           <Pad Id="L9p1ZqEoxdCOf1zVDpHxD9" Comment="Channel Offset" Bounds="303,547,19,15" ShowValueBox="true" isIOBox="true" Value="0">

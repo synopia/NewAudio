@@ -4,6 +4,7 @@ using SharedMemory;
 
 namespace NewAudio.Devices
 {
+    
     public class NullDevice : BaseDevice
     {
         public NullDevice(string name, bool isInputDevice, bool isOutputDevice)

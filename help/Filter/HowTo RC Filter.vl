@@ -26,12 +26,12 @@
           </Pad>
           <Pad Id="LUVDjMkGnUCQCGi4I2zho8" Comment="Device" Bounds="499,146,374,15" ShowValueBox="true" isIOBox="true" Value="Wasapi Loopback: VoiceMeeter Input (VB-Audio VoiceMeeter VAIO)">
             <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="WaveInputDevice" />
+              <Choice Kind="TypeFlag" Name="InputDeviceSelection" />
             </p:TypeAnnotation>
           </Pad>
           <Pad Id="SQMKeQgy2zhNIFnh3S7y7H" Comment="Device" Bounds="518,529,327,15" ShowValueBox="true" isIOBox="true" Value="ASIO: ASIO4ALL v2">
             <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="WaveOutputDevice" />
+              <Choice Kind="TypeFlag" Name="OutputDeviceSelection" />
             </p:TypeAnnotation>
           </Pad>
           <Pad Id="TnlwOqEOpjZPfrCKxgDBkS" Comment="Cutoff" Bounds="786,249,61,252" ShowValueBox="true" isIOBox="true" Value="0">

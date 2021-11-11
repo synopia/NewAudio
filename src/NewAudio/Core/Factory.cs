@@ -5,18 +5,16 @@ using VL.Model;
 
 namespace NewAudio.Core
 {
-    public interface IVLApi
+    public interface IFactory
     {
         IResourceHandle<AudioService> GetAudioService();
         IResourceHandle<AudioGraph> GetAudioGraph();
         IResourceHandle<DriverManager> GetDriverManager();
-        IResourceHandle<IDevice> GetInputDevice(WaveInputDevice device);
-        IResourceHandle<IDevice> GetOutputDevice(WaveOutputDevice device);
 
     }
-    public class VLApi : IVLApi
+    public class Factory : IFactory
     {
-        public static IVLApi Instance = new VLApi();
+        public static IFactory Instance = new Factory();
 
         public IResourceHandle<AudioGraph> GetAudioGraph()
         {
@@ -32,19 +30,6 @@ namespace NewAudio.Core
         public IResourceHandle<DriverManager> GetDriverManager()
         {
             var pool = ResourceProvider.NewPooledSystemWide("DriverManager", s => new DriverManager());
-            return pool.GetHandle();
-        }
-
-        public IResourceHandle<IDevice> GetInputDevice(WaveInputDevice device)
-        {
-            var name = device.Value;
-            var pool = ResourceProvider.NewPooledSystemWide($"Device.{name}", s => (IDevice)device.Tag);
-            return pool.GetHandle();
-        }
-        public IResourceHandle<IDevice> GetOutputDevice(WaveOutputDevice device)
-        {
-            var name = device.Value;
-            var pool = ResourceProvider.NewPooledSystemWide($"Device.{name}", s => (IDevice)device.Tag);
             return pool.GetHandle();
         }
     }

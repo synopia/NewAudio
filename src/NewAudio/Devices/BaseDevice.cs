@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,12 +24,15 @@ namespace NewAudio.Devices
         public CircularBuffer RecordingBuffer { get; private set; }
         public CircularBuffer PlayingBuffer { get; private set; }
 
-        protected DeviceConfigResponse RecordingConfig;
-        protected DeviceConfigResponse PlayingConfig;
+        public DeviceConfigResponse RecordingConfig;
+        public DeviceConfigResponse PlayingConfig;
         public bool IsPlaying { get; private set; }
         public bool IsRecording { get; private set; }
 
-        public BroadcastBlock<AudioDataMessage> InputBufferBlock = new BroadcastBlock<AudioDataMessage>(i => i);
+        private List<AudioInputBlockConfig> _inputBlockConfigs = new();
+        private List<AudioOutputBlockConfig> _outputBlockConfigs = new();
+        
+        // public BroadcastBlock<AudioDataMessage> InputBufferBlock = new BroadcastBlock<AudioDataMessage>(i => i);
             // new ExecutionDataflowBlockOptions()
             // {
                 // BoundedCapacity = 2,
@@ -38,6 +42,7 @@ namespace NewAudio.Devices
         protected CancellationTokenSource CancellationTokenSource;
 
         private bool _generateSilence;
+        
         public bool GenerateSilence
         {
             get => _generateSilence;
@@ -57,9 +62,9 @@ namespace NewAudio.Devices
 
         public bool IsOutputDevice { get; protected set; }
 
-        protected BaseDevice():this(VLApi.Instance){}
+        protected BaseDevice():this(Factory.Instance){}
 
-        private BaseDevice(IVLApi api)
+        private BaseDevice(IFactory api)
         {
             _audioService = api.GetAudioService();
 
@@ -70,39 +75,62 @@ namespace NewAudio.Devices
             Logger = _audioService.Resource.GetLogger<T>();
         }
 
-        public async Task<Tuple<DeviceConfigResponse, ISourceBlock<AudioDataMessage>>> CreateInput(DeviceConfigRequest request)
+        public async Task<DeviceConfigResponse> CreateInput(DeviceConfigRequest request, ITargetBlock<AudioDataMessage> targetBlock)
         {
             try
             {
                 CancellationTokenSource ??= new CancellationTokenSource();
-                RecordingConfig = PrepareRecording(request);
-                if (AudioInputBlock == null)
+                var config = PrepareRecording(request);
+                // todo: only channels will renew real device
+                if (AudioInputBlock == null || config.ChannelOffset!=RecordingConfig.ChannelOffset || config.Channels!=RecordingConfig.Channels )
                 {
+                    RecordingConfig = config;
+                    if (AudioInputBlock != null)
+                    {
+                        AudioInputBlock.Dispose();
+                    }
+                    _inputBlockConfigs.Add(new AudioInputBlockConfig(request.FirstChannel, request.LastChannel, targetBlock));
                     AudioInputBlock = new AudioInputBlock();
-                    AudioInputBlock.Create(InputBufferBlock, RecordingConfig .AudioFormat, 2);
+                    AudioInputBlock.Create(_inputBlockConfigs.ToArray(), config.AudioFormat, 2);
                     RecordingBuffer = AudioInputBlock.Buffer;
                     IsRecording = true;
                     await Init();
                 }
+
+                var resp = new DeviceConfigResponse()
+                {
+                    Channels = request.Channels,
+                    ChannelOffset = request.ChannelOffset,
+                    AudioFormat = request.AudioFormat,
+                    Latency = config.Latency,
+                    DriverChannels = config.DriverChannels,
+                    FrameSize = config.FrameSize // todo?
+                };
+                return resp;
             }
             catch (Exception e)
             {
                 Dispose();
                 throw;
             }
-            return new Tuple<DeviceConfigResponse, ISourceBlock<AudioDataMessage>>(RecordingConfig , InputBufferBlock);
         }
 
-        public async Task<Tuple<DeviceConfigResponse, ITargetBlock<AudioDataMessage>>> CreateOutput(DeviceConfigRequest request)
+        public async Task<DeviceConfigResponse> CreateOutput(DeviceConfigRequest request, ISourceBlock<AudioDataMessage> sourceBlock)
         {
             try
             {
                 CancellationTokenSource ??= new CancellationTokenSource();
-                PlayingConfig = PreparePlaying(request);
-                if (AudioOutputBlock == null)
+                var config = PreparePlaying(request);
+                if (AudioOutputBlock == null || config.Channels!=PlayingConfig.Channels || config.ChannelOffset!=PlayingConfig.ChannelOffset)
                 {
+                    PlayingConfig = config;
+                    if (AudioOutputBlock != null)
+                    {
+                        AudioOutputBlock.Dispose();
+                    }
+                    _outputBlockConfigs.Add(new AudioOutputBlockConfig(request.FirstChannel, request.LastChannel ,sourceBlock));
                     AudioOutputBlock = new AudioOutputBlock();
-                    AudioOutputBlock.Create(PlayingConfig.AudioFormat, 2);
+                    AudioOutputBlock.Create(_outputBlockConfigs.ToArray(), config.AudioFormat, 2);
                     PlayingBuffer = AudioOutputBlock.Buffer;
                     AudioDataProvider =
                         new AudioDataProvider(Logger, request.AudioFormat.WaveFormat, PlayingBuffer)
@@ -113,40 +141,78 @@ namespace NewAudio.Devices
                     IsPlaying = true;
                     await Init();
                 }
+                var resp = new DeviceConfigResponse()
+                {
+                    Channels = request.Channels,
+                    ChannelOffset = request.ChannelOffset,
+                    AudioFormat = request.AudioFormat,
+                    Latency = config.Latency,
+                    DriverChannels = config.DriverChannels,
+                    FrameSize = config.FrameSize // todo?
+                };
+                return resp;
             }
             catch (Exception e)
             {
                 Dispose();
                 throw;
             }
-            return new Tuple<DeviceConfigResponse, ITargetBlock<AudioDataMessage>>(PlayingConfig, AudioOutputBlock);
+
+
         }
 
         protected virtual DeviceConfigResponse PrepareRecording(DeviceConfigRequest request)
         {
-            return new DeviceConfigResponse()
+            var config = RecordingConfig;
+            if (_inputBlockConfigs.Count == 0)
             {
-                Channels = 2,
-                AudioFormat = request.AudioFormat,
-                ChannelOffset = 0,
-                Latency = 0,
-                DriverChannels = 2,
-                FrameSize = request.AudioFormat.BufferSize,
-                SupportedSamplingFrequencies = Enum.GetValues(typeof(SamplingFrequency)).Cast<SamplingFrequency>()
-            };
+                config = new DeviceConfigResponse()
+                {
+                    ChannelOffset = request.ChannelOffset,
+                    Channels = request.Channels,
+                    AudioFormat = request.AudioFormat,
+                    Latency = 0,
+                    DriverChannels = 2,
+                    FrameSize = request.AudioFormat.BufferSize,
+                    SupportedSamplingFrequencies = Enum.GetValues(typeof(SamplingFrequency)).Cast<SamplingFrequency>()
+                };
+            } else 
+            {
+                var first = Math.Min(config.FirstChannel, request.FirstChannel);
+                var last = Math.Max(config.LastChannel, request.LastChannel);
+                config.ChannelOffset = first;
+                config.Channels = last - first;
+                config.AudioFormat = config.AudioFormat.WithChannels(last - first);
+            }
+
+            return config;
         }
         protected virtual DeviceConfigResponse PreparePlaying(DeviceConfigRequest request)
         {
-            return new DeviceConfigResponse()
+            var config = PlayingConfig;
+            if (_outputBlockConfigs.Count==0)
             {
-                Channels = 2,
-                AudioFormat = request.AudioFormat,
-                ChannelOffset = 0,
-                Latency = 0,
-                DriverChannels = 2,
-                FrameSize = request.AudioFormat.BufferSize,
-                SupportedSamplingFrequencies = Enum.GetValues(typeof(SamplingFrequency)).Cast<SamplingFrequency>()
-            };
+                config = new DeviceConfigResponse()
+                {
+                    ChannelOffset = request.ChannelOffset,
+                    Channels = request.Channels,
+                    AudioFormat = request.AudioFormat,
+                    Latency = 0,
+                    DriverChannels = 2,
+                    FrameSize = request.AudioFormat.BufferSize,
+                    SupportedSamplingFrequencies = Enum.GetValues(typeof(SamplingFrequency)).Cast<SamplingFrequency>()
+                };
+            }
+            else
+            {
+                var first = Math.Min(config.FirstChannel, request.FirstChannel);
+                var last = Math.Max(config.LastChannel, request.LastChannel);
+                config.ChannelOffset = first;
+                config.Channels = last - first;
+                config.AudioFormat = config.AudioFormat.WithChannels(last - first);
+            }
+
+            return config;
         }
 
         public virtual string DebugInfo()
@@ -175,7 +241,13 @@ namespace NewAudio.Devices
             {
                 if (disposing)
                 {
+                    if (!CancellationTokenSource.IsCancellationRequested)
+                    {
+                        Logger.Error("Should be canceled already");
+                    }
+                    Logger.Information("AudioInputBlock?.Dispose");
                     AudioInputBlock?.Dispose();
+                    Logger.Information("AudioOutputBlock?.Dispose");
                     AudioOutputBlock?.Dispose();
                     _audioService?.Dispose();     
                     CancellationTokenSource = null;

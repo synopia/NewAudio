@@ -17,7 +17,7 @@
         <Canvas Id="RqGQSjV7ytGLSqra8c3MMc" CanvasType="Group">
           <Pad Id="Ave5xSo1izONyRLoS1oo4x" Comment="Device" Bounds="526,167,405,15" ShowValueBox="true" isIOBox="true" Value="Wasapi Loopback: VoiceMeeter Input (VB-Audio VoiceMeeter VAIO)">
             <p:TypeAnnotation LastCategoryFullName="VL.NewAudio" LastSymbolSource="NewAudio.dll">
-              <Choice Kind="TypeFlag" Name="WaveInputDevice" />
+              <Choice Kind="TypeFlag" Name="InputDeviceSelection" />
             </p:TypeAnnotation>
           </Pad>
           <Pad Id="Edui9HrydmmNmX50iw4o3Q" Bounds="370,368,317,58" ShowValueBox="true" isIOBox="true" Value="1) Send input (2ch) into two seperate Buffer loops to extract only one channel">
@@ -49,7 +49,7 @@
           </Pad>
           <Pad Id="O5qMnpHJ9fOL3o7pc1eiio" Bounds="462,1036,404,26" ShowValueBox="true" isIOBox="true" Value="ASIO: ASIO4ALL v2">
             <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="WaveOutputDevice" />
+              <Choice Kind="TypeFlag" Name="OutputDeviceSelection" />
             </p:TypeAnnotation>
           </Pad>
           <Pad Id="JyVUEguk3nyNljWzZsRor2" Comment="Logs" Bounds="67,1018,181,205" ShowValueBox="true">

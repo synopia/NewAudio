@@ -24,11 +24,11 @@ namespace NewAudio.Core
         public int BufferSize { get; private set; }
         public int BufferCount { get; private set; }
 
-        public AudioGraph() : this(VLApi.Instance)
+        public AudioGraph() : this(Factory.Instance)
         {
         }
 
-        public AudioGraph(IVLApi api)
+        public AudioGraph(IFactory api)
         {
             _audioService = api.GetAudioService();
             _logger = _audioService.Resource.GetLogger<AudioGraph>();

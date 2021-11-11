@@ -7,16 +7,21 @@ namespace NewAudio.Devices
     {
         public string Name => "ASIO";
 
-        public IEnumerable<IDevice> GetDevices()
+        public IEnumerable<DeviceSelection> GetDeviceSelections()
         {
-            var list = new List<IDevice>();
+            var list = new List<DeviceSelection>();
 
             foreach (var asio in AsioOut.GetDriverNames())
             {
-                list.Add(new AsioDevice($"ASIO: {asio}", asio));
+                list.Add(new(Name, asio, true, true ));
             }
 
             return list;
+        }
+
+        public IDevice CreateDevice(DeviceSelection selection)
+        {
+            return new AsioDevice(selection.Name, selection.Name);
         }
     }
 }

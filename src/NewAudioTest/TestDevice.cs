@@ -11,45 +11,67 @@ using VL.Lib.Basics.Resources;
 
 namespace NewAudioTest
 {
+    using NewAudioTest;
+    
+    public static class Ext
+    {
+        public static List<String> MethodCalls(this VirtualDevice vd)
+        {
+            return ((TestDevice)vd.Device).MethodCalls;
+        }
+        public static CircularBuffer RecordingBuffer(this VirtualDevice vd)
+        {
+            return ((TestDevice)vd.Device).RecordingBuffer;
+        }
+    }
+    
     public class BaseDeviceTest : BaseTest
     {
         private IResourceHandle<DriverManager> _driverManager; 
-        public TestDevice InputDevice;
-        public TestDevice OutputDevice;
-        public WaveInputDevice InputEnum;
-        public WaveOutputDevice OutputEnum;
-        public WaveOutputDevice OutputNullEnum;
-        public WaveInputDevice InputNullEnum;
+        public VirtualDevice InputDevice;
+        public VirtualDevice OutputDevice;
+        public InputDeviceSelection InputEnum;
+        public OutputDeviceSelection OutputEnum;
+        public OutputDeviceSelection OutputNullEnum;
+        public InputDeviceSelection InputNullEnum;
         
         protected BaseDeviceTest()
         {
-            _driverManager = VLApi.Instance.GetDriverManager();
+            _driverManager = Factory.Instance.GetDriverManager();
             _driverManager.Resource.AddDriver(new TestDriver());
             
-            InputEnum = new WaveInputDevice("TEST INPUT");
-            OutputEnum = new WaveOutputDevice("TEST OUTPUT");
-            InputNullEnum = new WaveInputDevice("Null: Input");
-            OutputNullEnum = new WaveOutputDevice("Null: Output");
-            InputDevice = ((TestDevice)InputEnum.Tag);
-            OutputDevice = ((TestDevice)OutputEnum.Tag);
+            InputEnum = new InputDeviceSelection("TEST INPUT");
+            OutputEnum = new OutputDeviceSelection("TEST OUTPUT");
+            InputNullEnum = new InputDeviceSelection("Null: Input");
+            OutputNullEnum = new OutputDeviceSelection("Null: Output");
+            InputDevice = _driverManager.Resource.GetInputDevice(InputEnum);
+            OutputDevice = _driverManager.Resource.GetOutputDevice(OutputEnum);
         }
 
         [SetUp]
         public void Init()
         {
-            InputDevice.MethodCalls.Clear();
-            OutputDevice.MethodCalls.Clear();
+            InputDevice.MethodCalls().Clear();
+            OutputDevice.MethodCalls().Clear();
         }
+
+        
     }
     public class TestDriver : IDriver
     {
         public string Name => "TEST";
 
-        public IEnumerable<IDevice> GetDevices()
+        public IEnumerable<DeviceSelection> GetDeviceSelections()
         {
-            return new[] { new TestDevice("TEST INPUT"), new TestDevice("TEST OUTPUT"), };
+            return new[] { new DeviceSelection(Name, "TEST INPUT",true, false ), new DeviceSelection(Name, "TEST OUTPUT", false, true), };
+        }
+
+        public IDevice CreateDevice(DeviceSelection selection)
+        {
+            return new TestDevice(selection.Name);
         }
     }
+    
     public class TestDevice : BaseDevice
     {
         public List<string> MethodCalls = new();

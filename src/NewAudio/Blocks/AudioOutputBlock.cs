@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Buffers;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -12,16 +14,25 @@ namespace NewAudio.Blocks
 {
     public struct AudioOutputBlockConfig
     {
-        public AudioFormat AudioFormat;
-        public int NodeCount;
+        public int FirstChannel;
+        public int LastChannel;
+        public ISourceBlock<AudioDataMessage> SourceBlock;
+
+        public int Channels => LastChannel - FirstChannel;
+        public AudioOutputBlockConfig(int firstChannel, int lastChannel, ISourceBlock<AudioDataMessage> sourceBlock)
+        {
+            FirstChannel = firstChannel;
+            LastChannel = lastChannel;
+            SourceBlock = sourceBlock;
+        }
     }
 
-    public sealed class AudioOutputBlock : ITargetBlock<AudioDataMessage>
+    public sealed class AudioOutputBlock 
     {
         private readonly ILogger _logger;
         private readonly IResourceHandle<AudioService> _audioService;
 
-        private ActionBlock<AudioDataMessage> _actionBlock;
+        private ActionBlock<AudioDataMessage>[] _actionBlocks;
         private CircularBuffer _buffer;
         public CircularBuffer Buffer { get; private set; }
 
@@ -32,16 +43,18 @@ namespace NewAudio.Blocks
 
         private bool _firstLoop;
         private long _messagesReceived;
-
-        public AudioOutputBlock(): this(VLApi.Instance){}
-        public AudioOutputBlock(IVLApi api)
+        private AudioOutputBlockConfig[] _config;
+        private float[] _temp;
+        public AudioOutputBlock(): this(Factory.Instance){}
+        public AudioOutputBlock(IFactory api)
         {
             _audioService = api.GetAudioService();
             _logger = _audioService.Resource.GetLogger<AudioOutputBlock>();
         }
 
-        public void Create(AudioFormat audioFormat, int nodeCount)
+        public void Create(AudioOutputBlockConfig[] config, AudioFormat audioFormat, int nodeCount)
         {
+            _config = config;
             InputFormat = audioFormat;
 
             var name = $"Output Buffer {_audioService.Resource.GetNextId()}";
@@ -53,7 +66,7 @@ namespace NewAudio.Blocks
 
         private void Start()
         {
-            if (_actionBlock != null)
+            if (_actionBlocks != null)
             {
                 _logger.Warning("ActionBlock != null!");
             }
@@ -61,13 +74,21 @@ namespace NewAudio.Blocks
             _cancellationTokenSource = new CancellationTokenSource();
             _token = _cancellationTokenSource.Token;
             _firstLoop = true;
+            _temp = ArrayPool<float>.Shared.Rent(InputFormat.BufferSize);
             
-            CreateActionBlock();
+            _actionBlocks = new ActionBlock<AudioDataMessage>[_config.Length];
+            _receiveStatus = new bool[_config.Length];
+            for (var i = 0; i < _config.Length; i++)
+            {
+                var config = _config[i];
+                _actionBlocks[i] = CreateActionBlock(i);
+                config.SourceBlock.LinkTo(_actionBlocks[i]);
+            }
         }
 
         private bool Stop()
         {
-            if (_actionBlock == null)
+            if (_actionBlocks == null)
             {
                 _logger.Error("ActionBlock == null!");
                 return false;
@@ -77,25 +98,23 @@ namespace NewAudio.Blocks
                 _logger.Warning("Already stopping!");
             }
             _cancellationTokenSource.Cancel();
-            var completion = _actionBlock.Completion;
-            if (completion.Status == TaskStatus.Running)
+            var tasks = _actionBlocks.Select(b => b.Completion).ToArray();
+            ArrayPool<float>.Shared.Return(_temp);
+            
+            if (tasks.Any(t => t.Status == TaskStatus.Running))
             {
-                var t = completion.ContinueWith(t =>
-                {
-                    _logger.Information("ActionBlock stopped, status={status}", t.Status);
-                    _actionBlock = null;
-                    return true;
-                });
-                _actionBlock.Complete();
-                return t.GetAwaiter().GetResult();
+                Task.WaitAll(tasks);
+                _logger.Information("ActionBlock stopped");
+                _actionBlocks = null;
+                return true;
             }
 
             return true;
         }
 
-        private void CreateActionBlock()
+        private ActionBlock<AudioDataMessage> CreateActionBlock(int index)
         {
-            _actionBlock = new ActionBlock<AudioDataMessage>(message =>
+            return new ActionBlock<AudioDataMessage>(message =>
             {
                 if (_firstLoop)
                 {
@@ -109,21 +128,29 @@ namespace NewAudio.Blocks
 
                 var pos = 0;
 
-                while (pos < message.BufferSize && !_token.IsCancellationRequested)
+                var result = WriteMessage(message, index);
+                if (result)
                 {
-                    var v = _buffer.Write(message.Data, pos, 1);
-                    pos += v;
+                    while (pos < InputFormat.BufferSize && !_token.IsCancellationRequested)
+                    {
+                        var v = _buffer.Write(_temp, pos, 1);
+                        pos += v;
+                    }
+
+                    for (var i = 0; i < _config.Length; i++)
+                    {
+                        _receiveStatus[i] = false;
+                    }
+                    if (!_token.IsCancellationRequested && pos != message.BufferSize)
+                    {
+                        _logger.Warning("pos!=msg {pos}!={msg}", pos, message.BufferSize);
+                    }
+                    else
+                    {
+                        _messagesReceived++;
+                    }
                 }
 
-                ArrayPool<float>.Shared.Return(message.Data);
-                if (!_token.IsCancellationRequested && pos != message.BufferSize)
-                {
-                    _logger.Warning("pos!=msg {pos}!={msg}", pos, message.BufferSize);
-                }
-                else
-                {
-                    _messagesReceived++;
-                }
             }, new ExecutionDataflowBlockOptions
             {
                 MaxDegreeOfParallelism = 1,
@@ -131,6 +158,65 @@ namespace NewAudio.Blocks
                 CancellationToken = _token
             });
         }
+
+        private double _dTime;
+        private int _sTime;
+        private bool[] _receiveStatus; 
+
+        private bool WriteMessage(AudioDataMessage message, int index)
+        {
+            var targetChannels = _config[index].Channels;
+
+            for (int s = 0; s < InputFormat.SampleCount; s++)
+            {
+                for (int ch = 0; ch < targetChannels; ch++)
+                {
+                    _temp[s * InputFormat.Channels + _config[index].FirstChannel + ch] =
+                        message.Data[s * targetChannels + ch];
+
+                }
+            }
+            ArrayPool<float>.Shared.Return(message.Data);
+
+            _receiveStatus[index] = true;
+            return _receiveStatus.None(b => !b);
+        }
+        
+        
+
+        // var time = new AudioTime(_sTime, _dTime);
+            // for (int i = 0; i < _config.Length; i++)
+            // {
+                // var targetChannels = _config[i].Channels;
+                // var message = new AudioDataMessage(OutputFormat.WithChannels(targetChannels),
+                    // OutputFormat.SampleCount)
+                // {
+                    // Time = time
+                // };
+                // for (int s = 0; s < OutputFormat.SampleCount; s++)
+                // {
+                    // for (int ch = 0; ch < targetChannels; ch++)
+                    // {
+                        // message.Data[s * targetChannels + ch] =
+                            // _temp[s * OutputFormat.Channels + _config[i].FirstChannel + ch];
+                    // }
+                // }
+                // var res = _config[i].TargetBlock.Post(message);
+                // if (!res)
+                // {
+                    // ArrayPool<float>.Shared.Return(message.Data);
+                // }
+                // else
+                // {
+                    // _messagesSent++;
+                // }
+
+                // _logger.Verbose("Posted {samples} ", message.BufferSize);
+            // }
+
+            // _sTime += OutputFormat.SampleCount;
+            // _dTime += OutputFormat.SampleCount / (double)OutputFormat.SampleRate;
+        // }
 
         public string DebugInfo()
         {
@@ -156,7 +242,7 @@ namespace NewAudio.Blocks
                 _disposedValue = disposing;
             }
         }
-
+/*
         public void Complete()
         {
             _actionBlock.Complete();
@@ -173,6 +259,6 @@ namespace NewAudio.Blocks
         {
             return ((ITargetBlock<AudioDataMessage>)_actionBlock).OfferMessage(messageHeader, messageValue, source,
                 consumeToAccept);
-        }
+        }*/
     }
 }

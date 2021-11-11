@@ -15,6 +15,9 @@ namespace NewAudio.Devices
         public int ChannelOffset { get; set; }
         public int Channels { get; set; }
         public int Latency { get; set; }
+        public int FirstChannel => ChannelOffset;
+        public int LastChannel => ChannelOffset + Channels;
+
     }
     public struct DeviceConfigResponse
     {
@@ -27,8 +30,26 @@ namespace NewAudio.Devices
         public int FrameSize { get; set; }
         
         public IEnumerable<SamplingFrequency> SupportedSamplingFrequencies;
+
+        public int FirstChannel => ChannelOffset;
+        public int LastChannel => ChannelOffset + Channels;
     }
 
+    public class DeviceSelection 
+    {
+        public string Name { get; }
+        public string DriverName { get; }
+        public bool IsInputDevice { get; }
+        public bool IsOutputDevice { get; }
+
+        public DeviceSelection(string driverName, string name, bool isInputDevice, bool isOutputDevice)
+        {
+            DriverName = driverName;
+            Name = name;
+            IsInputDevice = isInputDevice;
+            IsOutputDevice = isOutputDevice;
+        }
+    }
     
     public interface IDevice : IDisposable
     {
@@ -37,12 +58,13 @@ namespace NewAudio.Devices
         public bool IsOutputDevice { get; }
         AudioDataProvider AudioDataProvider { get; }
 
-        public Task<Tuple<DeviceConfigResponse, ISourceBlock<AudioDataMessage>>> CreateInput(DeviceConfigRequest request);
-        public Task<Tuple<DeviceConfigResponse, ITargetBlock<AudioDataMessage>>> CreateOutput(DeviceConfigRequest request);
+        public Task<DeviceConfigResponse> CreateInput(DeviceConfigRequest request, ITargetBlock<AudioDataMessage> targetBlock);
+        public Task<DeviceConfigResponse> CreateOutput(DeviceConfigRequest request, ISourceBlock<AudioDataMessage> sourceBlock);
 
         public bool Start();
         public bool Stop();
 
         public string DebugInfo();
+
     }
 }

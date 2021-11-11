@@ -10,7 +10,7 @@ namespace NewAudio.Nodes
         
         public AudioEngine()
         {
-            _graph = VLApi.Instance.GetAudioGraph();
+            _graph = Factory.Instance.GetAudioGraph();
         }
         
         public void Update(bool playing, int bufferSize = 512, int buffersCount = 6)

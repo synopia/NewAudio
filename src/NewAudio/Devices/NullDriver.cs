@@ -6,13 +6,18 @@ namespace NewAudio.Devices
     {
         public string Name => "Null";
 
-        public IEnumerable<IDevice> GetDevices()
+        public IEnumerable<DeviceSelection> GetDeviceSelections()
         {
-            return new List<IDevice>
+            return new List<DeviceSelection>
             {
-                new NullDevice("Null: Input", true, false),
-                new NullDevice("Null: Output", false, true)
+                new(Name, "Null: Input", true, false),
+                new(Name, "Null: Output", false, true)
             };
+        }
+
+        public IDevice CreateDevice(DeviceSelection selection)
+        {
+            return new NullDevice(selection.Name, selection.IsInputDevice, selection.IsOutputDevice);
         }
     }
 }

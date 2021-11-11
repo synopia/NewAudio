@@ -12,7 +12,7 @@ namespace NewAudio.Nodes
 {
     public class InputDeviceInitParams : AudioNodeInitParams
     {
-        public AudioParam<WaveInputDevice> Device;
+        public AudioParam<InputDeviceSelection> Device;
         public AudioParam<SamplingFrequency> SamplingFrequency;
         public AudioParam<int> DesiredLatency;
         public AudioParam<int> ChannelOffset;
@@ -28,21 +28,21 @@ namespace NewAudio.Nodes
         
         private IResourceHandle<DriverManager> _driverManager;
 
-        private IResourceHandle<IDevice> _device;
+        private VirtualDevice _device;
         private AudioFormat _format;
 
         public InputDevice()
         {
             InitLogger<InputDevice>();
-            _driverManager = VLApi.Instance.GetDriverManager();
+            _driverManager = Factory.Instance.GetDriverManager();
             Logger.Information("Input device created");
             _format = new AudioFormat(48000, 512, 2);
         }
         
-        public AudioLink Update(WaveInputDevice device, SamplingFrequency samplingFrequency = SamplingFrequency.Hz48000,
+        public AudioLink Update(InputDeviceSelection deviceSelection, SamplingFrequency samplingFrequency = SamplingFrequency.Hz48000,
             int channelOffset = 0, int channels = 2, int desiredLatency = 250)
         {
-            InitParams.Device.Value = device;
+            InitParams.Device.Value = deviceSelection;
             InitParams.SamplingFrequency.Value = samplingFrequency;
             InitParams.DesiredLatency.Value = desiredLatency;
             InitParams.ChannelOffset.Value = channelOffset;
@@ -60,7 +60,7 @@ namespace NewAudio.Nodes
         {
             _device = _driverManager.Resource.GetInputDevice(InitParams.Device.Value);
 
-            if (_device.Resource == null)
+            if (_device == null)
             {
                 return false;
             }
@@ -71,13 +71,13 @@ namespace NewAudio.Nodes
                 Channels = InitParams.Channels.Value,
                 ChannelOffset = InitParams.ChannelOffset.Value
             };
-            var res = await _device.Resource.CreateInput(req);
+            var res = await _device.CreateInput(req);
             if (res == null)
             {
                 return false;
             }
             var resp = res.Item1;
-            Logger.Information("Input device changed: {device} Channels={channels}, Driver Channels={driver}, Latency={latency}, Frame size={frameSize}", _device?.Resource, resp.Channels, resp.DriverChannels, resp.Latency, resp.FrameSize);
+            Logger.Information("Input device changed: {device} Channels={channels}, Driver Channels={driver}, Latency={latency}, Frame size={frameSize}", _device, resp.Channels, resp.DriverChannels, resp.Latency, resp.FrameSize);
 
             _format = resp.AudioFormat;
             Output.SourceBlock = res.Item2;
@@ -95,21 +95,21 @@ namespace NewAudio.Nodes
 
         public override bool Play()
         {
-            _device.Resource.Start();
+            _device.Start();
    
             return true;
         }
 
         public override bool Stop()
         {
-            _device.Resource.Stop();
+            _device.Stop();
     
             return true;
         }
 
         public override string DebugInfo()
         {
-            return $"[{this}, {base.DebugInfo()}, {_device?.Resource?.DebugInfo()}]";
+            return $"[{this}, {base.DebugInfo()}, {_device?.DebugInfo()}]";
         }
 
 

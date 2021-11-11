@@ -36,8 +36,8 @@ namespace NewAudioTest
 
             var spread = buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
             buf.Lifecycle.WaitForEvents.WaitOne();
-            InputDevice.RecordingBuffer.Write(new byte[512 * 2 * 4]);
-            InputDevice.RecordingBuffer.Write(new byte[512 * 2 * 4]);
+            InputDevice.RecordingBuffer().Write(new byte[512 * 2 * 4]);
+            InputDevice.RecordingBuffer().Write(new byte[512 * 2 * 4]);
             Task.Delay(100).Wait();
             spread = buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
             
