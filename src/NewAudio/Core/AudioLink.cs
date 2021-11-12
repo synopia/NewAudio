@@ -7,21 +7,22 @@ namespace NewAudio.Core
 {
     public class AudioLink : IDisposable
     {
-        private readonly ILogger _logger;
         private readonly IResourceHandle<AudioGraph> _graph;
-        
-        public readonly BroadcastBlock<AudioDataMessage> TargetBlock= new(i=>i);
+
+        public readonly BroadcastBlock<AudioDataMessage> TargetBlock = new(i => i);
         private ISourceBlock<AudioDataMessage> _currentSourceBlock;
         private IDisposable _currentSourceLink;
 
         public AudioFormat Format { get; set; }
 
-        public AudioLink(): this(Factory.Instance){}
+        public AudioLink() : this(Factory.Instance)
+        {
+        }
+
         public AudioLink(IFactory api)
         {
             _graph = api.GetAudioGraph();
             _graph.Resource.AddLink(this);
-            _logger = _graph.Resource.GetLogger<AudioLink>();
         }
 
         public ISourceBlock<AudioDataMessage> SourceBlock
@@ -44,8 +45,11 @@ namespace NewAudio.Core
             }
         }
 
-        public void Dispose() => Dispose(true);
-        
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
         private bool _disposedValue;
 
         private void Dispose(bool disposing)
@@ -62,7 +66,5 @@ namespace NewAudio.Core
                 _disposedValue = disposing;
             }
         }
-
-   
     }
 }

@@ -1,66 +1,64 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using NewAudio.Blocks;
 using NewAudio.Core;
 using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Devices
 {
-    public struct VirtualDeviceMapping
-    {
-        
-    }
     public class VirtualDevice : IDisposable
     {
-        private IResourceHandle<IDevice> _resource;
-        private IDevice _realDevice => _resource?.Resource;
+        private readonly IResourceHandle<IDevice> _resource;
+        private IDevice RealDevice => _resource?.Resource;
 
-        public IDevice Device => _realDevice;  
-        public string Name => _realDevice.Name;
-         
-        public bool IsInputDevice => _realDevice.IsInputDevice;
-        public bool IsOutputDevice => _realDevice.IsOutputDevice;
-        public AudioDataProvider AudioDataProvider => _realDevice.AudioDataProvider;
-        
+        public IDevice Device => RealDevice;
+        public string Name => RealDevice.Name;
+
+        public bool IsInputDevice => RealDevice.IsInputDevice;
+        public bool IsOutputDevice => RealDevice.IsOutputDevice;
+        public AudioDataProvider AudioDataProvider => RealDevice.AudioDataProvider;
+        private readonly BufferBlock<AudioDataMessage> _bufferBlock = new();
+
         public VirtualDevice(IResourceHandle<IDevice> resource)
         {
             _resource = resource;
         }
 
-        private BroadcastBlock<AudioDataMessage> _broadcastBlock = new BroadcastBlock<AudioDataMessage>(i=>i);
-        public async Task<Tuple<DeviceConfigResponse, ISourceBlock<AudioDataMessage>>> CreateInput(DeviceConfigRequest request)
+        private BroadcastBlock<AudioDataMessage> _broadcastBlock = new(i => i);
+
+        public async Task<Tuple<DeviceConfigResponse, ISourceBlock<AudioDataMessage>>> CreateInput(
+            DeviceConfigRequest request)
         {
-            if (_realDevice == null)
+            if (RealDevice == null)
             {
                 return null;
             }
+
             try
             {
-                var config= await _realDevice.CreateInput(request, _broadcastBlock);
-                return new Tuple<DeviceConfigResponse, ISourceBlock<AudioDataMessage>>(config,_broadcastBlock);
+                var config = await RealDevice.CreateInput(request, _broadcastBlock);
+                return new Tuple<DeviceConfigResponse, ISourceBlock<AudioDataMessage>>(config, _broadcastBlock);
             }
-            catch (Exception e)
+            catch (Exception _)
             {
+                // todo is this necessary?
                 Dispose();
                 throw;
             }
         }
 
-        private BufferBlock<AudioDataMessage> _bufferBlock = new BufferBlock<AudioDataMessage>();
-        public async Task<Tuple<DeviceConfigResponse, ITargetBlock<AudioDataMessage>>> CreateOutput(DeviceConfigRequest request)
+
+        public async Task<Tuple<DeviceConfigResponse, ITargetBlock<AudioDataMessage>>> CreateOutput(
+            DeviceConfigRequest request)
         {
-            if (_realDevice == null)
+            if (RealDevice == null)
             {
                 return null;
             }
+
             try
             {
-                
-                var config = await _realDevice.CreateOutput(request, _bufferBlock); 
+                var config = await RealDevice.CreateOutput(request, _bufferBlock);
                 return new Tuple<DeviceConfigResponse, ITargetBlock<AudioDataMessage>>(config, _bufferBlock);
             }
             catch (Exception e)
@@ -70,15 +68,15 @@ namespace NewAudio.Devices
             }
         }
 
-        
+
         public bool Start()
         {
-            return _realDevice?.Start() ?? true;
+            return RealDevice?.Start() ?? true;
         }
 
         public bool Stop()
         {
-            return _realDevice?.Stop() ?? true;
+            return RealDevice?.Stop() ?? true;
         }
 
 
@@ -86,14 +84,14 @@ namespace NewAudio.Devices
         {
             return "";
         }
-        
+
         private bool _disposedValue;
 
         public void Dispose()
         {
             if (!_disposedValue)
             {
-                _realDevice?.Stop();
+                RealDevice?.Stop();
                 _resource?.Dispose();
                 _disposedValue = true;
             }
@@ -101,7 +99,7 @@ namespace NewAudio.Devices
 
         public override string ToString()
         {
-            return _realDevice?.Name ?? "";
+            return RealDevice?.Name ?? "";
         }
     }
 }

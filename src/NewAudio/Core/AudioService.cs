@@ -1,10 +1,5 @@
-﻿using System;
-using Serilog;
+﻿using Serilog;
 using Serilog.Formatting.Display;
-using NewAudio.Core;
-using VL.Core;
-using VL.Lib.Basics.Resources;
-using VL.Model;
 
 namespace NewAudio.Core
 {
@@ -24,7 +19,7 @@ namespace NewAudio.Core
                 .CreateLogger();
             Log.Logger = _logger;
 
-            Log.Logger.Information($"Initializing Audio Service");
+            Log.Logger.Information("Initializing Audio Service");
         }
 
         private readonly ILogger _logger;
@@ -32,14 +27,19 @@ namespace NewAudio.Core
 
         public ILogger GetLogger<T>()
         {
+            // ReSharper disable once ContextualLoggerProblem
             return _logger.ForContext<T>();
         }
+
         public int GetNextId()
         {
             return _nextId++;
         }
 
-        public void Dispose() => Dispose(true);
+        public void Dispose()
+        {
+            Dispose(true);
+        }
 
         private bool _disposedValue;
 

@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
-using NewAudio.Core;
-using Serilog;
-using SharedMemory;
 
 namespace NewAudio.Devices
 {
@@ -67,7 +62,7 @@ namespace NewAudio.Devices
             }
             return Task.FromResult(true); 
         }
-        
+
         public override bool Start()
         {
             GenerateSilence = false;
@@ -79,6 +74,7 @@ namespace NewAudio.Devices
             GenerateSilence = true;
             return true;
         }
+
         public override string DebugInfo()
         {
             var info = IsPlaying ? $"{_wavePlayer?.PlaybackState}" :
@@ -90,7 +86,7 @@ namespace NewAudio.Devices
         {
             if (_firstLoop)
             {
-                Logger.Information("Wasapi AudioIn Thread started (Writing to {recording} ({owner}))",
+                Logger.Information("Wasapi AudioIn Thread started (Writing to {Recording} ({Owner}))",
                     RecordingBuffer.Name, RecordingBuffer.IsOwnerOfSharedMemory);
                 _firstLoop = false;
                 _temp = new byte[RecordingBuffer.NodeBufferSize];
@@ -98,7 +94,7 @@ namespace NewAudio.Devices
             }
 
             // AudioService.Instance.Flow.PostRequest(new AudioDataRequestMessage(evt.BytesRecorded/4));
-            Logger.Verbose("DataAvailable {bytes}", evt.BytesRecorded / 4);
+            Logger.Verbose("DataAvailable {Bytes}", evt.BytesRecorded / 4);
 
             try
             {
@@ -109,10 +105,11 @@ namespace NewAudio.Devices
                 while (pos < evt.BytesRecorded && !token.IsCancellationRequested && !GenerateSilence)
                 {
                     var toCopy = Math.Min(_temp.Length - _tempPos, remaining);
-                    if (toCopy < 0 || toCopy>_temp.Length)
+                    if (toCopy < 0 || toCopy > _temp.Length)
                     {
                         throw new Exception("Wrong writing position! Multiple threads are operating?");
                     }
+
                     Array.Copy(evt.Buffer, pos, _temp, _tempPos, toCopy);
 
                     _tempPos += toCopy;
@@ -125,24 +122,23 @@ namespace NewAudio.Devices
                         _tempPos = 0;
                         if (written != _temp.Length && !GenerateSilence)
                         {
-                            Logger.Warning("Wrote to few bytes ({wrote}, expected: {expected})", written,
+                            Logger.Warning("Wrote to few bytes ({Wrote}, expected: {Expected})", written,
                                 _temp.Length);
                         }
-                    } 
-                    
+                    }
                 }
 
                 if (!GenerateSilence)
                 {
                     if (pos != evt.BytesRecorded && !token.IsCancellationRequested)
                     {
-                        Logger.Warning("pos!=buf {p}!={inc}", pos, evt.BytesRecorded);
+                        Logger.Warning("pos!=buf {Pos}!={Read}", pos, evt.BytesRecorded);
                     }
                 }
             }
             catch (Exception e)
             {
-                Logger.Error("DataAvailable: {e}", e);
+                Logger.Error(e, "Exception happened in Wasapi Reader");
                 throw;
             }
         }
@@ -177,7 +173,7 @@ namespace NewAudio.Devices
                         _wavePlayer.Dispose();
                     }
 
-                    
+
                     _loopback = null;
                     _capture = null;
                     _wavePlayer = null;

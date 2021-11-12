@@ -1,10 +1,7 @@
 ﻿using System.Threading.Tasks;
-using NAudio.Wave;
-using SharedMemory;
 
 namespace NewAudio.Devices
 {
-    
     public class NullDevice : BaseDevice
     {
         public NullDevice(string name, bool isInputDevice, bool isOutputDevice)
@@ -31,6 +28,7 @@ namespace NewAudio.Devices
         }
 
         private bool _disposedValue;
+
         protected override void Dispose(bool disposing)
         {
             if (!_disposedValue)
@@ -41,6 +39,7 @@ namespace NewAudio.Devices
 
                 _disposedValue = disposing;
             }
+
             base.Dispose(disposing);
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using NewAudio.Core;
 using NewAudio.Devices;
 using NUnit.Framework;
@@ -16,16 +17,16 @@ namespace NewAudioTest
 
         public void Dispose()
         {
-            
         }
 
         public T Resource { get; }
     }
+
     public class VLTestApi : IFactory
     {
-        private DriverManager _driverManager = new DriverManager();
-        private AudioService _audioService= new AudioService();
-        private AudioGraph _audioGraph= new AudioGraph();
+        private DriverManager _driverManager = new();
+        private AudioService _audioService = new();
+        private AudioGraph _audioGraph = new();
 
         public IResourceHandle<AudioService> GetAudioService()
         {
@@ -41,8 +42,8 @@ namespace NewAudioTest
         {
             return new TestResourceHandle<DriverManager>(_driverManager);
         }
-
     }
+
     public class BaseTest : IDisposable
     {
         protected ILogger Logger;
@@ -53,7 +54,7 @@ namespace NewAudioTest
             Factory.Instance = new VLTestApi();
             _audioService = Factory.Instance.GetAudioService();
         }
-        
+
         protected void InitLogger<T>()
         {
             Logger = _audioService.Resource.GetLogger<T>();
@@ -67,6 +68,7 @@ namespace NewAudioTest
         [SetUp]
         public void InitTest()
         {
+            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
         }
     }
 }

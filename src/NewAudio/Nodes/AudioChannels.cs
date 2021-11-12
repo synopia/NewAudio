@@ -1,11 +1,9 @@
 ﻿using System;
-using Serilog;
 
 namespace NewAudio.Nodes
 {
     public class AudioChannels
     {
-        private readonly ILogger _logger = Log.ForContext<AudioChannels>();
         private float[] _tempInputBuffer;
 
         private float[] _currentInputBuffer;

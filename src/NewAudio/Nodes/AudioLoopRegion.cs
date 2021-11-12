@@ -1,31 +1,28 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
-using Serilog;
 using VL.Lib.Animation;
 
 namespace NewAudio.Nodes
 {
     public class AudioLoopRegionInitParams : AudioNodeInitParams
     {
-   
     }
+
     public class AudioLoopRegionPlayParams : AudioNodePlayParams
     {
         public AudioParam<bool> Bypass;
         public AudioParam<int> OutputChannels;
     }
-    
-    public class AudioLoopRegion<TState> : AudioNode<AudioLoopRegionInitParams, AudioLoopRegionPlayParams> where TState : class
+
+    public class AudioLoopRegion<TState> : AudioNode<AudioLoopRegionInitParams, AudioLoopRegionPlayParams>
+        where TState : class
     {
         public override string NodeName => "Loop";
         private TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
-        private readonly AudioSampleFrameClock _clock = new AudioSampleFrameClock();
-        
+        private readonly AudioSampleFrameClock _clock = new();
+
         private Func<TState, AudioChannels, TState> _updateFunc;
         private TState _state;
 
@@ -35,13 +32,12 @@ namespace NewAudio.Nodes
             Logger.Information("Audio loop region created");
         }
 
-        public  AudioLink Update(
+        public AudioLink Update(
             AudioLink input,
             Func<IFrameClock, TState> create,
             Func<TState, AudioChannels, TState> update,
             bool reset,
             bool bypass,
-            
             int outputChannels = 0,
             int bufferSize = 4
         )
@@ -50,6 +46,7 @@ namespace NewAudio.Nodes
             {
                 _state = create(_clock);
             }
+
             _updateFunc = update;
 
             PlayParams.BufferSize.Value = bufferSize;
@@ -60,14 +57,15 @@ namespace NewAudio.Nodes
             return Update();
         }
 
-        
+
         public override bool IsPlayValid()
         {
-            return PlayParams.Input.Value!=null && 
-                   PlayParams.OutputChannels.Value>0 && 
-                   PlayParams.Input.Value.Format.Channels>0 && 
-                   PlayParams.Input.Value.Format.SampleCount>0;
+            return PlayParams.Input.Value != null &&
+                   PlayParams.OutputChannels.Value > 0 &&
+                   PlayParams.Input.Value.Format.Channels > 0 &&
+                   PlayParams.Input.Value.Format.SampleCount > 0;
         }
+
         public override bool Play()
         {
             var input = PlayParams.Input.Value;
@@ -80,7 +78,7 @@ namespace NewAudio.Nodes
             Output.Format = input.Format.WithChannels(PlayParams.OutputChannels.Value);
             Logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}",
                 input.Format, Output.Format);
-            
+
             Output.SourceBlock = _processor;
             TargetBlock = _processor;
             return true;
@@ -124,7 +122,6 @@ namespace NewAudio.Nodes
                     }
 
                     var samples = PlayParams.Input.Value.Format.SampleCount;
-                    var outputBufferSize = Output.Format.BufferSize;
                     var outputChannels = Output.Format.Channels;
                     var inputChannels = PlayParams.Input.Value.Format.Channels;
 
@@ -152,7 +149,7 @@ namespace NewAudio.Nodes
             {
                 BoundedCapacity = 1,
                 MaxDegreeOfParallelism = 1
-            }); 
+            });
 
             return Task.FromResult(true);
         }
@@ -164,21 +161,23 @@ namespace NewAudio.Nodes
                 Logger.Error("TransformBlock == null!");
                 return Task.FromResult(false);
             }
+
             _processor.Complete();
-            return _processor.Completion.ContinueWith((t)=>
+            return _processor.Completion.ContinueWith((t) =>
             {
                 _processor = null;
-                Logger.Information("Transform block stopped, status={status}", t.Status);
+                Logger.Information("Transform block stopped, status={Status}", t.Status);
                 return true;
             });
         }
-        
+
         public override string DebugInfo()
         {
             return $"[{this}, in/out={_processor?.InputCount}/{_processor?.OutputCount}, {base.DebugInfo()}]";
         }
 
         private bool _disposedValue;
+
         protected override void Dispose(bool disposing)
         {
             if (!_disposedValue)
@@ -190,8 +189,8 @@ namespace NewAudio.Nodes
 
                 _disposedValue = disposing;
             }
+
             base.Dispose(disposing);
         }
-
     }
 }

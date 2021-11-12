@@ -6,7 +6,7 @@
         <Platforms>AnyCPU</Platforms>
         <IsPackable>false</IsPackable>
         <TargetFramework>net472</TargetFramework>
-        <OutputType>Exe</OutputType>        
+        <OutputType>Exe</OutputType>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <OutputPath>..\..\lib-test\</OutputPath>
@@ -22,23 +22,32 @@
         <PlatformTarget>AnyCPU</PlatformTarget>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="NUnit" Version="3.13.2"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0"/>
+        <ProjectReference Include="..\NewAudio\VL.NewAudio.csproj"/>
+        <PackageReference Include="NUnitLite" Version="3.13.2"/>
+        <PackageReference Include="System.Threading.Tasks.Dataflow" Version="6.0.0"/>
+        <PackageReference Include="NAudio" Version="2.0.1"/>
+        <PackageReference Include="NAudio.Asio" Version="2.0.0"/>
+        <PackageReference Include="NAudio.Core" Version="2.0.0"/>
+        <PackageReference Include="NAudio.Midi" Version="2.0.1"/>
+        <PackageReference Include="NAudio.Wasapi" Version="2.0.0"/>
+        <PackageReference Include="NAudio.WinMM" Version="2.0.1"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="NUnit" Version="3.13.2" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
-        <ProjectReference Include="..\NewAudio\VL.NewAudio.csproj" />
-        <PackageReference Include="NUnitLite" Version="3.13.2" />
-        <PackageReference Include="System.Threading.Tasks.Dataflow" Version="5.0.0" />
-        <PackageReference Include="NAudio" Version="2.0.1" />
-        <PackageReference Include="NAudio.Asio" Version="2.0.0" />
-        <PackageReference Include="NAudio.Core" Version="2.0.0" />
-        <PackageReference Include="NAudio.Midi" Version="2.0.1" />
-        <PackageReference Include="NAudio.Wasapi" Version="2.0.0" />
-        <PackageReference Include="NAudio.WinMM" Version="2.0.1" />
+        <Compile Remove="WaveInputTest.cs"/>
+        <Compile Remove="AudioParamTest.cs"/>
     </ItemGroup>
     <ItemGroup>
-      <Compile Remove="WaveInputTest.cs" />
-      <Compile Remove="AudioParamTest.cs" />
+        <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0622-gd89e9c339e\lib\VL.Core.dll</HintPath>
+        </Reference>
+        <Reference Include="VL.CoreLib, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0622-gd89e9c339e\lib\VL.CoreLib.dll</HintPath>
+        </Reference>
+        <Reference Include="VL.Lang, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0622-gd89e9c339e\lib\VL.Lang.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
 </Project>

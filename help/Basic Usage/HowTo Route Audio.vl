@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="U0P8eE4hCDKLvoDuOKQOmc" LanguageVersion="2021.4.0.613" Version="0.128">
-  <NugetDependency Id="MAEwq2GaJLkPJP0NzZvZJr" Location="VL.CoreLib" Version="2021.4.0-0613-g3afe96c078" />
+<Document xmlns:p="property" Id="U0P8eE4hCDKLvoDuOKQOmc" LanguageVersion="2021.4.0.622" Version="0.128">
+  <NugetDependency Id="MAEwq2GaJLkPJP0NzZvZJr" Location="VL.CoreLib" Version="2021.4.0-0622-gd89e9c339e" />
   <Patch Id="NPzPdUqOvlmQXbRDVVJru0">
     <Canvas Id="Ck0FfZbKeR3LiyIJ1anS3b" DefaultCategory="Main" CanvasType="FullCategory" />
     <!--
@@ -92,7 +92,7 @@
             <Pin Id="Sl9wK6BhZr2Mj34WKnIMHv" Name="Input Count" Kind="InputPin" DefaultValue="6" />
             <Pin Id="D3T3m3TgJT2NvG0sdgc2cu" Name="Output Count" Kind="InputPin" DefaultValue="2" />
           </Node>
-          <Pad Id="EOHVwzngHO7LAjAcAAe1Es" Comment="Gain" Bounds="1025,593,65,206" ShowValueBox="true" isIOBox="true" Value="0.4899999">
+          <Pad Id="EOHVwzngHO7LAjAcAAe1Es" Comment="Gain" Bounds="1025,593,65,206" ShowValueBox="true" isIOBox="true" Value="0.3">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Float32" />
               <FullNameCategoryReference ID="Primitive" />
@@ -140,7 +140,7 @@
             <Pin Id="SFDzwe16ZfbMWqlD9nj80o" Name="Encoding" Kind="OutputPin" />
             <Pin Id="CeJ07lmO3vAMbrfYbAwi6p" Name="As String" Kind="OutputPin" />
           </Node>
-          <Pad Id="RvD4euYud1tO2KpqVfYxZM" Comment="Play" Bounds="111,952,59,66" ShowValueBox="true" isIOBox="true" Value="False">
+          <Pad Id="RvD4euYud1tO2KpqVfYxZM" Comment="Play" Bounds="111,952,59,66" ShowValueBox="true" isIOBox="true" Value="True">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Boolean" />
               <FullNameCategoryReference ID="Primitive" />
@@ -253,19 +253,19 @@
         <Link Id="R4eWZf5h3KeLsR6nN9ZmWq" Ids="Ro6DeTSFedxMMXVUFW0Rkp,SpVcOMDgq7sPSqouH8TY2U" />
         <Link Id="OWDDLAy1ysgOCqsKAtSuHC" Ids="RxVju0KC7mTLmbugCe4lx8,FCfMXTROwCHPSvsRH8DcGq" />
         <Link Id="Qtlu73FLMqRLWiJAPTiPVA" Ids="TmCgsS5nZslLJrHvphX7Q7,HPoGIg5NIIXNCbxjgQTAPd" />
-        <Link Id="RjkiftAYgvGPapvJlwwcys" Ids="FwagbNcguLLMF2mG5oiawb,QgHDFDYVuusQGhdmPqpqXb" />
         <Link Id="SjvPpx19mCpPVXHcwrHtyI" Ids="NQmAmWQgOJbLNteY0UEiXb,A9A7BpbduVZP7R2G4eRlAZ" />
         <Link Id="BWVJoIUfFvILLCvmkTmbJd" Ids="KJNpeCTT81wLEH0kuS9OjP,MBV2rHKJaXSNQO2Nf5WgFx" />
         <Link Id="Gd7HSJWT9jrPJ70T5BNIEx" Ids="Gf3nwP1TqaCMxfA4GRe5rr,U34Tou40TR8QaUgQu34Wkq" />
-        <Link Id="L49nm6YixWEOFrTuZ55rio" Ids="NA1jcdzODCdLFglL7PPFAs,BkHEvf5cSOSNWZpPl3EdRZ" />
+        <Link Id="Gy3VfttkFtBMTmhcK2cUhI" Ids="FwagbNcguLLMF2mG5oiawb,QgHDFDYVuusQGhdmPqpqXb" />
+        <Link Id="G0mZYoFr7DtOSnUo09u1Wh" Ids="NA1jcdzODCdLFglL7PPFAs,BkHEvf5cSOSNWZpPl3EdRZ" />
       </Patch>
     </Node>
   </Patch>
-  <NugetDependency Id="AJpBOuNHooePOKkveGA1qG" Location="VL.CoreLib" Version="2021.4.0-0613-g3afe96c078" />
+  <NugetDependency Id="AJpBOuNHooePOKkveGA1qG" Location="VL.CoreLib" Version="2021.4.0-0622-gd89e9c339e" />
   <NugetDependency Id="Iv56RvDRIhgMzWDjfxoQdy" Location="VL.Audio" Version="0.2.24-alpha" />
-  <NugetDependency Id="GN7XueCUYVOPRqzm2imFRD" Location="VL.Lang" Version="2021.4.0-0613-g3afe96c078" />
-  <NugetDependency Id="Ip3n11LuD1MO4n6hUP6Hj9" Location="VL.Skia" Version="2021.4.0-0613-g3afe96c078" />
-  <NugetDependency Id="PD2jmbhAwP3NA2gTBkiVlh" Location="VL.HDE" Version="2021.4.0-0613-g3afe96c078" />
+  <NugetDependency Id="GN7XueCUYVOPRqzm2imFRD" Location="VL.Lang" Version="2021.4.0-0622-gd89e9c339e" />
+  <NugetDependency Id="Ip3n11LuD1MO4n6hUP6Hj9" Location="VL.Skia" Version="2021.4.0-0622-gd89e9c339e" />
+  <NugetDependency Id="PD2jmbhAwP3NA2gTBkiVlh" Location="VL.HDE" Version="2021.4.0-0622-gd89e9c339e" />
   <NugetDependency Id="S5fdWnR3lqVMZKHSXotDQQ" Location="VL.Audio.GPL" Version="0.0.4-alpha" />
   <NugetDependency Id="FhIaAN4USwbMLcFt3BVwWD" Location="VL.NewAudio" Version="0.3.0-alpha" />
 </Document>

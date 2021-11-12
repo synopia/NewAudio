@@ -22,10 +22,10 @@ namespace NewAudioTest
         public void TestCombinedCallbacks()
         {
             var t = new T();
-            
+
             t.Aint.OnChange += Callback;
             t.Afloat.OnChange += Callback;
-            
+
             t.Update();
             Assert.AreEqual(0, _cnt);
             t.Aint.Value = 1;
@@ -36,12 +36,15 @@ namespace NewAudioTest
             t.Update();
             Assert.AreEqual(2, _cnt);
         }
+
         private int _cnt = 0;
+
         private Task Callback()
         {
             _cnt++;
             return Task.CompletedTask;
         }
+
         [Test]
         public void TestCallbacks()
         {
@@ -70,6 +73,7 @@ namespace NewAudioTest
             Assert.AreEqual(1, aIntCnt);
             Assert.AreEqual(2, aIntArrCnt);
         }
+
         [Test]
         public void TestSimple()
         {

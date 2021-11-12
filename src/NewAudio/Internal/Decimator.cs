@@ -68,7 +68,7 @@ namespace NewAudio.Internal
 
         public static void BlackmanHarrisWindow(float[] x)
         {
-            var factor = 2 * Utils.PI / (x.Length - 1);
+            var factor = 2 * Utils.Pi / (x.Length - 1);
             for (var i = 0; i < x.Length; i++)
             {
                 x[i] *=

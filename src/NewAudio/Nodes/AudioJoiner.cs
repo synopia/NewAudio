@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using NewAudio.Blocks;
 using NewAudio.Core;
-using Serilog;
 
 namespace NewAudio.Nodes
 {

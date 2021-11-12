@@ -32,7 +32,7 @@ namespace NewAudioTest
             sw.Start();
             Task.Delay(1000).Wait();
             sw.Stop();
-            Logger.Information("{s}", samples/sw.Elapsed.TotalSeconds);
+            Logger.Information("{s}", samples / sw.Elapsed.TotalSeconds);
         }
     }
 }

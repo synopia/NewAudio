@@ -1,33 +1,36 @@
 using System;
 using System.Buffers;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using FFTW.NET;
-using NewAudio.Blocks;
 using NewAudio.Core;
-using NewAudio.Internal;
 using Serilog;
+
+// ReSharper disable InconsistentNaming
 
 namespace NewAudio.Nodes
 {
-    public class FftInitParams : AudioNodeInitParams
+    // ReSharper disable once ClassNeverInstantiated.Global
+    [SuppressMessage("ReSharper", "UnassignedField.Global")]
+    public class FFTInitParams : AudioNodeInitParams
     {
         public AudioParam<int> FFTLength;
-        public AudioParam<FFTUtils.WindowFunction> WindowFunction;
-
+        public AudioParam<Utils.WindowFunction> WindowFunction;
     }
+
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class FftPlayParams : AudioNodePlayParams
     {
     }
 
-    public abstract class BaseFFT : AudioNode<FftInitParams, FftPlayParams>
+    public abstract class BaseFFT : AudioNode<FFTInitParams, FftPlayParams>
     {
         private readonly ILogger _logger = Log.ForContext<BaseFFT>();
         protected double[] Window;
 
-        private BufferBlock<AudioDataMessage> Source;
+        private readonly BufferBlock<AudioDataMessage> _source;
         private AudioTime _time;
         private BatchBlock<AudioDataMessage> _batchBlock;
         private ActionBlock<AudioDataMessage[]> _processor;
@@ -36,41 +39,43 @@ namespace NewAudio.Nodes
         protected BaseFFT()
         {
             _logger.Information("FFT created");
-            Source = new BufferBlock<AudioDataMessage>();
+            _source = new BufferBlock<AudioDataMessage>();
         }
 
         public AudioLink Update(AudioLink input, int fftLength = 512,
-            FFTUtils.WindowFunction windowFunction = FFTUtils.WindowFunction.None, int bufferSize=4)
+            Utils.WindowFunction windowFunction = Utils.WindowFunction.None, int bufferSize = 4)
         {
             PlayParams.BufferSize.Value = bufferSize;
             InitParams.WindowFunction.Value = windowFunction;
             PlayParams.Input.Value = input;
-            InitParams.FFTLength.Value = (int)Utils.UpperPow2((uint)fftLength);;
+            InitParams.FFTLength.Value = (int)Utils.UpperPow2((uint)fftLength);
 
             return Update();
         }
 
         protected void Post(AudioDataMessage buf)
         {
-            Source.Post(buf);
+            _source.Post(buf);
         }
 
         public override bool IsInitValid()
         {
             return InitParams.FFTLength.Value > 0;
-
         }
+
         public override bool IsPlayValid()
         {
             return PlayParams.Input.Value is { Format: { Channels: 1 } }
                    && PlayParams.Input.Value.Format.BufferSize > 0;
         }
+
         public override Task<bool> Init()
         {
             if (_processor != null)
             {
                 _logger.Warning("ActionBlock != null!");
             }
+
             if (_batchBlock != null)
             {
                 _logger.Warning("BatchBlock != null!");
@@ -81,6 +86,7 @@ namespace NewAudio.Nodes
                 _logger.Warning("link != null!");
                 _link1.Dispose();
             }
+
             _processor = new ActionBlock<AudioDataMessage[]>(i =>
             {
                 try
@@ -93,27 +99,28 @@ namespace NewAudio.Nodes
                     ExceptionHappened(e, "ActionBlock");
                 }
             });
-            
+
             ResizeBuffers(InitParams.FFTLength.Value, (InitParams.FFTLength.Value - 1) / 2 + 2);
-            Window = FFTUtils.CreateWindow(InitParams.WindowFunction.Value, InitParams.FFTLength.Value);
+            Window = Utils.CreateWindow(InitParams.WindowFunction.Value, InitParams.FFTLength.Value);
             Output.SourceBlock = null;
-            
+
             return Task.FromResult(true);
         }
-  
+
 
         public override bool Play()
         {
-            var input = PlayParams.Input.Value;    
+            var input = PlayParams.Input.Value;
             var fftFormat = input.Format.WithSampleCount(InitParams.FFTLength.Value);
-            _logger.Information("Created, internal: {outFormat} fft={fftLength} {inFormat}", fftFormat, InitParams.FFTLength,
+            _logger.Information("Created, internal: {OutFormat} fft={FftLength} {InFormat}", fftFormat,
+                InitParams.FFTLength.Value,
                 input.Format);
 
             Output.Format = input.Format;
             _batchBlock = new BatchBlock<AudioDataMessage>(1 * InitParams.FFTLength.Value / input.Format.BufferSize);
 
             _link1 = _batchBlock.LinkTo(_processor);
-            Output.SourceBlock = Source;
+            Output.SourceBlock = _source;
             TargetBlock = _batchBlock;
             return true;
         }
@@ -124,24 +131,26 @@ namespace NewAudio.Nodes
             Output.SourceBlock = null;
             return true;
         }
-        
+
         public override Task<bool> Free()
         {
             if (_processor == null)
             {
                 _logger.Error("ActionBlock == null!");
             }
+
             if (_link1 == null)
             {
                 _logger.Error("Link == null!");
             }
+
             _link1?.Dispose();
             _link1 = null;
             _processor?.Complete();
             return _processor?.Completion.ContinueWith(t =>
             {
                 _processor = null;
-                _logger.Information("ActionBlock stopped, status={status}", t.Status);
+                _logger.Information("ActionBlock stopped, status={Status}", t.Status);
                 return true;
             });
         }
@@ -182,25 +191,20 @@ namespace NewAudio.Nodes
 
         public override string DebugInfo()
         {
-            return $"curr={InitParams.FFTLength}, {_processor?.Completion.Status}, {Source?.Completion.Status}/ {Source?.Count}";
+            return
+                $"curr={InitParams.FFTLength}, {_processor?.Completion.Status}, {_source?.Completion.Status}/ {_source?.Count}";
         }
 
         protected abstract void OnDataReceived(AudioDataMessage[] input);
         protected abstract void ResizeBuffers(int fftLength, int complexLength);
-
     }
 
     public class ForwardFFT : BaseFFT
     {
         public override string NodeName => "FFT";
-        private readonly ILogger _logger = Log.ForContext<ForwardFFT>();
 
         private PinnedArray<double> _pinIn;
         private PinnedArray<Complex> _pinOut;
-
-        public ForwardFFT()
-        {
-        }
 
         protected override void ResizeBuffers(int fftLength, int complexLength)
         {
@@ -224,6 +228,7 @@ namespace NewAudio.Nodes
                     j = 0;
                 }
             }
+
             foreach (var message in input)
             {
                 ArrayPool<float>.Shared.Return(message.Data);
@@ -259,6 +264,7 @@ namespace NewAudio.Nodes
         }
 
         private bool _disposedValue;
+
         protected override void Dispose(bool disposing)
         {
             if (!_disposedValue)
@@ -271,6 +277,7 @@ namespace NewAudio.Nodes
 
                 _disposedValue = disposing;
             }
+
             base.Dispose(disposing);
         }
     }
@@ -278,7 +285,6 @@ namespace NewAudio.Nodes
     public class BackwardFFT : BaseFFT
     {
         public override string NodeName => "iFFT";
-        private readonly ILogger _logger = Log.ForContext<ForwardFFT>();
         private PinnedArray<Complex> _pinIn;
         private PinnedArray<double> _pinOut;
 
@@ -306,6 +312,7 @@ namespace NewAudio.Nodes
                     j = 0;
                 }
             }
+
             foreach (var message in input)
             {
                 ArrayPool<float>.Shared.Return(message.Data);
@@ -340,6 +347,7 @@ namespace NewAudio.Nodes
         }
 
         private bool _disposedValue;
+
         protected override void Dispose(bool disposing)
         {
             if (!_disposedValue)
@@ -352,6 +360,7 @@ namespace NewAudio.Nodes
 
                 _disposedValue = disposing;
             }
+
             base.Dispose(disposing);
         }
     }

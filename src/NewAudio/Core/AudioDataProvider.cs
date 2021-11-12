@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Threading;
 using NAudio.Wave;
-using NewAudio.Core;
 using Serilog;
 using SharedMemory;
-using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Core
 {
@@ -17,6 +15,7 @@ namespace NewAudio.Core
 
 
         private CancellationToken _token;
+
         public CancellationToken CancellationToken
         {
             get => _token;
@@ -43,12 +42,13 @@ namespace NewAudio.Core
             {
                 if (_firstLoop)
                 {
-                    _logger.Information("Audio output reader thread started (Reading from {read} ({owner}))", _buffer.Name,
+                    _logger.Information("Audio output reader thread started (Reading from {Read} ({Owner}))",
+                        _buffer.Name,
                         _buffer.IsOwnerOfSharedMemory);
                     _firstLoop = false;
                 }
 
-                _logger.Verbose("IN AUDIO THREAD: {count}", count / 4);
+                _logger.Verbose("IN AUDIO THREAD: {Count}", count / 4);
                 // AudioService.Instance.Flow.PostRequest(new AudioDataRequestMessage(count/4/WaveFormat.Channels));
 
                 var pos = 0;
@@ -56,14 +56,14 @@ namespace NewAudio.Core
                 {
                     while (pos < count && !CancellationToken.IsCancellationRequested && !GenerateSilence)
                     {
-                        var x = _buffer.Read(buffer, pos+offset, 1);
+                        var x = _buffer.Read(buffer, pos + offset, 1);
                         pos += x;
                     }
                 }
 
                 if (GenerateSilence)
                 {
-                    Array.Clear(buffer, pos+offset,count-pos);
+                    Array.Clear(buffer, pos + offset, count - pos);
                     pos += count - pos;
                 }
                 else
@@ -73,19 +73,19 @@ namespace NewAudio.Core
                         _logger.Information("Audio output reader thread finished");
                     }
                 }
-                
+
                 if (!CancellationToken.IsCancellationRequested && pos != count)
                 {
-                    _logger.Warning("pos!=count: {p}!={c}", pos, count);
+                    _logger.Warning("pos!=count: {Pos}!={Count}", pos, count);
                 }
+
                 return pos;
             }
             catch (Exception e)
             {
-                _logger.Error("{e}", e);
+                _logger.Error(e, "Exception in AudioDataProvider!");
                 return count;
             }
         }
-
     }
 }

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
 using NewAudio.Devices;
+using NewAudio.Nodes;
 using NUnit.Framework;
 using SharedMemory;
 using VL.Lib.Basics.Resources;
@@ -12,10 +14,10 @@ using VL.Lib.Basics.Resources;
 namespace NewAudioTest
 {
     using NewAudioTest;
-    
+
     public static class Ext
     {
-        public static List<String> MethodCalls(this VirtualDevice vd)
+        public static List<string> MethodCalls(this VirtualDevice vd)
         {
             if (vd.Name == "INPUT")
             {
@@ -26,15 +28,21 @@ namespace NewAudioTest
                 return ((TestDevice)vd.Device).Driver.OutputMethodCalls;
             }
         }
+
         public static CircularBuffer RecordingBuffer(this VirtualDevice vd)
         {
             return ((TestDevice)vd.Device).RecordingBuffer;
         }
+
+        public static CircularBuffer PlayingBuffer(this VirtualDevice vd)
+        {
+            return ((TestDevice)vd.Device).PlayingBuffer;
+        }
     }
-    
+
     public class BaseDeviceTest : BaseTest
     {
-        public IResourceHandle<DriverManager> DriverManager; 
+        public IResourceHandle<DriverManager> DriverManager;
         public InputDeviceSelection InputEnum;
         public OutputDeviceSelection OutputEnum;
         public OutputDeviceSelection OutputNullEnum;
@@ -52,6 +60,15 @@ namespace NewAudioTest
             OutputNullEnum = new OutputDeviceSelection("Null: Output");
         }
 
+        public void Wait(params IAudioNode[] args)
+        {
+            var events = args.Select(a => a.LifecycleStateMachine.WaitForEvents);
+            foreach (var resetEvent in events)
+            {
+                resetEvent.WaitOne();
+            }
+        }
+
         [SetUp]
         public void Init()
         {
@@ -67,6 +84,7 @@ namespace NewAudioTest
             Assert.IsEmpty(DriverManager.Resource.CheckPools());
         }
     }
+
     public class TestDriver : IDriver
     {
         public string Name => "TEST";
@@ -75,12 +93,21 @@ namespace NewAudioTest
 
         public void AddCall(string who, string what)
         {
-            if( who=="INPUT" ) InputMethodCalls.Add(what);
-            if(who=="OUTPUT") OutputMethodCalls.Add(what);
+            if (who == "INPUT")
+            {
+                InputMethodCalls.Add(what);
+            }
+
+            if (who == "OUTPUT")
+            {
+                OutputMethodCalls.Add(what);
+            }
         }
+
         public IEnumerable<DeviceSelection> GetDeviceSelections()
         {
-            return new[] { new DeviceSelection(Name, "INPUT",true, false ), new DeviceSelection(Name, "OUTPUT", false, true), };
+            return new[]
+                { new DeviceSelection(Name, Name,"INPUT", true, false), new DeviceSelection(Name, Name,"OUTPUT", false, true) };
         }
 
         public IDevice CreateDevice(DeviceSelection selection)
@@ -88,12 +115,13 @@ namespace NewAudioTest
             return new TestDevice(this, selection.Name);
         }
     }
-    
+
     public class TestDevice : BaseDevice
     {
         private TestDriver _driver;
 
         public TestDriver Driver => _driver;
+
         public TestDevice(TestDriver driver, string name)
         {
             _driver = driver;
@@ -102,12 +130,12 @@ namespace NewAudioTest
             IsInputDevice = true;
             IsOutputDevice = true;
         }
-        
+
 
         protected override Task<bool> Init()
         {
             _driver.AddCall(Name, "Init");
-            return  Task.FromResult<bool>(true);
+            return Task.FromResult<bool>(true);
         }
 
         public override bool Start()

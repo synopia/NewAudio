@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using Serilog;
 
 namespace NewAudio.Core
 {
@@ -16,9 +14,9 @@ namespace NewAudio.Core
         public void Commit();
         public void Rollback();
         Func<Task> OnChange { get; set; }
-
     }
-    public interface IAudioParam<T> 
+
+    public interface IAudioParam<T>
     {
         T Value { get; set; }
         T LastValue { get; }
@@ -30,6 +28,7 @@ namespace NewAudio.Core
         private T _currentValue;
         private T _lastValue;
         private bool _hasChanged;
+
         public T Value
         {
             get => _currentValue;
@@ -61,8 +60,9 @@ namespace NewAudio.Core
         public bool HasChanged => _hasChanged;
         public T LastValue => _lastValue;
         object IAudioParam.LastValue => _lastValue;
-        
+
         public Func<Task> OnChange { get; set; }
+
         public void Commit()
         {
             _lastValue = _currentValue;
@@ -74,12 +74,12 @@ namespace NewAudio.Core
             _currentValue = _lastValue;
             _hasChanged = false;
         }
-
     }
 
     public abstract class AudioParams
     {
-        public readonly Dictionary<string, IAudioParam> Params = new Dictionary<string, IAudioParam>();
+        public readonly Dictionary<string, IAudioParam> Params = new();
+
         protected AudioParams()
         {
             var props = GetType().GetFields();
@@ -91,7 +91,6 @@ namespace NewAudio.Core
                     var instance = Activator.CreateInstance(type);
                     prop.SetValue(this, instance);
                     Params[prop.Name] = (IAudioParam)instance;
-
                 }
             }
         }
@@ -107,11 +106,11 @@ namespace NewAudio.Core
                 p.OnChange += action;
             }
         }
-        
+
         public async Task Update()
         {
             var delegates = new List<Delegate>();
-            
+
             foreach (var param in Params.Values)
             {
                 if (param.HasChanged)
@@ -123,12 +122,12 @@ namespace NewAudio.Core
                     }
                 }
             }
-            
+
             Commit();
-            
+
             foreach (var @delegate in delegates.Distinct())
             {
-                await (Task) @delegate.DynamicInvoke();
+                await (Task)@delegate.DynamicInvoke();
             }
 
             if (delegates.Count > 0)
@@ -139,7 +138,7 @@ namespace NewAudio.Core
                 }
             }
         }
-        
+
         public void Commit()
         {
             foreach (var param in Params.Values)

@@ -1,9 +1,7 @@
 ﻿using System.Buffers;
-using NAudio.Wave;
 
 namespace NewAudio.Core
 {
-
     public struct AudioDataRequestMessage
     {
         public AudioTime Time { get; set; }
@@ -50,7 +48,9 @@ namespace NewAudio.Core
             Channels = format.Channels;
             Time = new AudioTime(0, 0);
             IsLocked = false;
-            Data = data != null && data.Length == sampleCount * Channels ? data : ArrayPool<float>.Shared.Rent(sampleCount * Channels);
+            Data = data != null && data.Length == sampleCount * Channels
+                ? data
+                : ArrayPool<float>.Shared.Rent(sampleCount * Channels);
         }
 
         public override string ToString()

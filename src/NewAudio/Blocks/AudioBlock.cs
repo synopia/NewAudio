@@ -14,7 +14,7 @@ namespace NewAudio.Blocks
 
         protected AudioService AudioService => _audioService.Resource;
 
-        protected AudioBlock(): this(Factory.Instance)
+        protected AudioBlock() : this(Factory.Instance)
         {
         }
 
@@ -22,7 +22,7 @@ namespace NewAudio.Blocks
         {
             _audioService = api.GetAudioService();
         }
-        
+
         public void InitLogger<T>()
         {
             Logger = AudioService.GetLogger<T>();
@@ -35,8 +35,12 @@ namespace NewAudio.Blocks
 
 
         private bool _disposedValue;
-        
-        public void Dispose() => Dispose(true);
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposedValue)
@@ -49,6 +53,7 @@ namespace NewAudio.Blocks
                 _disposedValue = true;
             }
         }
+
         public void Complete()
         {
             Target.Complete();

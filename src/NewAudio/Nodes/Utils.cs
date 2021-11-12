@@ -1,13 +1,40 @@
 ﻿using System;
-using System.Collections;
+using NAudio.Dsp;
 using SharedMemory;
 
 namespace NewAudio.Nodes
 {
     public static class Utils
     {
-        public static float PI = (float)Math.PI;
-        public static float TwoPI = (float)(2.0 * Math.PI);
+        public const float Pi = (float)Math.PI;
+        public const float TwoPi = (float)(2.0 * Math.PI);
+
+        public enum WindowFunction
+        {
+            None,
+            Hamming,
+            Hann,
+            BlackmanHarris
+        }
+
+        public static double[] CreateWindow(WindowFunction windowFunction, int size)
+        {
+            Func<int, int, double> function = windowFunction switch
+            {
+                WindowFunction.Hamming => FastFourierTransform.HammingWindow,
+                WindowFunction.Hann => FastFourierTransform.HannWindow,
+                WindowFunction.BlackmanHarris => FastFourierTransform.BlackmannHarrisWindow,
+                _ => (_, _) => 1
+            };
+
+            var window = new double[size];
+            for (var i = 0; i < size; i++)
+            {
+                window[i] = function(i, size);
+            }
+
+            return window;
+        }
 
         public static string CalculateBufferStats(CircularBuffer buffer)
         {
@@ -64,9 +91,8 @@ namespace NewAudio.Nodes
                 return 1.0f;
             }
 
-            v *= PI;
+            v *= Pi;
             return SinF(v) / v;
         }
-
     }
 }

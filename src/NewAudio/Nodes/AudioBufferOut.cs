@@ -3,7 +3,6 @@ using System.Buffers;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
-using Serilog;
 using VL.Lib.Collections;
 
 namespace NewAudio.Nodes
@@ -12,7 +11,7 @@ namespace NewAudio.Nodes
     {
         Skip,
         SkipHalf,
-        Max,
+        Max
     }
 
     public class AudioBufferOutInitParams : AudioNodeInitParams
@@ -36,7 +35,7 @@ namespace NewAudio.Nodes
         private ActionBlock<AudioDataMessage[]> _processor;
         private SpreadBuilder<float> _spreadBuilder = new();
         private int _updated;
-        
+
         public AudioBufferOut()
         {
             InitLogger<AudioBufferOut>();
@@ -45,12 +44,12 @@ namespace NewAudio.Nodes
 
         public override bool IsPlayValid()
         {
-            return PlayParams.Input.Value != null;
+            return PlayParams.Input.Value != null && PlayParams.Input.Value.Format.BufferSize>0;
         }
 
         public override bool IsInitValid()
         {
-            return InitParams.OutputSize.Value>0 &&
+            return InitParams.OutputSize.Value > 0 &&
                    InitParams.BlockSize.Value > 0;
         }
 
@@ -64,7 +63,7 @@ namespace NewAudio.Nodes
         /// <param name="type">Skip: take first sample, skip until blockSize is reached, SkipHalf: take samples until 1/blocksize of input is reached, skip the rest, Max: output the max of a block</param>
         /// <returns></returns>
         public Spread<float> Update(AudioLink input, int outputSize = 1024, int blockSize = 8,
-            AudioBufferOutType type = AudioBufferOutType.Max, int bufferSize=4)
+            AudioBufferOutType type = AudioBufferOutType.Max, int bufferSize = 4)
         {
             PlayParams.BufferSize.Value = bufferSize;
             PlayParams.Input.Value = input;
@@ -86,6 +85,12 @@ namespace NewAudio.Nodes
 
         public override Task<bool> Init()
         {
+       
+            return Task.FromResult(true);
+        }
+
+        public override bool Play()
+        {
             var type = InitParams.Type.Value;
             _batchSize = 0;
             if (type == AudioBufferOutType.Skip)
@@ -105,22 +110,10 @@ namespace NewAudio.Nodes
             _link1 = _batchBlock.LinkTo(_processor);
 
             TargetBlock = _batchBlock;
-            return Task.FromResult(true);
-        }
-
-        public override bool Play()
-        {
-            TargetBlock = _batchBlock;
             return true;
         }
 
         public override bool Stop()
-        {
-            TargetBlock = null;
-            return true;
-        }
-
-        public override Task<bool> Free()
         {
             if (_processor == null)
             {
@@ -138,12 +131,21 @@ namespace NewAudio.Nodes
             ArrayPool<float>.Shared.Return(_outBuffer);
             ArrayPool<float>.Shared.Return(_tempBuffer);
             _outBuffer = null;
-            return _processor?.Completion.ContinueWith(t =>
+            TargetBlock = null;
+             _processor?.Completion.ContinueWith(t =>
             {
                 _processor = null;
-                Logger.Information("ActionBlock stopped, status={status}", t.Status);
+                Logger.Information("ActionBlock stopped, status={Status}", t.Status);
                 return true;
             });
+             return true;
+        }
+
+        public override Task<bool> Free()
+        {
+            return Task.FromResult(true);
+
+            
         }
 
         public override string DebugInfo()
@@ -176,20 +178,24 @@ namespace NewAudio.Nodes
                 Array.Copy(_tempBuffer, _outBuffer, _outBuffer.Length);
                 _updated++;
             });
-            return skipSize*bufferSize/inputBufferSize;
+            return skipSize * bufferSize / inputBufferSize;
         }
+
         private int CreateTypeSkipHalf()
         {
             var bufferSize = InitParams.OutputSize.Value;
             var skipSize = InitParams.BlockSize.Value;
             var inputBufferSize = PlayParams.Input.Value.Format.BufferSize;
-
+            if (inputBufferSize == 0)
+            {
+                Logger.Error("SHOULD NOT HAPPEN!!");
+            }
             _outBuffer = ArrayPool<float>.Shared.Rent(bufferSize);
             _tempBuffer = ArrayPool<float>.Shared.Rent(bufferSize);
             _processor = new ActionBlock<AudioDataMessage[]>(input =>
             {
                 var k = 0;
-                for (int i = 0, j = 0; i < bufferSize; i++, j ++)
+                for (int i = 0, j = 0; i < bufferSize; i++, j++)
                 {
                     if (j >= inputBufferSize)
                     {
@@ -203,7 +209,7 @@ namespace NewAudio.Nodes
                 Array.Copy(_tempBuffer, _outBuffer, _outBuffer.Length);
                 _updated++;
             });
-            return skipSize*bufferSize/inputBufferSize;
+            return skipSize * bufferSize / inputBufferSize;
         }
 
         private int CreateTypeMax()
@@ -218,14 +224,14 @@ namespace NewAudio.Nodes
             _processor = new ActionBlock<AudioDataMessage[]>(input =>
             {
                 var count = blockSize * bufferSize;
-                var skip = count/bufferSize;
+                var skip = count / bufferSize;
                 var k = 0;
                 var j = 0;
-                for (int i = 0; i < bufferSize; i++)
+                for (var i = 0; i < bufferSize; i++)
                 {
                     var min = 0.0f;
                     var max = 0.0f;
-                    for (int b = 0; b < skip; b++)
+                    for (var b = 0; b < skip; b++)
                     {
                         max = Math.Max(max, input[k].Data[j]);
                         min = Math.Min(min, input[k].Data[j]);
@@ -243,7 +249,7 @@ namespace NewAudio.Nodes
 
                 Array.Copy(_tempBuffer, _outBuffer, _outBuffer.Length);
             });
-            return blockSize * bufferSize/inputBufferSize;
+            return blockSize * bufferSize / inputBufferSize;
         }
 
         private bool _disposedValue;

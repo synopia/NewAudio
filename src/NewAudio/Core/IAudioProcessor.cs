@@ -14,7 +14,7 @@ namespace NewAudio.Core
 
         public float ProcessSample(float input)
         {
-            return Math.Max(-1.0f, Math.Min(1.0f, input*Level));
+            return Math.Max(-1.0f, Math.Min(1.0f, input * Level));
         }
     }
 }

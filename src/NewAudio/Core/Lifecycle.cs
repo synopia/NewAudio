@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -14,7 +12,7 @@ namespace NewAudio.Core
         Uninitialized,
         Init,
         Play,
-        Invalid,
+        Invalid
     }
 
     public interface ILifecycleDevice
@@ -33,11 +31,11 @@ namespace NewAudio.Core
 
     public static class LifecycleEvents
     {
-        public static readonly Event ePlay = new Event("Play");
-        public static readonly Event eStop = new Event("Stop");
+        public static readonly Event EPlay = new("Play");
+        public static readonly Event EStop = new("Stop");
 
-        public static readonly Event eInit = new Event("Init");
-        public static readonly Event eFree = new Event("Free");
+        public static readonly Event EInit = new("Init");
+        public static readonly Event EFree = new("Free");
     }
 
     [Serializable]
@@ -68,7 +66,7 @@ namespace NewAudio.Core
                     c.Phase = LifecyclePhase.Invalid;
                     return Task.CompletedTask;
                 })
-                .When(LifecycleEvents.eInit, async (m, s, e, c) =>
+                .When(LifecycleEvents.EInit, async (m, s, e, c) =>
                 {
                     var res = c.IsInitValid();
                     if (res)
@@ -84,7 +82,7 @@ namespace NewAudio.Core
                     c.Phase = LifecyclePhase.Uninitialized;
                     return Task.CompletedTask;
                 })
-                .When(LifecycleEvents.eInit, async (m, s, e, c) =>
+                .When(LifecycleEvents.EInit, async (m, s, e, c) =>
                 {
                     var res = c.IsInitValid();
                     if (res)
@@ -94,7 +92,7 @@ namespace NewAudio.Core
 
                     return s;
                 })
-                .When(LifecycleEvents.ePlay,
+                .When(LifecycleEvents.EPlay,
                     async (m, s, e, c) =>
                     {
                         var res = c.IsInitValid();
@@ -123,9 +121,9 @@ namespace NewAudio.Core
                     c.Phase = LifecyclePhase.Init;
                     return Task.CompletedTask;
                 })
-                .When(LifecycleEvents.eFree,
+                .When(LifecycleEvents.EFree,
                     async (m, s, e, c) => { return await c.Free() ? Uninitialized : Invalid; })
-                .When(LifecycleEvents.ePlay,
+                .When(LifecycleEvents.EPlay,
                     (m, s, e, c) =>
                     {
                         var inputValid = c.IsPlayValid();
@@ -136,7 +134,7 @@ namespace NewAudio.Core
 
                         return c.Play() ? Task.FromResult(Play) : Task.FromResult(Init);
                     })
-                .When(LifecycleEvents.eInit, async (m, s, e, c) =>
+                .When(LifecycleEvents.EInit, async (m, s, e, c) =>
                 {
                     var res = await c.Free();
                     var inputValid = c.IsInitValid();
@@ -154,7 +152,7 @@ namespace NewAudio.Core
                     c.Phase = LifecyclePhase.Play;
                     return Task.CompletedTask;
                 })
-                .When(LifecycleEvents.eInit, async (m, s, e, c) =>
+                .When(LifecycleEvents.EInit, async (m, s, e, c) =>
                 {
                     var res = c.Stop();
                     res = res && await c.Free();
@@ -174,7 +172,7 @@ namespace NewAudio.Core
                     res = res && c.Play();
                     return res ? Play : Invalid;
                 })
-                .When(LifecycleEvents.ePlay, (m, s, e, c) =>
+                .When(LifecycleEvents.EPlay, (m, s, e, c) =>
                 {
                     var inputValid = c.IsPlayValid();
                     if (!inputValid)
@@ -185,20 +183,20 @@ namespace NewAudio.Core
 
                     return c.Play() ? Task.FromResult(Play) : Task.FromResult(Invalid);
                 })
-                .When(LifecycleEvents.eFree, async (m, s, e, c) =>
+                .When(LifecycleEvents.EFree, async (m, s, e, c) =>
                 {
                     var res = c.Stop();
                     res = res && await c.Free();
                     return res ? Uninitialized : Invalid;
                 })
-                .When(LifecycleEvents.eStop,
+                .When(LifecycleEvents.EStop,
                     (m, s, e, c) => { return c.Stop() ? Task.FromResult(Init) : Task.FromResult(Invalid); });
         }
 
         private readonly ExceptionHandler _handler = new();
         private ActionBlock<Event> _actionBlock;
         public ManualResetEvent WaitForEvents = new(false);
-        private int _eventsInProcess = 0;
+        private int _eventsInProcess;
         private IDisposable _link;
 
         private BufferBlock<Event> _inputQueue = new(new DataflowBlockOptions()
@@ -278,7 +276,7 @@ namespace NewAudio.Core
                 {
                     var result = await Device.Init();
                     Logger.Information(
-                        "Init: {device}; result={result}", Device, result);
+                        "Init: {Device}; result={Result}", Device, result);
                     return result;
                 }
                 catch (Exception e)
@@ -294,7 +292,7 @@ namespace NewAudio.Core
                 {
                     var result = await Device.Free();
                     Logger.Information(
-                        "Free: {device}; result={result}", Device, result);
+                        "Free: {Device}; result={Result}", Device, result);
                     return result;
                 }
                 catch (Exception e)
@@ -310,7 +308,7 @@ namespace NewAudio.Core
                 {
                     var result = Device.Play();
                     Logger.Information(
-                        "Play: {device}; result={result}", Device, result);
+                        "Play: {Device}; result={Result}", Device, result);
                     return result;
                 }
                 catch (Exception e)
@@ -326,7 +324,7 @@ namespace NewAudio.Core
                 {
                     var result = Device.Stop();
                     Logger.Information(
-                        "Stop: {device}; result={result}", Device, result);
+                        "Stop: {Device}; result={Result}", Device, result);
                     return result;
                 }
                 catch (Exception e)
@@ -366,7 +364,7 @@ namespace NewAudio.Core
 
             public void ExceptionHappened(Exception e, string method)
             {
-                Logger.Error("ERROR {device}.{method} {e}", Device, method, e);
+                Logger.Error(e, "ERROR: {Device}.{Method}", Device, method);
                 Device.ExceptionHappened(e, method);
             }
         }

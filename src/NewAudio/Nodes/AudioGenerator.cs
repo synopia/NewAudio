@@ -1,11 +1,7 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
+﻿using System.Threading.Tasks;
 using NAudio.Wave;
 using NewAudio.Blocks;
 using NewAudio.Core;
-using Serilog;
 
 
 namespace NewAudio.Nodes
@@ -18,9 +14,9 @@ namespace NewAudio.Nodes
         public AudioParam<int> Channels;
         public AudioParam<int> DesiredLatency;
     }
+
     public class AudioGeneratorPlayParams : AudioNodePlayParams
     {
-        
     }
 
     public class AudioGenerator : AudioNode<AudioGeneratorInitParams, AudioGeneratorPlayParams>
@@ -34,11 +30,11 @@ namespace NewAudio.Nodes
         {
             InitLogger<AudioGenerator>();
             Logger.Information("AudioGenerator created");
-            _format = new AudioFormat(48000, 512, 1);
+            _format = new AudioFormat(48000, 512);
         }
 
         public AudioLink Update(SamplingFrequency samplingFrequency = SamplingFrequency.Hz44100, int sampleCount = 512,
-            int channels = 2, int desiredLatency = 250, bool interleaved= true)
+            int channels = 2, int desiredLatency = 250, bool interleaved = true)
         {
             InitParams.SamplingFrequency.Value = samplingFrequency;
             InitParams.SampleCount.Value = sampleCount;
@@ -56,11 +52,12 @@ namespace NewAudio.Nodes
 
         public override Task<bool> Init()
         {
-            _format = new AudioFormat((int)InitParams.SamplingFrequency.Value, InitParams.SampleCount.Value, InitParams.Channels.Value, InitParams.Interleaved.Value);
+            _format = new AudioFormat((int)InitParams.SamplingFrequency.Value, InitParams.SampleCount.Value,
+                InitParams.Channels.Value, InitParams.Interleaved.Value);
             _audioGeneratorBlock = new AudioGeneratorBlock();
             Output.Format = _format;
             _audioGeneratorBlock.Create(Output.TargetBlock, _format);
-            
+
             return Task.FromResult(true);
         }
 
@@ -81,7 +78,7 @@ namespace NewAudio.Nodes
             // Output.Source = null;
             return true;
         }
-        
+
         private bool _disposedValue;
 
         protected override void Dispose(bool disposing)
@@ -105,5 +102,4 @@ namespace NewAudio.Nodes
             return $"[{this}, {base.DebugInfo()}]";
         }
     }
-
 }

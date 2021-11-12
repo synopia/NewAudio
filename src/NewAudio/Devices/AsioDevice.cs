@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using NAudio.Wave;
-using NewAudio.Blocks;
 using NewAudio.Core;
-using Serilog;
-using SharedMemory;
 
 namespace NewAudio.Devices
 {
@@ -31,6 +26,7 @@ namespace NewAudio.Devices
             {
                 _asioOut = new AsioOut(_driverName);
             }
+
             return base.PrepareRecording(request);
         }
 
@@ -70,22 +66,26 @@ namespace NewAudio.Devices
                 // todo
                 _playingConfig.FrameSize = _asioOut.FramesPerBuffer;
                 _recordingConfig.FrameSize = _asioOut.FramesPerBuffer;
-            } else if (IsRecording)
+            }
+            else if (IsRecording)
             {
-                _asioOut.InitRecordAndPlayback(null, _recordingConfig.Channels, _recordingConfig.AudioFormat.SampleRate);
+                _asioOut.InitRecordAndPlayback(null, _recordingConfig.Channels,
+                    _recordingConfig.AudioFormat.SampleRate);
                 _asioOut.AudioAvailable += OnAsioData;
                 _recordingConfig.Channels = _asioOut.NumberOfInputChannels;
                 _recordingConfig.Latency = _asioOut.PlaybackLatency;
                 _recordingConfig.FrameSize = _asioOut.FramesPerBuffer;
-            } else if (IsPlaying)
+            }
+            else if (IsPlaying)
             {
                 _asioOut.Init(AudioDataProvider);
                 _playingConfig.Channels = _asioOut.NumberOfOutputChannels;
                 _playingConfig.Latency = _asioOut.PlaybackLatency;
                 _playingConfig.FrameSize = _asioOut.FramesPerBuffer;
             }
+
             _asioOut.Play();
-            return Task.FromResult(_asioOut.PlaybackState==PlaybackState.Playing);
+            return Task.FromResult(_asioOut.PlaybackState == PlaybackState.Playing);
         }
 
         public override bool Start()

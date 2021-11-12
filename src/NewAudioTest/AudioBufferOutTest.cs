@@ -10,16 +10,10 @@ using Serilog;
 namespace NewAudioTest
 {
     using NewAudioTest;
-    
+
     [TestFixture]
     public class AudioBufferOutTest : BaseDeviceTest
     {
-        [SetUp]
-        public void Setup()
-        {
-            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
-        }
-
         [Test]
         public void TestIt()
         {
@@ -39,16 +33,14 @@ namespace NewAudioTest
 
             var spread = buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
             buf.Lifecycle.WaitForEvents.WaitOne();
-            input.Device.RecordingBuffer().Write(new byte[512 * 2 * 4]);
-            input.Device.RecordingBuffer().Write(new byte[512 * 2 * 4]);
+            input.Device.RecordingBuffer().Write(new byte[512 * 4]);
+            input.Device.RecordingBuffer().Write(new byte[512 * 4]);
             Task.Delay(100).Wait();
             spread = buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
 
             Assert.IsEmpty(buf.ErrorMessages());
             Assert.AreEqual(LifecyclePhase.Play, buf.Phase);
             Assert.AreEqual(1024, spread.Count);
-            
-            
         }
     }
 }

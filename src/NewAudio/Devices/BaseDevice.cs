@@ -18,33 +18,33 @@ namespace NewAudio.Devices
         private readonly IResourceHandle<AudioService> _audioService;
 
         public AudioDataProvider AudioDataProvider { get; protected set; }
-        public AudioInputBlock AudioInputBlock  { get; protected set; }
-        public  AudioOutputBlock AudioOutputBlock { get; protected set; }
-        
+        public AudioInputBlock AudioInputBlock { get; protected set; }
+        public AudioOutputBlock AudioOutputBlock { get; protected set; }
+
         public CircularBuffer RecordingBuffer { get; private set; }
         public CircularBuffer PlayingBuffer { get; private set; }
 
         protected DeviceConfigResponse _recordingConfig;
-        protected DeviceConfigResponse _playingConfig; 
-        public  DeviceConfigResponse RecordingConfig=>_recordingConfig;
-        public  DeviceConfigResponse PlayingConfig=>_playingConfig; 
+        protected DeviceConfigResponse _playingConfig;
+        public DeviceConfigResponse RecordingConfig => _recordingConfig;
+        public DeviceConfigResponse PlayingConfig => _playingConfig;
         public bool IsPlaying { get; private set; }
         public bool IsRecording { get; private set; }
 
         private List<AudioInputBlockConfig> _inputBlockConfigs = new();
         private List<AudioOutputBlockConfig> _outputBlockConfigs = new();
-        
+
         // public BroadcastBlock<AudioDataMessage> InputBufferBlock = new BroadcastBlock<AudioDataMessage>(i => i);
-            // new ExecutionDataflowBlockOptions()
-            // {
-                // BoundedCapacity = 2,
-                // SingleProducerConstrained = true,
-                // MaxDegreeOfParallelism = 1
-            // });
+        // new ExecutionDataflowBlockOptions()
+        // {
+        // BoundedCapacity = 2,
+        // SingleProducerConstrained = true,
+        // MaxDegreeOfParallelism = 1
+        // });
         protected CancellationTokenSource CancellationTokenSource;
 
         private bool _generateSilence;
-        
+
         public bool GenerateSilence
         {
             get => _generateSilence;
@@ -64,34 +64,39 @@ namespace NewAudio.Devices
 
         public bool IsOutputDevice { get; protected set; }
 
-        protected BaseDevice():this(Factory.Instance){}
+        protected BaseDevice() : this(Factory.Instance)
+        {
+        }
 
         private BaseDevice(IFactory api)
         {
             _audioService = api.GetAudioService();
-
         }
-        
+
         protected void InitLogger<T>()
         {
             Logger = _audioService.Resource.GetLogger<T>();
         }
 
-        public async Task<DeviceConfigResponse> CreateInput(DeviceConfigRequest request, ITargetBlock<AudioDataMessage> targetBlock)
+        public async Task<DeviceConfigResponse> CreateInput(DeviceConfigRequest request,
+            ITargetBlock<AudioDataMessage> targetBlock)
         {
             try
             {
                 CancellationTokenSource ??= new CancellationTokenSource();
                 var config = PrepareRecording(request);
                 // todo: only channels will renew real device
-                if (AudioInputBlock == null || config.ChannelOffset!=_recordingConfig.ChannelOffset || config.Channels!=_recordingConfig.Channels )
+                if (AudioInputBlock == null || config.ChannelOffset != _recordingConfig.ChannelOffset ||
+                    config.Channels != _recordingConfig.Channels)
                 {
                     _recordingConfig = config;
                     if (AudioInputBlock != null)
                     {
                         AudioInputBlock.Dispose();
                     }
-                    _inputBlockConfigs.Add(new AudioInputBlockConfig(request.FirstChannel, request.LastChannel, targetBlock));
+
+                    _inputBlockConfigs.Add(new AudioInputBlockConfig(request.FirstChannel, request.LastChannel,
+                        targetBlock));
                     AudioInputBlock = new AudioInputBlock();
                     AudioInputBlock.Create(_inputBlockConfigs.ToArray(), config.AudioFormat, 2);
                     RecordingBuffer = AudioInputBlock.Buffer;
@@ -110,27 +115,32 @@ namespace NewAudio.Devices
                 };
                 return resp;
             }
-            catch (Exception e)
+            catch (Exception _)
             {
+                // todo still needed?
                 Dispose();
                 throw;
             }
         }
 
-        public async Task<DeviceConfigResponse> CreateOutput(DeviceConfigRequest request, ISourceBlock<AudioDataMessage> sourceBlock)
+        public async Task<DeviceConfigResponse> CreateOutput(DeviceConfigRequest request,
+            ISourceBlock<AudioDataMessage> sourceBlock)
         {
             try
             {
                 CancellationTokenSource ??= new CancellationTokenSource();
                 var config = PreparePlaying(request);
-                if (AudioOutputBlock == null || config.Channels!=_playingConfig.Channels || config.ChannelOffset!=_playingConfig.ChannelOffset)
+                if (AudioOutputBlock == null || config.Channels != _playingConfig.Channels ||
+                    config.ChannelOffset != _playingConfig.ChannelOffset)
                 {
                     _playingConfig = config;
                     if (AudioOutputBlock != null)
                     {
                         AudioOutputBlock.Dispose();
                     }
-                    _outputBlockConfigs.Add(new AudioOutputBlockConfig(request.FirstChannel, request.LastChannel ,sourceBlock));
+
+                    _outputBlockConfigs.Add(new AudioOutputBlockConfig(request.FirstChannel, request.LastChannel,
+                        sourceBlock));
                     AudioOutputBlock = new AudioOutputBlock();
                     AudioOutputBlock.Create(_outputBlockConfigs.ToArray(), config.AudioFormat, 2);
                     PlayingBuffer = AudioOutputBlock.Buffer;
@@ -143,6 +153,7 @@ namespace NewAudio.Devices
                     IsPlaying = true;
                     await Init();
                 }
+
                 var resp = new DeviceConfigResponse()
                 {
                     Channels = request.Channels,
@@ -159,8 +170,6 @@ namespace NewAudio.Devices
                 Dispose();
                 throw;
             }
-
-
         }
 
         protected virtual DeviceConfigResponse PrepareRecording(DeviceConfigRequest request)
@@ -178,7 +187,8 @@ namespace NewAudio.Devices
                     FrameSize = request.AudioFormat.BufferSize,
                     SupportedSamplingFrequencies = Enum.GetValues(typeof(SamplingFrequency)).Cast<SamplingFrequency>()
                 };
-            } else 
+            }
+            else
             {
                 var first = Math.Min(config.FirstChannel, request.FirstChannel);
                 var last = Math.Max(config.LastChannel, request.LastChannel);
@@ -189,10 +199,11 @@ namespace NewAudio.Devices
 
             return config;
         }
+
         protected virtual DeviceConfigResponse PreparePlaying(DeviceConfigRequest request)
         {
             var config = _playingConfig;
-            if (_outputBlockConfigs.Count==0)
+            if (_outputBlockConfigs.Count == 0)
             {
                 config = new DeviceConfigResponse()
                 {
@@ -222,7 +233,8 @@ namespace NewAudio.Devices
             var dir = IsPlaying && IsRecording ? "FD" : IsPlaying ? "P" : IsRecording ? "R" : "-";
             var input = IsRecording ? AudioInputBlock?.DebugInfo() : "";
             var output = IsPlaying ? AudioOutputBlock?.DebugInfo() : "";
-            return $"{dir}, cancelled={CancellationTokenSource?.Token.IsCancellationRequested}, in={input}, out={output}";
+            return
+                $"{dir}, cancelled={CancellationTokenSource?.Token.IsCancellationRequested}, in={input}, out={output}";
         }
 
         public override string ToString()
@@ -233,12 +245,17 @@ namespace NewAudio.Devices
         protected abstract Task<bool> Init();
         public abstract bool Start();
         public abstract bool Stop();
-        
+
         private bool _disposedValue;
-        public void Dispose() => Dispose(true);
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
-            Logger.Information("Dispose called for Device {t} ({d})", this, disposing);
+            Logger.Information("Dispose called for Device {This} ({Disposing})", this, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
@@ -246,7 +263,7 @@ namespace NewAudio.Devices
                     CancellationTokenSource?.Cancel();
                     AudioInputBlock?.Dispose();
                     AudioOutputBlock?.Dispose();
-                    _audioService?.Dispose();     
+                    _audioService?.Dispose();
                     CancellationTokenSource = null;
                     AudioInputBlock = null;
                     AudioOutputBlock = null;

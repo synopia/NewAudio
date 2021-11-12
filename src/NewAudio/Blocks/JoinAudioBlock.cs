@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Buffers;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
-using Serilog;
 
 namespace NewAudio.Blocks
 {
@@ -14,12 +12,8 @@ namespace NewAudio.Blocks
 
         public override ISourceBlock<AudioDataMessage> Source { get; set; }
         public override ITargetBlock<AudioDataMessage> Target { get; set; }
-        
-        private JoinBlock<AudioDataMessage, AudioDataMessage> _joinOneAndTwo;
 
-        public JoinAudioBlock()
-        {
-        }
+        private JoinBlock<AudioDataMessage, AudioDataMessage> _joinOneAndTwo;
 
         public void Create(AudioLink one, AudioLink two)
         {
@@ -38,47 +32,53 @@ namespace NewAudio.Blocks
                 var channels2 = two.Format.Channels;
                 var channels = channels1 + channels2;
                 var sampleCount = format.SampleCount;
-            
+
                 var output = new BufferBlock<AudioDataMessage>();
                 var outputFormat = format.WithChannels(channels);
-            
+
                 var joinOneAndTwo = new JoinBlock<AudioDataMessage, AudioDataMessage>(new GroupingDataflowBlockOptions()
                 {
-                    Greedy = true,
+                    Greedy = true
                 });
-                
+
                 var oneAndTwoAction = new ActionBlock<Tuple<AudioDataMessage, AudioDataMessage>>(input =>
                 {
-                    if (input.Item1.BufferSize != sampleCount*channels1)
+                    if (input.Item1.BufferSize != sampleCount * channels1)
                     {
-                        Logger.Error("Expected Input size: {inputSize}, actual: {actualSize}", sampleCount*channels1, input.Item1.BufferSize);
+                        Logger.Error("Expected Input size: {InputSize}, actual: {ActualSize}", sampleCount * channels1,
+                            input.Item1.BufferSize);
                     }
-                    if (input.Item2.BufferSize != sampleCount*channels2)
+
+                    if (input.Item2.BufferSize != sampleCount * channels2)
                     {
-                        Logger.Error("Expected Input size: {inputSize}, actual: {actualSize}", sampleCount*channels2, input.Item2.BufferSize);
+                        Logger.Error("Expected Input size: {InputSize}, actual: {ActualSize}", sampleCount * channels2,
+                            input.Item2.BufferSize);
                     }
 
                     var time1 = input.Item1.Time;
                     var time2 = input.Item2.Time;
                     if (time1 != time2)
                     {
-                        Logger.Warning("TIME DIFF {time1}!={time2}", time1, time2);
+                        Logger.Warning("TIME DIFF {Time1}!={Time2}", time1, time2);
                     }
+
                     var buf = new AudioDataMessage(outputFormat, sampleCount)
                     {
                         Time = time1 // todo
                     };
-                    for (int i = 0; i < sampleCount; i++)
+                    for (var i = 0; i < sampleCount; i++)
                     {
-                        for (int c = 0; c < channels1; c++)
+                        for (var c = 0; c < channels1; c++)
                         {
                             buf.Data[i * channels + c] = input.Item1.Data[i * channels1 + c];
                         }
-                        for (int c = 0; c < channels2; c++)
+
+                        for (var c = 0; c < channels2; c++)
                         {
                             buf.Data[i * channels + channels1 + c] = input.Item2.Data[i * channels2 + c];
                         }
                     }
+
                     output.Post(buf);
                 }, new ExecutionDataflowBlockOptions()
                 {
@@ -88,14 +88,14 @@ namespace NewAudio.Blocks
                 _joinOneAndTwo = joinOneAndTwo;
                 _link1 = one.SourceBlock.LinkTo(_joinOneAndTwo.Target1);
                 _link2 = two.SourceBlock.LinkTo(_joinOneAndTwo.Target2);
-            
+
                 _joinOneAndTwo.LinkTo(oneAndTwoAction);
-                
+
                 OutputFormat = outputFormat;
                 Source = output;
             }
         }
-        
+
         private bool _disposedValue;
 
         protected override void Dispose(bool disposing)

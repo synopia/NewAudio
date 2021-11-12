@@ -21,7 +21,10 @@ namespace NewAudio.Blocks
         private CancellationToken _token;
         private Thread _thread;
 
-        public AudioGeneratorBlock(): this(Factory.Instance){}
+        public AudioGeneratorBlock() : this(Factory.Instance)
+        {
+        }
+
         public AudioGeneratorBlock(IFactory api)
         {
             _audioService = api.GetAudioService();
@@ -34,7 +37,7 @@ namespace NewAudio.Blocks
             OutputFormat = format;
             Start();
         }
-        
+
         public async Task<bool> Free()
         {
             await Stop();
@@ -45,7 +48,7 @@ namespace NewAudio.Blocks
         {
             if (_thread != null)
             {
-                _logger.Warning("Thread != null {thread}", _thread);
+                _logger.Warning("Thread != null {Thread}", _thread.Name);
             }
 
             _cancellationTokenSource = new CancellationTokenSource();
@@ -63,15 +66,15 @@ namespace NewAudio.Blocks
         {
             if (_thread == null)
             {
-                _logger.Error("Thread == null {thread}", _thread);
+                _logger.Error("Thread == null");
                 return Task.FromResult(false);
             }
 
             if (_token.IsCancellationRequested)
             {
                 _logger.Warning("Already stopping!");
-
             }
+
             _cancellationTokenSource.Cancel();
             _thread.Join();
             _logger.Information("Audio generator thread finished");
@@ -105,23 +108,23 @@ namespace NewAudio.Blocks
                             Thread.Sleep(1);
                         }
                     } while (timeDiff > 0.1 && !_token.IsCancellationRequested);
-
                 }
             }
             catch (Exception e)
             {
-                _logger.Error("{e}", e);
-    
+                _logger.Error(e, "Exception in AudioGenerator loop");
             }
         }
-        
-        public void Dispose() => Dispose(true);
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
 
         private bool _disposedValue;
 
         private void Dispose(bool disposing)
         {
-            _logger.Information("Dispose called for AudioGeneratorBlock {t} ({d})", this, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
@@ -134,7 +137,7 @@ namespace NewAudio.Blocks
                 _disposedValue = disposing;
             }
         }
-        
+
         public void Complete()
         {
             throw new Exception("This should not be called!");

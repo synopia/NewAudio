@@ -40,7 +40,7 @@ namespace NewAudio.Devices
         {
             return HardwareChangedEvents.HardwareChanged;
         }
-        protected override bool AutoSortAlphabetically => false;
 
+        protected override bool AutoSortAlphabetically => false;
     }
 }
