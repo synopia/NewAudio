@@ -1,6 +1,7 @@
 ﻿using System;
 using NewAudio.Core;
 using NewAudio.Devices;
+using NUnit.Framework;
 using Serilog;
 using VL.Lib.Basics.Resources;
 
@@ -41,20 +42,11 @@ namespace NewAudioTest
             return new TestResourceHandle<DriverManager>(_driverManager);
         }
 
-        public IResourceHandle<IDevice> GetInputDevice(InputDeviceSelection deviceSelection)
-        {
-            return new TestResourceHandle<IDevice>((IDevice)deviceSelection.Tag);
-        }
-
-        public IResourceHandle<IDevice> GetOutputDevice(OutputDeviceSelection deviceSelection)
-        {
-            return new TestResourceHandle<IDevice>((IDevice)deviceSelection.Tag);
-        }
     }
     public class BaseTest : IDisposable
     {
         protected ILogger Logger;
-        private readonly IResourceHandle<AudioService> _audioService;
+        private IResourceHandle<AudioService> _audioService;
 
         protected BaseTest()
         {
@@ -72,5 +64,9 @@ namespace NewAudioTest
             _audioService.Dispose();
         }
 
+        [SetUp]
+        public void InitTest()
+        {
+        }
     }
 }

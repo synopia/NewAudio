@@ -27,7 +27,7 @@ namespace NewAudio.Blocks
         }
     }
 
-    public sealed class AudioOutputBlock 
+    public sealed class AudioOutputBlock : IDisposable
     {
         private readonly ILogger _logger;
         private readonly IResourceHandle<AudioService> _audioService;
@@ -236,6 +236,7 @@ namespace NewAudio.Blocks
                 {
                     Stop();
                     Buffer.Dispose();
+                    _buffer.Dispose();
                     _audioService.Dispose();
                 }
 

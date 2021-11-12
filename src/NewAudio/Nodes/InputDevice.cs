@@ -27,9 +27,11 @@ namespace NewAudio.Nodes
         public override string NodeName => "Input";
         
         private IResourceHandle<DriverManager> _driverManager;
-
+        
         private VirtualDevice _device;
         private AudioFormat _format;
+
+        public VirtualDevice Device => _device;
 
         public InputDevice()
         {

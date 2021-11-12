@@ -50,7 +50,6 @@ namespace NewAudio.Core
 
         private void Dispose(bool disposing)
         {
-            _logger.Information("Dispose called for AudioLink {t} ({d})", this, disposing);
             if (!_disposedValue)
             {
                 if (disposing)

@@ -26,7 +26,7 @@ namespace NewAudioTest
                 samples += input.SampleCount;
                 // log.Information("{time}: {input}", sw.Elapsed.TotalSeconds, input.BufferSize);
             });
-            var b = new AudioGeneratorBlock();
+            using var b = new AudioGeneratorBlock();
             b.Create(sink, f);
 
             sw.Start();

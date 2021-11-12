@@ -39,6 +39,7 @@ namespace NewAudio.Devices
     {
         public string Name { get; }
         public string DriverName { get; }
+        
         public bool IsInputDevice { get; }
         public bool IsOutputDevice { get; }
 
@@ -48,6 +49,11 @@ namespace NewAudio.Devices
             Name = name;
             IsInputDevice = isInputDevice;
             IsOutputDevice = isOutputDevice;
+        }
+
+        public override string ToString()
+        {
+            return $"{DriverName}: {Name}";
         }
     }
     
@@ -65,6 +71,8 @@ namespace NewAudio.Devices
         public bool Stop();
 
         public string DebugInfo();
+        public DeviceConfigResponse RecordingConfig { get; }
+        public DeviceConfigResponse PlayingConfig { get; }
 
     }
 }

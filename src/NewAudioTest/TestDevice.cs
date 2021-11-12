@@ -17,7 +17,14 @@ namespace NewAudioTest
     {
         public static List<String> MethodCalls(this VirtualDevice vd)
         {
-            return ((TestDevice)vd.Device).MethodCalls;
+            if (vd.Name == "INPUT")
+            {
+                return ((TestDevice)vd.Device).Driver.InputMethodCalls;
+            }
+            else
+            {
+                return ((TestDevice)vd.Device).Driver.OutputMethodCalls;
+            }
         }
         public static CircularBuffer RecordingBuffer(this VirtualDevice vd)
         {
@@ -27,102 +34,98 @@ namespace NewAudioTest
     
     public class BaseDeviceTest : BaseTest
     {
-        private IResourceHandle<DriverManager> _driverManager; 
-        public VirtualDevice InputDevice;
-        public VirtualDevice OutputDevice;
+        public IResourceHandle<DriverManager> DriverManager; 
         public InputDeviceSelection InputEnum;
         public OutputDeviceSelection OutputEnum;
         public OutputDeviceSelection OutputNullEnum;
         public InputDeviceSelection InputNullEnum;
-        
+        private TestDriver _testDriver;
+
         protected BaseDeviceTest()
         {
-            _driverManager = Factory.Instance.GetDriverManager();
-            _driverManager.Resource.AddDriver(new TestDriver());
-            
-            InputEnum = new InputDeviceSelection("TEST INPUT");
-            OutputEnum = new OutputDeviceSelection("TEST OUTPUT");
+            DriverManager = Factory.Instance.GetDriverManager();
+            _testDriver = new TestDriver();
+            DriverManager.Resource.AddDriver(_testDriver);
+            InputEnum = new InputDeviceSelection("TEST: INPUT");
+            OutputEnum = new OutputDeviceSelection("TEST: OUTPUT");
             InputNullEnum = new InputDeviceSelection("Null: Input");
             OutputNullEnum = new OutputDeviceSelection("Null: Output");
-            InputDevice = _driverManager.Resource.GetInputDevice(InputEnum);
-            OutputDevice = _driverManager.Resource.GetOutputDevice(OutputEnum);
         }
 
         [SetUp]
         public void Init()
         {
-            InputDevice.MethodCalls().Clear();
-            OutputDevice.MethodCalls().Clear();
+            DriverManager = Factory.Instance.GetDriverManager();
+            _testDriver.InputMethodCalls.Clear();
+            _testDriver.OutputMethodCalls.Clear();
         }
 
-        
+        [TearDown]
+        public void Teardown()
+        {
+            DriverManager = Factory.Instance.GetDriverManager();
+            Assert.IsEmpty(DriverManager.Resource.CheckPools());
+        }
     }
     public class TestDriver : IDriver
     {
         public string Name => "TEST";
+        public List<string> InputMethodCalls = new();
+        public List<string> OutputMethodCalls = new();
 
+        public void AddCall(string who, string what)
+        {
+            if( who=="INPUT" ) InputMethodCalls.Add(what);
+            if(who=="OUTPUT") OutputMethodCalls.Add(what);
+        }
         public IEnumerable<DeviceSelection> GetDeviceSelections()
         {
-            return new[] { new DeviceSelection(Name, "TEST INPUT",true, false ), new DeviceSelection(Name, "TEST OUTPUT", false, true), };
+            return new[] { new DeviceSelection(Name, "INPUT",true, false ), new DeviceSelection(Name, "OUTPUT", false, true), };
         }
 
         public IDevice CreateDevice(DeviceSelection selection)
         {
-            return new TestDevice(selection.Name);
+            return new TestDevice(this, selection.Name);
         }
     }
     
     public class TestDevice : BaseDevice
     {
-        public List<string> MethodCalls = new();
+        private TestDriver _driver;
 
-        protected override void Dispose(bool dispose)
+        public TestDriver Driver => _driver;
+        public TestDevice(TestDriver driver, string name)
         {
-            MethodCalls.Add("Dispose");
-        }
-
-        public TestDevice(string name)
-        {
+            _driver = driver;
             Name = name;
+            InitLogger<TestDevice>();
             IsInputDevice = true;
             IsOutputDevice = true;
         }
+        
 
         protected override Task<bool> Init()
         {
-            if (IsRecording)
-            {
-                MethodCalls.Add($"InitRecording");
-            }
-
-            if (IsPlaying)
-            {
-                MethodCalls.Add($"InitPlayback");
-            }
+            _driver.AddCall(Name, "Init");
             return  Task.FromResult<bool>(true);
         }
 
         public override bool Start()
         {
-            MethodCalls.Add(IsPlaying ? "Play" : "Record");
+            _driver.AddCall(Name, "Start");
             return true;
         }
 
         public override bool Stop()
         {
-            MethodCalls.Add("Stop");
+            _driver.AddCall(Name, "Stop");
             return true;
         }
 
-        public void ExceptionHappened(Exception e, string method)
+        protected override void Dispose(bool dispose)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<DeviceConfigResponse> Create(DeviceConfigRequest config)
-        {
-            
-            return Task.FromResult(new DeviceConfigResponse());
+            _driver.AddCall(Name, "Dispose");
+            base.Dispose(dispose);
         }
     }
 }

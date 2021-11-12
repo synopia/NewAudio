@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NewAudio.Core;
+using VL.Lib.Adaptive;
 using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Devices
@@ -11,6 +12,7 @@ namespace NewAudio.Devices
     {
         private readonly List<DeviceSelection> _devices = new();
         private readonly List<IDriver> _drivers = new();
+        private readonly HashSet<IResourceProvider<IDevice>> _pools = new ();
 
         public DriverManager()
         {
@@ -26,12 +28,27 @@ namespace NewAudio.Devices
             }
 
             _devices.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.Ordinal));
+            _drivers.Insert(0, new NullDriver());
             _devices.InsertRange(0, new NullDriver().GetDeviceSelections());
         }
 
+        public List<IDevice> CheckPools()
+        {
+            var openDevices = new List<IDevice>();
+            foreach (var pool in _pools)
+            {
+                if (pool.Monitor().SinkCount > 0)
+                {
+                   openDevices.AddRange(pool.Monitor().ResourcesUsedBySinks);
+                }
+            }
+
+            return openDevices;
+        }
+        
         private IResourceHandle<IDevice> GetHandle(string name)
         {
-            var selection = _devices.Find(d => d.Name == name);
+            var selection = _devices.Find(d => d.ToString() == name);
             if (selection == null)
             {
                 return null;
@@ -42,21 +59,31 @@ namespace NewAudio.Devices
             {
                 return null;
             }
-            var pool = ResourceProvider.NewPooledSystemWide($"{driver.Name}.{selection.Name}", s =>
+
+            var pool = ResourceProvider.NewPooledSystemWide(selection.ToString(), s =>
             {
                 return driver.CreateDevice(selection);
             });
+            _pools.Add(pool);
             return pool.GetHandle();
         }
         public VirtualDevice GetInputDevice(InputDeviceSelection inputDeviceSelection)
         {
             var resource =  GetHandle(inputDeviceSelection.Value);
+            if (resource == null)
+            {
+                return null;
+            }
             var virtualDevice = new VirtualDevice(resource);
             return virtualDevice;
         }
         public VirtualDevice GetOutputDevice(OutputDeviceSelection outputDeviceSelection)
         {
             var resource =  GetHandle(outputDeviceSelection.Value);
+            if (resource == null)
+            {
+                return null;
+            }
             var virtualDevice = new VirtualDevice(resource);
             return virtualDevice;
         }

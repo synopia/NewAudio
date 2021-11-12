@@ -24,8 +24,10 @@ namespace NewAudio.Devices
         public CircularBuffer RecordingBuffer { get; private set; }
         public CircularBuffer PlayingBuffer { get; private set; }
 
-        public DeviceConfigResponse RecordingConfig;
-        public DeviceConfigResponse PlayingConfig;
+        protected DeviceConfigResponse _recordingConfig;
+        protected DeviceConfigResponse _playingConfig; 
+        public  DeviceConfigResponse RecordingConfig=>_recordingConfig;
+        public  DeviceConfigResponse PlayingConfig=>_playingConfig; 
         public bool IsPlaying { get; private set; }
         public bool IsRecording { get; private set; }
 
@@ -82,9 +84,9 @@ namespace NewAudio.Devices
                 CancellationTokenSource ??= new CancellationTokenSource();
                 var config = PrepareRecording(request);
                 // todo: only channels will renew real device
-                if (AudioInputBlock == null || config.ChannelOffset!=RecordingConfig.ChannelOffset || config.Channels!=RecordingConfig.Channels )
+                if (AudioInputBlock == null || config.ChannelOffset!=_recordingConfig.ChannelOffset || config.Channels!=_recordingConfig.Channels )
                 {
-                    RecordingConfig = config;
+                    _recordingConfig = config;
                     if (AudioInputBlock != null)
                     {
                         AudioInputBlock.Dispose();
@@ -121,9 +123,9 @@ namespace NewAudio.Devices
             {
                 CancellationTokenSource ??= new CancellationTokenSource();
                 var config = PreparePlaying(request);
-                if (AudioOutputBlock == null || config.Channels!=PlayingConfig.Channels || config.ChannelOffset!=PlayingConfig.ChannelOffset)
+                if (AudioOutputBlock == null || config.Channels!=_playingConfig.Channels || config.ChannelOffset!=_playingConfig.ChannelOffset)
                 {
-                    PlayingConfig = config;
+                    _playingConfig = config;
                     if (AudioOutputBlock != null)
                     {
                         AudioOutputBlock.Dispose();
@@ -163,7 +165,7 @@ namespace NewAudio.Devices
 
         protected virtual DeviceConfigResponse PrepareRecording(DeviceConfigRequest request)
         {
-            var config = RecordingConfig;
+            var config = _recordingConfig;
             if (_inputBlockConfigs.Count == 0)
             {
                 config = new DeviceConfigResponse()
@@ -189,7 +191,7 @@ namespace NewAudio.Devices
         }
         protected virtual DeviceConfigResponse PreparePlaying(DeviceConfigRequest request)
         {
-            var config = PlayingConfig;
+            var config = _playingConfig;
             if (_outputBlockConfigs.Count==0)
             {
                 config = new DeviceConfigResponse()
@@ -241,13 +243,8 @@ namespace NewAudio.Devices
             {
                 if (disposing)
                 {
-                    if (!CancellationTokenSource.IsCancellationRequested)
-                    {
-                        Logger.Error("Should be canceled already");
-                    }
-                    Logger.Information("AudioInputBlock?.Dispose");
+                    CancellationTokenSource?.Cancel();
                     AudioInputBlock?.Dispose();
-                    Logger.Information("AudioOutputBlock?.Dispose");
                     AudioOutputBlock?.Dispose();
                     _audioService?.Dispose();     
                     CancellationTokenSource = null;

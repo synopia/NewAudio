@@ -36,7 +36,7 @@ namespace NewAudio.Nodes
         private readonly TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
         private IDisposable _link;
 
-
+        public VirtualDevice Device => _device;
         private int _counter;
         private long _lag;
         public double LagMs { get; private set; }
@@ -118,8 +118,6 @@ namespace NewAudio.Nodes
             
             _format = resp.AudioFormat;
             var output = res.Item2;
-            // _audioOutputBlock = new AudioOutputBlock();
-            // _audioOutputBlock.Create(_format, 2);
             _link = _processor.LinkTo(output);
 
             return true;
@@ -129,7 +127,6 @@ namespace NewAudio.Nodes
         {
             _link.Dispose();
             _device.Dispose();
-            // await _audioOutputBlock.Free();
             return Task.FromResult(true);
         }
 
@@ -152,7 +149,6 @@ namespace NewAudio.Nodes
             return $"Output device:[{base.DebugInfo()}]";
         }
 
-
         private bool _disposedValue;
 
         protected override void Dispose(bool disposing)
@@ -162,7 +158,6 @@ namespace NewAudio.Nodes
                 if (disposing)
                 {
                     _device?.Dispose();
-                    // _audioOutputBlock?.Dispose();
                     _device = null;
                     _audioOutputBlock = null;
                     _driverManager.Dispose();

@@ -10,8 +10,8 @@ namespace NewAudio.Devices
         {
             return new List<DeviceSelection>
             {
-                new(Name, "Null: Input", true, false),
-                new(Name, "Null: Output", false, true)
+                new(Name, "Input", true, false),
+                new(Name, "Output", false, true)
             };
         }
 

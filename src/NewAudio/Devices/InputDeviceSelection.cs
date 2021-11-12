@@ -37,7 +37,7 @@ namespace NewAudio.Devices
 
             foreach (var device in driverManager.GetInputDevices())
             {
-                devices[device.Name] = null;
+                devices[device.ToString()] = null;
             }
 
             return devices;

@@ -51,8 +51,8 @@ namespace NewAudio.Core
         {
             base.OnStateChanged(context, oldState, newState);
             var device = (ExceptionHandler)context;
-            context.Logger.Information("LIFECYLE: {device} STATE CHANGE {old}=>{new}, P={phase}",
-                device.Device, oldState.Name, newState.Name, device.Device.Phase);
+            context.Logger.Information("{device} state changed {old}=>{new}",
+                device.Device, oldState.Name, newState.Name);
         }
 
         public static readonly State Uninitialized = AddState("Uninitialized");
@@ -278,12 +278,12 @@ namespace NewAudio.Core
                 {
                     var result = await Device.Init();
                     Logger.Information(
-                        "LIFECYLE: {device} Create, result={result}", Device, result);
+                        "Init: {device}; result={result}", Device, result);
                     return result;
                 }
                 catch (Exception e)
                 {
-                    ExceptionHappened(e, "Create");
+                    ExceptionHappened(e, "Init");
                     return false;
                 }
             }
@@ -294,7 +294,7 @@ namespace NewAudio.Core
                 {
                     var result = await Device.Free();
                     Logger.Information(
-                        "LIFECYLE: {device} Free, result={result}", Device, result);
+                        "Free: {device}; result={result}", Device, result);
                     return result;
                 }
                 catch (Exception e)
@@ -310,7 +310,7 @@ namespace NewAudio.Core
                 {
                     var result = Device.Play();
                     Logger.Information(
-                        "LIFECYLE: {device} Play, result={result}", Device, result);
+                        "Play: {device}; result={result}", Device, result);
                     return result;
                 }
                 catch (Exception e)
@@ -326,7 +326,7 @@ namespace NewAudio.Core
                 {
                     var result = Device.Stop();
                     Logger.Information(
-                        "LIFECYLE: {device} Stop, result={result}", Device, result);
+                        "Stop: {device}; result={result}", Device, result);
                     return result;
                 }
                 catch (Exception e)
@@ -341,8 +341,6 @@ namespace NewAudio.Core
                 try
                 {
                     var result = Device.IsInitValid();
-                    Logger.Information(
-                        "LIFECYLE: {device} IsInputValid, result={result}", Device, result);
                     return result;
                 }
                 catch (Exception e)
@@ -357,8 +355,6 @@ namespace NewAudio.Core
                 try
                 {
                     var result = Device.IsPlayValid();
-                    Logger.Information(
-                        "LIFECYLE: {device} IsUpdateValid, result={result}", Device, result);
                     return result;
                 }
                 catch (Exception e)

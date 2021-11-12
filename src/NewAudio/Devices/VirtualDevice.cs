@@ -21,6 +21,7 @@ namespace NewAudio.Devices
 
         public IDevice Device => _realDevice;  
         public string Name => _realDevice.Name;
+         
         public bool IsInputDevice => _realDevice.IsInputDevice;
         public bool IsOutputDevice => _realDevice.IsOutputDevice;
         public AudioDataProvider AudioDataProvider => _realDevice.AudioDataProvider;
@@ -70,11 +71,6 @@ namespace NewAudio.Devices
         }
 
         
-        public bool Free()
-        {
-            return true;
-        }
-
         public bool Start()
         {
             return _realDevice?.Start() ?? true;
@@ -101,6 +97,11 @@ namespace NewAudio.Devices
                 _resource?.Dispose();
                 _disposedValue = true;
             }
+        }
+
+        public override string ToString()
+        {
+            return _realDevice?.Name ?? "";
         }
     }
 }

@@ -40,7 +40,7 @@ namespace NewAudio.Devices
             if (IsOutputDevice && IsPlaying)
             {
                 var device = new MMDeviceEnumerator().GetDevice(_deviceId);
-                _wavePlayer = new WasapiOut(device, AudioClientShareMode.Shared, true, PlayingConfig.Latency);
+                _wavePlayer = new WasapiOut(device, AudioClientShareMode.Shared, true, _playingConfig.Latency);
                 _wavePlayer.Init(AudioDataProvider);
                 _wavePlayer.Play();
             } else if (IsInputDevice && IsRecording)
@@ -50,7 +50,7 @@ namespace NewAudio.Devices
                     var device = new MMDeviceEnumerator().GetDevice(_deviceId);
                     _loopback = new WasapiLoopbackCapture(device);
                     _loopback.DataAvailable += DataAvailable;
-                    RecordingConfig.AudioFormat = RecordingConfig.AudioFormat.WithWaveFormat(_loopback.WaveFormat);
+                    _recordingConfig.AudioFormat = _recordingConfig.AudioFormat.WithWaveFormat(_loopback.WaveFormat);
                     _loopback.StartRecording();
                 }
                 else 
@@ -58,10 +58,10 @@ namespace NewAudio.Devices
                     var device = new MMDeviceEnumerator().GetDevice(_deviceId);
                     _capture = new WasapiCapture(device)
                     {
-                        WaveFormat = RecordingConfig.AudioFormat.WaveFormat
+                        WaveFormat = _recordingConfig.AudioFormat.WaveFormat
                     };
                     _capture.DataAvailable += DataAvailable;
-                    RecordingConfig.AudioFormat = RecordingConfig.AudioFormat.WithWaveFormat(_capture.WaveFormat);
+                    _recordingConfig.AudioFormat = _recordingConfig.AudioFormat.WithWaveFormat(_capture.WaveFormat);
                     _capture.StartRecording();
                 }
             }
@@ -111,13 +111,9 @@ namespace NewAudio.Devices
                     var toCopy = Math.Min(_temp.Length - _tempPos, remaining);
                     if (toCopy < 0 || toCopy>_temp.Length)
                     {
-                        Logger.Error("HAE???? {l}-{p} = {t}", _temp.Length, _tempPos, toCopy);
-                        break;
+                        throw new Exception("Wrong writing position! Multiple threads are operating?");
                     }
-                    else
-                    {
-                        Array.Copy(evt.Buffer, pos, _temp, _tempPos, toCopy);
-                    }
+                    Array.Copy(evt.Buffer, pos, _temp, _tempPos, toCopy);
 
                     _tempPos += toCopy;
                     pos += toCopy;

@@ -10,7 +10,7 @@ using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Blocks
 {
-    public class AudioGeneratorBlock : ISourceBlock<AudioDataMessage>
+    public class AudioGeneratorBlock : ISourceBlock<AudioDataMessage>, IDisposable
     {
         private readonly ILogger _logger;
         private readonly IResourceHandle<AudioService> _audioService;

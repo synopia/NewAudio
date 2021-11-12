@@ -199,11 +199,12 @@ namespace NewAudio.Blocks
             {
                 if (disposing)
                 {
-                    _logger.Warning("WAIT FOR IN READING");
                     Stop();
-                    Buffer.Dispose();
+                    Buffer?.Dispose();
+                    _buffer?.Dispose();
                     _thread = null;
                     Buffer = null;
+                    _buffer = null;
                     _audioService.Dispose();
                 }
 

@@ -17,21 +17,21 @@ namespace NewAudio.Devices
             {
                 var name = $"Wasapi: {wasapi.FriendlyName}";
                 map[name] = wasapi.ID;
-                list.Add(new (Name, name, true, false)); //, wasapi.ID
+                list.Add(new (Name, wasapi.FriendlyName, true, false)); //, wasapi.ID
             }
 
             foreach (var wasapi in enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active))
             {
                 var name = $"Wasapi Loopback: {wasapi.FriendlyName}";
                 map[name] = wasapi.ID;
-                list.Add(new(Name, name, true, false));
+                list.Add(new(Name, wasapi.FriendlyName, true, false));
             }
 
             foreach (var wasapi in enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active))
             {
                 var name = $"Wasapi: {wasapi.FriendlyName}";
                 map[name] = wasapi.ID;
-                list.Add(new(Name, name, false, true));
+                list.Add(new(Name, wasapi.FriendlyName, false, true));
             }
 
             return list;

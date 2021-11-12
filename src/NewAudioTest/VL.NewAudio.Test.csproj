@@ -29,7 +29,6 @@
         <ProjectReference Include="..\NewAudio\VL.NewAudio.csproj" />
         <PackageReference Include="NUnitLite" Version="3.13.2" />
         <PackageReference Include="System.Threading.Tasks.Dataflow" Version="5.0.0" />
-        <PackageReference Include="VL.Core" Version="2021.3.2" />
         <PackageReference Include="NAudio" Version="2.0.1" />
         <PackageReference Include="NAudio.Asio" Version="2.0.0" />
         <PackageReference Include="NAudio.Core" Version="2.0.0" />
