@@ -99,6 +99,11 @@ namespace NewAudio.Core
         public IEnumerable<IAudioParam> ChangedValues => Params.Values.Where(p => p.HasChanged);
         public Func<Task> OnChange;
 
+        public static T Create<T>()
+        {
+            return (T)Activator.CreateInstance(typeof(T));
+        }
+        
         public void AddGroupOnChange(IEnumerable<IAudioParam> param, Func<Task> action)
         {
             foreach (var p in param)

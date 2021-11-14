@@ -30,31 +30,32 @@ namespace NewAudioTest
         {
             using var input = new InputDevice();
             using var output = new OutputDevice();
-            input.Update(InputEnum, SamplingFrequency.Hz48000, 0, 1);
-            output.Update(null, OutputEnum, SamplingFrequency.Hz48000, 0, 1);
+            input.Update(InputDevice, SamplingFrequency.Hz48000, 0, 1);
+            output.Update(null, OutputDevice, SamplingFrequency.Hz48000, 0, 1);
             input.Lifecycle.WaitForEvents.WaitOne();
             output.Lifecycle.WaitForEvents.WaitOne();
 
-            using var vd1 = DriverManager.Resource.GetInputDevice(InputEnum);
+            using var vd1 = DriverManager.Resource.GetInputDevice(InputDevice);
             Assert.AreSame(input.Device.Device, vd1.Device);
-            using var vd2 = DriverManager.Resource.GetInputDevice(new InputDeviceSelection(InputEnum.Value));
+            using var vd2 = DriverManager.Resource.GetInputDevice(new InputDeviceSelection(InputDevice.Value));
             Assert.AreSame(input.Device.Device, vd2.Device);
-            using var vd3 = DriverManager.Resource.GetOutputDevice(OutputEnum);
+            using var vd3 = DriverManager.Resource.GetOutputDevice(OutputDevice);
             Assert.AreSame(output.Device.Device, vd3.Device);
-            using var vd4 = DriverManager.Resource.GetOutputDevice(new OutputDeviceSelection(OutputEnum.Value));
+            using var vd4 = DriverManager.Resource.GetOutputDevice(new OutputDeviceSelection(OutputDevice.Value));
             Assert.AreSame(output.Device.Device, vd4.Device);
 
-            using var vd5 = DriverManager.Resource.GetInputDevice(InputEnum);
+            using var vd5 = DriverManager.Resource.GetInputDevice(InputDevice);
             Assert.AreNotSame(input.Device, vd5);
-            using var vd6 = DriverManager.Resource.GetOutputDevice(OutputEnum);
+            using var vd6 = DriverManager.Resource.GetOutputDevice(OutputDevice);
             Assert.AreNotSame(output.Device, vd6);
         }
 
+        /*
         [Test]
         public void TestCreateInput2Ch()
         {
             using var input = new InputDevice();
-            input.Update(InputEnum, SamplingFrequency.Hz48000, 0, 1);
+            input.Update(InputDevice(), SamplingFrequency.Hz48000, 0, 1);
             input.Lifecycle.WaitForEvents.WaitOne();
 
             var task = input.Device.CreateInput(new DeviceConfigRequest()
@@ -77,7 +78,7 @@ namespace NewAudioTest
         public void TestCreateInput2x2Ch()
         {
             using var input = new InputDevice();
-            input.Update(InputEnum, SamplingFrequency.Hz48000, 0, 1);
+            input.Update(InputDevice(), SamplingFrequency.Hz48000, 0, 1);
             input.Lifecycle.WaitForEvents.WaitOne();
             var task1 = input.Device.CreateInput(new DeviceConfigRequest()
             {
@@ -114,6 +115,7 @@ namespace NewAudioTest
             Assert.AreEqual(48000, input.Device.Device.RecordingConfig.AudioFormat.SampleRate);
             Assert.AreEqual(512 * 4, input.Device.Device.RecordingConfig.AudioFormat.BufferSize);
         }
+        */
 
         [Test]
         public void TestLifecyclePlayStopPlay()
@@ -126,9 +128,47 @@ namespace NewAudioTest
             Assert.AreEqual(LifecyclePhase.Uninitialized, output.Phase);
             Assert.AreEqual(LifecyclePhase.Uninitialized, input.Phase);
 
-            input.Update(InputEnum);
-            output.Update(input.Output, OutputEnum);
+            input.Update(InputDevice);
+            output.Update(input.Output, OutputDevice);
 
+            Wait(input, output);
+            Assert.AreEqual(LifecyclePhase.Init, input.Phase);
+            Assert.AreEqual(LifecyclePhase.Init, output.Phase);
+            Assert.AreEqual(new[] { "Init" }, input.Device.MethodCalls(),
+                string.Join(", ", input.Device.MethodCalls()));
+            Assert.AreEqual(new[] { "Init" }, output.Device.MethodCalls(),
+                string.Join(", ", output.Device.MethodCalls()));
+
+            input.PlayParams.Playing.Value = true;
+            output.PlayParams.Playing.Value = true;
+            input.Update(InputDevice);
+            output.Update(input.Output, OutputDevice);
+            Wait(input, output);
+
+            Assert.AreEqual(LifecyclePhase.Play, input.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, output.Phase);
+            Assert.AreEqual(new[] { "Init" }, input.Device.MethodCalls(),
+                string.Join(", ", input.Device.MethodCalls()));
+            Assert.AreEqual(new[] { "Init" }, output.Device.MethodCalls(),
+                string.Join(", ", output.Device.MethodCalls()));
+
+            input.PlayParams.Playing.Value = true;
+            output.PlayParams.Playing.Value = true;
+            input.Update(InputDevice);
+            output.Update(input.Output, OutputDevice);
+            Wait(input, output);
+            ;
+            Assert.AreEqual(LifecyclePhase.Play, input.Phase);
+            Assert.AreEqual(LifecyclePhase.Play, output.Phase);
+            Assert.AreEqual(new[] { "Init" }, input.Device.MethodCalls(),
+                string.Join(", ", input.Device.MethodCalls()));
+            Assert.AreEqual(new[] { "Init" }, output.Device.MethodCalls(),
+                string.Join(", ", output.Device.MethodCalls()));
+
+            input.PlayParams.Playing.Value = false;
+            output.PlayParams.Playing.Value = false;
+            input.Update(InputDevice);
+            output.Update(input.Output, OutputDevice);
             Wait(input, output);
             ;
             Assert.AreEqual(LifecyclePhase.Init, input.Phase);
@@ -140,54 +180,15 @@ namespace NewAudioTest
 
             input.PlayParams.Playing.Value = true;
             output.PlayParams.Playing.Value = true;
-            input.Update(InputEnum);
-            output.Update(input.Output, OutputEnum);
+            input.Update(InputDevice);
+            output.Update(input.Output, OutputDevice);
             Wait(input, output);
             ;
             Assert.AreEqual(LifecyclePhase.Play, input.Phase);
             Assert.AreEqual(LifecyclePhase.Play, output.Phase);
-            Assert.AreEqual(new[] { "Init", "Start" }, input.Device.MethodCalls(),
+            Assert.AreEqual(new[] { "Init" }, input.Device.MethodCalls(),
                 string.Join(", ", input.Device.MethodCalls()));
-            Assert.AreEqual(new[] { "Init", "Start" }, output.Device.MethodCalls(),
-                string.Join(", ", output.Device.MethodCalls()));
-
-            input.PlayParams.Playing.Value = true;
-            output.PlayParams.Playing.Value = true;
-            input.Update(InputEnum);
-            output.Update(input.Output, OutputEnum);
-            Wait(input, output);
-            ;
-            Assert.AreEqual(LifecyclePhase.Play, input.Phase);
-            Assert.AreEqual(LifecyclePhase.Play, output.Phase);
-            Assert.AreEqual(new[] { "Init", "Start" }, input.Device.MethodCalls(),
-                string.Join(", ", input.Device.MethodCalls()));
-            Assert.AreEqual(new[] { "Init", "Start" }, output.Device.MethodCalls(),
-                string.Join(", ", output.Device.MethodCalls()));
-
-            input.PlayParams.Playing.Value = false;
-            output.PlayParams.Playing.Value = false;
-            input.Update(InputEnum);
-            output.Update(input.Output, OutputEnum);
-            Wait(input, output);
-            ;
-            Assert.AreEqual(LifecyclePhase.Init, input.Phase);
-            Assert.AreEqual(LifecyclePhase.Init, output.Phase);
-            Assert.AreEqual(new[] { "Init", "Start", "Stop" }, input.Device.MethodCalls(),
-                string.Join(", ", input.Device.MethodCalls()));
-            Assert.AreEqual(new[] { "Init", "Start", "Stop" }, output.Device.MethodCalls(),
-                string.Join(", ", output.Device.MethodCalls()));
-
-            input.PlayParams.Playing.Value = true;
-            output.PlayParams.Playing.Value = true;
-            input.Update(InputEnum);
-            output.Update(input.Output, OutputEnum);
-            Wait(input, output);
-            ;
-            Assert.AreEqual(LifecyclePhase.Play, input.Phase);
-            Assert.AreEqual(LifecyclePhase.Play, output.Phase);
-            Assert.AreEqual(new[] { "Init", "Start", "Stop", "Start" }, input.Device.MethodCalls(),
-                string.Join(", ", input.Device.MethodCalls()));
-            Assert.AreEqual(new[] { "Init", "Start", "Stop", "Start" }, output.Device.MethodCalls(),
+            Assert.AreEqual(new[] { "Init" }, output.Device.MethodCalls(),
                 string.Join(", ", output.Device.MethodCalls()));
         }
 
@@ -200,24 +201,24 @@ namespace NewAudioTest
 
             input.PlayParams.Playing.Value = true;
             output.PlayParams.Playing.Value = true;
-            input.Update(InputEnum, SamplingFrequency.Hz8000, 1);
-            output.Update(input.Output, OutputEnum, SamplingFrequency.Hz8000, 1);
+            input.Update(InputDevice, SamplingFrequency.Hz8000, 1);
+            output.Update(input.Output, OutputDevice, SamplingFrequency.Hz8000, 1);
             Wait(input, output);
-            ;
+            
             Assert.AreEqual(LifecyclePhase.Play, input.Phase);
             Assert.AreEqual(LifecyclePhase.Play, output.Phase);
 
             input.PlayParams.Playing.Value = false;
             output.PlayParams.Playing.Value = false;
-            input.Update(InputEnum, SamplingFrequency.Hz8000, 1);
-            output.Update(input.Output, OutputEnum, SamplingFrequency.Hz8000, 1);
+            input.Update(InputDevice, SamplingFrequency.Hz8000, 1);
+            output.Update(input.Output, OutputDevice, SamplingFrequency.Hz8000, 1);
             Wait(input, output);
             ;
             Assert.AreEqual(LifecyclePhase.Init, input.Phase);
             Assert.AreEqual(LifecyclePhase.Init, output.Phase);
 
-            input.Update(InputNullEnum, SamplingFrequency.Hz8000, 2);
-            output.Update(input.Output, OutputNullEnum, SamplingFrequency.Hz8000, 2);
+            input.Update(InOutDeviceIn, SamplingFrequency.Hz8000, 2);
+            output.Update(input.Output, InOutDeviceOut, SamplingFrequency.Hz8000, 2);
             Wait(input, output);
             ;
             Assert.AreEqual(LifecyclePhase.Init, input.Phase);
@@ -225,24 +226,24 @@ namespace NewAudioTest
 
             input.PlayParams.Playing.Value = true;
             output.PlayParams.Playing.Value = true;
-            input.Update(InputEnum, SamplingFrequency.Hz8000, 1);
-            output.Update(input.Output, OutputEnum, SamplingFrequency.Hz8000, 1);
+            input.Update(InputDevice, SamplingFrequency.Hz8000, 1);
+            output.Update(input.Output, OutputDevice, SamplingFrequency.Hz8000, 1);
             Wait(input, output);
             ;
             Assert.AreEqual(LifecyclePhase.Play, input.Phase);
             Assert.AreEqual(LifecyclePhase.Play, output.Phase);
 
-            output.Update(input.Output, OutputNullEnum, SamplingFrequency.Hz8000, 2);
+            output.Update(input.Output, InOutDeviceOut, SamplingFrequency.Hz8000, 2);
             Wait(input, output);
             ;
-            output.Update(input.Output, OutputEnum, SamplingFrequency.Hz8000, 1);
+            output.Update(input.Output, OutputDevice, SamplingFrequency.Hz8000, 1);
             Wait(input, output);
             ;
 
-            input.Update(InputNullEnum, SamplingFrequency.Hz8000, 2);
+            input.Update(InOutDeviceIn, SamplingFrequency.Hz8000, 2);
             Wait(input, output);
             ;
-            input.Update(InputEnum, SamplingFrequency.Hz8000, 1);
+            input.Update(InputDevice, SamplingFrequency.Hz8000, 1);
 
             Wait(input, output);
             ;
@@ -252,16 +253,16 @@ namespace NewAudioTest
             Assert.AreEqual(
                 new[]
                 {
-                    "Init", "Start", "Stop", "Stop", "Dispose",
-                    "Init", "Start", "Stop", "Stop", "Dispose",
-                    "Init", "Start"
+                    "Init", "Dispose",
+                    "Init", "Dispose",
+                    "Init"
                 }, input.Device.MethodCalls(), string.Join(", ", input.Device.MethodCalls()));
             Assert.AreEqual(
                 new[]
                 {
-                    "Init", "Start", "Stop", "Stop", "Dispose",
-                    "Init", "Start", "Stop", "Stop", "Dispose",
-                    "Init", "Start"
+                    "Init", "Dispose",
+                    "Init", "Dispose",
+                    "Init"
                 },
                 output.Device.MethodCalls(), string.Join(", ", output.Device.MethodCalls()));
         }

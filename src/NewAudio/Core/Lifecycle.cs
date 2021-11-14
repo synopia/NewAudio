@@ -195,7 +195,7 @@ namespace NewAudio.Core
 
         private readonly ExceptionHandler _handler = new();
         private ActionBlock<Event> _actionBlock;
-        public ManualResetEvent WaitForEvents = new(false);
+        public ManualResetEvent WaitForEvents = new(true);
         private int _eventsInProcess;
         private IDisposable _link;
 

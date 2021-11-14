@@ -27,6 +27,7 @@ namespace NewAudio.Core
         public int BufferSize => SampleCount * Channels;
         public bool IsInterleaved { get; }
 
+        public int BytesPerSample => WaveFormat.BitsPerSample / 8;
         public WaveFormat WaveFormat => WaveFormat.CreateIeeeFloatWaveFormat(SampleRate, Channels);
 
         public AudioFormat(int sampleRate, int sampleCount, int channels = 1, bool isInterleaved = true)

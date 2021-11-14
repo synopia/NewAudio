@@ -19,22 +19,21 @@ namespace NewAudioTest
         {
             using var input = new InputDevice();
             using var buf = new AudioBufferOut();
-            input.Update(InputEnum, SamplingFrequency.Hz48000, 0, 1);
-            input.Lifecycle.WaitForEvents.WaitOne();
+            input.Update(InputDevice, SamplingFrequency.Hz48000, 0, 1);
+            Wait(input);
 
             buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
-            buf.Lifecycle.WaitForEvents.WaitOne();
+            Wait(buf);
 
             input.PlayParams.Playing.Value = true;
             buf.PlayParams.Playing.Value = true;
-            input.Update(InputEnum, SamplingFrequency.Hz48000, 0, 1);
-            input.Lifecycle.WaitForEvents.WaitOne();
-            buf.Lifecycle.WaitForEvents.WaitOne();
+            input.Update(InputDevice, SamplingFrequency.Hz48000, 0, 1);
+            Wait(input, buf);
 
             var spread = buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
-            buf.Lifecycle.WaitForEvents.WaitOne();
-            input.Device.RecordingBuffer().Write(new byte[512 * 4]);
-            input.Device.RecordingBuffer().Write(new byte[512 * 4]);
+            Wait(buf);
+            input.Device.OnDataReceived(new byte[512 * 4]);
+            input.Device.OnDataReceived(new byte[512 * 4]);
             Task.Delay(100).Wait();
             spread = buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
 

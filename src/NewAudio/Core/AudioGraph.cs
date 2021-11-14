@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using NewAudio.Devices;
 using NewAudio.Nodes;
 using Serilog;
 using VL.Lib.Basics.Resources;
@@ -11,6 +12,7 @@ namespace NewAudio.Core
     public class AudioGraph : IDisposable
     {
         private readonly IResourceHandle<AudioService> _audioService;
+        private readonly IResourceHandle<DriverManager> _driverManager;
         private readonly IList<IAudioNode> _nodes = new List<IAudioNode>();
         private readonly IList<AudioLink> _links = new List<AudioLink>();
         private readonly ILogger _logger;
@@ -25,6 +27,7 @@ namespace NewAudio.Core
         public AudioGraph(IFactory api)
         {
             _audioService = api.GetAudioService();
+            _driverManager = api.GetDriverManager();
             _logger = _audioService.Resource.GetLogger<AudioGraph>();
             _nextId = (_audioService.Resource.GetNextId() * 1) >> 10;
         }
@@ -40,6 +43,7 @@ namespace NewAudio.Core
 
             if (currentFrame != _lastFrame)
             {
+                _driverManager.Resource.UpdateAllDevices();
                 _lastFrame = currentFrame;
                 if (playing != _playing)
                 {

@@ -31,11 +31,16 @@ namespace NewAudioTest
             output2.PlayParams.Playing.Value = true;
             fft.PlayParams.Playing.Value = true;
 
-            input.Update(InputNullEnum, SamplingFrequency.Hz48000, 0, 1);
+            input.Update(InputDevice, SamplingFrequency.Hz48000, 0, 1);
+            Wait(input);
+            input.Update(InputDevice, SamplingFrequency.Hz48000, 0, 1);
+            Wait(input);
             fft.Update(input.Output, 1024);
-            output2.Update(null, OutputNullEnum, SamplingFrequency.Hz48000, 0, 1);
-            output.Update(fft.Output, OutputNullEnum, SamplingFrequency.Hz48000, 0, 1);
-            WaitHandle.WaitAll(handles);
+            Wait(fft);
+            output2.Update(null, OutputDevice, SamplingFrequency.Hz48000, 0, 1);
+            Wait(output2);
+            output.Update(fft.Output, OutputDevice, SamplingFrequency.Hz48000, 0, 1);
+            Wait(output);
 
             Assert.IsEmpty(fft.ErrorMessages());
             Assert.IsEmpty(output2.ErrorMessages());
@@ -45,14 +50,14 @@ namespace NewAudioTest
             Assert.AreEqual(LifecyclePhase.Init, output2.Phase);
             Assert.AreEqual(LifecyclePhase.Play, output.Phase);
 
-            input.Update(InputNullEnum, SamplingFrequency.Hz48000, 0, 1);
+            input.Update(InputDevice, SamplingFrequency.Hz48000, 0, 1);
             WaitHandle.WaitAll(handles);
 
             fft.Update(input.Output, 1024);
             WaitHandle.WaitAll(handles);
-            output.Update(null, OutputNullEnum, SamplingFrequency.Hz48000, 0, 1);
+            output.Update(null, OutputDevice, SamplingFrequency.Hz48000, 0, 1);
             WaitHandle.WaitAll(handles);
-            output2.Update(fft.Output, OutputNullEnum, SamplingFrequency.Hz48000, 0, 1);
+            output2.Update(fft.Output, OutputDevice, SamplingFrequency.Hz48000, 0, 1);
             WaitHandle.WaitAll(handles);
 
             Assert.AreEqual(LifecyclePhase.Play, fft.Phase);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using NAudio.Wave;
+using NewAudio.Internal;
 using Serilog;
 using SharedMemory;
 
@@ -9,7 +10,7 @@ namespace NewAudio.Core
     public sealed class AudioDataProvider : IWaveProvider
     {
         private readonly ILogger _logger;
-        private readonly CircularBuffer _buffer;
+        private readonly MixBuffers _buffer;
         private bool _firstLoop = true;
         public bool GenerateSilence { get; set; }
 
@@ -26,12 +27,11 @@ namespace NewAudio.Core
             }
         }
 
-        public AudioDataProvider(ILogger logger, WaveFormat waveFormat, CircularBuffer buffer)
+        public AudioDataProvider(ILogger logger, WaveFormat waveFormat, MixBuffers buffer)
         {
             _logger = logger;
             _buffer = buffer;
             WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(waveFormat.SampleRate, waveFormat.Channels);
-            GenerateSilence = true;
         }
 
         public WaveFormat WaveFormat { get; }
@@ -42,9 +42,7 @@ namespace NewAudio.Core
             {
                 if (_firstLoop)
                 {
-                    _logger.Information("Audio output reader thread started (Reading from {Read} ({Owner}))",
-                        _buffer.Name,
-                        _buffer.IsOwnerOfSharedMemory);
+                    _logger.Information("Audio output reader thread started");
                     _firstLoop = false;
                 }
 
@@ -54,11 +52,14 @@ namespace NewAudio.Core
                 var pos = 0;
                 if (!GenerateSilence)
                 {
-                    while (pos < count && !CancellationToken.IsCancellationRequested && !GenerateSilence)
-                    {
-                        var x = _buffer.Read(buffer, pos + offset, 1);
-                        pos += x;
-                    }
+                    _buffer.ReadPlayBuffer(buffer, offset, count);
+                    _buffer.DonePlaying();
+                    pos += count;
+                    // while (pos < count && !CancellationToken.IsCancellationRequested && !GenerateSilence)
+                    // {
+                    // var x = _buffer.Read(buffer, pos + offset, 1);
+                    // pos += x;
+                    // }
                 }
 
                 if (GenerateSilence)

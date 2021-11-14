@@ -82,8 +82,8 @@ namespace NewAudio.Nodes
             Logger = Graph.GetLogger<AudioNode<TInit, TPlay>>();
 
             Lifecycle = new LifecycleStateMachine(this);
-            InitParams = (TInit)Activator.CreateInstance(typeof(TInit));
-            PlayParams = (TPlay)Activator.CreateInstance(typeof(TPlay));
+            InitParams = AudioParams.Create<TInit>();
+            PlayParams = AudioParams.Create<TPlay>();
             PlayParams.BufferSize.Value = 4;
             PlayParams.BufferSize.Commit();
             CreateBuffer();
@@ -117,16 +117,11 @@ namespace NewAudio.Nodes
             // }
             // }
 
-            if (PlayParams.HasChanged)
-            {
-            }
-
             if (InitParams.HasChanged)
             {
                 InitParams.Commit();
                 Lifecycle.EventHappens(LifecycleEvents.EInit);
             }
-
 
             if (PlayParams.Input.HasChanged)
             {

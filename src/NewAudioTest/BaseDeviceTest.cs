@@ -17,7 +17,7 @@ namespace NewAudioTest
 
     public static class Ext
     {
-        public static List<string> MethodCalls(this VirtualDevice vd)
+        public static List<string> MethodCalls(this IVirtualDevice vd)
         {
             if (vd.Name == "INPUT")
             {
@@ -29,35 +29,34 @@ namespace NewAudioTest
             }
         }
 
-        public static CircularBuffer RecordingBuffer(this VirtualDevice vd)
+        public static void OnDataReceived(this IVirtualDevice vd, byte[] data)
         {
-            return ((TestDevice)vd.Device).RecordingBuffer;
+            ((TestDevice)vd.Device).OnDataReceived(data);
         }
 
-        public static CircularBuffer PlayingBuffer(this VirtualDevice vd)
-        {
-            return ((TestDevice)vd.Device).PlayingBuffer;
-        }
     }
 
     public class BaseDeviceTest : BaseTest
     {
         public IResourceHandle<DriverManager> DriverManager;
-        public InputDeviceSelection InputEnum;
-        public OutputDeviceSelection OutputEnum;
-        public OutputDeviceSelection OutputNullEnum;
-        public InputDeviceSelection InputNullEnum;
-        private TestDriver _testDriver;
+        public TestDriver InputDriver;
+        public TestDriver OutputDriver;
+        public TestDriver InOutDriver;
+        
+        public InputDeviceSelection InputDevice = new("VIN: INPUT");
+        public OutputDeviceSelection OutputDevice = new("VOUT: OUTPUT");
+        public InputDeviceSelection InOutDeviceIn = new("VINOUT: INPUT");
+        public OutputDeviceSelection InOutDeviceOut = new("VINOUT: OUTPUT");
 
         protected BaseDeviceTest()
         {
             DriverManager = Factory.Instance.GetDriverManager();
-            _testDriver = new TestDriver();
-            DriverManager.Resource.AddDriver(_testDriver);
-            InputEnum = new InputDeviceSelection("TEST: INPUT");
-            OutputEnum = new OutputDeviceSelection("TEST: OUTPUT");
-            InputNullEnum = new InputDeviceSelection("Null: Input");
-            OutputNullEnum = new OutputDeviceSelection("Null: Output");
+            InputDriver = new TestDriver("VIN", true, false);
+            OutputDriver = new TestDriver("VOUT",false, true);
+            InOutDriver = new TestDriver("VINOUT",true, true);
+            DriverManager.Resource.AddDriver(InputDriver);
+            DriverManager.Resource.AddDriver(OutputDriver);
+            DriverManager.Resource.AddDriver(InOutDriver);
         }
 
         public void Wait(params IAudioNode[] args)
@@ -67,14 +66,19 @@ namespace NewAudioTest
             {
                 resetEvent.WaitOne();
             }
+            DriverManager.Resource.UpdateAllDevices();
         }
 
         [SetUp]
         public void Init()
         {
             DriverManager = Factory.Instance.GetDriverManager();
-            _testDriver.InputMethodCalls.Clear();
-            _testDriver.OutputMethodCalls.Clear();
+            InputDriver.InputMethodCalls.Clear();
+            InputDriver.OutputMethodCalls.Clear();
+            OutputDriver.InputMethodCalls.Clear();
+            OutputDriver.OutputMethodCalls.Clear();
+            InOutDriver.InputMethodCalls.Clear();
+            InOutDriver.OutputMethodCalls.Clear();
         }
 
         [TearDown]
@@ -83,13 +87,62 @@ namespace NewAudioTest
             DriverManager = Factory.Instance.GetDriverManager();
             Assert.IsEmpty(DriverManager.Resource.CheckPools());
         }
+
+        protected float[] BuildSignal(AudioFormat format, int offset = 0, bool interleaved = true)
+        {
+            var signal = new float[format.BufferSize];
+            if (interleaved)
+            {
+                var pos = 0;
+                for (var s = 0; s < format.SampleCount; s++)
+                {
+                    for (var ch = 0; ch < format.Channels; ch++)
+                    {
+                        signal[pos] = offset + ch;
+                        pos++;
+                    }
+                }
+            }
+            else
+            {
+                var pos = 0;
+                for (var ch = 0; ch < format.Channels; ch++)
+                {
+                    for (var s = 0; s < format.SampleCount; s++)
+                    {
+                        signal[pos] = ch;
+                        pos++;
+                    }
+                }
+            }
+
+            return signal;
+        }
+
+        public void AssertSignal(float[] expected, float[] actual)
+        {
+            Assert.AreEqual(expected.Length, actual.Length, "Length must match");
+            for (var i = 0; i < expected.Length; i++)
+            {
+                Assert.AreEqual(expected[i], actual[i], "Differs at {0}", i);
+            }
+        }
     }
 
     public class TestDriver : IDriver
     {
-        public string Name => "TEST";
+        public string Name { get; }
         public List<string> InputMethodCalls = new();
         public List<string> OutputMethodCalls = new();
+        private bool _inputDriver;
+        private bool _outputDriver;
+
+        public TestDriver(string name, bool inputDriver, bool outputDriver)
+        {
+            Name = name;
+            _inputDriver = inputDriver;
+            _outputDriver = outputDriver;
+        }
 
         public void AddCall(string who, string what)
         {
@@ -106,8 +159,18 @@ namespace NewAudioTest
 
         public IEnumerable<DeviceSelection> GetDeviceSelections()
         {
-            return new[]
-                { new DeviceSelection(Name, Name,"INPUT", true, false), new DeviceSelection(Name, Name,"OUTPUT", false, true) };
+            var list = new List<DeviceSelection>();
+            if (_inputDriver)
+            {
+                list.Add(new DeviceSelection(Name, Name,"INPUT", true, false));
+            }
+
+            if (_outputDriver)
+            {
+                list.Add(new DeviceSelection(Name, Name,"OUTPUT", false, true));
+            }
+
+            return list;
         }
 
         public IDevice CreateDevice(DeviceSelection selection)
@@ -132,23 +195,12 @@ namespace NewAudioTest
         }
 
 
-        protected override Task<bool> Init()
+        protected override bool Init()
         {
             _driver.AddCall(Name, "Init");
-            return Task.FromResult<bool>(true);
-        }
-
-        public override bool Start()
-        {
-            _driver.AddCall(Name, "Start");
             return true;
         }
 
-        public override bool Stop()
-        {
-            _driver.AddCall(Name, "Stop");
-            return true;
-        }
 
         protected override void Dispose(bool dispose)
         {

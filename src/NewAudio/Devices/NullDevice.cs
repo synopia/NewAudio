@@ -12,20 +12,11 @@ namespace NewAudio.Devices
             IsOutputDevice = isOutputDevice;
         }
 
-        protected override Task<bool> Init()
-        {
-            return Task.FromResult(true);
-        }
-
-        public override bool Start()
+        protected override bool Init()
         {
             return true;
         }
 
-        public override bool Stop()
-        {
-            return true;
-        }
 
         private bool _disposedValue;
 

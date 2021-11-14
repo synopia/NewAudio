@@ -11,6 +11,8 @@ namespace NewAudio.Devices
         private readonly List<IDriver> _drivers = new();
         private readonly HashSet<IResourceProvider<IDevice>> _pools = new();
 
+        private readonly List<IDevice> _activeDevices = new();
+
         public DriverManager()
         {
             _drivers.Add(new AsioDriver());
@@ -28,6 +30,17 @@ namespace NewAudio.Devices
             _devices.InsertRange(0, new NullDriver().GetDeviceSelections());
         }
 
+        public void UpdateAllDevices()
+        {
+            lock (_activeDevices)
+            {
+                foreach (var device in _activeDevices)
+                {
+                    device.Update();
+                }
+            }
+        }
+        
         public List<IDevice> CheckPools()
         {
             var openDevices = new List<IDevice>();
@@ -57,12 +70,26 @@ namespace NewAudio.Devices
             }
 
             var pool = ResourceProvider.NewPooledSystemWide(selection.ToString(),
-                s => { return driver.CreateDevice(selection); });
+                s =>
+                {
+                    var device = driver.CreateDevice(selection);
+                    lock (_activeDevices)
+                    {
+                        _activeDevices.Add(device);
+                    }
+                    return device;
+                }, 0).Finally(d =>
+            {
+                lock (_activeDevices)
+                {
+                    _activeDevices.Remove(d);
+                }
+            });
             _pools.Add(pool);
             return pool.GetHandle();
         }
 
-        public VirtualDevice GetInputDevice(InputDeviceSelection inputDeviceSelection)
+        public VirtualInput GetInputDevice(InputDeviceSelection inputDeviceSelection)
         {
             var resource = GetHandle(inputDeviceSelection.Value);
             if (resource == null)
@@ -70,11 +97,11 @@ namespace NewAudio.Devices
                 return null;
             }
 
-            var virtualDevice = new VirtualDevice(resource);
+            var virtualDevice = new VirtualInput(resource);
             return virtualDevice;
         }
 
-        public VirtualDevice GetOutputDevice(OutputDeviceSelection outputDeviceSelection)
+        public VirtualOutput GetOutputDevice(OutputDeviceSelection outputDeviceSelection)
         {
             var resource = GetHandle(outputDeviceSelection.Value);
             if (resource == null)
@@ -82,7 +109,7 @@ namespace NewAudio.Devices
                 return null;
             }
 
-            var virtualDevice = new VirtualDevice(resource);
+            var virtualDevice = new VirtualOutput(resource);
             return virtualDevice;
         }
 

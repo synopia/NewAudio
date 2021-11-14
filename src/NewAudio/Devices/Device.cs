@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using NAudio.Wave;
 using NewAudio.Core;
+using NewAudio.Internal;
 
 namespace NewAudio.Devices
 {
+    /*
     public struct DeviceConfigRequest
     {
         public AudioFormat AudioFormat { get; set; }
@@ -31,7 +34,51 @@ namespace NewAudio.Devices
         public int FirstChannel => ChannelOffset;
         public int LastChannel => ChannelOffset + Channels;
     }
+    */
 
+    public class DeviceParams : AudioParams
+    {
+        public AudioParam<SamplingFrequency> SamplingFrequency;
+        public AudioParam<int> DesiredLatency;
+        public AudioParam<int> ChannelOffset;
+        public AudioParam<int> Channels;
+
+        public int FirstChannel => ChannelOffset.Value;
+        public int LastChannel => FirstChannel + Channels.Value;
+
+        public AudioFormat AudioFormat => new AudioFormat((int)SamplingFrequency.Value, 512, Channels.Value);
+    }
+    public class ActualDeviceParams : AudioParams
+    {
+        public AudioParam<bool> IsRecordingDevice;
+        public AudioParam<bool> IsPlayingDevice;
+        public AudioParam<bool> Active;
+        public AudioParam<SamplingFrequency> SamplingFrequency;
+        public AudioParam<int> Latency;
+        public AudioParam<int> ChannelOffset;
+        public AudioParam<int> Channels;
+        public AudioParam<WaveFormat> WaveFormat;
+        public int FirstChannel => ChannelOffset.Value;
+        public int LastChannel => FirstChannel + Channels.Value;
+
+        public AudioFormat AudioFormat => new AudioFormat((int)SamplingFrequency.Value, 512, Channels.Value);
+    }
+
+    public interface IVirtualDevice: IDisposable
+    {
+        IDevice Device { get; }
+        string Name { get; }
+
+        DeviceParams Params { get; }
+        ActualDeviceParams ActualParams { get; }
+        
+        bool IsPlaying { get; }
+        bool IsRecording { get; }
+
+        void Update();
+        void Post(AudioDataMessage msg);
+    }
+    
     public class DeviceSelection
     {
         public string Name { get; }
@@ -63,17 +110,19 @@ namespace NewAudio.Devices
         public bool IsOutputDevice { get; }
         AudioDataProvider AudioDataProvider { get; }
 
-        public Task<DeviceConfigResponse> CreateInput(DeviceConfigRequest request,
-            ITargetBlock<AudioDataMessage> targetBlock);
+        IMixBuffer GetMixBuffer(IVirtualDevice device);
+        void ReturnMixBuffer(IVirtualDevice device);
+        void OnDataReceived(byte[] buffer);
 
-        public Task<DeviceConfigResponse> CreateOutput(DeviceConfigRequest request,
-            ISourceBlock<AudioDataMessage> sourceBlock);
+        public ActualDeviceParams Add(VirtualInput input);
+        public void Remove(VirtualInput input);
+        public ActualDeviceParams Add(VirtualOutput output);
+        public void Remove(VirtualOutput output);
 
-        public bool Start();
-        public bool Stop();
-
+        public void Update();
+        
+        public ActualDeviceParams RecordingParams { get; }
+        public ActualDeviceParams PlayingParams { get; }
         public string DebugInfo();
-        public DeviceConfigResponse RecordingConfig { get; }
-        public DeviceConfigResponse PlayingConfig { get; }
     }
 }

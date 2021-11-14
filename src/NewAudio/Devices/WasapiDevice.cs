@@ -29,15 +29,17 @@ namespace NewAudio.Devices
 
         private bool IsLoopback { get; }
 
-        protected override Task<bool> Init()
+        protected override bool Init()
         {
             _firstLoop = true;
             if (IsOutputDevice && IsPlaying)
             {
                 var device = new MMDeviceEnumerator().GetDevice(_deviceId);
-                _wavePlayer = new WasapiOut(device, AudioClientShareMode.Shared, true, _playingConfig.Latency);
+                _wavePlayer = new WasapiOut(device, AudioClientShareMode.Shared, true, PlayingParams.Latency.Value);
                 _wavePlayer.Init(AudioDataProvider);
                 _wavePlayer.Play();
+                RecordingParams.Active.Value = false;
+                PlayingParams.Active.Value = true;
             } else if (IsInputDevice && IsRecording)
             {
                 if (IsLoopback)
@@ -45,33 +47,26 @@ namespace NewAudio.Devices
                     var device = new MMDeviceEnumerator().GetDevice(_deviceId);
                     _loopback = new WasapiLoopbackCapture(device);
                     _loopback.DataAvailable += DataAvailable;
-                    _recordingConfig.AudioFormat = _recordingConfig.AudioFormat.WithWaveFormat(_loopback.WaveFormat);
+                    // todo
+                    // _recordingConfig.AudioFormat = _recordingConfig.AudioFormat.WithWaveFormat(_loopback.WaveFormat);
                     _loopback.StartRecording();
+                    RecordingParams.WaveFormat.Value = _loopback.WaveFormat;
                 }
                 else 
                 {
                     var device = new MMDeviceEnumerator().GetDevice(_deviceId);
                     _capture = new WasapiCapture(device)
                     {
-                        WaveFormat = _recordingConfig.AudioFormat.WaveFormat
+                        WaveFormat = RecordingParams.AudioFormat.WaveFormat
                     };
                     _capture.DataAvailable += DataAvailable;
-                    _recordingConfig.AudioFormat = _recordingConfig.AudioFormat.WithWaveFormat(_capture.WaveFormat);
                     _capture.StartRecording();
+                    RecordingParams.WaveFormat.Value = _capture.WaveFormat;
                 }
+                RecordingParams.Active.Value = true;
+                PlayingParams.Active.Value = false;
             }
-            return Task.FromResult(true); 
-        }
 
-        public override bool Start()
-        {
-            GenerateSilence = false;
-            return true;
-        }
-
-        public override bool Stop()
-        {
-            GenerateSilence = true;
             return true;
         }
 
@@ -86,10 +81,9 @@ namespace NewAudio.Devices
         {
             if (_firstLoop)
             {
-                Logger.Information("Wasapi AudioIn Thread started (Writing to {Recording} ({Owner}))",
-                    RecordingBuffer.Name, RecordingBuffer.IsOwnerOfSharedMemory);
+                Logger.Information("Wasapi AudioIn Thread started");
                 _firstLoop = false;
-                _temp = new byte[RecordingBuffer.NodeBufferSize];
+                _temp = new byte[RecordingParams.AudioFormat.BufferSize*RecordingParams.AudioFormat.BytesPerSample];
                 _tempPos = 0;
             }
 
@@ -118,16 +112,19 @@ namespace NewAudio.Devices
 
                     if (_tempPos == _temp.Length)
                     {
-                        var written = RecordingBuffer.Write(_temp);
+                        
+                        OnDataReceived(_temp);
+                        // var written = RecordingBuffer.Write(_temp);
                         _tempPos = 0;
-                        if (written != _temp.Length && !GenerateSilence)
-                        {
-                            Logger.Warning("Wrote to few bytes ({Wrote}, expected: {Expected})", written,
-                                _temp.Length);
-                        }
+                        // if (written != _temp.Length && !GenerateSilence)
+                        // {
+                            // Logger.Warning("Wrote to few bytes ({Wrote}, expected: {Expected})", written,
+                                // _temp.Length);
+                        // }
                     }
                 }
 
+                /*
                 if (!GenerateSilence)
                 {
                     if (pos != evt.BytesRecorded && !token.IsCancellationRequested)
@@ -135,6 +132,7 @@ namespace NewAudio.Devices
                         Logger.Warning("pos!=buf {Pos}!={Read}", pos, evt.BytesRecorded);
                     }
                 }
+            */
             }
             catch (Exception e)
             {

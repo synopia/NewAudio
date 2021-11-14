@@ -13,10 +13,6 @@ namespace NewAudio.Nodes
     public class OutputDeviceInitParams : AudioNodeInitParams
     {
         public AudioParam<OutputDeviceSelection> Device;
-        public AudioParam<SamplingFrequency> SamplingFrequency;
-        public AudioParam<int> DesiredLatency;
-        public AudioParam<int> ChannelOffset;
-        public AudioParam<int> Channels;
     }
 
     // ReSharper disable once ClassNeverInstantiated.Global
@@ -29,23 +25,25 @@ namespace NewAudio.Nodes
         public override string NodeName => "Output";
         private readonly IResourceHandle<DriverManager> _driverManager;
 
-        public AudioFormat AudioFormat { get; private set; }
+        public AudioFormat AudioFormat => ActualDeviceParams.AudioFormat;
 
         private readonly TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
         private IDisposable _link;
 
-        public VirtualDevice Device { get; private set; }
+        public VirtualOutput Device { get; private set; }
 
         private int _counter;
         private long _lag;
         public double LagMs { get; private set; }
-
+        public ActualDeviceParams ActualDeviceParams { get; private set; }
+        public DeviceParams DeviceParams { get; private set; }
+        
         public OutputDevice()
         {
             InitLogger<OutputDevice>();
             _driverManager = Factory.Instance.GetDriverManager();
+            DeviceParams = AudioParams.Create<DeviceParams>();
             Logger.Information("Output device created");
-            AudioFormat = new AudioFormat(48000, 512, 2);
 
             _processor = new TransformBlock<AudioDataMessage, AudioDataMessage>(msg =>
             {
@@ -75,10 +73,11 @@ namespace NewAudio.Nodes
             PlayParams.BufferSize.Value = bufferSize;
             PlayParams.Input.Value = input;
             InitParams.Device.Value = deviceSelection;
-            InitParams.SamplingFrequency.Value = samplingFrequency;
-            InitParams.DesiredLatency.Value = desiredLatency;
-            InitParams.ChannelOffset.Value = channelOffset;
-            InitParams.Channels.Value = channels;
+            DeviceParams.SamplingFrequency.Value = samplingFrequency;
+            DeviceParams.DesiredLatency.Value = desiredLatency;
+            DeviceParams.ChannelOffset.Value = channelOffset;
+            DeviceParams.Channels.Value = channels;
+            ActualDeviceParams?.Update();
 
             return base.Update();
         }
@@ -93,19 +92,22 @@ namespace NewAudio.Nodes
             return PlayParams.Input.Value != null;
         }
 
-        public override async Task<bool> Init()
+        public override Task<bool> Init()
         {
             if (InitParams.Device.Value == null)
             {
-                Logger.Error("No input device selected. Should not happen!");
+                Logger.Error("No output device selected. Should not happen!");
             }
 
             Device = _driverManager.Resource.GetOutputDevice(InitParams.Device.Value);
             if (Device == null)
             {
-                return false;
+                return Task.FromResult(false);
             }
 
+            ActualDeviceParams = Device.Bind(DeviceParams);
+            
+            /*
             AudioFormat = new AudioFormat((int)InitParams.SamplingFrequency.Value, 512, InitParams.Channels.Value);
             var req = new DeviceConfigRequest
             {
@@ -126,10 +128,12 @@ namespace NewAudio.Nodes
                 Device, resp.Channels, resp.DriverChannels, resp.Latency, resp.FrameSize);
 
             AudioFormat = resp.AudioFormat;
-            var output = res.Item2;
-            _link = _processor.LinkTo(output);
+            */
+            // var output = res.Item2;
+            // _link = _processor.LinkTo(output);
+            _link = _processor.LinkTo(Device.TargetBlock);
 
-            return true;
+            return Task.FromResult(true);
         }
 
         public override Task<bool> Free()
