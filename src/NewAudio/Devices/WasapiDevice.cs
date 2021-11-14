@@ -70,6 +70,32 @@ namespace NewAudio.Devices
             return true;
         }
 
+        protected override bool Stop()
+        {
+            CancellationTokenSource?.Cancel();
+            if (_loopback != null)
+            {
+                _loopback.StopRecording();
+                _loopback.DataAvailable -= DataAvailable;
+                _loopback.Dispose();
+            }
+
+            if (_capture != null)
+            {
+                _capture.StopRecording();
+                _capture.DataAvailable -= DataAvailable;
+                _capture.Dispose();
+            }
+
+            if (_wavePlayer != null)
+            {
+                _wavePlayer.Stop();
+                _wavePlayer.Dispose();
+            }
+
+            return true;
+        }
+
         public override string DebugInfo()
         {
             var info = IsPlaying ? $"{_wavePlayer?.PlaybackState}" :
@@ -150,27 +176,7 @@ namespace NewAudio.Devices
             {
                 if (disposing)
                 {
-                    CancellationTokenSource?.Cancel();
-                    if (_loopback != null)
-                    {
-                        _loopback.StopRecording();
-                        _loopback.DataAvailable -= DataAvailable;
-                        _loopback.Dispose();
-                    }
-
-                    if (_capture != null)
-                    {
-                        _capture.StopRecording();
-                        _capture.DataAvailable -= DataAvailable;
-                        _capture.Dispose();
-                    }
-
-                    if (_wavePlayer != null)
-                    {
-                        _wavePlayer.Stop();
-                        _wavePlayer.Dispose();
-                    }
-
+                    Stop();
 
                     _loopback = null;
                     _capture = null;

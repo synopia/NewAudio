@@ -1,22 +1,17 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
 using VL.Lib.Animation;
 
 namespace NewAudio.Nodes
 {
-    public class AudioLoopRegionInitParams : AudioNodeInitParams
-    {
-    }
-
-    public class AudioLoopRegionPlayParams : AudioNodePlayParams
+    public class AudioLoopRegionParams : AudioParams
     {
         public AudioParam<bool> Bypass;
         public AudioParam<int> OutputChannels;
     }
 
-    public class AudioLoopRegion<TState> : AudioNode<AudioLoopRegionInitParams, AudioLoopRegionPlayParams>
+    public class AudioLoopRegion<TState> : AudioNode
         where TState : class
     {
         public override string NodeName => "Loop";
@@ -25,10 +20,12 @@ namespace NewAudio.Nodes
 
         private Func<TState, AudioChannels, TState> _updateFunc;
         private TState _state;
+        public AudioLoopRegionParams Params { get; }
 
         public AudioLoopRegion()
         {
             InitLogger<AudioLoopRegion<TState>>();
+            Params = AudioParams.Create<AudioLoopRegionParams>();
             Logger.Information("Audio loop region created");
         }
 
@@ -48,51 +45,58 @@ namespace NewAudio.Nodes
             }
 
             _updateFunc = update;
-
-            PlayParams.BufferSize.Value = bufferSize;
-            PlayParams.Bypass.Value = bypass;
-            PlayParams.OutputChannels.Value = outputChannels > 0 ? outputChannels : input?.Format.Channels ?? 0;
-            PlayParams.Input.Value = input;
-
+            Params.Bypass.Value = bypass;
+            Params.OutputChannels.Value = outputChannels > 0 ? outputChannels : input?.Format.Channels ?? 0;
+            PlayParams.Update(input, Params.HasChanged, bufferSize);
+            
             return Update();
         }
 
 
-        public override bool IsPlayValid()
-        {
-            return PlayParams.Input.Value != null &&
-                   PlayParams.OutputChannels.Value > 0 &&
-                   PlayParams.Input.Value.Format.Channels > 0 &&
-                   PlayParams.Input.Value.Format.SampleCount > 0;
-        }
-
         public override bool Play()
         {
-            var input = PlayParams.Input.Value;
-            var inputChannels = input.Format.Channels;
-            if (PlayParams.OutputChannels.Value == 0)
+            if (PlayParams.Input.Value != null &&
+                Params.OutputChannels.Value > 0 &&
+                PlayParams.InputFormat.Value.Channels > 0 &&
+                PlayParams.InputFormat.Value.SampleCount > 0)
             {
-                PlayParams.OutputChannels.Value = inputChannels;
+                Params.Commit();
+                var input = PlayParams.Input.Value;
+                var inputChannels = input.Format.Channels;
+                if (Params.OutputChannels.Value == 0)
+                {
+                    Params.OutputChannels.Value = inputChannels;
+                }
+
+                Output.Format = input.Format.WithChannels(Params.OutputChannels.Value);
+                Logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}",
+                    input.Format, Output.Format);
+
+                InitProcessor();
+                Output.SourceBlock = _processor;
+                TargetBlock = _processor;
+                return true;
             }
 
-            Output.Format = input.Format.WithChannels(PlayParams.OutputChannels.Value);
-            Logger.Information("Creating Buffer & Processor for Loop {@InputFormat} => {@OutputFormat}",
-                input.Format, Output.Format);
-
-            Output.SourceBlock = _processor;
-            TargetBlock = _processor;
-            return true;
+            return false;
         }
 
-        public override bool Stop()
+        public override void Stop()
         {
+            _processor?.Complete();
+            _processor?.Completion.ContinueWith((t) =>
+            {
+                _processor = null;
+                Logger.Information("Transform block stopped, status={Status}", t.Status);
+                return true;
+            });
+            
             TargetBlock = null;
             Output.SourceBlock = null;
-            return true;
         }
 
 
-        public override Task<bool> Init()
+        private void InitProcessor()
         {
             if (_processor != null)
             {
@@ -101,7 +105,7 @@ namespace NewAudio.Nodes
 
             _processor = new TransformBlock<AudioDataMessage, AudioDataMessage>(input =>
             {
-                if (PlayParams.Bypass.Value)
+                if (Params.Bypass.Value)
                 {
                     Array.Clear(input.Data, 0, input.BufferSize);
                     return input;
@@ -149,25 +153,6 @@ namespace NewAudio.Nodes
             {
                 BoundedCapacity = 1,
                 MaxDegreeOfParallelism = 1
-            });
-
-            return Task.FromResult(true);
-        }
-
-        public override Task<bool> Free()
-        {
-            if (_processor == null)
-            {
-                Logger.Error("TransformBlock == null!");
-                return Task.FromResult(false);
-            }
-
-            _processor.Complete();
-            return _processor.Completion.ContinueWith((t) =>
-            {
-                _processor = null;
-                Logger.Information("Transform block stopped, status={Status}", t.Status);
-                return true;
             });
         }
 

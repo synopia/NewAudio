@@ -47,7 +47,7 @@ namespace NewAudio.Internal
             }
         }
 
-        public unsafe static float[] CopyByteToFloat(byte[] buf)
+        public  static unsafe float[] CopyByteToFloat(byte[] buf)
         {
             var result = new float[buf.Length / 4];
             fixed (float* ptr = result)
@@ -58,7 +58,7 @@ namespace NewAudio.Internal
             
             return result;
         }
-        public unsafe static byte[] CopyFloatToByte(float[] buf)
+        public  static unsafe byte[] CopyFloatToByte(float[] buf)
         {
             var result = new byte[buf.Length * 4];
             fixed (byte* ptr = result)
@@ -99,17 +99,24 @@ namespace NewAudio.Internal
             }
         }
 
-        public void ReadPlayBuffer(byte[] buffer, int offset, int count)
+        public int ReadPlayBuffer(byte[] buffer, int offset, int count)
         {
             var buf = GetPlayBuffer();
-            Array.Copy(buf.Data, 0, buffer, offset, count);
+            if (buf != null)
+            {
+                Array.Copy(buf.Data, 0, buffer, offset, count);
+                DonePlaying();
+                return count-offset;
+            }
+
+            return 0;
         }
         
         public IMixBuffer GetPlayBuffer()
         {
-            ReadHandle.WaitOne();
+            var r = ReadHandle.WaitOne(10);
             
-            return Buffers[PlayBuffer];
+            return r ? Buffers[PlayBuffer] : null;
         }
         public void DonePlaying()
         {

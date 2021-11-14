@@ -6,7 +6,7 @@ using NewAudio.Core;
 
 namespace NewAudio.Nodes
 {
-    public class AudioGeneratorInitParams : AudioNodeInitParams
+    public class AudioGeneratorParams : AudioParams
     {
         public AudioParam<SamplingFrequency> SamplingFrequency;
         public AudioParam<bool> Interleaved;
@@ -15,20 +15,17 @@ namespace NewAudio.Nodes
         public AudioParam<int> DesiredLatency;
     }
 
-    public class AudioGeneratorPlayParams : AudioNodePlayParams
-    {
-    }
-
-    public class AudioGenerator : AudioNode<AudioGeneratorInitParams, AudioGeneratorPlayParams>
+    public class AudioGenerator : AudioNode
     {
         public override string NodeName => "Gen";
         private AudioGeneratorBlock _audioGeneratorBlock;
         private AudioFormat _format;
-        public WaveFormat WaveFormat => _format.WaveFormat;
-
+        public AudioGeneratorParams Params { get; }
+        
         public AudioGenerator()
         {
             InitLogger<AudioGenerator>();
+            Params = AudioParams.Create<AudioGeneratorParams>();
             Logger.Information("AudioGenerator created");
             _format = new AudioFormat(48000, 512);
         }
@@ -36,47 +33,43 @@ namespace NewAudio.Nodes
         public AudioLink Update(SamplingFrequency samplingFrequency = SamplingFrequency.Hz44100, int sampleCount = 512,
             int channels = 2, int desiredLatency = 250, bool interleaved = true)
         {
-            InitParams.SamplingFrequency.Value = samplingFrequency;
-            InitParams.SampleCount.Value = sampleCount;
-            InitParams.DesiredLatency.Value = desiredLatency;
-            InitParams.Channels.Value = channels;
-            InitParams.Interleaved.Value = interleaved;
+            Params.SamplingFrequency.Value = samplingFrequency;
+            Params.SampleCount.Value = sampleCount;
+            Params.DesiredLatency.Value = desiredLatency;
+            Params.Channels.Value = channels;
+            Params.Interleaved.Value = interleaved;
+
+            if (Params.HasChanged)
+            {
+                PlayParams.Reset.Value = true;
+                
+            }
 
             return base.Update();
         }
 
-        public override bool IsInitValid()
-        {
-            return InitParams.SampleCount.Value > 0 && InitParams.Channels.Value > 0;
-        }
-
-        public override Task<bool> Init()
-        {
-            _format = new AudioFormat((int)InitParams.SamplingFrequency.Value, InitParams.SampleCount.Value,
-                InitParams.Channels.Value, InitParams.Interleaved.Value);
-            _audioGeneratorBlock = new AudioGeneratorBlock();
-            Output.Format = _format;
-            _audioGeneratorBlock.Create(Output.TargetBlock, _format);
-
-            return Task.FromResult(true);
-        }
-
-        public override async Task<bool> Free()
-        {
-            await _audioGeneratorBlock.Free();
-            return true;
-        }
-
         public override bool Play()
         {
-            // Output.Source = _audioGeneratorBlock;
-            return true;
+            if (Params.SampleCount.Value > 0 && Params.Channels.Value > 0)
+            {
+                _format = new AudioFormat((int)Params.SamplingFrequency.Value, Params.SampleCount.Value,
+                    Params.Channels.Value, Params.Interleaved.Value);
+                _audioGeneratorBlock = new AudioGeneratorBlock();
+                Output.Format = _format;
+                _audioGeneratorBlock.Create(Output.TargetBlock, _format);
+                Output.SourceBlock = _audioGeneratorBlock;
+                return true;
+            }
+
+            return false;
         }
 
-        public override bool Stop()
+        public override void Stop()
         {
-            // Output.Source = null;
-            return true;
+            _audioGeneratorBlock.Stop();
+            _audioGeneratorBlock = null;
+            _format = default;
+            Output.SourceBlock = null;
         }
 
         private bool _disposedValue;

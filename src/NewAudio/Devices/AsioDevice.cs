@@ -8,7 +8,7 @@ namespace NewAudio.Devices
 {
     public class AsioDevice : BaseDevice
     {
-        private readonly AsioOut _asioOut;
+        private AsioOut _asioOut;
         private readonly string _driverName;
 
         public AsioDevice(string name, string driverName)
@@ -53,6 +53,10 @@ namespace NewAudio.Devices
 */
         protected override bool Init()
         {
+            if (_asioOut == null)
+            {
+                _asioOut = new AsioOut();
+            }
             if (IsPlaying && IsRecording)
             {
                 _asioOut.InitRecordAndPlayback(AudioDataProvider, RecordingParams.Channels.Value,
@@ -95,6 +99,24 @@ namespace NewAudio.Devices
             return _asioOut.PlaybackState == PlaybackState.Playing;
         }
 
+        protected override bool Stop()
+        {
+            if (_asioOut != null )
+            {
+                if (_asioOut.PlaybackState == PlaybackState.Playing)
+                {
+                    CancellationTokenSource?.Cancel();
+                    _asioOut.Stop();
+                }
+
+                _asioOut.AudioAvailable -= OnAsioData;
+                _asioOut.Dispose();
+                _asioOut = null;
+            }
+
+            return true;
+        }
+
         private void OnAsioData(object sender, AsioAudioAvailableEventArgs evt)
         {
             // AudioService.Instance.Flow.PostRequest(new AudioDataRequestMessage(evt.BytesRecorded/4));
@@ -112,10 +134,18 @@ namespace NewAudio.Devices
             {
                 if (disposing)
                 {
-                    CancellationTokenSource?.Cancel();
-                    _asioOut.Stop();
-                    _asioOut.AudioAvailable -= OnAsioData;
-                    _asioOut.Dispose();
+                    if (_asioOut != null)
+                    {
+                        if (_asioOut.PlaybackState == PlaybackState.Playing)
+                        {
+                            CancellationTokenSource.Cancel();
+                            _asioOut.Stop();
+                        }
+
+                        _asioOut.AudioAvailable -= OnAsioData;
+                        _asioOut.Dispose();
+                        _asioOut = null;
+                    }
                 }
 
                 _disposedValue = disposing;

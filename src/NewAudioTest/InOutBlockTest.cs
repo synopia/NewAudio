@@ -10,27 +10,17 @@ namespace NewAudioTest
     [TestFixture]
     public class InOutBlockTest : BaseDeviceTest
     {
-        public void WaitAndAssert(LifecyclePhase phase, params IAudioNode[] args)
-        {
-            Wait(args);
-            foreach (var node in args)
-            {
-                Assert.IsEmpty(node.ErrorMessages());
-                Assert.AreEqual(phase, node.Phase);
-            }
-        }
-
         [Test]
         public void TestRead2ChI_Write2ChI()
         {
             using var input = new InputDevice();
             using var output = new OutputDevice();
 
-            input.PlayParams.Playing.Value = true;
-            output.PlayParams.Playing.Value = true;
+            input.PlayParams.Phase.Value = LifecyclePhase.Play;
+            output.PlayParams.Phase.Value = LifecyclePhase.Play;
             input.Update(InputDevice);
             output.Update(input.Output, OutputDevice);
-            WaitAndAssert(LifecyclePhase.Play, input, output);
+            UpdateDevices();
             input.Update(InputDevice);
             output.Update(input.Output, OutputDevice);
             input.Update(InputDevice);
@@ -42,7 +32,7 @@ namespace NewAudioTest
             input.Device.OnDataReceived(MixBuffers.CopyFloatToByte(inputSignal));
             Task.Delay(100).GetAwaiter().GetResult();
             DriverManager.Resource.UpdateAllDevices();
-            output.ActualDeviceParams.Update().Wait();
+            output.ActualDeviceParams.Update();
 
             Assert.AreEqual(1024, output.AudioFormat.BufferSize);
             var outputSignal = new float[output.AudioFormat.BufferSize];
@@ -59,18 +49,15 @@ namespace NewAudioTest
             using var output1 = new OutputDevice();
             using var output2 = new OutputDevice();
 
-            input1.PlayParams.Playing.Value = true;
-            input2.PlayParams.Playing.Value = true;
-            output1.PlayParams.Playing.Value = true;
-            output2.PlayParams.Playing.Value = true;
+            input1.PlayParams.Phase.Value = LifecyclePhase.Play;
+            input2.PlayParams.Phase.Value = LifecyclePhase.Play;
+            output1.PlayParams.Phase.Value = LifecyclePhase.Play;
+            output2.PlayParams.Phase.Value = LifecyclePhase.Play;
             input1.Update(InputDevice, SamplingFrequency.Hz48000, 0, 1);
             input2.Update(InputDevice, SamplingFrequency.Hz48000, 1, 1);
-            WaitAndAssert(LifecyclePhase.Play, input1);
-            WaitAndAssert(LifecyclePhase.Play, input2);
             output1.Update(input1.Output, OutputDevice, SamplingFrequency.Hz48000, 0, 1);
-            WaitAndAssert(LifecyclePhase.Play, output1);
             output2.Update(input2.Output, OutputDevice, SamplingFrequency.Hz48000, 1, 1);
-            WaitAndAssert(LifecyclePhase.Play, output2);
+            UpdateDevices();
 
 
             Assert.AreSame(input1.Device.Device, input2.Device.Device);

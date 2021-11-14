@@ -3,6 +3,14 @@ using Serilog.Formatting.Display;
 
 namespace NewAudio.Core
 {
+    public enum LifecyclePhase
+    {
+        Uninitialized,
+        Stop,
+        Play,
+        Invalid
+    }
+    
     public class AudioService
     {
         public AudioService()

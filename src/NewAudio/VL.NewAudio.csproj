@@ -57,6 +57,7 @@
         <Compile Remove="Devices\DirectSoundDriver.cs" />
         <Compile Remove="Devices\WaveDevice.cs" />
         <Compile Remove="Devices\WaveDriver.cs" />
+        <Compile Remove="Core\Lifecycle.cs" />
     </ItemGroup>
     <ItemGroup>
         <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">

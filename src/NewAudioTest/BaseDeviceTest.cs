@@ -59,13 +59,8 @@ namespace NewAudioTest
             DriverManager.Resource.AddDriver(InOutDriver);
         }
 
-        public void Wait(params IAudioNode[] args)
+        public void UpdateDevices()
         {
-            var events = args.Select(a => a.LifecycleStateMachine.WaitForEvents);
-            foreach (var resetEvent in events)
-            {
-                resetEvent.WaitOne();
-            }
             DriverManager.Resource.UpdateAllDevices();
         }
 
@@ -201,6 +196,10 @@ namespace NewAudioTest
             return true;
         }
 
+        protected override bool Stop()
+        {
+            return true;
+        }
 
         protected override void Dispose(bool dispose)
         {

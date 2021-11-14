@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="GE7lZS7pUESMJSNmab4G3U" LanguageVersion="2021.4.0.613" Version="0.128">
+<Document xmlns:p="property" Id="GE7lZS7pUESMJSNmab4G3U" LanguageVersion="2021.4.0.622" Version="0.128">
   <Patch Id="NPzPdUqOvlmQXbRDVVJru0">
     <Canvas Id="Ck0FfZbKeR3LiyIJ1anS3b" DefaultCategory="NewAudio" CanvasType="FullCategory">
       <!--
@@ -1031,11 +1031,11 @@
                     <Pin Id="N1zzrGgPqOtLWzj5Wg6eFI" Name="Result" Kind="OutputPin" />
                   </Node>
                   <Node Bounds="607,469,82,26" Id="Dal2ICCORS8OzIiYDBIGSQ">
-                    <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                    <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                       <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                       <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                       <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                      <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                      <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                       <Choice Kind="OperationCallFlag" Name="ErrorMessages" />
                     </p:NodeReference>
                     <Pin Id="LFZLRW99UZEPIv5ImpzBNP" Name="Input" Kind="StateInputPin" />
@@ -1048,11 +1048,11 @@
                   <Link Id="F8yXF8Ar9WZL9aIVuyjRfi" Ids="LXizUmD52aBMn8VfGwBay5,RcvL2AsrgBaNPwZfguqPOD" />
                   <Link Id="U5Ss1doc9U3PuLnYQ7dp5x" Ids="O7eGGnzFiAYPGXMKT0l1YP,UWm83NAUb3OLqSPKSzz7Ue" />
                   <Node Bounds="924,621,65,26" Id="Uf2uFLcaa17Nq0cWQnJUrw">
-                    <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                    <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                       <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                       <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                       <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                      <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                      <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                       <Choice Kind="OperationCallFlag" Name="Phase" />
                     </p:NodeReference>
                     <Pin Id="UWm83NAUb3OLqSPKSzz7Ue" Name="Input" Kind="StateInputPin" />
@@ -1220,11 +1220,11 @@
               </Node>
               <ControlPoint Id="IUDwq3Br3EjODoIFcbVbE1" Bounds="623,911" />
               <Node Bounds="396,729" Id="LWa4s0A949CPFKZqtQlYci">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="Phase" />
                 </p:NodeReference>
                 <Pin Id="BLzC3mcAkIDNdxAAZNhizJ" Name="Input" Kind="StateInputPin" />
@@ -1232,11 +1232,11 @@
                 <Pin Id="MFpYV1cNrbSLKue8Zv7BOg" Name="Phase" Kind="OutputPin" />
               </Node>
               <Node Bounds="501,469" Id="GfaYFD2LFqmOu4rQcaoFqp">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="ErrorMessages" />
                 </p:NodeReference>
                 <Pin Id="ItnoYgTkNYyLlAgeuDG2Kk" Name="Input" Kind="StateInputPin" />
@@ -1244,11 +1244,11 @@
                 <Pin Id="DCbbmXBOlYeMNWVEm5RIpA" Name="Result" Kind="OutputPin" />
               </Node>
               <Node Bounds="256,516" Id="MtpK4v3ctDtORLG5DOx3ab">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="Dispose" />
                 </p:NodeReference>
                 <Pin Id="MtJN2rtebmrPjawKjHQDb4" Name="Input" Kind="StateInputPin" />
@@ -1280,7 +1280,6 @@
             <Link Id="IPuempGLO8mMw3eEBMZDYg" Ids="C3PjnLZE2p4LDKvniFrxVS,BLzC3mcAkIDNdxAAZNhizJ" />
             <Link Id="L7vNQLnpDxTOR41OvXQB8h" Ids="MFpYV1cNrbSLKue8Zv7BOg,O5KmxYSavIPOVDBeeDRka8" />
             <Link Id="LyocBiZG16LQGzzxeGlRQL" Ids="C3PjnLZE2p4LDKvniFrxVS,ItnoYgTkNYyLlAgeuDG2Kk" />
-            <Link Id="T3KxESf5SGiLWL7ce3uv14" Ids="DCbbmXBOlYeMNWVEm5RIpA,VyTz7AasAkLMoXL5VunNRD" />
             <Link Id="S2p0G8UEPtLOw4Wv5yrqn9" Ids="C3PjnLZE2p4LDKvniFrxVS,MtJN2rtebmrPjawKjHQDb4" />
             <Patch Id="RBbtNH4ivJOQVERnNZ33h0" Name="Create" ParticipatingElements="QvNCJuEEAbZPIV6YqtgvcP" />
             <Patch Id="MjyHShqzQI3P06XYD6T9fm" Name="Update" ManuallySortedPins="true">
@@ -1300,6 +1299,7 @@
             </Patch>
             <Patch Id="LOZjKkaFiHYPMpCorFz1EX" Name="Dispose" ParticipatingElements="MtpK4v3ctDtORLG5DOx3ab" />
             <Link Id="C6Fgu6havxyPxhSYbqfLpc" Ids="FbazbJzPmDbOk4X42vfcWO,A76n1WmQnwlMUcWYsmOwcw" />
+            <Link Id="RP02EyjpXuZP56tBOnAQXz" Ids="DCbbmXBOlYeMNWVEm5RIpA,VyTz7AasAkLMoXL5VunNRD" />
           </Patch>
         </Node>
         <!--
@@ -1343,11 +1343,11 @@
                 <Pin Id="NUpeagglBo5OBzDsqq0bYT" Name="Result" Kind="OutputPin" />
               </Node>
               <Node Bounds="453,466" Id="NwtnBd868VqPcFSC5L43sT">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="Dispose" />
                 </p:NodeReference>
                 <Pin Id="H8XITYiuoA5NYpggMiURuZ" Name="Input" Kind="StateInputPin" />
@@ -1453,11 +1453,11 @@
               <ControlPoint Id="SmmKoRwtmqILNoNe0dYHHW" Bounds="898,301" />
               <ControlPoint Id="OIaoFuheIrjP94yEV7xnfF" Bounds="876,359" />
               <Node Bounds="793,652" Id="DrVP9eRLJJ3OBEp5gk2p0A">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="ErrorMessages" />
                 </p:NodeReference>
                 <Pin Id="Gsln1w5XIW2QFOCAyZHbYU" Name="Input" Kind="StateInputPin" />
@@ -1466,11 +1466,11 @@
               </Node>
               <ControlPoint Id="MU7oKYsW4gXMHXqAr0Ghbt" Bounds="863,743" />
               <Node Bounds="487,600" Id="MSBErPUFXcyMCUN28pyg1A">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="Phase" />
                 </p:NodeReference>
                 <Pin Id="Nt11FSkwKQCNL7T8qpWUT3" Name="Input" Kind="StateInputPin" />
@@ -1479,11 +1479,11 @@
               </Node>
               <ControlPoint Id="PBToyUjGS1tL4YECE9AY4c" Bounds="541,694" />
               <Node Bounds="374,439" Id="CTiafnSPplmLbfoyVgkjgH">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="Dispose" />
                 </p:NodeReference>
                 <Pin Id="ArGiIqqAF5HPGOZKVKZYib" Name="Input" Kind="StateInputPin" />
@@ -1605,11 +1605,11 @@
                 <Pin Id="CAgpXpL0PHiOS2U2Ko7jS5" Name="Result" Kind="OutputPin" />
               </Node>
               <Node Bounds="733,649" Id="RLwowoGvZpMMeTGGpxq3R0">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="ErrorMessages" />
                 </p:NodeReference>
                 <Pin Id="KCeOfVyiYoFMaBceuASwTs" Name="Input" Kind="StateInputPin" />
@@ -1618,11 +1618,11 @@
               </Node>
               <ControlPoint Id="M1zxbqXrtKNNxpo0seX5fo" Bounds="801,785" />
               <Node Bounds="438,691" Id="UXxnFEB7Lr8M77GWX1LOmN">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="Phase" />
                 </p:NodeReference>
                 <Pin Id="HFnWv7QCwyfNHoXQdrsiT6" Name="Input" Kind="StateInputPin" />
@@ -1631,11 +1631,11 @@
               </Node>
               <ControlPoint Id="DFMNCNQBYW2OsmQPKhex1s" Bounds="497,775" />
               <Node Bounds="293,557" Id="Mg5OA1PzC8ALgKt5peIckZ">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="Dispose" />
                 </p:NodeReference>
                 <Pin Id="Tawc99Kzg6ZOIj3QW8Fjth" Name="Input" Kind="StateInputPin" />
@@ -1718,11 +1718,11 @@
                 <Pin Id="FxUhyuXpIkNL9mzFBmZHDG" Name="Result" Kind="OutputPin" />
               </Node>
               <Node Bounds="474,571" Id="PHvIgOYnMnlLzR0fJN9GJH">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="Phase" />
                 </p:NodeReference>
                 <Pin Id="QNJVh3Ybzk9NaVY8gKqKkS" Name="Input" Kind="StateInputPin" />
@@ -1731,22 +1731,22 @@
               </Node>
               <ControlPoint Id="UjBZGU0Dt9fQadhvTOolGe" Bounds="547,681" />
               <Node Bounds="315,625" Id="FTalQRKq14sOWxHG5OXHfq">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="Dispose" />
                 </p:NodeReference>
                 <Pin Id="IGUp8vhWSpLLv1WfU0OGHE" Name="Input" Kind="StateInputPin" />
                 <Pin Id="Re2VsnRX4zcQRUstawc6nn" Name="Output" Kind="StateOutputPin" />
               </Node>
               <Node Bounds="619,639" Id="Tg5H4UnnvBUPQHrRcEHta4">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="ErrorMessages" />
                 </p:NodeReference>
                 <Pin Id="NIO7DyZUfxCLLhSETNgmar" Name="Input" Kind="StateInputPin" />
@@ -2056,11 +2056,11 @@
               </Node>
               <Pad Id="QB7LZG3KQQJMwC6jteT0Ma" Bounds="441,438" />
               <Node Bounds="397,489" Id="DZcCM0B1wTCO545zvXS9x1">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="Dispose" />
                 </p:NodeReference>
                 <Pin Id="JxyaeNdealnMxiG2qH8cqz" Name="Input" Kind="StateInputPin" />
@@ -2084,11 +2084,11 @@
               <ControlPoint Id="JxqkM4erxlFOsJ08z8e4PL" Bounds="559,234" />
               <ControlPoint Id="Ud7gL26FqZcNdblw4CUE4N" Bounds="685,235" />
               <Node Bounds="512,569" Id="RWKgqLU3NFxPGgrfAr1dAt">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="ErrorMessages" />
                 </p:NodeReference>
                 <Pin Id="VoYT0i8PLO3PLmehHeHLWC" Name="Input" Kind="StateInputPin" />
@@ -2097,11 +2097,11 @@
               </Node>
               <ControlPoint Id="Ft2QCcDxWFONItLcILadiB" Bounds="602,744" />
               <Node Bounds="463,642" Id="F7qxDbAXJlDNzwGQElVDzL">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="Phase" />
                 </p:NodeReference>
                 <Pin Id="CuiOY7DEaRNOO6i6XZufWG" Name="Input" Kind="StateInputPin" />
@@ -2181,11 +2181,11 @@
               <ControlPoint Id="L3LKNaoQENMOX1syYUOlQr" Bounds="636,326" />
               <ControlPoint Id="DlHzXdbfZnYLVPEfg84d4d" Bounds="465,890" />
               <Node Bounds="191,514,65,26" Id="Pt2bxAATYPWPhPMGM5jsdA">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="Dispose" />
                 </p:NodeReference>
                 <Pin Id="DNmPBf1velmQDTx60elZCg" Name="Input" Kind="StateInputPin" />
@@ -2195,11 +2195,11 @@
               <ControlPoint Id="VAuHitheeVzLI2uPUX7IKm" Bounds="804,258" />
               <ControlPoint Id="Nwac0ilut1kLEy1qTch1Mu" Bounds="877,280" />
               <Node Bounds="431,663" Id="Ti6g1hVCWfHQRUwMovugs7">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="Phase" />
                 </p:NodeReference>
                 <Pin Id="JxZqVUTLFO6QFTG38RPjBk" Name="Input" Kind="StateInputPin" />
@@ -2208,11 +2208,11 @@
               </Node>
               <ControlPoint Id="GaCHCGMhPMmQJ6ctvYX8CA" Bounds="457,772" />
               <Node Bounds="304,641,82,26" Id="BO7Tf96JPQvNuhPH1rcO4q">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="ErrorMessages" />
                 </p:NodeReference>
                 <Pin Id="V3iVfZ4Y4GPM2hfSjr1ORT" Name="Input" Kind="StateInputPin" />
@@ -2221,11 +2221,11 @@
               </Node>
               <ControlPoint Id="KKr2p1t4cdoOTNDVyMbgdt" Bounds="342,831" />
               <Node Bounds="713,737" Id="DDRLajyWra7LsNW7FQ8r6c">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode`2" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode`2" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioNode" />
                   <Choice Kind="OperationCallFlag" Name="DebugInfo" />
                 </p:NodeReference>
                 <Pin Id="TabGCcPMtlVOrqKwL6vCOz" Name="Input" Kind="StateInputPin" />
@@ -2292,9 +2292,9 @@
     </Node>
   </Patch>
   <PlatformDependency Id="FwEC1swQmeqNZRvXH7Cl5U" Location="VL.NewAudio.dll" />
-  <NugetDependency Id="Cd9IgeOg4aDNmfXBD9Nodu" Location="VL.Lang" Version="2021.4.0-0613-g3afe96c078" />
-  <NugetDependency Id="L3qhGd3buGoQBmHW3Gf3vu" Location="VL.Fundamentals" Version="2021.4.0-0613-g3afe96c078" />
-  <NugetDependency Id="TRYiwWmB3wuMaoB2p353qz" Location="VL.CoreLib" Version="2021.4.0-0613-g3afe96c078" />
+  <NugetDependency Id="Cd9IgeOg4aDNmfXBD9Nodu" Location="VL.Lang" Version="2021.4.0-0622-gd89e9c339e" />
+  <NugetDependency Id="L3qhGd3buGoQBmHW3Gf3vu" Location="VL.Fundamentals" Version="2021.4.0-0622-gd89e9c339e" />
+  <NugetDependency Id="TRYiwWmB3wuMaoB2p353qz" Location="VL.CoreLib" Version="2021.4.0-0622-gd89e9c339e" />
   <NugetDependency Id="MbQqbGC4UfOLfyUcAdgbRV" Location="NAudio" Version="2.0.1" />
   <NugetDependency Id="AOEsjfdiv5jOFUUoiG3TqI" Location="NAudio.Asio" Version="2.0.0" />
   <NugetDependency Id="RY8Kj3xf13oPrQPSps9mcO" Location="NAudio.Core" Version="2.0.0" />
@@ -2302,7 +2302,7 @@
   <NugetDependency Id="V6vuiyWokqyQTf3dZDGzoq" Location="NAudio.Wasapi" Version="2.0.0" />
   <NugetDependency Id="EpEmghV38s1QKZ1e7t07wG" Location="NAudio.WinForms" Version="2.0.1" />
   <NugetDependency Id="Nne5cxi3pYPPFGRCREUGem" Location="NAudio.WinMM" Version="2.0.1" />
-  <NugetDependency Id="PFaNp3Lkw2GNWjUzaJVrfo" Location="VL.HDE" Version="2021.4.0-0613-g3afe96c078" />
-  <NugetDependency Id="CWi7ZIUqE8HLyIDVQn2YXk" Location="VL.Skia" Version="2021.4.0-0613-g3afe96c078" />
+  <NugetDependency Id="PFaNp3Lkw2GNWjUzaJVrfo" Location="VL.HDE" Version="2021.4.0-0622-gd89e9c339e" />
+  <NugetDependency Id="CWi7ZIUqE8HLyIDVQn2YXk" Location="VL.Skia" Version="2021.4.0-0622-gd89e9c339e" />
   <DocumentDependency Id="SOZX7BhG6R9PXahXdJawZ9" Location="./vl/IIR Filter.vl" IsForward="true" />
 </Document>

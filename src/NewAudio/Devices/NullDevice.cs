@@ -17,6 +17,10 @@ namespace NewAudio.Devices
             return true;
         }
 
+        protected override bool Stop()
+        {
+            return true;
+        }
 
         private bool _disposedValue;
 

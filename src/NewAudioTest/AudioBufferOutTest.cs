@@ -20,22 +20,20 @@ namespace NewAudioTest
             using var input = new InputDevice();
             using var buf = new AudioBufferOut();
             input.Update(InputDevice, SamplingFrequency.Hz48000, 0, 1);
-            Wait(input);
-
             buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
-            Wait(buf);
 
-            input.PlayParams.Playing.Value = true;
-            buf.PlayParams.Playing.Value = true;
+            UpdateDevices();
+            input.PlayParams.Phase.Value = LifecyclePhase.Play;
+            buf.PlayParams.Phase.Value = LifecyclePhase.Play;
             input.Update(InputDevice, SamplingFrequency.Hz48000, 0, 1);
-            Wait(input, buf);
 
+            UpdateDevices();
             var spread = buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
-            Wait(buf);
+            UpdateDevices();
             input.Device.OnDataReceived(new byte[512 * 4]);
             input.Device.OnDataReceived(new byte[512 * 4]);
-            Task.Delay(100).Wait();
             spread = buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
+            UpdateDevices();
 
             Assert.IsEmpty(buf.ErrorMessages());
             Assert.AreEqual(LifecyclePhase.Play, buf.Phase);

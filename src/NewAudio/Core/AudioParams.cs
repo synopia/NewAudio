@@ -97,7 +97,7 @@ namespace NewAudio.Core
 
         public bool HasChanged => Params.Values.Any(p => p.HasChanged);
         public IEnumerable<IAudioParam> ChangedValues => Params.Values.Where(p => p.HasChanged);
-        public Func<Task> OnChange;
+        public Action OnChange;
 
         public static T Create<T>()
         {
@@ -112,7 +112,7 @@ namespace NewAudio.Core
             }
         }
 
-        public async Task Update()
+        public void Update()
         {
             var delegates = new List<Delegate>();
 
@@ -132,14 +132,14 @@ namespace NewAudio.Core
 
             foreach (var @delegate in delegates.Distinct())
             {
-                await (Task)@delegate.DynamicInvoke();
+                @delegate.DynamicInvoke();
             }
 
             if (delegates.Count > 0)
             {
                 if (OnChange != null)
                 {
-                    await OnChange.Invoke();
+                    OnChange.Invoke();
                 }
             }
         }

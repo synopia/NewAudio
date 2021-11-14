@@ -38,12 +38,6 @@ namespace NewAudio.Blocks
             Start();
         }
 
-        public async Task<bool> Free()
-        {
-            await Stop();
-            return true;
-        }
-
         private void Start()
         {
             if (_thread != null)
@@ -62,12 +56,12 @@ namespace NewAudio.Blocks
             _thread.Start();
         }
 
-        private Task<bool> Stop()
+        public void Stop()
         {
             if (_thread == null)
             {
                 _logger.Error("Thread == null");
-                return Task.FromResult(false);
+                return;
             }
 
             if (_token.IsCancellationRequested)
@@ -78,7 +72,6 @@ namespace NewAudio.Blocks
             _cancellationTokenSource.Cancel();
             _thread.Join();
             _logger.Information("Audio generator thread finished");
-            return Task.FromResult(true);
         }
 
         private void Loop()

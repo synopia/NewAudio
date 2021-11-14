@@ -52,14 +52,11 @@ namespace NewAudio.Core
                 var pos = 0;
                 if (!GenerateSilence)
                 {
-                    _buffer.ReadPlayBuffer(buffer, offset, count);
-                    _buffer.DonePlaying();
-                    pos += count;
-                    // while (pos < count && !CancellationToken.IsCancellationRequested && !GenerateSilence)
-                    // {
-                    // var x = _buffer.Read(buffer, pos + offset, 1);
-                    // pos += x;
-                    // }
+                    while (pos < count && !CancellationToken.IsCancellationRequested && !GenerateSilence)
+                    {
+                        var read = _buffer.ReadPlayBuffer(buffer, pos+offset, count);
+                        pos += read;
+                    }
                 }
 
                 if (GenerateSilence)

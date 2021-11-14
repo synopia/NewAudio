@@ -37,6 +37,7 @@
     <ItemGroup>
         <Compile Remove="WaveInputTest.cs" />
         <Compile Remove="AudioParamTest.cs" />
+        <Compile Remove="LifecycleTests.cs" />
     </ItemGroup>
     <ItemGroup>
         <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">

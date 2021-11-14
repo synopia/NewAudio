@@ -9,46 +9,46 @@ using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Nodes
 {
-    public class AudioNodeInitParams : AudioParams
+    public class AudioNodeParams : AudioParams
     {
-    }
-
-    public class AudioNodePlayParams : AudioParams
-    {
-        public AudioParam<bool> Playing;
+        public AudioParam<bool> Reset;
+        public AudioParam<LifecyclePhase> Phase;
         public AudioParam<AudioLink> Input;
+        public AudioParam<AudioFormat> InputFormat;
         public AudioParam<int> BufferSize;
+
+        public void Update(AudioLink input, bool reset=false, int bufferSize=1, LifecyclePhase phase=LifecyclePhase.Play)
+        {
+            Input.Value = input;
+            InputFormat.Value = input?.Format ?? default;
+            Reset.Value = reset;
+            BufferSize.Value = bufferSize;
+            Phase.Value = phase;
+        }
     }
 
-    public interface IAudioNode : IDisposable, ILifecycleDevice
+    public interface IAudioNode : IDisposable
     {
-        public AudioNodeInitParams InitParams { get; }
-        public AudioNodePlayParams PlayParams { get; }
+        ILogger Logger { get; }
+        public AudioNodeParams PlayParams { get; }
         public string DebugInfo();
         public IEnumerable<string> ErrorMessages();
-        public LifecycleStateMachine LifecycleStateMachine { get; }
     }
 
-    public abstract class AudioNode<TInit, TPlay> : IAudioNode
-        where TInit : AudioNodeInitParams where TPlay : AudioNodePlayParams
+    public abstract class AudioNode : IAudioNode
     {
         public abstract string NodeName { get; }
         public int Id { get; }
 
         private List<Exception> _exceptions = new();
-        public TInit InitParams { get; }
-        public TPlay PlayParams { get; }
-        AudioNodeInitParams IAudioNode.InitParams => InitParams;
-        AudioNodePlayParams IAudioNode.PlayParams => PlayParams;
+        public AudioNodeParams PlayParams { get; }
         public AudioLink Output { get; } = new();
 
         private ITargetBlock<AudioDataMessage> _targetBlock;
         private IDisposable _currentInputLink;
         private IDisposable _currentOutputLink;
         private BufferBlock<AudioDataMessage> _bufferBlock;
-        public LifecyclePhase Phase { get; set; }
-        public readonly LifecycleStateMachine Lifecycle;
-        public LifecycleStateMachine LifecycleStateMachine => Lifecycle;
+        public LifecyclePhase Phase => PlayParams.Phase.Value;
         private readonly IResourceHandle<AudioGraph> _graph;
         public AudioGraph Graph => _graph.Resource;
         public ILogger Logger { get; private set; }
@@ -71,20 +71,14 @@ namespace NewAudio.Nodes
             }
         }
 
-        protected AudioNode() : this(Factory.Instance)
+        protected AudioNode()
         {
-        }
-
-        private AudioNode(IFactory api)
-        {
-            _graph = api.GetAudioGraph();
+            _graph = Factory.Instance.GetAudioGraph();
             Id = Graph.AddNode(this);
-            Logger = Graph.GetLogger<AudioNode<TInit, TPlay>>();
+            Logger = Graph.GetLogger<AudioNode>();
 
-            Lifecycle = new LifecycleStateMachine(this);
-            InitParams = AudioParams.Create<TInit>();
-            PlayParams = AudioParams.Create<TPlay>();
-            PlayParams.BufferSize.Value = 4;
+            PlayParams = AudioParams.Create<AudioNodeParams>();
+            PlayParams.BufferSize.Value = 1;
             PlayParams.BufferSize.Commit();
             CreateBuffer();
         }
@@ -107,22 +101,6 @@ namespace NewAudio.Nodes
 
         protected AudioLink Update()
         {
-            // TODO
-            // if (BaseConfig.Reset)
-            // {
-            // if (Config.Input!=null)
-            // {
-            // OnDisconnect(Config.Input);
-            // Config.Input = null;
-            // }
-            // }
-
-            if (InitParams.HasChanged)
-            {
-                InitParams.Commit();
-                Lifecycle.EventHappens(LifecycleEvents.EInit);
-            }
-
             if (PlayParams.Input.HasChanged)
             {
                 if (_currentInputLink != null && PlayParams.Input.LastValue != null)
@@ -145,18 +123,30 @@ namespace NewAudio.Nodes
 
             if (PlayParams.BufferSize.HasChanged)
             {
-                PlayParams.BufferSize.Commit();
                 CreateBuffer();
+                PlayParams.BufferSize.Commit();
             }
 
             if (PlayParams.HasChanged)
             {
+                PlayParams.Reset.Value = false;
+                Stop();
+                
+                if (PlayParams.Phase.Value == LifecyclePhase.Play )
+                {
+                     var valid = Play();
+                     if (!valid)
+                     {
+                         PlayParams.Phase.Value = LifecyclePhase.Invalid;
+                     }
+                }
+
+                // if (PlayParams.Phase.Value == LifecyclePhase.Stop)
+                // {
+                    // Stop();
+                // }
+                
                 PlayParams.Commit();
-                Lifecycle.EventHappens(PlayParams.Playing.Value ? LifecycleEvents.EPlay : LifecycleEvents.EStop);
-            }
-            else if (IsInitValid() && IsPlayValid() && PlayParams.Playing.Value && Phase != LifecyclePhase.Play)
-            {
-                Lifecycle.EventHappens(PlayParams.Playing.Value ? LifecycleEvents.EPlay : LifecycleEvents.EStop);
             }
 
             return Output;
@@ -171,7 +161,7 @@ namespace NewAudio.Nodes
             
             _bufferBlock = new BufferBlock<AudioDataMessage>(new DataflowBlockOptions()
             {
-                BoundedCapacity = PlayParams.BufferSize.Value
+                BoundedCapacity = Math.Max(1, PlayParams.BufferSize.Value)
             });
             if (PlayParams.Input.Value != null)
             {
@@ -199,20 +189,8 @@ namespace NewAudio.Nodes
             return _exceptions.Select(i => i.Message);
         }
 
-        public abstract Task<bool> Init();
-        public abstract Task<bool> Free();
         public abstract bool Play();
-        public abstract bool Stop();
-
-        public virtual bool IsInitValid()
-        {
-            return true;
-        }
-
-        public virtual bool IsPlayValid()
-        {
-            return true;
-        }
+        public abstract void Stop();
 
         private bool _disposedValue;
 

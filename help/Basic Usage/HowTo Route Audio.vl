@@ -15,7 +15,7 @@
       </p:NodeReference>
       <Patch Id="CbQpEFx2cv6PnULCrZmizW">
         <Canvas Id="BZoYt3IonhPM2TkIkzJC4F" CanvasType="Group">
-          <Pad Id="NQmAmWQgOJbLNteY0UEiXb" Bounds="686,856,293,15" ShowValueBox="true" isIOBox="true" Value="ASIO: ASIO4ALL v2">
+          <Pad Id="NQmAmWQgOJbLNteY0UEiXb" Bounds="686,856,293,15" ShowValueBox="true" isIOBox="true" Value="ASIO: Voicemeeter VAIO3 Virtual ASIO">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="OutputDeviceSelection" />
             </p:TypeAnnotation>
@@ -92,7 +92,7 @@
             <Pin Id="Sl9wK6BhZr2Mj34WKnIMHv" Name="Input Count" Kind="InputPin" DefaultValue="6" />
             <Pin Id="D3T3m3TgJT2NvG0sdgc2cu" Name="Output Count" Kind="InputPin" DefaultValue="2" />
           </Node>
-          <Pad Id="EOHVwzngHO7LAjAcAAe1Es" Comment="Gain" Bounds="1025,593,65,206" ShowValueBox="true" isIOBox="true" Value="0.3">
+          <Pad Id="EOHVwzngHO7LAjAcAAe1Es" Comment="Gain" Bounds="1025,593,65,206" ShowValueBox="true" isIOBox="true" Value="0.24">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Float32" />
               <FullNameCategoryReference ID="Primitive" />
@@ -211,7 +211,7 @@
             </p:NodeReference>
             <Pin Id="QgHDFDYVuusQGhdmPqpqXb" Name="Input" Kind="InputPin" />
             <Pin Id="A9A7BpbduVZP7R2G4eRlAZ" Name="Device" Kind="InputPin" />
-            <Pin Id="TCtocg3r82yMqT9aFolJDc" Name="Channel Offset" Kind="InputPin" />
+            <Pin Id="TCtocg3r82yMqT9aFolJDc" Name="Channel Offset" Kind="InputPin" DefaultValue="0" />
             <Pin Id="DbVb4eBU4mBOXLgEkwnm5B" Name="Channels" Kind="InputPin" />
             <Pin Id="MBV2rHKJaXSNQO2Nf5WgFx" Name="Sampling Frequency" Kind="InputPin" />
             <Pin Id="HxCUznhqUJlOfwjXvYR13C" Name="Buffer Size" Kind="InputPin" />
@@ -256,8 +256,8 @@
         <Link Id="SjvPpx19mCpPVXHcwrHtyI" Ids="NQmAmWQgOJbLNteY0UEiXb,A9A7BpbduVZP7R2G4eRlAZ" />
         <Link Id="BWVJoIUfFvILLCvmkTmbJd" Ids="KJNpeCTT81wLEH0kuS9OjP,MBV2rHKJaXSNQO2Nf5WgFx" />
         <Link Id="Gd7HSJWT9jrPJ70T5BNIEx" Ids="Gf3nwP1TqaCMxfA4GRe5rr,U34Tou40TR8QaUgQu34Wkq" />
-        <Link Id="Gy3VfttkFtBMTmhcK2cUhI" Ids="FwagbNcguLLMF2mG5oiawb,QgHDFDYVuusQGhdmPqpqXb" />
-        <Link Id="G0mZYoFr7DtOSnUo09u1Wh" Ids="NA1jcdzODCdLFglL7PPFAs,BkHEvf5cSOSNWZpPl3EdRZ" />
+        <Link Id="EzzDtMzPEJPMHqQgv2kfYg" Ids="NA1jcdzODCdLFglL7PPFAs,BkHEvf5cSOSNWZpPl3EdRZ" />
+        <Link Id="TdbhVnApVaNOo98b8B2Fam" Ids="FwagbNcguLLMF2mG5oiawb,QgHDFDYVuusQGhdmPqpqXb" />
       </Patch>
     </Node>
   </Patch>

@@ -43,7 +43,14 @@ namespace NewAudio.Core
 
             if (currentFrame != _lastFrame)
             {
-                _driverManager.Resource.UpdateAllDevices();
+                try
+                {
+                    _driverManager.Resource.UpdateAllDevices();
+                }
+                catch (Exception e)
+                {
+                    _logger.Error(e, "Error in DriverManager");
+                }
                 _lastFrame = currentFrame;
                 if (playing != _playing)
                 {
@@ -70,7 +77,7 @@ namespace NewAudio.Core
             _logger.Information("Starting all audio nodes");
             foreach (var node in _nodes)
             {
-                node.PlayParams.Playing.Value = true;
+                node.PlayParams.Phase.Value = LifecyclePhase.Play;
             }
         }
 
@@ -79,7 +86,7 @@ namespace NewAudio.Core
             _logger.Information("Stopping all audio nodes");
             foreach (var node in _nodes)
             {
-                node.PlayParams.Playing.Value = false;
+                node.PlayParams.Phase.Value = LifecyclePhase.Stop;
             }
         }
 

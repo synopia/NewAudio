@@ -23,7 +23,7 @@ namespace NewAudioTest
         }
 
 
-        private class TestDevice : ILifecycleDevice
+        private class TestDevice 
         {
             public IList<string> Calls = new List<string>();
             private ILogger _logger;
@@ -46,7 +46,7 @@ namespace NewAudioTest
                 return true;
             }
 
-            public bool IsPlayValid()
+            public bool IsValid()
             {
                 return true;
             }
@@ -84,19 +84,19 @@ namespace NewAudioTest
             var lf = new LifecycleStateMachine(device);
             lf.EventHappens(LifecycleEvents.EInit);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Init, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Stop, device.Phase);
             lf.EventHappens(LifecycleEvents.EPlay);
             lf.WaitForEvents.WaitOne();
             Assert.AreEqual(LifecyclePhase.Play, device.Phase);
             lf.EventHappens(LifecycleEvents.EStop);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Init, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Stop, device.Phase);
             lf.EventHappens(LifecycleEvents.EPlay);
             lf.WaitForEvents.WaitOne();
             Assert.AreEqual(LifecyclePhase.Play, device.Phase);
             lf.EventHappens(LifecycleEvents.EStop);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Init, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Stop, device.Phase);
             lf.EventHappens(LifecycleEvents.EFree);
             lf.WaitForEvents.WaitOne();
             Assert.AreEqual(LifecyclePhase.Uninitialized, device.Phase);
@@ -123,7 +123,7 @@ namespace NewAudioTest
             lf.EventHappens(LifecycleEvents.EPlay);
             lf.EventHappens(LifecycleEvents.EStop);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Init, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Stop, device.Phase);
             lf.EventHappens(LifecycleEvents.EStop);
             lf.EventHappens(LifecycleEvents.EFree);
             lf.WaitForEvents.WaitOne();
@@ -144,7 +144,7 @@ namespace NewAudioTest
             var lf = new LifecycleStateMachine(device);
             lf.EventHappens(LifecycleEvents.EInit);
             lf.WaitForEvents.WaitOne();
-            Assert.AreEqual(LifecyclePhase.Init, device.Phase);
+            Assert.AreEqual(LifecyclePhase.Stop, device.Phase);
             lf.EventHappens(LifecycleEvents.EPlay);
             lf.WaitForEvents.WaitOne();
             Assert.AreEqual(LifecyclePhase.Play, device.Phase);

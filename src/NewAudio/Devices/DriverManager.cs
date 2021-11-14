@@ -38,7 +38,7 @@ namespace NewAudio.Devices
                 {
                     device.Update();
                 }
-            }
+           }
         }
         
         public List<IDevice> CheckPools()
