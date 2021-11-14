@@ -47,7 +47,7 @@ namespace NewAudio.Nodes
             Params.Type.Value = type;
             PlayParams.Update(input, Params.HasChanged, bufferSize);
 
-            base.Update();
+            base.Update(Params);
 
             if (_updated > 0)
             {
@@ -79,6 +79,10 @@ namespace NewAudio.Nodes
                     _batchSize = CreateTypeMax();
                 }
 
+                if (_batchSize <= 0)
+                {
+                    return false;
+                }
                 _batchBlock = new BatchBlock<AudioDataMessage>(_batchSize);
                 _link1 = _batchBlock.LinkTo(_processor);
 
@@ -130,20 +134,27 @@ namespace NewAudio.Nodes
             _tempBuffer = ArrayPool<float>.Shared.Rent(bufferSize);
             _processor = new ActionBlock<AudioDataMessage[]>(input =>
             {
-                var k = 0;
-                for (int i = 0, j = 0; i < bufferSize; i++, j += skipSize)
+                try
                 {
-                    if (j >= inputBufferSize)
+                    var k = 0;
+                    for (int i = 0, j = 0; i < bufferSize; i++, j += skipSize)
                     {
-                        j -= inputBufferSize;
-                        k++;
+                        if (j >= inputBufferSize)
+                        {
+                            j -= inputBufferSize;
+                            k++;
+                        }
+
+                        _tempBuffer[i] = input[k].Data[j];
                     }
 
-                    _tempBuffer[i] = input[k].Data[j];
+                    Array.Copy(_tempBuffer, _outBuffer, _outBuffer.Length);
+                    _updated++;
                 }
-
-                Array.Copy(_tempBuffer, _outBuffer, _outBuffer.Length);
-                _updated++;
+                catch (Exception e)
+                {
+                    ExceptionHappened(e, "AudioBufferOut.TypeSkip");
+                }
             });
             return skipSize * bufferSize / inputBufferSize;
         }
@@ -161,20 +172,27 @@ namespace NewAudio.Nodes
             _tempBuffer = ArrayPool<float>.Shared.Rent(bufferSize);
             _processor = new ActionBlock<AudioDataMessage[]>(input =>
             {
-                var k = 0;
-                for (int i = 0, j = 0; i < bufferSize; i++, j++)
+                try
                 {
-                    if (j >= inputBufferSize)
+                    var k = 0;
+                    for (int i = 0, j = 0; i < bufferSize; i++, j++)
                     {
-                        j -= inputBufferSize;
-                        k++;
+                        if (j >= inputBufferSize)
+                        {
+                            j -= inputBufferSize;
+                            k++;
+                        }
+
+                        _tempBuffer[i] = input[k].Data[j];
                     }
 
-                    _tempBuffer[i] = input[k].Data[j];
+                    Array.Copy(_tempBuffer, _outBuffer, _outBuffer.Length);
+                    _updated++;
                 }
-
-                Array.Copy(_tempBuffer, _outBuffer, _outBuffer.Length);
-                _updated++;
+                catch (Exception e)
+                {
+                    ExceptionHappened(e, "AudioBufferOut.TypeSkipHalf");
+                }
             });
             return skipSize * bufferSize / inputBufferSize;
         }
@@ -190,31 +208,38 @@ namespace NewAudio.Nodes
 
             _processor = new ActionBlock<AudioDataMessage[]>(input =>
             {
-                var count = blockSize * bufferSize;
-                var skip = count / bufferSize;
-                var k = 0;
-                var j = 0;
-                for (var i = 0; i < bufferSize; i++)
+                try
                 {
-                    var min = 0.0f;
-                    var max = 0.0f;
-                    for (var b = 0; b < skip; b++)
+                    var count = blockSize * bufferSize;
+                    var skip = count / bufferSize;
+                    var k = 0;
+                    var j = 0;
+                    for (var i = 0; i < bufferSize; i++)
                     {
-                        max = Math.Max(max, input[k].Data[j]);
-                        min = Math.Min(min, input[k].Data[j]);
-                        j++;
-                        if (j >= inputBufferSize)
+                        var min = 0.0f;
+                        var max = 0.0f;
+                        for (var b = 0; b < skip; b++)
                         {
-                            j -= inputBufferSize;
-                            k++;
+                            max = Math.Max(max, input[k].Data[j]);
+                            min = Math.Min(min, input[k].Data[j]);
+                            j++;
+                            if (j >= inputBufferSize)
+                            {
+                                j -= inputBufferSize;
+                                k++;
+                            }
                         }
+
+                        _tempBuffer[i] = max > -min ? max : min;
+                        _updated++;
                     }
 
-                    _tempBuffer[i] = max > -min ? max : min;
-                    _updated++;
+                    Array.Copy(_tempBuffer, _outBuffer, _outBuffer.Length);
                 }
-
-                Array.Copy(_tempBuffer, _outBuffer, _outBuffer.Length);
+                catch (Exception e)
+                {
+                    ExceptionHappened(e, "AudioBufferOut.TypeMax");
+                }
             });
             return blockSize * bufferSize / inputBufferSize;
         }

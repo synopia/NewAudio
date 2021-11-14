@@ -99,56 +99,70 @@ namespace NewAudio.Nodes
             }
         }
 
-        protected AudioLink Update()
+        protected AudioLink Update(AudioParams p)
         {
-            if (PlayParams.Input.HasChanged)
+            try
             {
-                if (_currentInputLink != null && PlayParams.Input.LastValue != null)
+                if (PlayParams.Input.HasChanged)
                 {
-                    _currentInputLink.Dispose();
-                    _currentInputLink = null;
-                }
-                else if (_currentInputLink != null || PlayParams.Input.LastValue != null)
-                {
-                    Logger.Warning("Illegal input link found!");
-                    _currentInputLink?.Dispose();
-                    _currentInputLink = null;
-                }
+                    if (_currentInputLink != null && PlayParams.Input.LastValue != null)
+                    {
+                        _currentInputLink.Dispose();
+                        _currentInputLink = null;
+                    }
+                    else if (_currentInputLink != null || PlayParams.Input.LastValue != null)
+                    {
+                        Logger.Warning("Illegal input link found!");
+                        _currentInputLink?.Dispose();
+                        _currentInputLink = null;
+                    }
 
-                if (PlayParams.Input.Value != null)
-                {
-                    _currentInputLink = PlayParams.Input.Value.SourceBlock.LinkTo(_bufferBlock);
-                }
-            }
-
-            if (PlayParams.BufferSize.HasChanged)
-            {
-                CreateBuffer();
-                PlayParams.BufferSize.Commit();
-            }
-
-            if (PlayParams.HasChanged)
-            {
-                PlayParams.Reset.Value = false;
-                Stop();
-                
-                if (PlayParams.Phase.Value == LifecyclePhase.Play )
-                {
-                     var valid = Play();
-                     if (!valid)
-                     {
-                         PlayParams.Phase.Value = LifecyclePhase.Invalid;
-                     }
+                    if (PlayParams.Input.Value != null)
+                    {
+                        _currentInputLink = PlayParams.Input.Value.SourceBlock.LinkTo(_bufferBlock);
+                    }
                 }
 
-                // if (PlayParams.Phase.Value == LifecyclePhase.Stop)
-                // {
+                if (PlayParams.BufferSize.HasChanged)
+                {
+                    CreateBuffer();
+                    PlayParams.BufferSize.Commit();
+                }
+
+                if (PlayParams.HasChanged)
+                {
+                    PlayParams.Reset.Value = false;
+                    Stop();
+
+                    if (PlayParams.Phase.Value == LifecyclePhase.Play)
+                    {
+                        var valid = Play();
+                        if (!valid)
+                        {
+                            PlayParams.Phase.Value = LifecyclePhase.Invalid;
+                        }
+                    }
+
+                    // if (PlayParams.Phase.Value == LifecyclePhase.Stop)
+                    // {
                     // Stop();
-                // }
-                
-                PlayParams.Commit();
-            }
+                    // }
 
+                    PlayParams.Commit();
+                }
+
+            }
+            catch (Exception e)
+            {
+                _currentInputLink?.Dispose();
+                _currentInputLink = null;
+                Output.SourceBlock = null;
+                ExceptionHappened(e, "AudioNode.Update");
+            }
+            finally
+            {
+                p.Commit();
+            }
             return Output;
         }
 

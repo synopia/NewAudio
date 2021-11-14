@@ -49,7 +49,7 @@ namespace NewAudio.Nodes
             Params.OutputChannels.Value = outputChannels > 0 ? outputChannels : input?.Format.Channels ?? 0;
             PlayParams.Update(input, Params.HasChanged, bufferSize);
             
-            return Update();
+            return Update(Params);
         }
 
 
@@ -60,7 +60,6 @@ namespace NewAudio.Nodes
                 PlayParams.InputFormat.Value.Channels > 0 &&
                 PlayParams.InputFormat.Value.SampleCount > 0)
             {
-                Params.Commit();
                 var input = PlayParams.Input.Value;
                 var inputChannels = input.Format.Channels;
                 if (Params.OutputChannels.Value == 0)

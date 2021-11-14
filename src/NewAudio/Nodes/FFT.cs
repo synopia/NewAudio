@@ -44,7 +44,7 @@ namespace NewAudio.Nodes
             Params.FFTLength.Value = (int)Utils.UpperPow2((uint)fftLength);
             PlayParams.Update(input, Params.HasChanged, bufferSize);
 
-            return Update();
+            return Update(Params);
         }
 
         protected void Post(AudioDataMessage buf)

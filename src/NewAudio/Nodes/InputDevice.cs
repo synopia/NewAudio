@@ -47,14 +47,13 @@ namespace NewAudio.Nodes
                 PlayParams.Reset.Value = true;
             }
 
-            return base.Update();
+            return base.Update(Params);
         }
 
         public override bool Play()
         {
             if (Params.Device.Value != null)
             {
-                Params.Commit();
                 Device = _driverManager.Resource.GetInputDevice(Params.Device.Value);
 
                 if (Device != null)

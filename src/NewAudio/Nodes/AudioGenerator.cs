@@ -45,7 +45,7 @@ namespace NewAudio.Nodes
                 
             }
 
-            return base.Update();
+            return base.Update(Params);
         }
 
         public override bool Play()

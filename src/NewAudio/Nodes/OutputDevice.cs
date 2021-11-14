@@ -73,14 +73,13 @@ namespace NewAudio.Nodes
             DeviceParams.Channels.Value = channels;
             PlayParams.Update(input, Params.HasChanged, bufferSize);
 
-            return base.Update();
+            return base.Update(Params);
         }
 
         public override bool Play()
         {
             if (Params.Device.Value != null)
             {
-                Params.Commit();
                 Device = _driverManager.Resource.GetOutputDevice(Params.Device.Value);
                 if (Device != null)
                 {
