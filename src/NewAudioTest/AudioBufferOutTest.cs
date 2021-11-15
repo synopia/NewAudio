@@ -32,6 +32,7 @@ namespace NewAudioTest
             UpdateDevices();
             input.Device.OnDataReceived(new byte[512 * 4]);
             input.Device.OnDataReceived(new byte[512 * 4]);
+            Task.Delay(100).Wait();
             spread = buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
             UpdateDevices();
 

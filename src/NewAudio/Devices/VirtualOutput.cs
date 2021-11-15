@@ -48,9 +48,8 @@ namespace NewAudio.Devices
                 {
                     return;
                 }
-                var buffer = RealDevice.GetMixBuffer(this);
+                var buffer = RealDevice.GetMixBuffer();
                 buffer.WriteChannelsInterleaved(ActualParams.FirstChannel, msg.Channels, msg.Data);
-                RealDevice.ReturnMixBuffer(this);
             }, new ExecutionDataflowBlockOptions()
             {
                 BoundedCapacity = 1,

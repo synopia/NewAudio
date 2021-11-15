@@ -27,6 +27,7 @@ namespace NewAudio.Core
                 .CreateLogger();
             Log.Logger = _logger;
 
+            Log.Logger.Information("============================================");
             Log.Logger.Information("Initializing Audio Service");
         }
 

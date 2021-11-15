@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
 using NewAudio.Devices;
+using NewAudio.Internal;
 using NewAudio.Nodes;
 using NUnit.Framework;
 using SharedMemory;
@@ -32,6 +33,11 @@ namespace NewAudioTest
         public static void OnDataReceived(this IVirtualDevice vd, byte[] data)
         {
             ((TestDevice)vd.Device).OnDataReceived(data);
+        }
+
+        public static IMixBuffer GetReadBuffer(this IVirtualDevice vd)
+        {
+            return ((TestDevice)vd.Device).GetReadBuffer();
         }
 
     }

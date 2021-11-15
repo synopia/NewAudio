@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
 using NewAudio.Blocks;
 using NewAudio.Core;
@@ -38,11 +39,14 @@ namespace NewAudio.Nodes
             Params.DesiredLatency.Value = desiredLatency;
             Params.Channels.Value = channels;
             Params.Interleaved.Value = interleaved;
-
+            PlayParams.Update(null, Params.HasChanged);
+            
             if (Params.HasChanged)
             {
                 PlayParams.Reset.Value = true;
-                
+                _format = new AudioFormat((int)Params.SamplingFrequency.Value, Params.SampleCount.Value,
+                    Params.Channels.Value, Params.Interleaved.Value);
+                Output.Format = _format;    
             }
 
             return base.Update(Params);
@@ -52,12 +56,16 @@ namespace NewAudio.Nodes
         {
             if (Params.SampleCount.Value > 0 && Params.Channels.Value > 0)
             {
+                _audioGeneratorBlock = new AudioGeneratorBlock();
                 _format = new AudioFormat((int)Params.SamplingFrequency.Value, Params.SampleCount.Value,
                     Params.Channels.Value, Params.Interleaved.Value);
-                _audioGeneratorBlock = new AudioGeneratorBlock();
                 Output.Format = _format;
-                _audioGeneratorBlock.Create(Output.TargetBlock, _format);
-                Output.SourceBlock = _audioGeneratorBlock;
+                var buffer = new BufferBlock<AudioDataMessage>(new DataflowBlockOptions()
+                {
+                    BoundedCapacity = 1
+                });
+                _audioGeneratorBlock.Create(buffer, _format);
+                Output.SourceBlock = buffer;
                 return true;
             }
 
@@ -66,7 +74,7 @@ namespace NewAudio.Nodes
 
         public override void Stop()
         {
-            _audioGeneratorBlock.Stop();
+            _audioGeneratorBlock?.Stop();
             _audioGeneratorBlock = null;
             _format = default;
             Output.SourceBlock = null;

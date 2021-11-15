@@ -17,13 +17,16 @@ namespace NewAudio.Nodes
         public AudioParam<AudioFormat> InputFormat;
         public AudioParam<int> BufferSize;
 
-        public void Update(AudioLink input, bool reset=false, int bufferSize=1, LifecyclePhase phase=LifecyclePhase.Play)
+        public void Update(AudioLink input, bool reset=false, int bufferSize=1, LifecyclePhase phase=LifecyclePhase.Uninitialized)
         {
             Input.Value = input;
             InputFormat.Value = input?.Format ?? default;
             Reset.Value = reset;
             BufferSize.Value = bufferSize;
-            Phase.Value = phase;
+            if (phase != LifecyclePhase.Uninitialized)
+            {
+                Phase.Value = phase;
+            }
         }
     }
 

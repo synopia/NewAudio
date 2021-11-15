@@ -94,15 +94,6 @@ namespace NewAudio.Devices
         }
 
 
-        public IMixBuffer GetMixBuffer(IVirtualDevice device)
-        {
-            return MixBuffers.GetMixBuffer(Array.IndexOf(_playingDevices, device));
-        }
-
-        public void ReturnMixBuffer(IVirtualDevice device)
-        {
-            MixBuffers.ReturnMixBuffer(Array.IndexOf(_playingDevices, device));
-        }
 
         public void Update()
         {
@@ -111,10 +102,11 @@ namespace NewAudio.Devices
             UpdateParams();
             if ((IsInputDevice && RecordingParams.HasChanged) || (IsOutputDevice && PlayingParams.HasChanged))
             {
+                Logger.Information("Stopping {Device}", Name);
                 Stop();
                 CancellationTokenSource ??= new CancellationTokenSource();
                 SplitBuffers = new SplitBuffers(RecordingParams.AudioFormat);
-                MixBuffers = new MixBuffers(_playingDevices.Length, 4, PlayingParams.AudioFormat);
+                MixBuffers = new MixBuffers(_playingDevices.Length, 2, PlayingParams.AudioFormat);
                 AudioDataProvider = new AudioDataProvider(Logger, PlayingParams.AudioFormat.WaveFormat, MixBuffers)
                 {
                     CancellationToken = CancellationTokenSource.Token
@@ -123,7 +115,8 @@ namespace NewAudio.Devices
                 Init();
                 RecordingParams.Commit();
                 PlayingParams.Commit();
-
+                
+                Logger.Information("Started {Device} using {Playing} playing and {Recording} recording device nodes", Name, _playingDevices.Length, _recordingDevices.Length);
             }
         }
 
@@ -203,19 +196,32 @@ namespace NewAudio.Devices
             }
         }
 
+        public IMixBuffer GetMixBuffer()
+        {
+            return MixBuffers.GetWriteBuffer(CancellationTokenSource.Token);
+        }
+        public IMixBuffer GetReadBuffer()
+        {
+            return MixBuffers.GetReadBuffer(CancellationTokenSource.Token);
+        }
+        
         public void OnDataReceived(IntPtr[] channels)
         {
             
         }
+        
         public void OnDataReceived(byte[] buffer)
         {
             SplitBuffers.SetBuffer(buffer);
             
             foreach (var device in _recordingDevices)
             {
-                var p = _virtualDevices[device];
-                var msg = SplitBuffers.CreateMessage(p.AudioFormat, p.FirstChannel);
-                device.Post(msg);
+                if (_virtualDevices.ContainsKey(device))
+                {
+                    var p = _virtualDevices[device];
+                    var msg = SplitBuffers.CreateMessage(p.AudioFormat, p.FirstChannel);
+                    device.Post(msg);
+                }
             }
         }
         public virtual string DebugInfo()

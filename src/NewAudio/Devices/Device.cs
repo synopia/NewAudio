@@ -110,8 +110,7 @@ namespace NewAudio.Devices
         public bool IsOutputDevice { get; }
         AudioDataProvider AudioDataProvider { get; }
 
-        IMixBuffer GetMixBuffer(IVirtualDevice device);
-        void ReturnMixBuffer(IVirtualDevice device);
+        IMixBuffer GetMixBuffer();
         void OnDataReceived(byte[] buffer);
 
         public ActualDeviceParams Add(VirtualInput input);

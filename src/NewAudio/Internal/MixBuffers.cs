@@ -18,43 +18,39 @@ namespace NewAudio.Internal
 
     public class MixBuffers
     {
-        private bool[] _usingBuffer;
-        private bool[] _doneBuffer;
-        private IMixBuffer[] Buffers;
-        public int PlayBuffer;
-        public int WriteBuffer;
-        public EventWaitHandle ReadHandle;
-        public EventWaitHandle[] WriteHandles;
+        private IMixBuffer[] _buffers;
+        private Barrier _barrier;
+        private int _write;
+        private int _read;
+        private EventWaitHandle _readerWait;
         
         public MixBuffers(int devices, int bufferCount, AudioFormat format)
         {
-            _usingBuffer = new bool[devices];
-            _doneBuffer = new bool[devices];
-            WriteHandles = new EventWaitHandle[devices];
-            Buffers = new IMixBuffer[bufferCount];
+            _buffers = new IMixBuffer[bufferCount];
             for (int i = 0; i < bufferCount; i++)
             {
-                Buffers[i] = new ByteArrayMixBuffer("Ch" + i, format);
+                _buffers[i] = new ByteArrayMixBuffer("Buf " + i, format);
             }
-
-            PlayBuffer = 0;
-            WriteBuffer = 0;
-            
-            ReadHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-            for (int i = 0; i < devices; i++)
+            _readerWait = new AutoResetEvent(false);
+            _barrier = new Barrier(devices+1, barrier =>
             {
-                WriteHandles[i] = new EventWaitHandle(true, EventResetMode.AutoReset);                
-            }
+                _read = _write;
+                _write = 1 - _write;
+                _readerWait.Set();
+            });
         }
 
         public  static unsafe float[] CopyByteToFloat(byte[] buf)
         {
             var result = new float[buf.Length / 4];
+            Buffer.BlockCopy(buf, 0, result, 0, buf.Length);
+            /*
             fixed (float* ptr = result)
             {
                 var intPtr = new IntPtr(ptr);
                 Marshal.Copy(buf, 0, intPtr, buf.Length);                
             }
+            */
             
             return result;
         }
@@ -70,62 +66,30 @@ namespace NewAudio.Internal
             return result;
         }
         
-        public IMixBuffer GetMixBuffer(int index)
+        public IMixBuffer GetWriteBuffer(CancellationToken cancellationToken)
         {
-            WriteHandles[index].WaitOne();
-            
-            _usingBuffer[index] = true;
-            _doneBuffer[index] = false;
-            return Buffers[WriteBuffer];
+            _barrier.SignalAndWait(cancellationToken);
+            return !cancellationToken.IsCancellationRequested ? _buffers[_write] : null;
         }
 
-        public void ReturnMixBuffer(int index)
+        public int ReadPlayBuffer(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            lock (_usingBuffer)
-            {
-                _usingBuffer[index] = false;
-                _doneBuffer[index] = true;
-                if (!_usingBuffer.Any(b => b) &&_doneBuffer.All(b=>b))
-                {
-                    for (var i = 0; i < _doneBuffer.Length; i++)
-                    {
-                        _doneBuffer[i] = false;
-                    }
-
-                    WriteBuffer++;
-                    WriteBuffer %= Buffers.Length;
-                    ReadHandle.Set();
-                }
-            }
-        }
-
-        public int ReadPlayBuffer(byte[] buffer, int offset, int count)
-        {
-            var buf = GetPlayBuffer();
+            var buf = GetReadBuffer(cancellationToken);
             if (buf != null)
             {
                 Array.Copy(buf.Data, 0, buffer, offset, count);
-                DonePlaying();
                 return count-offset;
             }
 
             return 0;
         }
         
-        public IMixBuffer GetPlayBuffer()
+        public IMixBuffer GetReadBuffer(CancellationToken cancellationToken)
         {
-            var r = ReadHandle.WaitOne(10);
+            _barrier.SignalAndWait(cancellationToken);
+            // var r = _readerWait.WaitOne(1);
             
-            return r ? Buffers[PlayBuffer] : null;
-        }
-        public void DonePlaying()
-        {
-            PlayBuffer++;
-            PlayBuffer %= Buffers.Length;
-            for (int i = 0; i < WriteHandles.Length; i++)
-            {
-                WriteHandles[i].Set();
-            }
+            return !cancellationToken.IsCancellationRequested ? _buffers[_read] : null;
         }
         
     }
@@ -191,13 +155,19 @@ namespace NewAudio.Internal
                 }
                 else
                 {
-                    // byte* ptr = (byte*)_data[0];
-                    // ptr += channel * OutputFormat.BytesPerSample;
-                    // for (int i = 0; i < OutputFormat.SampleCount; i++)
-                    // {
-                        // *((float*)ptr) = channelData[i];
-                        // ptr += OutputFormat.BytesPerSample * OutputFormat.Channels;
-                    // }
+                    fixed (byte* ptr = _data)
+                    {
+                        var intPtr = new IntPtr(ptr + offset * OutputFormat.BytesPerSample);
+                        for (int i = 0; i < OutputFormat.SampleCount; i++)
+                        {
+                            for (int ch = 0; ch < channels; ch++)
+                            {
+                                *((float*)intPtr) = data[i*channels+ch];
+                                intPtr += OutputFormat.BytesPerSample;
+                            }
+                            intPtr += OutputFormat.BytesPerSample * (OutputFormat.Channels-channels);
+                        }
+                    }
                 }
             }
         }

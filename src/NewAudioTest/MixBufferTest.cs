@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using NewAudio.Core;
 using NewAudio.Devices;
 using NewAudio.Internal;
@@ -39,21 +41,42 @@ namespace NewAudioTest
         }
 
         [Test]
+        public void TestSimple2x1ChTo2ChInterleaved2()
+        {
+            var outputFormat = new AudioFormat(48000, 512, 2, true);
+            var signal = BuildSignal(outputFormat);
+            var left = BuildSignal(outputFormat.WithChannels(1), 0);
+            var right = BuildSignal(outputFormat.WithChannels(1), 1);
+            var buf = new ByteArrayMixBuffer("1", outputFormat);
+            buf.WriteChannelsInterleaved(0, 1, left);
+            buf.WriteChannelsInterleaved(1, 1, right);
+
+            float[] b = buf.GetFloatArray();
+            AssertSignal(signal, b);
+        }
+
+        [Test]
         public void TestMixBuffers()
         {
             var format = new AudioFormat(48000, 512, 2);
             var mix = new MixBuffers(2, 4, format);
-            var rounds = 10;
+            var rounds = 100;
             var played = new float[rounds][];
+            var random = new Random();
+            var token = new CancellationTokenSource().Token;
             var t1 = Task.Run(() =>
             {
                 var count = 0;
                 while (count<rounds)
                 {
                     var left = BuildSignal(format.WithChannels(1), count*2);
-                    var buf = mix.GetMixBuffer(0);
-                    buf.WriteChannel(0, left);
-                    mix.ReturnMixBuffer(0);
+                    var buf = mix.GetWriteBuffer(token);
+                    if (buf != null)
+                    {
+                        buf.WriteChannelsInterleaved(0, 1, left);
+                    }
+
+                    Task.Delay(random.Next(25)).Wait(token);
                     count++;
                 }
             });
@@ -63,10 +86,13 @@ namespace NewAudioTest
                 while (count<rounds)
                 {
                     var right = BuildSignal(format.WithChannels(1), count*2+1);
-                    var buf = mix.GetMixBuffer(1);
-                    Task.Delay(1).Wait();
-                    buf.WriteChannel(1, right);
-                    mix.ReturnMixBuffer(1);
+                    var buf = mix.GetWriteBuffer(token);
+                    if (buf != null)
+                    {
+                        buf.WriteChannelsInterleaved(1, 1, right);
+                    }
+                    Task.Delay(random.Next(30)).Wait();
+
                     count++;
                 }
             });
@@ -76,17 +102,20 @@ namespace NewAudioTest
                 var count = 0;
                 while (count<rounds)
                 {
-                    played[count] = mix.GetPlayBuffer().GetFloatArray();
-                    mix.DonePlaying();
-                    count++;
+                    var readBuffer = mix.GetReadBuffer(token);
+                    if (readBuffer != null)
+                    {
+                        played[count] = readBuffer.GetFloatArray();
+                        count++;
+                    }
                 }
             });
 
             Task.WaitAll(new[] { t1, t2, t3 });
-            for (int i = 0; i < rounds; i++)
+            for (int i = 0; i < rounds-1; i++)
             {
                 var signal = BuildSignal(format, i*2);
-                AssertSignal(signal, played[i]);
+                AssertSignal(signal, played[i+1]);
             }
             /*
             var DeviceParams1 = AudioParams.Create<DeviceParams>();

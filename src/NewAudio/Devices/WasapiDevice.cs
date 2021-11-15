@@ -20,6 +20,7 @@ namespace NewAudio.Devices
         public WasapiDevice(string name, bool isInputDevice, bool isLoopback, string deviceId)
         {
             InitLogger<WasapiDevice>();
+            Logger.Information("CREATE: WasapiDevice ({Name})", name);
             Name = name;
             IsInputDevice = isInputDevice;
             IsOutputDevice = !isInputDevice;

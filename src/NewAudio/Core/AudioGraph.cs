@@ -29,7 +29,9 @@ namespace NewAudio.Core
             _audioService = api.GetAudioService();
             _driverManager = api.GetDriverManager();
             _logger = _audioService.Resource.GetLogger<AudioGraph>();
-            _nextId = (_audioService.Resource.GetNextId() * 1) >> 10;
+            _nextId = (_audioService.Resource.GetNextId()) << 10;
+            Log.Logger.Information("-----------------------------------------");
+            _logger.Information("AudioGraph initialized, id={Id}", _nextId);
         }
 
         public ILogger GetLogger<T>()

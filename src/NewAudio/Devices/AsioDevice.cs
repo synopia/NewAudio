@@ -15,6 +15,7 @@ namespace NewAudio.Devices
         {
             Name = name;
             InitLogger<AsioDevice>();
+            Logger.Information("CREATE: AsioDevice ({DriverName})", driverName);
             _driverName = driverName;
             IsInputDevice = true;
             IsOutputDevice = true;

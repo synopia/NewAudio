@@ -41,11 +41,7 @@ namespace NewAudio.Nodes
             DeviceParams.DesiredLatency.Value = desiredLatency;
             DeviceParams.ChannelOffset.Value = channelOffset;
             DeviceParams.Channels.Value = channels;
-
-            if (Params.HasChanged)
-            {
-                PlayParams.Reset.Value = true;
-            }
+            PlayParams.Update(null, Params.HasChanged);
 
             return base.Update(Params);
         }

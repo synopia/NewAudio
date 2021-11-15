@@ -137,7 +137,7 @@ namespace NewAudio.Nodes
                         for (var i = 0; i < samples; i++)
                         {
                             channels.UpdateLoop(i, i);
-                            _state = _updateFunc(_state, channels);
+                             _updateFunc(_state, channels);
                             _clock.IncrementTime(increment);
                         }
                     }

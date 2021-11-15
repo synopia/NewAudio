@@ -54,7 +54,7 @@ namespace NewAudio.Core
                 {
                     while (pos < count && !CancellationToken.IsCancellationRequested && !GenerateSilence)
                     {
-                        var read = _buffer.ReadPlayBuffer(buffer, pos+offset, count);
+                        var read = _buffer.ReadPlayBuffer(buffer, pos + offset, count, CancellationToken);
                         pos += read;
                     }
                 }
@@ -79,10 +79,14 @@ namespace NewAudio.Core
 
                 return pos;
             }
+            catch (OperationCanceledException e)
+            {
+                return 0;
+            }
             catch (Exception e)
             {
                 _logger.Error(e, "Exception in AudioDataProvider!");
-                return count;
+                return 0;
             }
         }
     }

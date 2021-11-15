@@ -133,9 +133,10 @@ namespace NewAudioTest
             output.PlayParams.Phase.Value = LifecyclePhase.Play;
 
             input.Update(InputDevice);
-            output.Update(input.Output, OutputDevice);
-
             UpdateDevices();
+            output.Update(input.Output, OutputDevice);
+            UpdateDevices();
+            
             Assert.AreEqual(LifecyclePhase.Play, input.Phase);
             Assert.AreEqual(LifecyclePhase.Play, output.Phase);
             Assert.AreEqual(new[] { "Init" }, input.Device.MethodCalls(),

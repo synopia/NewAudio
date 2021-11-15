@@ -25,19 +25,17 @@ namespace NewAudioTest
             output.Update(input.Output, OutputDevice);
             input.Update(InputDevice);
             output.Update(input.Output, OutputDevice);
-
+            DriverManager.Resource.UpdateAllDevices();
+            output.ActualDeviceParams.Update();
+            Assert.AreEqual(1024, output.AudioFormat.BufferSize);
 
             Assert.AreEqual(1024, input.AudioFormat.BufferSize);
             var inputSignal = BuildSignal(input.Output.Format);
             input.Device.OnDataReceived(MixBuffers.CopyFloatToByte(inputSignal));
-            Task.Delay(100).GetAwaiter().GetResult();
-            DriverManager.Resource.UpdateAllDevices();
-            output.ActualDeviceParams.Update();
-
-            Assert.AreEqual(1024, output.AudioFormat.BufferSize);
-            var outputSignal = new float[output.AudioFormat.BufferSize];
-            // output.Device.PlayingBuffer().Read(outputSignal);
-
+            var outputSignal = output.Device.GetReadBuffer().GetFloatArray(); // reads first, empty buffer
+            input.Device.OnDataReceived(MixBuffers.CopyFloatToByte(inputSignal));
+            outputSignal = output.Device.GetReadBuffer().GetFloatArray();
+            
             AssertSignal(inputSignal, outputSignal);
         }
 
@@ -67,19 +65,17 @@ namespace NewAudioTest
             Assert.AreEqual(512, input2.AudioFormat.BufferSize);
             var realFormat = input1.Device.Device.RecordingParams.AudioFormat;
             Assert.AreEqual(1024, realFormat.BufferSize);
-            var inputSignal = BuildSignal(realFormat);
-            input1.Device.OnDataReceived(MixBuffers.CopyFloatToByte(inputSignal));
-            input1.Device.OnDataReceived(MixBuffers.CopyFloatToByte(inputSignal));
-            Task.Delay(100).GetAwaiter().GetResult();
-
             Assert.AreEqual(512, output1.AudioFormat.BufferSize);
             Assert.AreEqual(512, output2.AudioFormat.BufferSize);
-            var signal = new float[realFormat.BufferSize];
-            // output1.Device.PlayingBuffer().Read(signal);
-            AssertSignal(inputSignal, signal);
-            Array.Clear(signal, 0, signal.Length);
-            // output2.Device.PlayingBuffer().Read(signal);
-            AssertSignal(inputSignal, signal);
+
+            var inputSignal = BuildSignal(realFormat);
+            
+            input1.Device.OnDataReceived(MixBuffers.CopyFloatToByte(inputSignal));
+            var outputSignal = output1.Device.GetReadBuffer().GetFloatArray(); // reads first, empty buffer
+            input1.Device.OnDataReceived(MixBuffers.CopyFloatToByte(inputSignal));
+            outputSignal = output1.Device.GetReadBuffer().GetFloatArray();
+            
+            AssertSignal(inputSignal, outputSignal);
         }
     }
 }

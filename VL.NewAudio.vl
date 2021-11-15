@@ -1937,7 +1937,7 @@
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="Category" Name="NewAudio" />
                   <CategoryReference Kind="Category" Name="Effects" />
-                  <Choice Kind="ProcessAppFlag" Name="AudioJoiner" />
+                  <Choice Kind="ProcessAppFlag" Name="AudioMixer" />
                 </p:NodeReference>
                 <Pin Id="Pm9AdKTWRfDNNS7j2hWA2t" Name="One" Kind="InputPin" />
                 <Pin Id="Npncq0Bw6LjQVOxdh0JgYt" Name="Two" Kind="InputPin" />
@@ -2034,10 +2034,10 @@
         </Node>
         <!--
 
-    ************************ AudioJoiner ************************
+    ************************ AudioMixer ************************
 
 -->
-        <Node Name="AudioJoiner" Bounds="943,615" Id="ET0DmePA8yQO4ZihUY6q0D">
+        <Node Name="AudioMixer" Bounds="943,615" Id="ET0DmePA8yQO4ZihUY6q0D">
           <p:NodeReference>
             <Choice Kind="ContainerDefinition" Name="Process" />
             <FullNameCategoryReference ID="Primitive" />
@@ -2045,11 +2045,11 @@
           <Patch Id="APVcz34IBRAOe34WuMj6XF">
             <Canvas Id="AwU6abV60onMV6oyVuNd8r" CanvasType="Group">
               <Node Bounds="412,286" Id="OSArMA3VWXdPlRib5XLVJp">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioJoiner" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioMixer" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioJoiner" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioMixer" />
                   <Choice Kind="OperationCallFlag" Name="Create" />
                 </p:NodeReference>
                 <Pin Id="U71aHZ166JVL8GU5hYNh34" Name="Output" Kind="StateOutputPin" />
@@ -2067,16 +2067,17 @@
                 <Pin Id="BMV44T64qZXMPgQiPcOSdE" Name="Output" Kind="StateOutputPin" />
               </Node>
               <Node Bounds="570,471" Id="FCb2b3LfY7FLg8pGfAJ7Fr">
-                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioJoiner" LastSymbolSource="VL.NewAudio.dll">
+                <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioMixer" LastSymbolSource="VL.NewAudio.dll">
                   <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
                   <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
                   <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
-                  <CategoryReference Kind="AssemblyCategory" Name="AudioJoiner" />
+                  <CategoryReference Kind="AssemblyCategory" Name="AudioMixer" />
                   <Choice Kind="OperationCallFlag" Name="Update" />
                 </p:NodeReference>
                 <Pin Id="CFM5ebIJq0uPo2YxqwLKfp" Name="Input (this)" Kind="StateInputPin" />
                 <Pin Id="NsCLN9ceRttPpaiFVJLHyA" Name="Input" Kind="InputPin" />
-                <Pin Id="QIqz3NEOSz6O91Hr61ovGA" Name="Input 2" Kind="InputPin" />
+                <Pin Id="Mu3TLvWlTvGPlGC2BL67jq" Name="Two" Kind="InputPin" />
+                <Pin Id="SqAx2jNfjNWO5YOj3knMLg" Name="Buffer Size" Kind="InputPin" />
                 <Pin Id="Jy1G3jEaCeoPKpWnqn2IGf" Name="Output" Kind="StateOutputPin" />
                 <Pin Id="BrrMJmA2NqXQQr9sitbhS3" Name="Result" Kind="OutputPin" />
               </Node>
@@ -2122,7 +2123,6 @@
             <Link Id="QutyzxB9HSPL7pvVuHzuph" Ids="TGxctW7TuUmOoNjNqkYI6r,JxqkM4erxlFOsJ08z8e4PL" IsHidden="true" />
             <Link Id="V7eIcTbiGxXOXu9PsOBrKl" Ids="JxqkM4erxlFOsJ08z8e4PL,NsCLN9ceRttPpaiFVJLHyA" />
             <Link Id="GdpwLFX9j6JM2MoCAJHqzg" Ids="VbTvMBb5leuLporsOavwCH,Ud7gL26FqZcNdblw4CUE4N" IsHidden="true" />
-            <Link Id="UgG52EwpradMe0Zf9UoPx4" Ids="Ud7gL26FqZcNdblw4CUE4N,QIqz3NEOSz6O91Hr61ovGA" />
             <Link Id="BmQAjQCdxKeNdJ7zd80LOB" Ids="QB7LZG3KQQJMwC6jteT0Ma,VoYT0i8PLO3PLmehHeHLWC" />
             <Link Id="TmqTLxhh0RxL0tMur0LKXs" Ids="Ft2QCcDxWFONItLcILadiB,UdjQ0OGB7HNQQWUyCATF1d" IsHidden="true" />
             <Link Id="FIKikF2CZ2ZOHEy9rFBsAx" Ids="VsHIFpHYFq8PvZLAZTWvrB,Ft2QCcDxWFONItLcILadiB" />
@@ -2138,6 +2138,7 @@
               <Pin Id="Gcow3mOqn6JMvpJ6RgECKJ" Name="Output" Kind="OutputPin" />
             </Patch>
             <Patch Id="NCycE0KPeAqPAoAwbl5T3B" Name="Dispose" ParticipatingElements="DZcCM0B1wTCO545zvXS9x1" />
+            <Link Id="Ao2tbAXmZWVPoMot6uG0tI" Ids="Ud7gL26FqZcNdblw4CUE4N,Mu3TLvWlTvGPlGC2BL67jq" />
           </Patch>
         </Node>
         <!--
