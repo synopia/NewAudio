@@ -2,13 +2,13 @@
 using NAudio.Dsp;
 using SharedMemory;
 
-namespace NewAudio.Nodes
+namespace NewAudio.Dsp
 {
-    public static class Utils
+    public static class AudioMath
     {
-        public const float Pi = (float)Math.PI;
-        public const float TwoPi = (float)(2.0 * Math.PI);
-
+        public const float Pi = (float)System.Math.PI;
+        public const float TwoPi = (float)(2.0 * System.Math.PI);
+        public const double Epsilon = 4.37114e-05;
         public enum WindowFunction
         {
             None,
@@ -36,17 +36,6 @@ namespace NewAudio.Nodes
             return window;
         }
 
-        public static string CalculateBufferStats(CircularBuffer buffer)
-        {
-            var header = buffer.ReadNodeHeader();
-            var nodes = header.NodeCount;
-            var ws = header.WriteStart;
-            var we = header.WriteEnd;
-            var rs = header.ReadStart;
-            var re = header.ReadEnd;
-            return $"Nodes: {nodes} Write: [{ws}, {we}], Read: [{rs}, {re}]";
-        }
-
         public static uint UpperPow2(uint v)
         {
             v--;
@@ -66,27 +55,27 @@ namespace NewAudio.Nodes
 
         public static float TanH(float v)
         {
-            return (float)Math.Tanh(v);
+            return (float)System.Math.Tanh(v);
         }
 
         public static float SinF(float v)
         {
-            return (float)Math.Sin(v);
+            return (float)System.Math.Sin(v);
         }
 
         public static float CosF(float v)
         {
-            return (float)Math.Cos(v);
+            return (float)System.Math.Cos(v);
         }
 
         public static float SinH(float v)
         {
-            return (float)Math.Sinh(v);
+            return (float)System.Math.Sinh(v);
         }
 
         public static float SinC(float v)
         {
-            if (Math.Abs(v) < 0.0000001f)
+            if (System.Math.Abs(v) < 0.0000001f)
             {
                 return 1.0f;
             }

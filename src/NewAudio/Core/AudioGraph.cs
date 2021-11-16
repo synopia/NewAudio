@@ -20,14 +20,10 @@ namespace NewAudio.Core
         private int _nextId;
         private ulong _lastFrame;
 
-        public AudioGraph() : this(Factory.Instance)
+        public AudioGraph()
         {
-        }
-
-        public AudioGraph(IFactory api)
-        {
-            _audioService = api.GetAudioService();
-            _driverManager = api.GetDriverManager();
+            _audioService = Factory.GetAudioService();
+            _driverManager = Factory.GetDriverManager();
             _logger = _audioService.Resource.GetLogger<AudioGraph>();
             _nextId = (_audioService.Resource.GetNextId()) << 10;
             Log.Logger.Information("-----------------------------------------");
@@ -39,7 +35,7 @@ namespace NewAudio.Core
             return _audioService.Resource.GetLogger<T>();
         }
 
-        public void Update(bool playing, int bufferSize = 512, int buffersCount = 6)
+        public bool Update(bool playing, int bufferSize = 512, int buffersCount = 6)
         {
             var currentFrame = VLSession.Instance.UserRuntime.Frame;
 
@@ -67,6 +63,8 @@ namespace NewAudio.Core
                     }
                 }
             }
+
+            return playing;
         }
 
         public int GetNextId()

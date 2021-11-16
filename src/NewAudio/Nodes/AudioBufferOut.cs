@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
+using static NewAudio.Dsp.AudioMath;
 using VL.Lib.Collections;
 
 namespace NewAudio.Nodes
@@ -42,7 +43,7 @@ namespace NewAudio.Nodes
         public Spread<float> Update(AudioLink input, int outputSize = 1024, int blockSize = 8,
             AudioBufferOutType type = AudioBufferOutType.Max, int bufferSize = 1)
         {
-            Params.OutputSize.Value = (int)Utils.UpperPow2((uint)outputSize);
+            Params.OutputSize.Value = (int)UpperPow2((uint)outputSize);
             Params.BlockSize.Value = blockSize;
             Params.Type.Value = type;
             PlayParams.Update(input, Params.HasChanged, bufferSize);

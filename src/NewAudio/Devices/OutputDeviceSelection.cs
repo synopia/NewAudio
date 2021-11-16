@@ -26,7 +26,7 @@ namespace NewAudio.Devices
         {
             var devices = new Dictionary<string, object>();
             // todo
-            var driverManager = Factory.Instance.GetDriverManager().Resource;
+            var driverManager = Factory.GetDriverManager().Resource;
 
             foreach (var device in driverManager.GetOutputDevices())
             {

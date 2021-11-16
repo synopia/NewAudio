@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NewAudio.Core;
 using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Devices
 {
     public class DriverManager
     {
+        private readonly IResourceHandle<AudioService> _audioService;
         private readonly List<DeviceSelection> _devices = new();
         private readonly List<IDriver> _drivers = new();
         private readonly HashSet<IResourceProvider<IDevice>> _pools = new();
@@ -15,6 +17,17 @@ namespace NewAudio.Devices
 
         public DriverManager()
         {
+            _audioService = Factory.GetAudioService();
+            Init();
+        }
+
+        public void Init()
+        {
+            _drivers.Clear();
+            _devices.Clear();
+            _pools.Clear();
+            _activeDevices.Clear();
+            
             _drivers.Add(new AsioDriver());
             _drivers.Add(new WasapiDriver());
             // _drivers.Add(new DirectSoundDriver());
@@ -72,6 +85,7 @@ namespace NewAudio.Devices
             var pool = ResourceProvider.NewPooledSystemWide(selection.ToString(),
                 s =>
                 {
+                    
                     var device = driver.CreateDevice(selection);
                     lock (_activeDevices)
                     {

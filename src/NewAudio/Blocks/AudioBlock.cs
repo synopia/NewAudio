@@ -14,13 +14,9 @@ namespace NewAudio.Blocks
 
         protected AudioService AudioService => _audioService.Resource;
 
-        protected AudioBlock() : this(Factory.Instance)
+        protected AudioBlock()
         {
-        }
-
-        private AudioBlock(IFactory api)
-        {
-            _audioService = api.GetAudioService();
+            _audioService = Factory.GetAudioService();
         }
 
         public void InitLogger<T>()

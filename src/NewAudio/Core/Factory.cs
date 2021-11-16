@@ -1,33 +1,37 @@
-﻿using NewAudio.Devices;
+﻿using System;
+using NewAudio.Devices;
 using VL.Core;
 using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Core
 {
-    public interface IFactory
+    public static class Factory 
     {
-        IResourceHandle<AudioService> GetAudioService();
-        IResourceHandle<AudioGraph> GetAudioGraph();
-        IResourceHandle<DriverManager> GetDriverManager();
-    }
-
-    public class Factory : IFactory
-    {
-        public static IFactory Instance = new Factory();
-
-        public IResourceHandle<AudioGraph> GetAudioGraph()
+        public static IResourceHandle<AudioGraph> GetAudioGraph()
         {
-            var pool = ResourceProvider.NewPooledPerApp(NodeContext.Current, "AudioGraph", _ => new AudioGraph());
-            return pool.GetHandle();
+            try
+            {
+                var nodeContext = NodeContext.Current;
+                var pool = ResourceProvider.NewPooledPerApp(nodeContext, "AudioGraph", _ => new AudioGraph());
+                return pool.GetHandle();
+            }
+            catch (InvalidOperationException e)
+            {
+                var pool = ResourceProvider.NewPooledSystemWide( "AudioGraph", _ => new AudioGraph());
+                return pool.GetHandle();
+                
+            }
+
+            
         }
 
-        public IResourceHandle<AudioService> GetAudioService()
+        public static IResourceHandle<AudioService> GetAudioService()
         {
             var pool = ResourceProvider.NewPooledSystemWide("AudioService", _ => new AudioService());
             return pool.GetHandle();
         }
 
-        public IResourceHandle<DriverManager> GetDriverManager()
+        public static IResourceHandle<DriverManager> GetDriverManager()
         {
             var pool = ResourceProvider.NewPooledSystemWide("DriverManager", _ => new DriverManager());
             return pool.GetHandle();

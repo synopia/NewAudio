@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using FFTW.NET;
 using NewAudio.Core;
+using static NewAudio.Dsp.AudioMath;
 using Serilog;
 
 // ReSharper disable InconsistentNaming
@@ -16,7 +17,7 @@ namespace NewAudio.Nodes
     public class FftParams : AudioParams
     {
         public AudioParam<int> FFTLength;
-        public AudioParam<Utils.WindowFunction> WindowFunction;
+        public AudioParam<WindowFunction> WindowFunction;
     }
 
     public abstract class BaseFFT : AudioNode
@@ -38,10 +39,10 @@ namespace NewAudio.Nodes
         }
 
         public AudioLink Update(AudioLink input, int fftLength = 512,
-            Utils.WindowFunction windowFunction = Utils.WindowFunction.None, int bufferSize = 1)
+            WindowFunction windowFunction = WindowFunction.None, int bufferSize = 1)
         {
             Params.WindowFunction.Value = windowFunction;
-            Params.FFTLength.Value = (int)Utils.UpperPow2((uint)fftLength);
+            Params.FFTLength.Value = (int)UpperPow2((uint)fftLength);
             PlayParams.Update(input, Params.HasChanged, bufferSize);
 
             return Update(Params);
@@ -112,7 +113,7 @@ namespace NewAudio.Nodes
             });
 
             ResizeBuffers(Params.FFTLength.Value, (Params.FFTLength.Value - 1) / 2 + 2);
-            Window = Utils.CreateWindow(Params.WindowFunction.Value, Params.FFTLength.Value);
+            Window = CreateWindow(Params.WindowFunction.Value, Params.FFTLength.Value);
             Output.SourceBlock = null;
         }
         public override void Stop()

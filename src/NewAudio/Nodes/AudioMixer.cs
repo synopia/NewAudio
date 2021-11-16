@@ -45,7 +45,22 @@ namespace NewAudio.Nodes
                 var input2Channels = Params.Input2.Value.Format.Channels;
                 var totalChannels = input1Channels + input2Channels;
                 var outFormat = PlayParams.InputFormat.Value.WithChannels(totalChannels);
-                var mixer = new MixBuffers(2, 2, outFormat);
+                var slots = new DataSlot[]
+                {
+                    new DataSlot
+                    {
+                        Offset = 0,
+                        Channels = input1Channels,
+                        Q = new MSQueue<float[]>()
+                    },
+                    new DataSlot
+                    {
+                        Offset = input1Channels,
+                        Channels = input2Channels,
+                        Q = new MSQueue<float[]>()
+                    }
+                };
+                var mixer = new MixBuffers(slots, outFormat);
 
                 _tokenSource = new CancellationTokenSource();
                 var token = _tokenSource.Token;
@@ -53,53 +68,27 @@ namespace NewAudio.Nodes
                 var count2 = 0;
                 var action1 = new ActionBlock<AudioDataMessage>(msg =>
                 {
-                    IMixBuffer buf = null;
-                    try
-                    {
-                        while (buf == null)
-                        {
-                            buf = mixer.GetWriteBuffer(token);
-                            buf.WriteChannelsInterleaved(0, input1Channels, msg.Data);
-                        }
-                    }
-                    catch (OperationCanceledException e)
-                    {
-                    }
+                    mixer.SetData(0, msg.Data);
 
-                    ArrayPool<float>.Shared.Return(msg.Data);
+                    // ArrayPool<float>.Shared.Return(msg.Data);
                     count1++;
                 }, new ExecutionDataflowBlockOptions()
                 {
                     BoundedCapacity = 1,
                     MaxDegreeOfParallelism = 1,
                     CancellationToken = token,
-                    SingleProducerConstrained = true,
-                    MaxMessagesPerTask = 1,
                 });
                 var action2 = new ActionBlock<AudioDataMessage>(msg =>
                 {
-                    IMixBuffer buf = null;
-                    try
-                    {
-                        while (buf == null)
-                        {
-                            buf = mixer.GetWriteBuffer(token);
-                            buf.WriteChannelsInterleaved(input1Channels, input2Channels, msg.Data);
-                        }
-                    }
-                    catch (OperationCanceledException e)
-                    {
-                    }
+                    mixer.SetData(1, msg.Data);
 
                     count2++;
-                    ArrayPool<float>.Shared.Return(msg.Data);
+                    // ArrayPool<float>.Shared.Return(msg.Data);
                 }, new ExecutionDataflowBlockOptions()
                 {
                     BoundedCapacity = 1,
                     MaxDegreeOfParallelism = 1,
                     CancellationToken = token,
-                    SingleProducerConstrained = true,
-                    MaxMessagesPerTask = 1,
 
                 });
                 var buffer = new BufferBlock<AudioDataMessage>(new DataflowBlockOptions()
@@ -115,13 +104,17 @@ namespace NewAudio.Nodes
                     {
                         while (!token.IsCancellationRequested)
                         {
-                            var buf = mixer.GetReadBuffer(token);
-                            if (buf != null)
+                            AudioDataMessage msg = new AudioDataMessage(outFormat, PlayParams.InputFormat.Value.SampleCount);
+                            count++;
+                            var read = 0;
+                            while (read == 0 && !token.IsCancellationRequested)
                             {
-                                var msg = new AudioDataMessage(buf.GetFloatArray(), outFormat,
-                                    PlayParams.InputFormat.Value.SampleCount);
-                                buffer.Post(msg);
-                                count++;
+                                read = mixer.FillBuffer(msg.Data);
+                            }
+                            var sent = false;
+                            while (!sent && !token.IsCancellationRequested)
+                            {
+                                sent = buffer.Post(msg);
                             }
                         }
                     }

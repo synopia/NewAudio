@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="OpxxkPbXc2wPwFxI0MdxHx" LanguageVersion="2021.4.0.600" Version="0.128">
-  <NugetDependency Id="BfQ9BqV8poEPnZWKYQROv0" Location="VL.CoreLib" Version="2021.4.0-0600-g01fe282c1c" />
+<Document xmlns:p="property" Id="OpxxkPbXc2wPwFxI0MdxHx" LanguageVersion="2021.4.0.622" Version="0.128">
+  <NugetDependency Id="BfQ9BqV8poEPnZWKYQROv0" Location="VL.CoreLib" Version="2021.4.0-0622-gd89e9c339e" />
   <Patch Id="DYRuwp4ufPyNyKtULooXvw">
     <Canvas Id="QYFOXjrMgATQTcpBMDj2hQ" DefaultCategory="Audio.HDE" CanvasType="FullCategory">
       <!--
@@ -379,14 +379,16 @@
                 <Choice Kind="ProcessAppFlag" Name="AudioFormat" />
               </p:NodeReference>
               <Pin Id="S7j7vvoMgd7QPGbZMPw4B8" Name="Input" Kind="InputPin" />
+              <Pin Id="PM6tTcm6UTSPopGONdFcuM" Name="Input" Kind="OutputPin" />
               <Pin Id="MSe1wkq7dMqM4ceuEQBvMF" Name="Buffer Size" Kind="OutputPin" />
               <Pin Id="EY8gbS7CnrgPxXNEa4rMOx" Name="Channels" Kind="OutputPin" />
-              <Pin Id="AX9lJeHmdfVMLQapU4ngZA" Name="Sample Count" Kind="OutputPin" />
               <Pin Id="Tsbuca6fWnUQcYWvZzgVzj" Name="Sample Rate" Kind="OutputPin" />
-              <Pin Id="IGftrPHcA3JOsszl0rMfFK" Name="As String" Kind="OutputPin" />
+              <Pin Id="AX9lJeHmdfVMLQapU4ngZA" Name="Sample Count" Kind="OutputPin" />
+              <Pin Id="JaMI0fKNWCbNKEg9yHIy8Q" Name="Sample Rate Enum" Kind="OutputPin" />
               <Pin Id="HZknqvgBU5MNiJEjkT2gV6" Name="Bits Per Sample" Kind="OutputPin" />
               <Pin Id="IPGTrGZqJqxLyuRycoyV52" Name="Average Bytes Per Second" Kind="OutputPin" />
               <Pin Id="OjElzh2DA9gQMDRlDxpD3c" Name="Encoding" Kind="OutputPin" />
+              <Pin Id="IGftrPHcA3JOsszl0rMfFK" Name="As String" Kind="OutputPin" />
             </Node>
             <Node Bounds="578,704,44,19" Id="S01sPzGn0UdPcv16jNIN5p">
               <p:NodeReference LastCategoryFullName="Collections.Sequence" LastSymbolSource="VL.Collections.vl">
@@ -740,7 +742,7 @@
       </Patch>
     </Node>
   </Patch>
-  <NugetDependency Id="PplJ8M06DDYNWsWk2Slfxl" Location="VL.Skia" Version="2021.4.0-0600-g01fe282c1c" />
+  <NugetDependency Id="PplJ8M06DDYNWsWk2Slfxl" Location="VL.Skia" Version="2021.4.0-0622-gd89e9c339e" />
   <DocumentDependency Id="URghiwvaui3P5E15Vq7xuF" Location="./VL.NewAudio.vl" IsFriend="true" />
-  <NugetDependency Id="OQCN1kO8xNlP3VNbaCz1Ad" Location="VL.HDE" Version="2021.4.0-0600-g01fe282c1c" />
+  <NugetDependency Id="OQCN1kO8xNlP3VNbaCz1Ad" Location="VL.HDE" Version="2021.4.0-0622-gd89e9c339e" />
 </Document>

@@ -1,6 +1,7 @@
 using System;
 using NewAudio.Nodes;
 using Serilog;
+using static NewAudio.Dsp.AudioMath;
 
 namespace NewAudio.Internal
 {
@@ -62,20 +63,20 @@ namespace NewAudio.Internal
             for (var i = 0; i < len; i++)
             {
                 var t = i - (len - 1) / 2.0f;
-                output[i] = 2 * cutoff * Utils.SinC(2 * cutoff * t);
+                output[i] = 2 * cutoff * SinC(2 * cutoff * t);
             }
         }
 
         public static void BlackmanHarrisWindow(float[] x)
         {
-            var factor = 2 * Utils.Pi / (x.Length - 1);
+            var factor = 2 * Pi / (x.Length - 1);
             for (var i = 0; i < x.Length; i++)
             {
                 x[i] *=
                     a0
-                    - a1 * Utils.CosF(1 * factor * i)
-                    + a2 * Utils.CosF(2 * factor * i)
-                    - a3 * Utils.CosF(3 * factor * i);
+                    - a1 * CosF(1 * factor * i)
+                    + a2 * CosF(2 * factor * i)
+                    - a3 * CosF(3 * factor * i);
             }
         }
     }

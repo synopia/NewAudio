@@ -27,6 +27,10 @@ namespace NewAudio.Nodes
             {
                 Phase.Value = phase;
             }
+            else
+            {
+                Phase.Value = LifecyclePhase.Play;
+            }
         }
     }
 
@@ -76,7 +80,7 @@ namespace NewAudio.Nodes
 
         protected AudioNode()
         {
-            _graph = Factory.Instance.GetAudioGraph();
+            _graph = Factory.GetAudioGraph();
             Id = Graph.AddNode(this);
             Logger = Graph.GetLogger<AudioNode>();
 

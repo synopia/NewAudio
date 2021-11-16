@@ -213,7 +213,7 @@
               <p:stepsize p:Type="Single">1</p:stepsize>
             </p:ValueBoxSettings>
           </Pad>
-          <Pad Id="DhUlYMeg4vfPqhULEN4C7T" Bounds="250,781,327,15" ShowValueBox="true" isIOBox="true" Value="ASIO: Voicemeeter AUX Virtual ASIO">
+          <Pad Id="DhUlYMeg4vfPqhULEN4C7T" Bounds="250,781,327,15" ShowValueBox="true" isIOBox="true" Value="ASIO: Voicemeeter Insert Virtual ASIO">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="OutputDeviceSelection" />
             </p:TypeAnnotation>
@@ -460,6 +460,7 @@
             <Pin Id="MWbsdqCSzL8PCDdXxeHwHb" Name="Buffer Size" Kind="InputPin" />
             <Pin Id="DJLcyeBtSXDL4r5N4GpJTV" Name="Buffers Count" Kind="InputPin" />
             <Pin Id="HBCbsgkXZ9QMlOofiNawHC" Name="Debug" Kind="InputPin" />
+            <Pin Id="Sec5iTsJGEmPr4AxkQD9S5" Name="Playing" Kind="OutputPin" />
             <Pin Id="OHBwvskJT9AOe0FWjmlLhX" Name="Debug" Kind="OutputPin" />
           </Node>
           <Node Bounds="194,260,223,19" Id="LC4yiVFVstvMlFbJunrr4K">
@@ -491,9 +492,10 @@
             <Pin Id="Lem8g3mpvRxMiuY2VpoHGs" Name="Lag Ms" Kind="OutputPin" />
             <Pin Id="PrUS23wvaTkNk2Vs4AxxSS" Name="Errors" Kind="OutputPin" />
           </Node>
+          <Pad Id="KYqtKJ47vY4OdhYGYjewvE" SlotId="KWq8G7pLEoxLp04y4Vsftp" Bounds="769,125" Value="False" />
         </Canvas>
         <Patch Id="JdAy5MF5KDhNtNuNEZgjhT" Name="Create" />
-        <Patch Id="NG4NXUivOn9LivaheS2qoP" Name="Update" />
+        <Patch Id="NG4NXUivOn9LivaheS2qoP" Name="Update" ParticipatingElements="GTc7WHyN4OwNiRw7fHfjQg" />
         <ProcessDefinition Id="OhvjURylezfQIOP9W7zkGV">
           <Fragment Id="FUTzMWCRmWLNRaJX1K6e8A" Patch="JdAy5MF5KDhNtNuNEZgjhT" Enabled="true" />
           <Fragment Id="IKQCVTXKas4NtEbTzbyK2p" Patch="NG4NXUivOn9LivaheS2qoP" Enabled="true" />
@@ -521,8 +523,6 @@
         <Link Id="CPH164mcKwFLiHDgRxteGf" Ids="TATSP7aZpWTMU47OIOvHSj,KVnuHtdTFDlLIosbkxSlZe" />
         <Link Id="Fhibksx7n7jOhBnRyZ09Mv" Ids="SgnSKRwNekgNuRYvW6yn0z,SgoMJXC6NBjO1huKnqc7Ke" />
         <Link Id="CYkifKTxPUELnM7IoABKJ5" Ids="OHBwvskJT9AOe0FWjmlLhX,HmVbJjqm7OiQD49NBRHdC5" />
-        <Link Id="VOUtR8EHji6MWxnzPKxVKS" Ids="NCgo8MTHzADLhJHxqD6aZm,AjTISgMTyDWNDRyo3K5URY" />
-        <Link Id="DP9CZwv6oJXN9cHlmJr5KW" Ids="NCgo8MTHzADLhJHxqD6aZm,HBCbsgkXZ9QMlOofiNawHC" />
         <Link Id="LBFnl4GiBZtOEfEj9mSlUl" Ids="JE9CTbTgd69OjnreCnLoZ5,L5HXWcO22byPVZXgUrZSNm" />
         <Link Id="KnXBaGrrRvHOoPAf9pcn00" Ids="VVZum7czLwuPpUCc342Ry0,Ellj0ZN5iy2PrP16sLTwRO" />
         <Link Id="A1lJ7D4rtvuMX92BBCJ2ha" Ids="QsU0SjhqvjrLFPAWaBtMqn,UmArgn6v5GmLO3X5cw8Zv2" />
@@ -531,6 +531,10 @@
         <Link Id="ABGGKHueBCwNi8eFgCRzzN" Ids="DhUlYMeg4vfPqhULEN4C7T,DnnowEhe9PRMKwQ7c2MYNb" />
         <Link Id="IVDrTisLkqeQbzoTdSZ6Bg" Ids="T3mfboo9GmdPdKEK8DJo4r,Nv6RqhsA2cMQVrsw3AWABf" />
         <Link Id="MVw0t8EeeoNOObm2vTskLm" Ids="GOTIPVinmCmNykwvCQxfgN,OKghRATyGPxOTr5FyXbDpd" />
+        <Slot Id="KWq8G7pLEoxLp04y4Vsftp" Name="Playing" />
+        <Link Id="GTc7WHyN4OwNiRw7fHfjQg" Ids="NCgo8MTHzADLhJHxqD6aZm,KYqtKJ47vY4OdhYGYjewvE" />
+        <Link Id="U7DwEBnYvctMZhp5ukZbpo" Ids="KYqtKJ47vY4OdhYGYjewvE,AjTISgMTyDWNDRyo3K5URY" />
+        <Link Id="QPJpI88ovQyLEc0dvQvCKT" Ids="KYqtKJ47vY4OdhYGYjewvE,HBCbsgkXZ9QMlOofiNawHC" />
       </Patch>
     </Node>
   </Patch>

@@ -12,8 +12,6 @@ namespace NewAudio.Core
         private readonly ILogger _logger;
         private readonly MixBuffers _buffer;
         private bool _firstLoop = true;
-        public bool GenerateSilence { get; set; }
-
 
         private CancellationToken _token;
 
@@ -50,26 +48,14 @@ namespace NewAudio.Core
                 // AudioService.Instance.Flow.PostRequest(new AudioDataRequestMessage(count/4/WaveFormat.Channels));
 
                 var pos = 0;
-                if (!GenerateSilence)
+                while (pos < count && !CancellationToken.IsCancellationRequested )
                 {
-                    while (pos < count && !CancellationToken.IsCancellationRequested && !GenerateSilence)
-                    {
-                        var read = _buffer.ReadPlayBuffer(buffer, pos + offset, count, CancellationToken);
-                        pos += read;
-                    }
+                    var read = _buffer.FillBuffer(buffer, pos + offset, count, CancellationToken);
+                    pos += read;
                 }
-
-                if (GenerateSilence)
+                if (CancellationToken.IsCancellationRequested)
                 {
-                    Array.Clear(buffer, pos + offset, count - pos);
-                    pos += count - pos;
-                }
-                else
-                {
-                    if (CancellationToken.IsCancellationRequested)
-                    {
-                        _logger.Information("Audio output reader thread finished");
-                    }
+                    _logger.Information("Audio output reader thread finished");
                 }
 
                 if (!CancellationToken.IsCancellationRequested && pos != count)

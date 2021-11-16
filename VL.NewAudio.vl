@@ -142,6 +142,7 @@
               <Pin Id="MbwWWAjXkgEMmBHSdcALfP" Name="Buffer Size" Kind="InputPin" />
               <Pin Id="U2QjwJdqFmkM6RknByR6id" Name="Buffers Count" Kind="InputPin" />
               <Pin Id="H4ziOgCO8NIOgJhonrNP2A" Name="Output" Kind="StateOutputPin" />
+              <Pin Id="Vtvqg2l1vbXOO00iK6cCC7" Name="Result" Kind="OutputPin" />
             </Node>
             <ControlPoint Id="M7lxFlP3JoUPjISAuuDxU9" Bounds="258,328" />
             <ControlPoint Id="Ry4xXwdDPU2MNWSlHT3iXo" Bounds="279,367" />
@@ -156,6 +157,7 @@
               <Pin Id="N228V7BJeRFPMPxR2o0mOR" Name="Input" Kind="StateInputPin" />
               <Pin Id="Rz0d0X060OCL7VtD6Q58NG" Name="Output" Kind="StateOutputPin" />
             </Node>
+            <ControlPoint Id="KYsEHPXm7JTL6YgYboX1rN" Bounds="275,491" />
           </Canvas>
           <ProcessDefinition Id="AZkHgK9WOTaPVlmjyvDCUF">
             <Fragment Id="DKLcnBCzR9TPz1L5ZteLQD" Patch="JT3RIbXqBQmQIeg6lVXvOX" Enabled="true" />
@@ -176,12 +178,15 @@
           <Link Id="HNKtZ6Zo64CMwp0L8z6ew6" Ids="VmfqIVE5qwgO3Fb95i37V4,N228V7BJeRFPMPxR2o0mOR" />
           <Link Id="JGWsjm15lNMMjukSRtUp6q" Ids="VmfqIVE5qwgO3Fb95i37V4,HQgABYXQ3NbP2cdPrnp6UQ" />
           <Link Id="ETtETy0DeNILw89oMVNZUC" Ids="UIHDuHcBnHgODZahYjSvds,IO37O6vEF0GND8UHxPFAoM" />
+          <Link Id="HS5e6lxSyyDPjSm9V8gOHh" Ids="KYsEHPXm7JTL6YgYboX1rN,QLfss6QN41yLeqhYoiPdu5" IsHidden="true" />
+          <Link Id="ElYFErZDSFqLIylvFXbfdh" Ids="Vtvqg2l1vbXOO00iK6cCC7,KYsEHPXm7JTL6YgYboX1rN" />
           <Patch Id="JT3RIbXqBQmQIeg6lVXvOX" Name="Create" ParticipatingElements="NRLokcHrCwEMgBXpa9H2fL" />
           <Patch Id="NsBUKt8ox6cNjvW5ywHozn" Name="Update">
             <Pin Id="ESJy9eNcYObPkCXxPVfBF0" Name="Play" Kind="InputPin" />
             <Pin Id="GdhpzRf2tJDQd233AkpWX2" Name="Buffer Size" Kind="InputPin" />
             <Pin Id="R0f7jD8en1lN0tgpjLF9fl" Name="Buffers Count" Kind="InputPin" />
             <Pin Id="Nq8hqxzcfnqPCYw9Pf1Pv0" Name="Debug" Kind="InputPin" />
+            <Pin Id="QLfss6QN41yLeqhYoiPdu5" Name="Playing" Kind="OutputPin" />
             <Pin Id="ORMEZiNNdelLyWWNDDHLFy" Name="Debug" Kind="OutputPin" />
           </Patch>
           <Patch Id="Pkg9xEZWE19MDis6EXQk7x" Name="Dispose" ParticipatingElements="HNKtZ6Zo64CMwp0L8z6ew6" />

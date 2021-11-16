@@ -47,13 +47,9 @@ namespace NewAudio.Blocks
         private AudioOutputBlockConfig[] _config;
         private float[] _temp;
 
-        public AudioOutputBlock() : this(Factory.Instance)
+        public AudioOutputBlock() 
         {
-        }
-
-        public AudioOutputBlock(IFactory api)
-        {
-            _audioService = api.GetAudioService();
+            _audioService = Factory.GetAudioService();
             _logger = _audioService.Resource.GetLogger<AudioOutputBlock>();
         }
 

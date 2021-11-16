@@ -37,7 +37,7 @@ namespace NewAudioTest
 
         public static IMixBuffer GetReadBuffer(this IVirtualDevice vd)
         {
-            return ((TestDevice)vd.Device).GetReadBuffer();
+            return null; // ((TestDevice)vd.Device).GetReadBuffer();
         }
 
     }
@@ -56,7 +56,9 @@ namespace NewAudioTest
 
         protected BaseDeviceTest()
         {
-            DriverManager = Factory.Instance.GetDriverManager();
+            DriverManager = Factory.GetDriverManager();
+            DriverManager.Resource.Init();
+            
             InputDriver = new TestDriver("VIN", true, false);
             OutputDriver = new TestDriver("VOUT",false, true);
             InOutDriver = new TestDriver("VINOUT",true, true);
@@ -73,7 +75,7 @@ namespace NewAudioTest
         [SetUp]
         public void Init()
         {
-            DriverManager = Factory.Instance.GetDriverManager();
+            DriverManager = Factory.GetDriverManager();
             InputDriver.InputMethodCalls.Clear();
             InputDriver.OutputMethodCalls.Clear();
             OutputDriver.InputMethodCalls.Clear();
@@ -85,7 +87,7 @@ namespace NewAudioTest
         [TearDown]
         public void Teardown()
         {
-            DriverManager = Factory.Instance.GetDriverManager();
+            DriverManager = Factory.GetDriverManager();
             Assert.IsEmpty(DriverManager.Resource.CheckPools());
         }
 

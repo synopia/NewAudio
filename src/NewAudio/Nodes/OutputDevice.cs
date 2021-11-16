@@ -36,7 +36,7 @@ namespace NewAudio.Nodes
         public OutputDevice()
         {
             InitLogger<OutputDevice>();
-            _driverManager = Factory.Instance.GetDriverManager();
+            _driverManager = Factory.GetDriverManager();
             DeviceParams = AudioParams.Create<DeviceParams>();
             Params = AudioParams.Create<OutputDeviceParams>();
             Logger.Information("Output device created");
@@ -71,24 +71,48 @@ namespace NewAudio.Nodes
             DeviceParams.DesiredLatency.Value = desiredLatency;
             DeviceParams.ChannelOffset.Value = channelOffset;
             DeviceParams.Channels.Value = channels;
+            
+            if (Params.Device.HasChanged)
+            {
+                StopDevice();
+                if (Params.Device.Value != null)
+                {
+                    StartDevice();
+                }
+
+            }
+            
             PlayParams.Update(input, Params.HasChanged, bufferSize);
 
             return base.Update(Params);
         }
 
+        public void StartDevice()
+        {
+            Device = _driverManager.Resource.GetOutputDevice(Params.Device.Value);
+            if (Device == null)
+            {
+                return;
+            }
+
+            ActualDeviceParams = Device.Bind(DeviceParams);
+            _link = _processor.LinkTo(Device.TargetBlock);
+            TargetBlock = _processor;
+        }
+
+        public void StopDevice()
+        {
+            _link?.Dispose();
+            Device?.Dispose();
+            Device = null;
+        }
+        
         public override bool Play()
         {
-            if (Params.Device.Value != null)
+            if (Device != null)
             {
-                Device = _driverManager.Resource.GetOutputDevice(Params.Device.Value);
-                if (Device != null)
-                {
-                    ActualDeviceParams = Device.Bind(DeviceParams);
-                    _link = _processor.LinkTo(Device.TargetBlock);
-                    Device.Start();
-                    TargetBlock = _processor;
-                    return true;
-                }
+                Device.Start();
+                return true;
             }
 
             return false;
@@ -96,10 +120,7 @@ namespace NewAudio.Nodes
 
         public override void Stop()
         {
-            _link?.Dispose();
-            Device?.Dispose();
-            Device = null;
-            TargetBlock = null;
+            Device?.Stop();
         }
 
         public override string DebugInfo()
@@ -115,8 +136,7 @@ namespace NewAudio.Nodes
             {
                 if (disposing)
                 {
-                    Device?.Dispose();
-                    Device = null;
+                    StopDevice();
                     _driverManager.Dispose();
                 }
 

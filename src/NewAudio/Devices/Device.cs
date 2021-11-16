@@ -50,6 +50,7 @@ namespace NewAudio.Devices
     }
     public class ActualDeviceParams : AudioParams
     {
+        public AudioParam<int> ConnectedDevices;
         public AudioParam<bool> IsRecordingDevice;
         public AudioParam<bool> IsPlayingDevice;
         public AudioParam<bool> Active;
@@ -110,7 +111,7 @@ namespace NewAudio.Devices
         public bool IsOutputDevice { get; }
         AudioDataProvider AudioDataProvider { get; }
 
-        IMixBuffer GetMixBuffer();
+        void AddAudioMessage(IVirtualDevice device, AudioDataMessage msg);
         void OnDataReceived(byte[] buffer);
 
         public ActualDeviceParams Add(VirtualInput input);
@@ -123,5 +124,7 @@ namespace NewAudio.Devices
         public ActualDeviceParams RecordingParams { get; }
         public ActualDeviceParams PlayingParams { get; }
         public string DebugInfo();
+        void Pause(IVirtualDevice device);
+        void UnPause(IVirtualDevice device);
     }
 }

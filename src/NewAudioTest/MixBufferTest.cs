@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NewAudio;
 using NewAudio.Core;
 using NewAudio.Devices;
 using NewAudio.Internal;
@@ -135,6 +136,77 @@ namespace NewAudioTest
             
             output1.Device.Update();
         */
+        }
+        [Test]
+        public void TestMixBuffers2()
+        {
+            var format = new AudioFormat(48000, 512, 2);
+            DataSlot[] slots = new[]
+            {
+                new DataSlot
+                {
+                    Offset = 0,
+                    Channels = 1,
+                    Q = new MSQueue<float[]>()
+
+                },
+                new DataSlot
+                {
+                    Offset = 1,
+                    Channels = 1,
+                    Q = new MSQueue<float[]>()
+                },
+            };
+            var mix = new MixBuffers(slots, format);
+            var rounds = 100;
+            var played = new float[rounds][];
+            var random = new Random();
+            var token = new CancellationTokenSource().Token;
+            var t1 = Task.Run(() =>
+            {
+                var count = 0;
+                while (count<rounds)
+                {
+                    var left = BuildSignal(format.WithChannels(1), count*2);
+                    mix.SetData(0, left);
+
+                    Task.Delay(random.Next(25)).Wait(token);
+                    count++;
+                }
+            });
+            var t2 = Task.Run(() =>
+            {
+                var count = 0;
+                while (count<rounds)
+                {
+                    var right = BuildSignal(format.WithChannels(1), count*2+1);
+                    mix.SetData(1, right);
+                    Task.Delay(random.Next(30)).Wait();
+
+                    count++;
+                }
+            });
+
+            var t3 = Task.Run(() =>
+            {
+                var count = 0;
+                byte[] buffer = new byte[format.BufferSize*4]; 
+                while (count<rounds)
+                {
+                    Task.Delay(50).Wait();
+                    mix.FillBuffer(buffer, 0, format.BufferSize*4, token);
+                    played[count] = MixBuffers.CopyByteToFloat(buffer);
+                    count++;
+                }
+            });
+
+            Task.WaitAll(new[] { t1, t2, t3 });
+            for (int i = 0; i < rounds-2; i++)
+            {
+                var signal = BuildSignal(format, i*2);
+                AssertSignal(signal, played[i+2]);
+            }
+          
         }
     }
 }

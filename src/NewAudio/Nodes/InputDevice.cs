@@ -26,7 +26,7 @@ namespace NewAudio.Nodes
         public InputDevice()
         {
             InitLogger<InputDevice>();
-            _driverManager = Factory.Instance.GetDriverManager();
+            _driverManager = Factory.GetDriverManager();
             Params = AudioParams.Create<InputDeviceParams>();
             DeviceParams = AudioParams.Create<DeviceParams>();
             Logger.Information("Input device created");
@@ -41,30 +41,51 @@ namespace NewAudio.Nodes
             DeviceParams.DesiredLatency.Value = desiredLatency;
             DeviceParams.ChannelOffset.Value = channelOffset;
             DeviceParams.Channels.Value = channels;
+
+            if (Params.Device.HasChanged)
+            {
+                StopDevice();
+                if (Params.Device.Value != null)
+                {
+                    StartDevice();
+                }
+            }
+            
             PlayParams.Update(null, Params.HasChanged);
 
             return base.Update(Params);
         }
 
+        public void StartDevice()
+        {
+            Device = _driverManager.Resource.GetInputDevice(Params.Device.Value);
+
+            if (Device == null)
+            {
+                return;
+            }
+
+            ActualDeviceParams = Device.Bind(DeviceParams);
+            ActualDeviceParams.Active.OnChange += () =>
+            {
+                Output.Format = ActualDeviceParams.AudioFormat;
+                return Task.CompletedTask;
+            };
+            Output.SourceBlock = Device.SourceBlock;
+        }
+
+        public void StopDevice()
+        {
+            Device?.Dispose();
+            Device = null;
+        }
+
         public override bool Play()
         {
-            if (Params.Device.Value != null)
+            if (Device != null)
             {
-                Device = _driverManager.Resource.GetInputDevice(Params.Device.Value);
-
-                if (Device != null)
-                {
-                    ActualDeviceParams = Device.Bind(DeviceParams);
-                    ActualDeviceParams.Active.OnChange += () =>
-                    {
-                        Output.Format = ActualDeviceParams.AudioFormat;
-                        return Task.CompletedTask;
-                    };
-                    Device.Start();
-                    Output.SourceBlock = Device.SourceBlock;
-                    
-                    return true;
-                }
+                Device.Start();
+                return true;
             }
 
             return false;
@@ -72,9 +93,7 @@ namespace NewAudio.Nodes
 
         public override void Stop()
         {
-            Device?.Dispose();
-            Output.SourceBlock = null;
-            Device = null;
+            Device?.Stop();
         }
 
         public override string DebugInfo()
@@ -91,8 +110,7 @@ namespace NewAudio.Nodes
             {
                 if (disposing)
                 {
-                    Device?.Dispose();
-                    Device = null;
+                    StopDevice();
                     _driverManager.Dispose();
                 }
 

@@ -123,7 +123,7 @@ namespace NewAudio.Devices
                 var pos = 0;
                 var token = CancellationTokenSource.Token;
 
-                while (pos < evt.BytesRecorded && !token.IsCancellationRequested && !GenerateSilence)
+                while (pos < evt.BytesRecorded && !token.IsCancellationRequested )
                 {
                     var toCopy = Math.Min(_temp.Length - _tempPos, remaining);
                     if (toCopy < 0 || toCopy > _temp.Length)

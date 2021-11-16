@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -26,25 +27,11 @@ namespace NewAudio.Devices
         private Dictionary<IVirtualDevice, ActualDeviceParams> _virtualDevices = new();
         private IVirtualDevice[] _playingDevices;
         private IVirtualDevice[] _recordingDevices;
+        private bool[] _pausedDevices; 
         protected MixBuffers MixBuffers;
         protected SplitBuffers SplitBuffers;
         
         protected CancellationTokenSource CancellationTokenSource;
-
-        private bool _generateSilence;
-
-        public bool GenerateSilence
-        {
-            get => _generateSilence;
-            set
-            {
-                _generateSilence = value;
-                if (AudioDataProvider != null)
-                {
-                    AudioDataProvider.GenerateSilence = value;
-                }
-            }
-        }
 
         public string Name { get; protected set; }
 
@@ -52,15 +39,11 @@ namespace NewAudio.Devices
 
         public bool IsOutputDevice { get; protected set; }
 
-        protected BaseDevice() : this(Factory.Instance)
+        protected BaseDevice()
         {
+            _audioService = Factory.GetAudioService();
             RecordingParams = AudioParams.Create<ActualDeviceParams>();
             PlayingParams = AudioParams.Create<ActualDeviceParams>();
-        }
-
-        private BaseDevice(IFactory api)
-        {
-            _audioService = api.GetAudioService();
         }
 
         protected void InitLogger<T>()
@@ -93,24 +76,38 @@ namespace NewAudio.Devices
             _virtualDevices.Remove(output);
         }
 
-
-
         public void Update()
         {
             //todo exception handling
 
             UpdateParams();
-            if ((IsInputDevice && RecordingParams.HasChanged) || (IsOutputDevice && PlayingParams.HasChanged))
+            var recording = IsInputDevice && RecordingParams.HasChanged;
+            var playing = IsOutputDevice && PlayingParams.HasChanged;
+            if (recording || playing)
             {
                 Logger.Information("Stopping {Device}", Name);
                 Stop();
-                CancellationTokenSource ??= new CancellationTokenSource();
-                SplitBuffers = new SplitBuffers(RecordingParams.AudioFormat);
-                MixBuffers = new MixBuffers(_playingDevices.Length, 2, PlayingParams.AudioFormat);
-                AudioDataProvider = new AudioDataProvider(Logger, PlayingParams.AudioFormat.WaveFormat, MixBuffers)
+                CancellationTokenSource = new CancellationTokenSource();
+                if (recording)
                 {
-                    CancellationToken = CancellationTokenSource.Token
-                };
+                    SplitBuffers = new SplitBuffers(RecordingParams.AudioFormat);
+                }
+
+                if (playing)
+                {
+
+                    DataSlot[] slots = _playingDevices.Select(d => new DataSlot()
+                    {
+                        Offset = d.ActualParams.FirstChannel,
+                        Channels = d.ActualParams.Channels.Value,
+                        Q = new MSQueue<float[]>()
+                    }).ToArray();
+                    MixBuffers = new MixBuffers(slots, PlayingParams.AudioFormat);
+                    AudioDataProvider = new AudioDataProvider(Logger, PlayingParams.AudioFormat.WaveFormat, MixBuffers)
+                    {
+                        CancellationToken = CancellationTokenSource.Token
+                    };
+                }
 
                 Init();
                 RecordingParams.Commit();
@@ -136,6 +133,7 @@ namespace NewAudio.Devices
 
             _playingDevices = _virtualDevices.Where(p => p.Value.IsPlayingDevice.Value).Select(p=>p.Key).ToArray();
             _recordingDevices = _virtualDevices.Where(p => p.Value.IsRecordingDevice.Value).Select(p=>p.Key).ToArray();
+            _pausedDevices = new bool[_playingDevices.Length];
         }
         
         protected void BuildParams(ActualDeviceParams param, bool playing, bool recording)
@@ -149,6 +147,7 @@ namespace NewAudio.Devices
                 var sr = all.Max(p => p.Key.Params.SamplingFrequency.Value);
                 // var latency = all.Max(p => p.Key.Params.DesiredLatency.Value);
 
+                param.ConnectedDevices.Value = all.Count;
                 param.IsPlayingDevice.Value = playing;
                 param.IsRecordingDevice.Value = recording;
                 IsPlaying = playing;
@@ -161,6 +160,7 @@ namespace NewAudio.Devices
             }
             else
             {
+                param.ConnectedDevices.Value = 0;
                 param.Active.Value = false;
                 param.IsPlayingDevice.Value = false;
                 param.IsRecordingDevice.Value = false;
@@ -196,13 +196,33 @@ namespace NewAudio.Devices
             }
         }
 
-        public IMixBuffer GetMixBuffer()
+        public void Pause(IVirtualDevice device)
         {
-            return MixBuffers.GetWriteBuffer(CancellationTokenSource.Token);
+            // var index = Array.IndexOf(_playingDevices, device);
+            // if (!_pausedDevices[index])
+            // {
+                // _pausedDevices[index] = true;
+                // MixBuffers.DecreaseDevices();
+            // }
         }
-        public IMixBuffer GetReadBuffer()
+        public void UnPause(IVirtualDevice device)
         {
-            return MixBuffers.GetReadBuffer(CancellationTokenSource.Token);
+            // var index = Array.IndexOf(_playingDevices, device);
+            // if (_pausedDevices[index])
+            // {
+                // _pausedDevices[index] = false;
+                // MixBuffers.IncreaseDevices();
+            // }
+        }
+        public void AddAudioMessage(IVirtualDevice device, AudioDataMessage msg)
+        {
+            var index = Array.IndexOf(_playingDevices, device);
+            MixBuffers.SetData(index, msg.Data);
+            // ArrayPool<float>.Shared.Return(msg.Data);
+        }
+        public void FillBuffer(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            MixBuffers.FillBuffer(buffer, offset, count, cancellationToken);
         }
         
         public void OnDataReceived(IntPtr[] channels)

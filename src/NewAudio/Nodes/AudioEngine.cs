@@ -10,12 +10,12 @@ namespace NewAudio.Nodes
 
         public AudioEngine()
         {
-            _graph = Factory.Instance.GetAudioGraph();
+            _graph = Factory.GetAudioGraph();
         }
 
-        public void Update(bool playing, int bufferSize = 512, int buffersCount = 6)
+        public bool Update(bool playing, int bufferSize = 512, int buffersCount = 6)
         {
-            _graph.Resource.Update(playing, bufferSize, buffersCount);
+            return  _graph.Resource.Update(playing, bufferSize, buffersCount);
         }
 
         public string DebugInfo()

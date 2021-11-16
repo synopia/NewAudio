@@ -18,6 +18,8 @@ namespace NewAudio.Devices
         public bool IsPlaying => true;
         public bool IsRecording => false;
 
+        public bool IsSilent { get; private set; }
+
         // private BroadcastBlock<AudioDataMessage> _broadcastBlock = new(i => i, new DataflowBlockOptions()
         // {
             // todo
@@ -30,6 +32,7 @@ namespace NewAudio.Devices
         public VirtualOutput(IResourceHandle<IDevice> resource)
         {
             _resource = resource;
+            IsSilent = false;
         }
 
         public void Post(AudioDataMessage msg)
@@ -48,8 +51,10 @@ namespace NewAudio.Devices
                 {
                     return;
                 }
-                var buffer = RealDevice.GetMixBuffer();
-                buffer.WriteChannelsInterleaved(ActualParams.FirstChannel, msg.Channels, msg.Data);
+                if (!IsSilent)
+                {
+                    RealDevice.AddAudioMessage(this, msg);
+                }
             }, new ExecutionDataflowBlockOptions()
             {
                 BoundedCapacity = 1,
@@ -65,9 +70,13 @@ namespace NewAudio.Devices
 
         public void Start()
         {
+            // RealDevice.UnPause(this);
+            // IsSilent = false;
         }
         public void Stop()
         {
+            // RealDevice.Pause(this);
+            // IsSilent = true;
         }
 
         

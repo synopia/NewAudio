@@ -15,13 +15,9 @@ namespace NewAudio.Core
 
         public AudioFormat Format { get; set; }
 
-        public AudioLink() : this(Factory.Instance)
+        public AudioLink() 
         {
-        }
-
-        public AudioLink(IFactory api)
-        {
-            _graph = api.GetAudioGraph();
+            _graph = Factory.GetAudioGraph();
             _graph.Resource.AddLink(this);
         }
 

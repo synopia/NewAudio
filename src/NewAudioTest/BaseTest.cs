@@ -22,7 +22,7 @@ namespace NewAudioTest
         public T Resource { get; }
     }
 
-    public class VLTestApi : IFactory
+    public class VLTestApi 
     {
         private DriverManager _driverManager = new();
         private AudioService _audioService = new();
@@ -51,8 +51,7 @@ namespace NewAudioTest
 
         protected BaseTest()
         {
-            Factory.Instance = new VLTestApi();
-            _audioService = Factory.Instance.GetAudioService();
+            _audioService = Factory.GetAudioService();
         }
 
         protected void InitLogger<T>()

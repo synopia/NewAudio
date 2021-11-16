@@ -21,13 +21,9 @@ namespace NewAudio.Blocks
         private CancellationToken _token;
         private Thread _thread;
 
-        public AudioGeneratorBlock() : this(Factory.Instance)
+        public AudioGeneratorBlock() 
         {
-        }
-
-        public AudioGeneratorBlock(IFactory api)
-        {
-            _audioService = api.GetAudioService();
+            _audioService = Factory.GetAudioService();
             _logger = _audioService.Resource.GetLogger<AudioGeneratorBlock>();
         }
 
