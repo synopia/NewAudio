@@ -37,7 +37,7 @@ namespace NewAudio.Core
 
         public static AudioTime operator +(AudioTime a, AudioFormat f)
         {
-            return new AudioTime(a.Time + f.SampleCount, a.DTime + f.SampleCount / (double)f.SampleRate);
+            return new AudioTime(a.Time + f.NumberOfFrames, a.DTime + f.NumberOfFrames / (double)f.SampleRate);
         }
 
         public static bool operator ==(AudioTime a, AudioTime b)

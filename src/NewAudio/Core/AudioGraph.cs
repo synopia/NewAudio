@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using NewAudio.Devices;
 using NewAudio.Nodes;
@@ -13,12 +14,40 @@ namespace NewAudio.Core
     {
         private readonly IResourceHandle<AudioService> _audioService;
         private readonly IResourceHandle<DriverManager> _driverManager;
-        private readonly IList<IAudioNode> _nodes = new List<IAudioNode>();
+        private readonly IList<AudioNode> _nodes = new List<AudioNode>();
         private readonly IList<AudioLink> _links = new List<AudioLink>();
         private readonly ILogger _logger;
-        private bool _playing;
+        private bool _enabled;
         private int _nextId;
+        public ulong LastProcessedFrame => _lastFrame;
         private ulong _lastFrame;
+        public int SampleRate => OutputNode.OutputSampleRate;
+        public int FramesPerBlock => OutputNode.OutputFramesPerBlock;
+        private OutputNode _output;
+        public OutputNode OutputNode
+        {
+            get => _output;
+            set
+            {
+                if (_output!=null)
+                {
+                    if (value != null && (_output.OutputFramesPerBlock != value.OutputFramesPerBlock ||
+                                          _output.OutputSampleRate != value.OutputSampleRate))
+                    {
+                        UnInitializeAllNodes();
+                    }
+                    else
+                    {
+                        UnInitializeNode(_output);
+                    }
+                }
+                _output = value;
+                if (_output != null)
+                {
+                    InitializeAllNodes();
+                }
+            }
+        }
 
         public AudioGraph()
         {
@@ -35,34 +64,104 @@ namespace NewAudio.Core
             return _audioService.Resource.GetLogger<T>();
         }
 
-        public bool Update(bool playing, int bufferSize = 512, int buffersCount = 6)
+        public void SetEnabled(bool enabled = true)
         {
-            var currentFrame = VLSession.Instance.UserRuntime.Frame;
-
-            if (currentFrame != _lastFrame)
+            if (enabled)
             {
-                try
-                {
-                    _driverManager.Resource.UpdateAllDevices();
-                }
-                catch (Exception e)
-                {
-                    _logger.Error(e, "Error in DriverManager");
-                }
-                _lastFrame = currentFrame;
-                if (playing != _playing)
-                {
-                    _playing = playing;
-                    if (playing)
-                    {
-                        PlayAll();
-                    }
-                    else
-                    {
-                        StopAll();
-                    }
-                }
+                Enable();
             }
+            else
+            {
+                Disable();
+            }
+        }
+        
+        public void Enable()
+        {
+            if (_enabled)
+            {
+                return;
+            }
+
+        
+            if (!OutputNode.IsInitialized)
+            {
+                OutputNode.DoInitialize();
+            }
+
+            _enabled = true;
+            OutputNode.Enable();
+            
+        }
+
+        public void Disable()
+        {
+            if (!_enabled)
+            {
+                return;
+            }
+
+            _enabled = false;
+            
+                OutputNode.Disable();
+        }
+        
+        public void ConnectionsDidChange(AudioNode node){}
+
+        public void InitializeNode(AudioNode node)
+        {
+            node.DoInitialize();
+        }
+        public void UnInitializeNode(AudioNode node)
+        {
+            node.DoUnInitialize();
+        }
+        public void InitializeAllNodes()
+        {
+            var traversed = new HashSet<AudioNode>();
+            
+            InitRecursive(OutputNode, traversed);
+        }
+        public void UnInitializeAllNodes()
+        {
+            var traversed = new HashSet<AudioNode>();
+            
+            UnInitRecursive(OutputNode, traversed);
+        }
+
+        private void InitRecursive(AudioNode node, HashSet<AudioNode> traversed)
+        {
+            if (node == null || traversed.Contains(node))
+            {
+                return;
+            }
+
+            traversed.Add(node);
+            foreach (var input in node.Inputs)
+            {
+                InitRecursive(input, traversed);
+            }
+            node.ConfigureConnections();
+        }
+        private void UnInitRecursive(AudioNode node, HashSet<AudioNode> traversed)
+        {
+            if (node == null || traversed.Contains(node))
+            {
+                return;
+            }
+
+            traversed.Add(node);
+            foreach (var input in node.Inputs)
+            {
+                UnInitRecursive(input, traversed);
+            }
+            node.DoUnInitialize();
+        }
+        
+        public bool Update(bool playing)
+        {
+            _audioService.Resource.Update();
+            SetEnabled(playing);
 
             return playing;
         }
@@ -72,12 +171,13 @@ namespace NewAudio.Core
             return _nextId++;
         }
 
+        /*
         public void PlayAll()
         {
             _logger.Information("Starting all audio nodes");
             foreach (var node in _nodes)
             {
-                node.PlayParams.Phase.Value = LifecyclePhase.Play;
+                node.PlayConfig.Phase.Value = LifecyclePhase.Play;
             }
         }
 
@@ -86,9 +186,10 @@ namespace NewAudio.Core
             _logger.Information("Stopping all audio nodes");
             foreach (var node in _nodes)
             {
-                node.PlayParams.Phase.Value = LifecyclePhase.Stop;
+                node.PlayConfig.Phase.Value = LifecyclePhase.Stop;
             }
         }
+        */
 
         public void AddLink(AudioLink link)
         {
@@ -102,14 +203,14 @@ namespace NewAudio.Core
             _logger.Verbose("Removed link {@Node}", link);
         }
 
-        public int AddNode(IAudioNode node)
+        public int AddNode(AudioNode node)
         {
             _nodes.Add(node);
             _logger.Verbose("Added node {Node}", node);
             return _nodes.Count;
         }
 
-        public void RemoveNode(IAudioNode node)
+        public void RemoveNode(AudioNode node)
         {
             _nodes.Remove(node);
             _logger.Verbose("Removing node {Node}", node);

@@ -15,9 +15,9 @@ namespace NewAudio.Devices
             };
         }
 
-        public IDevice CreateDevice(DeviceSelection selection)
+        public IAudioClient CreateClient(DeviceSelection selection)
         {
-            return new NullDevice(selection.Name, selection.IsInputDevice, selection.IsOutputDevice);
+            return new NullAudioClient(selection.Name, selection.IsInputDevice, selection.IsOutputDevice);
         }
     }
 }

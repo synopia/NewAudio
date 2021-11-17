@@ -28,10 +28,10 @@ namespace NewAudio.Blocks
             if (one != null && two != null)
             {
                 var format = one.Format;
-                var channels1 = one.Format.Channels;
-                var channels2 = two.Format.Channels;
+                var channels1 = one.Format.NumberOfChannels;
+                var channels2 = two.Format.NumberOfChannels;
                 var channels = channels1 + channels2;
-                var sampleCount = format.SampleCount;
+                var sampleCount = format.NumberOfFrames;
 
                 var output = new BufferBlock<AudioDataMessage>();
                 var outputFormat = format.WithChannels(channels);

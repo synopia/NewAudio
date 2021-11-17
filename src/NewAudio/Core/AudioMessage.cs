@@ -20,7 +20,7 @@ namespace NewAudio.Core
         {
             IsInterleaved = format.IsInterleaved;
             SampleCount = sampleCount;
-            Channels = format.Channels;
+            Channels = format.NumberOfChannels;
             Time = new AudioTime(0, 0);
             IsLocked = false;
             Data = data != null && data.Length == sampleCount * Channels

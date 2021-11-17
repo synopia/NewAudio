@@ -97,9 +97,9 @@ namespace NewAudioTest
             if (interleaved)
             {
                 var pos = 0;
-                for (var s = 0; s < format.SampleCount; s++)
+                for (var s = 0; s < format.NumberOfFrames; s++)
                 {
-                    for (var ch = 0; ch < format.Channels; ch++)
+                    for (var ch = 0; ch < format.NumberOfChannels; ch++)
                     {
                         signal[pos] = offset + ch;
                         pos++;
@@ -109,9 +109,9 @@ namespace NewAudioTest
             else
             {
                 var pos = 0;
-                for (var ch = 0; ch < format.Channels; ch++)
+                for (var ch = 0; ch < format.NumberOfChannels; ch++)
                 {
-                    for (var s = 0; s < format.SampleCount; s++)
+                    for (var s = 0; s < format.NumberOfFrames; s++)
                     {
                         signal[pos] = ch;
                         pos++;

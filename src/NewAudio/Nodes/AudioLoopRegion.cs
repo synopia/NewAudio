@@ -46,8 +46,8 @@ namespace NewAudio.Nodes
 
             _updateFunc = update;
             Params.Bypass.Value = bypass;
-            Params.OutputChannels.Value = outputChannels > 0 ? outputChannels : input?.Format.Channels ?? 0;
-            PlayParams.Update(input, Params.HasChanged, bufferSize);
+            Params.OutputChannels.Value = outputChannels > 0 ? outputChannels : input?.Format.NumberOfChannels ?? 0;
+            PlayConfig.Update(input, Params.HasChanged, bufferSize);
             
             return Update(Params);
         }
@@ -55,12 +55,12 @@ namespace NewAudio.Nodes
 
         public override bool Play()
         {
-            if (PlayParams.Input.Value != null &&
+            if (PlayConfig.Input.Value != null &&
                 Params.OutputChannels.Value > 0 &&
-                PlayParams.InputFormat.Value.Channels > 0 &&
-                PlayParams.InputFormat.Value.SampleCount > 0)
+                PlayConfig.InputFormat.Value.Channels > 0 &&
+                PlayConfig.InputFormat.Value.SampleCount > 0)
             {
-                var input = PlayParams.Input.Value;
+                var input = PlayConfig.Input.Value;
                 var inputChannels = input.Format.Channels;
                 if (Params.OutputChannels.Value == 0)
                 {
@@ -110,7 +110,7 @@ namespace NewAudio.Nodes
                     return input;
                 }
 
-                var output = new AudioDataMessage(Output.Format, Output.Format.SampleCount)
+                var output = new AudioDataMessage(Output.Format, Output.Format.NumberOfFrames)
                 {
                     Time = input.Time
                 };
@@ -118,22 +118,22 @@ namespace NewAudio.Nodes
                 {
                     var channels = new AudioChannels();
 
-                    var inputBufferSize = PlayParams.Input.Value.Format.BufferSize;
+                    var inputBufferSize = PlayConfig.Input.Value.Format.BufferSize;
                     if (input.BufferSize != inputBufferSize)
                     {
                         throw new Exception($"Expected Input size: {inputBufferSize}, actual: {input.BufferSize}");
                     }
 
-                    var samples = PlayParams.Input.Value.Format.SampleCount;
-                    var outputChannels = Output.Format.Channels;
-                    var inputChannels = PlayParams.Input.Value.Format.Channels;
+                    var samples = PlayConfig.Input.Value.Format.SampleCount;
+                    var outputChannels = Output.Format.NumberOfChannels;
+                    var inputChannels = PlayConfig.Input.Value.Format.Channels;
 
                     _clock.Init(input.Time.DTime);
 
                     if (_state != null && _updateFunc != null)
                     {
                         channels.Update(output.Data, input.Data, outputChannels, inputChannels);
-                        var increment = 1.0d / PlayParams.Input.Value.Format.SampleRate;
+                        var increment = 1.0d / PlayConfig.Input.Value.Format.SampleRate;
                         for (var i = 0; i < samples; i++)
                         {
                             channels.UpdateLoop(i, i);

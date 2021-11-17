@@ -148,16 +148,16 @@ namespace NewAudio.Blocks
             {
                 var targetChannels = _config[i].Channels;
                 var message = new AudioDataMessage(OutputFormat.WithChannels(targetChannels),
-                    OutputFormat.SampleCount)
+                    OutputFormat.NumberOfFrames)
                 {
                     Time = time
                 };
-                for (var s = 0; s < OutputFormat.SampleCount; s++)
+                for (var s = 0; s < OutputFormat.NumberOfFrames; s++)
                 {
                     for (var ch = 0; ch < targetChannels; ch++)
                     {
                         message.Data[s * targetChannels + ch] =
-                            _temp[s * OutputFormat.Channels + _config[i].FirstChannel + ch];
+                            _temp[s * OutputFormat.NumberOfChannels + _config[i].FirstChannel + ch];
                     }
                 }
 
@@ -174,8 +174,8 @@ namespace NewAudio.Blocks
                 _logger.Verbose("Posted {Samples} ", message.BufferSize);
             }
 
-            _sTime += OutputFormat.SampleCount;
-            _dTime += OutputFormat.SampleCount / (double)OutputFormat.SampleRate;
+            _sTime += OutputFormat.NumberOfFrames;
+            _dTime += OutputFormat.NumberOfFrames / (double)OutputFormat.SampleRate;
         }
 
         public string DebugInfo()

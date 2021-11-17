@@ -2,12 +2,12 @@
 
 namespace NewAudio.Devices
 {
-    public class NullDevice : BaseDevice
+    public class NullAudioClient : BaseAudioClient
     {
-        public NullDevice(string name, bool isInputDevice, bool isOutputDevice)
+        public NullAudioClient(string name, bool isInputDevice, bool isOutputDevice)
         {
             Name = name;
-            InitLogger<NullDevice>();
+            InitLogger<NullAudioClient>();
             IsInputDevice = isInputDevice;
             IsOutputDevice = isOutputDevice;
         }

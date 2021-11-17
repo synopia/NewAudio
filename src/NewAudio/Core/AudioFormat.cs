@@ -22,40 +22,39 @@ namespace NewAudio.Core
     public readonly struct AudioFormat
     {
         public int SampleRate { get; }
-        public int Channels { get; }
-        public int SampleCount { get; }
-        public int BufferSize => SampleCount * Channels;
+        public int NumberOfChannels { get; }
+        public int NumberOfFrames { get; }
+        public int BufferSize => NumberOfFrames * NumberOfChannels;
         public bool IsInterleaved { get; }
-
         public int BytesPerSample => WaveFormat.BitsPerSample / 8;
-        public WaveFormat WaveFormat => WaveFormat.CreateIeeeFloatWaveFormat(SampleRate, Channels);
+        public WaveFormat WaveFormat => WaveFormat.CreateIeeeFloatWaveFormat(SampleRate, NumberOfChannels);
 
-        public AudioFormat(int sampleRate, int sampleCount, int channels = 1, bool isInterleaved = true)
+        public AudioFormat(int sampleRate, int numberOfFrames, int numberOfChannels = 1, bool isInterleaved = true)
         {
             SampleRate = sampleRate;
-            Channels = channels;
-            SampleCount = sampleCount;
+            NumberOfChannels = numberOfChannels;
+            NumberOfFrames = numberOfFrames;
             IsInterleaved = isInterleaved;
         }
 
         public override string ToString()
         {
-            return $"{SampleRate}Hz, {Channels}Ch {WaveFormat?.BitsPerSample}Bit {SampleCount} samples";
+            return $"{SampleRate}Hz, {NumberOfChannels}Ch {WaveFormat?.BitsPerSample}Bit {NumberOfFrames} samples";
         }
 
         public AudioFormat WithChannels(int channels)
         {
-            return new AudioFormat(SampleRate, SampleCount, channels, IsInterleaved);
+            return new AudioFormat(SampleRate, NumberOfFrames, channels, IsInterleaved);
         }
 
         public AudioFormat WithSampleCount(int sampleCount)
         {
-            return new AudioFormat(SampleRate, sampleCount, Channels, IsInterleaved);
+            return new AudioFormat(SampleRate, sampleCount, NumberOfChannels, IsInterleaved);
         }
 
         public AudioFormat WithWaveFormat(WaveFormat waveFormat)
         {
-            return new AudioFormat(waveFormat.SampleRate, SampleCount, waveFormat.Channels, IsInterleaved);
+            return new AudioFormat(waveFormat.SampleRate, NumberOfFrames, waveFormat.Channels, IsInterleaved);
         }
     }
 }

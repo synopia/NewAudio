@@ -220,9 +220,9 @@ namespace NewAudio.Internal
             // fixed (byte* ptr = target)
             // {
             // var intPtr = new IntPtr(ptr);
-            for (int i = 0; i < _format.SampleCount; i++)
+            for (int i = 0; i < _format.NumberOfFrames; i++)
             {
-                var samplePtr = intPtr + i * _format.BytesPerSample * _format.Channels;
+                var samplePtr = intPtr + i * _format.BytesPerSample * _format.NumberOfChannels;
 
                 for (int s = 0; s < _slots.Length; s++)
                 {
@@ -265,10 +265,10 @@ namespace NewAudio.Internal
 
         public unsafe void WriteChannel(int channel, float[] data)
         {
-            if (data.Length != OutputFormat.SampleCount)
+            if (data.Length != OutputFormat.NumberOfFrames)
             {
                 throw new Exception(
-                    $"channel data length != OutputFormat.SampleCount, {data.Length}!={OutputFormat.SampleCount}");
+                    $"channel data length != OutputFormat.SampleCount, {data.Length}!={OutputFormat.NumberOfFrames}");
             }
 
             if (OutputFormat.IsInterleaved)
@@ -277,10 +277,10 @@ namespace NewAudio.Internal
                 {
                     var intPtr = new IntPtr(ptr);
                     intPtr += channel * OutputFormat.BytesPerSample;
-                    for (int i = 0; i < OutputFormat.SampleCount; i++)
+                    for (int i = 0; i < OutputFormat.NumberOfFrames; i++)
                     {
                         *((float*)intPtr) += data[i];
-                        intPtr += OutputFormat.BytesPerSample * OutputFormat.Channels;
+                        intPtr += OutputFormat.BytesPerSample * OutputFormat.NumberOfChannels;
                     }
                 }
             }
@@ -288,10 +288,10 @@ namespace NewAudio.Internal
 
         public unsafe void WriteChannelsInterleaved(int offset, int channels, float[] data)
         {
-            if (data.Length < OutputFormat.SampleCount * channels)
+            if (data.Length < OutputFormat.NumberOfFrames * channels)
             {
                 throw new Exception(
-                    $"channel data length != OutputFormat.SampleCount*channels, {data.Length}!={channels * OutputFormat.SampleCount}");
+                    $"channel data length != OutputFormat.SampleCount*channels, {data.Length}!={channels * OutputFormat.NumberOfFrames}");
             }
 
             if (OutputFormat.IsInterleaved)
@@ -299,7 +299,7 @@ namespace NewAudio.Internal
                 fixed (byte* ptr = _data)
                 {
                     var intPtr = new IntPtr(ptr + offset * OutputFormat.BytesPerSample);
-                    for (int i = 0; i < OutputFormat.SampleCount; i++)
+                    for (int i = 0; i < OutputFormat.NumberOfFrames; i++)
                     {
                         for (int ch = 0; ch < channels; ch++)
                         {
@@ -307,7 +307,7 @@ namespace NewAudio.Internal
                             intPtr += OutputFormat.BytesPerSample;
                         }
 
-                        intPtr += OutputFormat.BytesPerSample * (OutputFormat.Channels - channels);
+                        intPtr += OutputFormat.BytesPerSample * (OutputFormat.NumberOfChannels - channels);
                     }
                 }
             }

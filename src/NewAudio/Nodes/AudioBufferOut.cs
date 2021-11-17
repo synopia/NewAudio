@@ -46,7 +46,7 @@ namespace NewAudio.Nodes
             Params.OutputSize.Value = (int)UpperPow2((uint)outputSize);
             Params.BlockSize.Value = blockSize;
             Params.Type.Value = type;
-            PlayParams.Update(input, Params.HasChanged, bufferSize);
+            PlayConfig.Update(input, Params.HasChanged, bufferSize);
 
             base.Update(Params);
 
@@ -62,7 +62,7 @@ namespace NewAudio.Nodes
 
         public override bool Play()
         {
-            if (PlayParams.InputFormat.Value.BufferSize>0 && Params.OutputSize.Value > 0 &&
+            if (PlayConfig.InputFormat.Value.BufferSize>0 && Params.OutputSize.Value > 0 &&
                   Params.BlockSize.Value > 0)
             {
                 var type = Params.Type.Value;
@@ -129,7 +129,7 @@ namespace NewAudio.Nodes
         {
             var bufferSize = Params.OutputSize.Value;
             var skipSize = Params.BlockSize.Value;
-            var inputBufferSize = PlayParams.Input.Value.Format.BufferSize;
+            var inputBufferSize = PlayConfig.Input.Value.Format.BufferSize;
 
             _outBuffer = ArrayPool<float>.Shared.Rent(bufferSize);
             _tempBuffer = ArrayPool<float>.Shared.Rent(bufferSize);
@@ -164,7 +164,7 @@ namespace NewAudio.Nodes
         {
             var bufferSize = Params.OutputSize.Value;
             var skipSize = Params.BlockSize.Value;
-            var inputBufferSize = PlayParams.Input.Value.Format.BufferSize;
+            var inputBufferSize = PlayConfig.Input.Value.Format.BufferSize;
             if (inputBufferSize == 0)
             {
                 Logger.Error("SHOULD NOT HAPPEN!!");
@@ -202,7 +202,7 @@ namespace NewAudio.Nodes
         {
             var bufferSize = Params.OutputSize.Value;
             var blockSize = Params.BlockSize.Value;
-            var inputBufferSize = PlayParams.Input.Value.Format.BufferSize;
+            var inputBufferSize = PlayConfig.Input.Value.Format.BufferSize;
 
             _outBuffer = ArrayPool<float>.Shared.Rent(bufferSize);
             _tempBuffer = ArrayPool<float>.Shared.Rent(bufferSize);

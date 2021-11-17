@@ -19,9 +19,9 @@ namespace NewAudioTest
             Assert.IsEmpty(input.ErrorMessages());
             Assert.IsEmpty(output.ErrorMessages());
             Assert.IsEmpty(fft.ErrorMessages());
-            input.PlayParams.Phase.Value = LifecyclePhase.Play;
-            output.PlayParams.Phase.Value = LifecyclePhase.Play;
-            fft.PlayParams.Phase.Value = LifecyclePhase.Play;
+            input.PlayConfig.Phase.Value = LifecyclePhase.Play;
+            output.PlayConfig.Phase.Value = LifecyclePhase.Play;
+            fft.PlayConfig.Phase.Value = LifecyclePhase.Play;
 
             input.Update(InputDevice, SamplingFrequency.Hz48000, 0, 1);
             UpdateDevices();

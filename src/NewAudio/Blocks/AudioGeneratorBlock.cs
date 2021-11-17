@@ -79,7 +79,7 @@ namespace NewAudio.Blocks
                 stopwatch.Start();
                 while (!_token.IsCancellationRequested)
                 {
-                    var message = new AudioDataMessage(OutputFormat, OutputFormat.SampleCount);
+                    var message = new AudioDataMessage(OutputFormat, OutputFormat.NumberOfFrames);
                     var res = _outputBlock.Post(message);
                     if (!res)
                     {

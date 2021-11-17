@@ -20,20 +20,20 @@ namespace NewAudio.Internal
 
         public unsafe AudioDataMessage CreateMessage(AudioFormat format, int offset)
         {
-            var msg = new AudioDataMessage(format, _recordedFormat.SampleCount);
+            var msg = new AudioDataMessage(format, _recordedFormat.NumberOfFrames);
             fixed (byte* ptr = _data)
             {
                 var intPtr = new IntPtr(ptr);
                 intPtr += offset * _recordedFormat.BytesPerSample;
                 
-                for (int i = 0; i < _recordedFormat.SampleCount; i++)
+                for (int i = 0; i < _recordedFormat.NumberOfFrames; i++)
                 {
-                    for (int ch = 0; ch < format.Channels; ch++)
+                    for (int ch = 0; ch < format.NumberOfChannels; ch++)
                     {
-                        msg.Data[i * format.Channels + ch] = *((float*)intPtr);
+                        msg.Data[i * format.NumberOfChannels + ch] = *((float*)intPtr);
                         intPtr += _recordedFormat.BytesPerSample;
                     }
-                    intPtr += _recordedFormat.BytesPerSample*(_recordedFormat.Channels-format.Channels);
+                    intPtr += _recordedFormat.BytesPerSample*(_recordedFormat.NumberOfChannels-format.NumberOfChannels);
                 }
             }
 

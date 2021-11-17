@@ -43,7 +43,7 @@ namespace NewAudio.Nodes
         {
             Params.WindowFunction.Value = windowFunction;
             Params.FFTLength.Value = (int)UpperPow2((uint)fftLength);
-            PlayParams.Update(input, Params.HasChanged, bufferSize);
+            PlayConfig.Update(input, Params.HasChanged, bufferSize);
 
             return Update(Params);
         }
@@ -57,10 +57,10 @@ namespace NewAudio.Nodes
 
         public override bool Play()
         {
-            if (Params.FFTLength.Value > 0 && PlayParams.InputFormat.Value.Channels==1
-                                           && PlayParams.InputFormat.Value.BufferSize > 0)
+            if (Params.FFTLength.Value > 0 && PlayConfig.InputFormat.Value.Channels==1
+                                           && PlayConfig.InputFormat.Value.BufferSize > 0)
             {
-                var input = PlayParams.Input.Value;
+                var input = PlayConfig.Input.Value;
                 var fftFormat = input.Format.WithSampleCount(Params.FFTLength.Value);
                 Logger.Information("Created, internal: {OutFormat} fft={FftLength} {InFormat}", fftFormat,
                     Params.FFTLength.Value,
@@ -160,7 +160,7 @@ namespace NewAudio.Nodes
                 Time = _time
             };
             // todo
-            _time += new AudioTime(outLength, (double)outLength / PlayParams.Input.Value.Format.SampleRate);
+            _time += new AudioTime(outLength, (double)outLength / PlayConfig.Input.Value.Format.SampleRate);
             return buf;
         }
 
@@ -213,7 +213,7 @@ namespace NewAudio.Nodes
 
         private void CopyOutputComplex()
         {
-            var outLength = PlayParams.Input.Value.Format.SampleCount;
+            var outLength = PlayConfig.Input.Value.Format.SampleCount;
             var outputBuffer = GetBuffer(outLength);
             var written = 0;
             for (var i = 0; i < Params.FFTLength.Value / 2; i++)
@@ -297,7 +297,7 @@ namespace NewAudio.Nodes
 
         private void CopyOutputReal()
         {
-            var outLength = PlayParams.Input.Value.Format.SampleCount;
+            var outLength = PlayConfig.Input.Value.Format.SampleCount;
             var written = 0;
             var outputBuffer = GetBuffer(outLength);
             for (var b = 0; b < Params.FFTLength.Value; b++)

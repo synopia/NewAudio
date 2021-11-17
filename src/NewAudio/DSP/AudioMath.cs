@@ -83,5 +83,21 @@ namespace NewAudio.Dsp
             v *= Pi;
             return SinF(v) / v;
         }
+
+        public static bool ThresholdBuffer(AudioBuffer buffer, float threshold, out int recordFrame)
+        {
+            var size = buffer.Size;
+            for (int i = 0; i < size; i++)
+            {
+                if (Math.Abs(buffer[i]) > threshold)
+                {
+                    recordFrame = i % buffer.NumberOfFrames;
+                    return true;
+                }
+            }
+
+            recordFrame = 0;
+            return false;
+        }
     }
 }

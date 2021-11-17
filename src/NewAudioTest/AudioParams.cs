@@ -39,10 +39,9 @@ namespace NewAudioTest
 
         private int _cnt = 0;
 
-        private Task Callback()
+        private void Callback()
         {
             _cnt++;
-            return Task.CompletedTask;
         }
 
         [Test]
@@ -54,12 +53,10 @@ namespace NewAudioTest
             t.Aint.OnChange += () =>
             {
                 aIntCnt++;
-                return Task.CompletedTask;
             };
             t.AintArray.OnChange += () =>
             {
                 aIntArrCnt++;
-                return Task.CompletedTask;
             };
             t.Update();
             t.Aint.Value = 1;

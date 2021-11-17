@@ -30,8 +30,8 @@ namespace NewAudioTest
         {
             using var input = new InputDevice();
             using var output = new OutputDevice();
-            input.PlayParams.Phase.Value = LifecyclePhase.Play;
-            output.PlayParams.Phase.Value = LifecyclePhase.Play;
+            input.PlayConfig.Phase.Value = LifecyclePhase.Play;
+            output.PlayConfig.Phase.Value = LifecyclePhase.Play;
             input.Update(InputDevice, SamplingFrequency.Hz48000, 0, 1);
             output.Update(null, OutputDevice, SamplingFrequency.Hz48000, 0, 1);
             UpdateDevices();
@@ -129,8 +129,8 @@ namespace NewAudioTest
             Assert.AreEqual(LifecyclePhase.Uninitialized, output.Phase);
             Assert.AreEqual(LifecyclePhase.Uninitialized, input.Phase);
 
-            input.PlayParams.Phase.Value = LifecyclePhase.Play;
-            output.PlayParams.Phase.Value = LifecyclePhase.Play;
+            input.PlayConfig.Phase.Value = LifecyclePhase.Play;
+            output.PlayConfig.Phase.Value = LifecyclePhase.Play;
 
             input.Update(InputDevice);
             UpdateDevices();
@@ -144,8 +144,8 @@ namespace NewAudioTest
             Assert.AreEqual(new[] { "Init" }, output.Device.MethodCalls(),
                 string.Join(", ", output.Device.MethodCalls()));
 
-            input.PlayParams.Phase.Value = LifecyclePhase.Play;
-            output.PlayParams.Phase.Value = LifecyclePhase.Play;
+            input.PlayConfig.Phase.Value = LifecyclePhase.Play;
+            output.PlayConfig.Phase.Value = LifecyclePhase.Play;
             input.Update(InputDevice);
             output.Update(input.Output, OutputDevice);
             UpdateDevices();
@@ -157,8 +157,8 @@ namespace NewAudioTest
             Assert.AreEqual(new[] { "Init" }, output.Device.MethodCalls(),
                 string.Join(", ", output.Device.MethodCalls()));
 
-            input.PlayParams.Phase.Value = LifecyclePhase.Play;
-            output.PlayParams.Phase.Value = LifecyclePhase.Play;
+            input.PlayConfig.Phase.Value = LifecyclePhase.Play;
+            output.PlayConfig.Phase.Value = LifecyclePhase.Play;
             input.Update(InputDevice);
             output.Update(input.Output, OutputDevice);
             UpdateDevices();
@@ -170,8 +170,8 @@ namespace NewAudioTest
             Assert.AreEqual(new[] { "Init" }, output.Device.MethodCalls(),
                 string.Join(", ", output.Device.MethodCalls()));
 
-            input.PlayParams.Phase.Value = LifecyclePhase.Stop;
-            output.PlayParams.Phase.Value = LifecyclePhase.Stop;
+            input.PlayConfig.Phase.Value = LifecyclePhase.Stop;
+            output.PlayConfig.Phase.Value = LifecyclePhase.Stop;
             input.Update(InputDevice);
             output.Update(input.Output, OutputDevice);
             UpdateDevices();
@@ -182,8 +182,8 @@ namespace NewAudioTest
             // Assert.AreEqual(new[] { "Init" }, output.Device.MethodCalls(),
                 // string.Join(", ", output.Device.MethodCalls()));
 
-            input.PlayParams.Phase.Value = LifecyclePhase.Play;
-            output.PlayParams.Phase.Value = LifecyclePhase.Play;
+            input.PlayConfig.Phase.Value = LifecyclePhase.Play;
+            output.PlayConfig.Phase.Value = LifecyclePhase.Play;
             input.Update(InputDevice);
             output.Update(input.Output, OutputDevice);
             UpdateDevices();
@@ -203,16 +203,16 @@ namespace NewAudioTest
             using var output = new OutputDevice();
             using var input = new InputDevice();
 
-            input.PlayParams.Phase.Value = LifecyclePhase.Play;
-            output.PlayParams.Phase.Value = LifecyclePhase.Play;
+            input.PlayConfig.Phase.Value = LifecyclePhase.Play;
+            output.PlayConfig.Phase.Value = LifecyclePhase.Play;
             input.Update(InputDevice, SamplingFrequency.Hz8000, 1);
             output.Update(input.Output, OutputDevice, SamplingFrequency.Hz8000, 1);
             UpdateDevices();
             Assert.AreEqual(LifecyclePhase.Play, input.Phase);
             Assert.AreEqual(LifecyclePhase.Play, output.Phase);
 
-            input.PlayParams.Phase.Value = LifecyclePhase.Stop;
-            output.PlayParams.Phase.Value = LifecyclePhase.Stop;
+            input.PlayConfig.Phase.Value = LifecyclePhase.Stop;
+            output.PlayConfig.Phase.Value = LifecyclePhase.Stop;
             input.Update(InputDevice, SamplingFrequency.Hz8000, 1);
             output.Update(input.Output, OutputDevice, SamplingFrequency.Hz8000, 1);
             UpdateDevices();
@@ -227,8 +227,8 @@ namespace NewAudioTest
             Assert.AreEqual(LifecyclePhase.Stop, input.Phase);
             Assert.AreEqual(LifecyclePhase.Stop, output.Phase);
 
-            input.PlayParams.Phase.Value = LifecyclePhase.Play;
-            output.PlayParams.Phase.Value = LifecyclePhase.Play;
+            input.PlayConfig.Phase.Value = LifecyclePhase.Play;
+            output.PlayConfig.Phase.Value = LifecyclePhase.Play;
             input.Update(InputDevice, SamplingFrequency.Hz8000, 1);
             output.Update(input.Output, OutputDevice, SamplingFrequency.Hz8000, 1);
             UpdateDevices();

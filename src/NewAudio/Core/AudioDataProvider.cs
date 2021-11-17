@@ -2,6 +2,7 @@
 using System.Threading;
 using NAudio.Wave;
 using NewAudio.Internal;
+using NewAudio.Nodes;
 using Serilog;
 using SharedMemory;
 
@@ -10,9 +11,8 @@ namespace NewAudio.Core
     public sealed class AudioDataProvider : IWaveProvider
     {
         private readonly ILogger _logger;
-        private readonly MixBuffers _buffer;
         private bool _firstLoop = true;
-
+        private OutputNode _outputNode;
         private CancellationToken _token;
 
         public CancellationToken CancellationToken
@@ -25,10 +25,10 @@ namespace NewAudio.Core
             }
         }
 
-        public AudioDataProvider(ILogger logger, WaveFormat waveFormat, MixBuffers buffer)
+        public AudioDataProvider(ILogger logger, WaveFormat waveFormat, OutputNode outputNode)
         {
             _logger = logger;
-            _buffer = buffer;
+            _outputNode = outputNode;
             WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(waveFormat.SampleRate, waveFormat.Channels);
         }
 
@@ -50,7 +50,7 @@ namespace NewAudio.Core
                 var pos = 0;
                 while (pos < count && !CancellationToken.IsCancellationRequested )
                 {
-                    var read = _buffer.FillBuffer(buffer, pos + offset, count, CancellationToken);
+                    var read = _outputNode.FillBuffer(buffer, pos + offset, count);
                     pos += read;
                 }
                 if (CancellationToken.IsCancellationRequested)

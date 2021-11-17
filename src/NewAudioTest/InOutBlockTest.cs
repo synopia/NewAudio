@@ -16,8 +16,8 @@ namespace NewAudioTest
             using var input = new InputDevice();
             using var output = new OutputDevice();
 
-            input.PlayParams.Phase.Value = LifecyclePhase.Play;
-            output.PlayParams.Phase.Value = LifecyclePhase.Play;
+            input.PlayConfig.Phase.Value = LifecyclePhase.Play;
+            output.PlayConfig.Phase.Value = LifecyclePhase.Play;
             input.Update(InputDevice);
             output.Update(input.Output, OutputDevice);
             UpdateDevices();
@@ -47,10 +47,10 @@ namespace NewAudioTest
             using var output1 = new OutputDevice();
             using var output2 = new OutputDevice();
 
-            input1.PlayParams.Phase.Value = LifecyclePhase.Play;
-            input2.PlayParams.Phase.Value = LifecyclePhase.Play;
-            output1.PlayParams.Phase.Value = LifecyclePhase.Play;
-            output2.PlayParams.Phase.Value = LifecyclePhase.Play;
+            input1.PlayConfig.Phase.Value = LifecyclePhase.Play;
+            input2.PlayConfig.Phase.Value = LifecyclePhase.Play;
+            output1.PlayConfig.Phase.Value = LifecyclePhase.Play;
+            output2.PlayConfig.Phase.Value = LifecyclePhase.Play;
             input1.Update(InputDevice, SamplingFrequency.Hz48000, 0, 1);
             input2.Update(InputDevice, SamplingFrequency.Hz48000, 1, 1);
             output1.Update(input1.Output, OutputDevice, SamplingFrequency.Hz48000, 0, 1);

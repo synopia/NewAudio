@@ -32,19 +32,19 @@ namespace NewAudio.Nodes
         public AudioLink Update(AudioLink input, AudioLink two, int bufferSize=4)
         {
             Params.Input2.Value = two;
-            PlayParams.Update(input, Params.HasChanged, bufferSize);
+            PlayConfig.Update(input, Params.HasChanged, bufferSize);
 
             return Update(Params);
         }
 
         public override bool Play()
         {
-            if (PlayParams.Input.Value != null && Params.Input2.Value != null)
+            if (PlayConfig.Input.Value != null && Params.Input2.Value != null)
             {
-                var input1Channels = PlayParams.InputFormat.Value.Channels;
-                var input2Channels = Params.Input2.Value.Format.Channels;
+                var input1Channels = PlayConfig.InputFormat.Value.Channels;
+                var input2Channels = Params.Input2.Value.Format.NumberOfChannels;
                 var totalChannels = input1Channels + input2Channels;
-                var outFormat = PlayParams.InputFormat.Value.WithChannels(totalChannels);
+                var outFormat = PlayConfig.InputFormat.Value.WithChannels(totalChannels);
                 var slots = new DataSlot[]
                 {
                     new DataSlot
@@ -104,7 +104,7 @@ namespace NewAudio.Nodes
                     {
                         while (!token.IsCancellationRequested)
                         {
-                            AudioDataMessage msg = new AudioDataMessage(outFormat, PlayParams.InputFormat.Value.SampleCount);
+                            AudioDataMessage msg = new AudioDataMessage(outFormat, PlayConfig.InputFormat.Value.SampleCount);
                             count++;
                             var read = 0;
                             while (read == 0 && !token.IsCancellationRequested)
@@ -123,7 +123,7 @@ namespace NewAudio.Nodes
                         
                     }
                 }, token);
-                _link1 = PlayParams.Input.Value.SourceBlock.LinkTo(action1);
+                _link1 = PlayConfig.Input.Value.SourceBlock.LinkTo(action1);
                 _link2 = Params.Input2.Value.SourceBlock.LinkTo(action2);
                 Output.SourceBlock = buffer;
                 Output.Format = outFormat;

@@ -11,9 +11,8 @@ namespace NewAudio.Devices
         private readonly IResourceHandle<AudioService> _audioService;
         private readonly List<DeviceSelection> _devices = new();
         private readonly List<IDriver> _drivers = new();
-        private readonly HashSet<IResourceProvider<IDevice>> _pools = new();
 
-        private readonly List<IDevice> _activeDevices = new();
+        private readonly List<IAudioClient> _activeClients = new();
 
         public DriverManager()
         {
@@ -25,8 +24,7 @@ namespace NewAudio.Devices
         {
             _drivers.Clear();
             _devices.Clear();
-            _pools.Clear();
-            _activeDevices.Clear();
+            _activeClients.Clear();
             
             _drivers.Add(new AsioDriver());
             _drivers.Add(new WasapiDriver());
@@ -45,30 +43,16 @@ namespace NewAudio.Devices
 
         public void UpdateAllDevices()
         {
-            lock (_activeDevices)
+            lock (_activeClients)
             {
-                foreach (var device in _activeDevices)
+                foreach (var client in _activeClients)
                 {
-                    device.Update();
+                    client.Update();
                 }
             }
         }
         
-        public List<IDevice> CheckPools()
-        {
-            var openDevices = new List<IDevice>();
-            foreach (var pool in _pools)
-            {
-                if (pool.Monitor().SinkCount > 0)
-                {
-                    openDevices.AddRange(pool.Monitor().ResourcesUsedBySinks);
-                }
-            }
-
-            return openDevices;
-        }
-
-        private IResourceHandle<IDevice> GetHandle(string name)
+        private IResourceHandle<IAudioClient> GetHandle(string name)
         {
             var selection = _devices.Find(d => d.ToString() == name);
             if (selection == null)
@@ -85,25 +69,23 @@ namespace NewAudio.Devices
             var pool = ResourceProvider.NewPooledSystemWide(selection.ToString(),
                 s =>
                 {
-                    
-                    var device = driver.CreateDevice(selection);
-                    lock (_activeDevices)
+                    var client = driver.CreateClient(selection);
+                    lock (_activeClients)
                     {
-                        _activeDevices.Add(device);
+                        _activeClients.Add(client);
                     }
-                    return device;
+                    return client;
                 }, 0).Finally(d =>
             {
-                lock (_activeDevices)
+                lock (_activeClients)
                 {
-                    _activeDevices.Remove(d);
+                    _activeClients.Remove(d);
                 }
             });
-            _pools.Add(pool);
             return pool.GetHandle();
         }
 
-        public VirtualInput GetInputDevice(InputDeviceSelection inputDeviceSelection)
+        public VirtualInput GetInputDevice(InputDeviceSelection inputDeviceSelection, DeviceConfigRequest config)
         {
             var resource = GetHandle(inputDeviceSelection.Value);
             if (resource == null)
@@ -111,11 +93,11 @@ namespace NewAudio.Devices
                 return null;
             }
 
-            var virtualDevice = new VirtualInput(resource);
+            var virtualDevice = new VirtualInput(resource, config);
             return virtualDevice;
         }
 
-        public VirtualOutput GetOutputDevice(OutputDeviceSelection outputDeviceSelection)
+        public VirtualOutput GetOutputDevice(OutputDeviceSelection outputDeviceSelection, DeviceConfigRequest config)
         {
             var resource = GetHandle(outputDeviceSelection.Value);
             if (resource == null)
@@ -123,7 +105,7 @@ namespace NewAudio.Devices
                 return null;
             }
 
-            var virtualDevice = new VirtualOutput(resource);
+            var virtualDevice = new VirtualOutput(resource, config);
             return virtualDevice;
         }
 

@@ -58,6 +58,11 @@
         <Compile Remove="Devices\WaveDevice.cs" />
         <Compile Remove="Devices\WaveDriver.cs" />
         <Compile Remove="Core\Lifecycle.cs" />
+        <Compile Remove="Nodes\AudioBufferOut.cs" />
+        <Compile Remove="Nodes\AudioGenerator.cs" />
+        <Compile Remove="Nodes\AudioLoopRegion.cs" />
+        <Compile Remove="Nodes\AudioMixer.cs" />
+        <Compile Remove="Nodes\FFT.cs" />
     </ItemGroup>
     <ItemGroup>
         <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">

@@ -23,8 +23,8 @@ namespace NewAudioTest
             buf.Update(input.Output, 1024, 1, AudioBufferOutType.SkipHalf);
 
             UpdateDevices();
-            input.PlayParams.Phase.Value = LifecyclePhase.Play;
-            buf.PlayParams.Phase.Value = LifecyclePhase.Play;
+            input.PlayConfig.Phase.Value = LifecyclePhase.Play;
+            buf.PlayConfig.Phase.Value = LifecyclePhase.Play;
             input.Update(InputDevice, SamplingFrequency.Hz48000, 0, 1);
 
             UpdateDevices();

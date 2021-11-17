@@ -6,33 +6,31 @@ using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Devices
 {
-    public class VirtualOutput : IVirtualDevice
+    public class VirtualOutput :AudioNode, IVirtualDevice
     {
-        private readonly IResourceHandle<IDevice> _resource;
-        private IDevice RealDevice => _resource.Resource;
-
-        public IDevice Device => RealDevice;
-        public string Name => RealDevice.Name;
-        public DeviceParams Params { get; private set; }
-        public ActualDeviceParams ActualParams { get; private set; }
+        public override string NodeName => "VirtualOutput";
+        
+        private readonly IResourceHandle<IAudioClient> _client;
+        public IAudioClient AudioClient => _client.Resource;
+        public string Name => AudioClient.Name;
+        public DeviceConfigRequest ConfigRequest { get; private set; }
+        public DeviceConfig Config { get; set; }
         public bool IsPlaying => true;
         public bool IsRecording => false;
 
-        public bool IsSilent { get; private set; }
+        private bool _wasEnabledBeforeDeviceChange;
 
-        // private BroadcastBlock<AudioDataMessage> _broadcastBlock = new(i => i, new DataflowBlockOptions()
-        // {
-            // todo
-            // BoundedCapacity = 6
-            
-        // });
 
-        private ActionBlock<AudioDataMessage> _actionBlock;
-        public ITargetBlock<AudioDataMessage> TargetBlock => _actionBlock;
-        public VirtualOutput(IResourceHandle<IDevice> resource)
+        public VirtualOutput(IResourceHandle<IAudioClient> client, DeviceConfigRequest request): base(new AudioNodeConfig())
         {
-            _resource = resource;
-            IsSilent = false;
+            _client = client;
+            AudioClient.Add(this);
+            ConfigRequest = request;
+        }
+
+        public void UpdateConfig(DeviceConfig config)
+        {
+            Config = config;
         }
 
         public void Post(AudioDataMessage msg)
@@ -40,41 +38,20 @@ namespace NewAudio.Devices
             throw new NotImplementedException();
         }
 
-        public ActualDeviceParams Bind(DeviceParams param)
-        {
-            Params = param;
-            ActualParams = RealDevice.Add(this);
-            _actionBlock = new ActionBlock<AudioDataMessage>(msg =>
-            {
-                Update();
-                if (msg.Channels != ActualParams.Channels.Value)
-                {
-                    return;
-                }
-                if (!IsSilent)
-                {
-                    RealDevice.AddAudioMessage(this, msg);
-                }
-            }, new ExecutionDataflowBlockOptions()
-            {
-                BoundedCapacity = 1,
-                MaxDegreeOfParallelism = 1
-            });
-            return ActualParams;
-        }
-
-        public void Update()
-        {
-            ActualParams.Commit();
-        }
-
         public void Start()
         {
+            Graph.InitializeAllNodes();
+            Graph.SetEnabled(_wasEnabledBeforeDeviceChange);
+
             // RealDevice.UnPause(this);
             // IsSilent = false;
         }
         public void Stop()
         {
+            _wasEnabledBeforeDeviceChange = IsEnabled;
+            Graph.Disable();
+            Graph.UnInitializeAllNodes();
+            
             // RealDevice.Pause(this);
             // IsSilent = true;
         }
@@ -82,20 +59,26 @@ namespace NewAudio.Devices
         
         public override string ToString()
         {
-            return RealDevice?.Name ?? "";
+            return AudioClient?.Name ?? "";
         }
 
         private bool _disposedValue;
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
             if (!_disposedValue)
             {
-                RealDevice?.Remove(this);
-                _resource?.Dispose();
-                _disposedValue = true;
-            }
-        }
+                if (disposing)
+                {
+                    AudioClient?.Remove(this);
+                    _client?.Dispose();
+                    _disposedValue = true;
+                }
 
+                _disposedValue = disposing;
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }

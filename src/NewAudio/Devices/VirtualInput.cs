@@ -7,46 +7,28 @@ using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Devices
 {
-    public class VirtualInput : IVirtualDevice
+    public class VirtualInput : AudioNode, IVirtualDevice
     {
-        private readonly IResourceHandle<IDevice> _resource;
-        private IDevice RealDevice => _resource.Resource;
+        public override string NodeName => "VirtualInput";
+        private readonly IResourceHandle<IAudioClient> _client;
+        public IAudioClient AudioClient => _client.Resource;
+        public string Name => AudioClient.Name;
+        public DeviceConfigRequest ConfigRequest { get; private set; }
+        public DeviceConfig Config { get; set; }
 
-        public IDevice Device => RealDevice;
-        public string Name => RealDevice.Name;
-        public DeviceParams Params { get; private set; }
-        public ActualDeviceParams ActualParams { get; private set; }
-
-        private readonly BufferBlock<AudioDataMessage> _bufferBlock = new(new ExecutionDataflowBlockOptions()
-        {
-            // todo
-            BoundedCapacity = 6
-        });
         public bool IsPlaying => false;
         public bool IsRecording => true;
 
-        public ISourceBlock<AudioDataMessage> SourceBlock => _bufferBlock;
 
-        public VirtualInput(IResourceHandle<IDevice> resource)
+        public VirtualInput(IResourceHandle<IAudioClient> client, DeviceConfigRequest request): base(new AudioNodeConfig())
         {
-            _resource = resource;
-        }
-
-        public ActualDeviceParams Bind(DeviceParams param)
-        {
-            Params = param;
-            return RealDevice.Add(this);
+            _client = client;
+            AudioClient.Add(this);
+            ConfigRequest = request;
         }
 
         public void Post(AudioDataMessage msg)
         {
-            _bufferBlock.Post(msg);
-        }
-
-        public void Update()
-        {
-            ActualParams.Commit();
-  
         }
 
         public void Start()
@@ -62,20 +44,26 @@ namespace NewAudio.Devices
         
         public override string ToString()
         {
-            return RealDevice?.Name ?? "";
+            return AudioClient?.Name ?? "";
         }
 
         private bool _disposedValue;
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
             if (!_disposedValue)
             {
-                RealDevice?.Remove(this);
-                _resource?.Dispose();
-                _disposedValue = true;
-            }
-        }
+                if (disposing)
+                {
+                    AudioClient?.Remove(this);
+                    _client?.Dispose();
+                    _disposedValue = true;
+                }
 
+                _disposedValue = disposing;
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }

@@ -13,9 +13,9 @@ namespace NewAudio.Nodes
             _graph = Factory.GetAudioGraph();
         }
 
-        public bool Update(bool playing, int bufferSize = 512, int buffersCount = 6)
+        public bool Update(bool playing)
         {
-            return  _graph.Resource.Update(playing, bufferSize, buffersCount);
+            return  _graph.Resource.Update(playing);
         }
 
         public string DebugInfo()

@@ -170,11 +170,11 @@ namespace NewAudio.Blocks
         {
             var targetChannels = _config[index].Channels;
 
-            for (var s = 0; s < InputFormat.SampleCount; s++)
+            for (var s = 0; s < InputFormat.NumberOfFrames; s++)
             {
                 for (var ch = 0; ch < targetChannels; ch++)
                 {
-                    _temp[s * InputFormat.Channels + _config[index].FirstChannel + ch] =
+                    _temp[s * InputFormat.NumberOfChannels + _config[index].FirstChannel + ch] =
                         message.Data[s * targetChannels + ch];
                 }
             }

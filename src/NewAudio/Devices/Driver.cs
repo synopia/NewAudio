@@ -9,6 +9,6 @@ namespace NewAudio.Devices
 
         public IEnumerable<DeviceSelection> GetDeviceSelections();
 
-        public IDevice CreateDevice(DeviceSelection selection);
+        public IAudioClient CreateClient(DeviceSelection selection);
     }
 }

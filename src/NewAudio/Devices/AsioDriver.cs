@@ -19,9 +19,9 @@ namespace NewAudio.Devices
             return list;
         }
 
-        public IDevice CreateDevice(DeviceSelection selection)
+        public IAudioClient CreateClient(DeviceSelection selection)
         {
-            return new AsioDevice(selection.Name, selection.Name);
+            return new AsioClient(selection.Name, selection.Name);
         }
     }
 }

@@ -1,5 +1,9 @@
-﻿using Serilog;
+﻿using System;
+using NewAudio.Devices;
+using Serilog;
 using Serilog.Formatting.Display;
+using VL.Lib.Basics.Resources;
+using VL.Model;
 
 namespace NewAudio.Core
 {
@@ -31,9 +35,13 @@ namespace NewAudio.Core
             Log.Logger.Information("Initializing Audio Service");
         }
 
+        private IResourceHandle<DriverManager> _driverManager;
+
         private readonly ILogger _logger;
         private int _nextId;
-
+        public ulong LastProcessedFrame => _lastFrame;
+        private ulong _lastFrame;
+        
         public ILogger GetLogger<T>()
         {
             // ReSharper disable once ContextualLoggerProblem
@@ -45,6 +53,26 @@ namespace NewAudio.Core
             return _nextId++;
         }
 
+        public void Update()
+        {
+            var currentFrame = VLSession.Instance.UserRuntime.Frame;
+
+            if (currentFrame != _lastFrame)
+            {
+                try
+                {
+                    _driverManager ??= Factory.GetDriverManager();
+                    _driverManager.Resource.UpdateAllDevices();
+                }
+                catch (Exception e)
+                {
+                    _logger.Error(e, "Error in DriverManager");
+                }
+
+                _lastFrame = currentFrame;
+            }
+        }
+        
         public void Dispose()
         {
             Dispose(true);
@@ -58,6 +86,7 @@ namespace NewAudio.Core
             {
                 if (disposing)
                 {
+                    _driverManager.Dispose();
                 }
 
                 _disposedValue = disposing;

@@ -37,11 +37,11 @@ namespace NewAudio.Devices
             return list;
         }
 
-        public IDevice CreateDevice(DeviceSelection selection)
+        public IAudioClient CreateClient(DeviceSelection selection)
         {
             var wasapiId = map[selection.ToString()];
             var loopback = selection.ToString().StartsWith("Wasapi Loopback");
-            return new WasapiDevice(selection.ToString(), selection.IsInputDevice, loopback, wasapiId);
+            return new WasapiClient(selection.ToString(), selection.IsInputDevice, loopback, wasapiId);
         }
     }
 }

@@ -39,11 +39,11 @@ namespace NewAudio.Nodes
             Params.DesiredLatency.Value = desiredLatency;
             Params.Channels.Value = channels;
             Params.Interleaved.Value = interleaved;
-            PlayParams.Update(null, Params.HasChanged);
+            PlayConfig.Update(null, Params.HasChanged);
             
             if (Params.HasChanged)
             {
-                PlayParams.Reset.Value = true;
+                PlayConfig.Reset.Value = true;
                 _format = new AudioFormat((int)Params.SamplingFrequency.Value, Params.SampleCount.Value,
                     Params.Channels.Value, Params.Interleaved.Value);
                 Output.Format = _format;    

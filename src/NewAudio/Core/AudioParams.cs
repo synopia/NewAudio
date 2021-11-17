@@ -13,7 +13,7 @@ namespace NewAudio.Core
 
         public void Commit();
         public void Rollback();
-        Func<Task> OnChange { get; set; }
+        Action OnChange { get; set; }
     }
 
     public interface IAudioParam<T>
@@ -61,7 +61,7 @@ namespace NewAudio.Core
         public T LastValue => _lastValue;
         object IAudioParam.LastValue => _lastValue;
 
-        public Func<Task> OnChange { get; set; }
+        public Action OnChange { get; set; }
 
         public void Commit()
         {
@@ -104,14 +104,6 @@ namespace NewAudio.Core
             return (T)Activator.CreateInstance(typeof(T));
         }
         
-        public void AddGroupOnChange(IEnumerable<IAudioParam> param, Func<Task> action)
-        {
-            foreach (var p in param)
-            {
-                p.OnChange += action;
-            }
-        }
-
         public void Update()
         {
             var delegates = new List<Delegate>();

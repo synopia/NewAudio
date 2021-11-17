@@ -38,6 +38,12 @@
         <Compile Remove="WaveInputTest.cs" />
         <Compile Remove="AudioParamTest.cs" />
         <Compile Remove="LifecycleTests.cs" />
+        <Compile Remove="AudioBufferOutTest.cs" />
+        <Compile Remove="BaseDeviceTest.cs" />
+        <Compile Remove="DevicesTest.cs" />
+        <Compile Remove="FFTTest.cs" />
+        <Compile Remove="InOutBlockTest.cs" />
+        <Compile Remove="MixBufferTest.cs" />
     </ItemGroup>
     <ItemGroup>
         <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">

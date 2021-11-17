@@ -2,10 +2,11 @@
 using System.Threading.Tasks;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
+using NewAudio.Core;
 
 namespace NewAudio.Devices
 {
-    public class WasapiDevice : BaseDevice
+    public class WasapiClient : BaseAudioClient
     {
         private readonly string _deviceId;
         private WasapiCapture _capture;
@@ -16,16 +17,19 @@ namespace NewAudio.Devices
 
         private byte[] _temp;
         private int _tempPos;
+        private AudioDataProvider AudioDataProvider;
 
-        public WasapiDevice(string name, bool isInputDevice, bool isLoopback, string deviceId)
+        public WasapiClient(string name, bool isInputDevice, bool isLoopback, string deviceId)
         {
-            InitLogger<WasapiDevice>();
+            InitLogger<WasapiClient>();
             Logger.Information("CREATE: WasapiDevice ({Name})", name);
             Name = name;
             IsInputDevice = isInputDevice;
             IsOutputDevice = !isInputDevice;
             IsLoopback = isLoopback;
             _deviceId = deviceId;
+            OutputNode = new WasapiOutput();
+            InputNode = new WasapiInput();
         }
 
         private bool IsLoopback { get; }
@@ -35,12 +39,16 @@ namespace NewAudio.Devices
             _firstLoop = true;
             if (IsOutputDevice && IsPlaying)
             {
+                AudioDataProvider = new AudioDataProvider(Logger, PlayingParams.WaveFormat, OutputNode)
+                {
+                    CancellationToken = CancellationTokenSource.Token
+                };
                 var device = new MMDeviceEnumerator().GetDevice(_deviceId);
-                _wavePlayer = new WasapiOut(device, AudioClientShareMode.Shared, true, PlayingParams.Latency.Value);
+                _wavePlayer = new WasapiOut(device, AudioClientShareMode.Shared, true, PlayingParams.Latency);
                 _wavePlayer.Init(AudioDataProvider);
                 _wavePlayer.Play();
-                RecordingParams.Active.Value = false;
-                PlayingParams.Active.Value = true;
+                PlayingParams.Active = true;
+                
             } else if (IsInputDevice && IsRecording)
             {
                 if (IsLoopback)
@@ -48,24 +56,21 @@ namespace NewAudio.Devices
                     var device = new MMDeviceEnumerator().GetDevice(_deviceId);
                     _loopback = new WasapiLoopbackCapture(device);
                     _loopback.DataAvailable += DataAvailable;
-                    // todo
-                    // _recordingConfig.AudioFormat = _recordingConfig.AudioFormat.WithWaveFormat(_loopback.WaveFormat);
                     _loopback.StartRecording();
-                    RecordingParams.WaveFormat.Value = _loopback.WaveFormat;
+                    RecordingParams.WaveFormat = _loopback.WaveFormat;
                 }
                 else 
                 {
                     var device = new MMDeviceEnumerator().GetDevice(_deviceId);
                     _capture = new WasapiCapture(device)
                     {
-                        WaveFormat = RecordingParams.AudioFormat.WaveFormat
+                        WaveFormat = RecordingParams.WaveFormat
                     };
                     _capture.DataAvailable += DataAvailable;
                     _capture.StartRecording();
-                    RecordingParams.WaveFormat.Value = _capture.WaveFormat;
+                    RecordingParams.WaveFormat = _capture.WaveFormat;
                 }
-                RecordingParams.Active.Value = true;
-                PlayingParams.Active.Value = false;
+                RecordingParams.Active = true;
             }
 
             return true;
@@ -110,7 +115,7 @@ namespace NewAudio.Devices
             {
                 Logger.Information("Wasapi AudioIn Thread started");
                 _firstLoop = false;
-                _temp = new byte[RecordingParams.AudioFormat.BufferSize*RecordingParams.AudioFormat.BytesPerSample];
+                _temp = new byte[RecordingParams.FramesPerBlock*RecordingParams.Channels*4];
                 _tempPos = 0;
             }
 
@@ -140,7 +145,7 @@ namespace NewAudio.Devices
                     if (_tempPos == _temp.Length)
                     {
                         
-                        OnDataReceived(_temp);
+                        InputNode?.OnDataReceived(_temp);
                         // var written = RecordingBuffer.Write(_temp);
                         _tempPos = 0;
                         // if (written != _temp.Length && !GenerateSilence)
