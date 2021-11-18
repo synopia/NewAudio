@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using NewAudio.Block;
 using NewAudio.Core;
 using NewAudio.Devices;
 using VL.Lib.Basics.Resources;
@@ -11,66 +12,33 @@ namespace NewAudio.Nodes
     // ReSharper disable once ClassNeverInstantiated.Global
     public class OutputDeviceParams : AudioParams
     {
+        public AudioParam<AudioLink> Input;
         public AudioParam<OutputDeviceSelection> Device;
     }
-
     public class OutputDevice : AudioNode
     {
-        public override string NodeName => "Output";
-        private readonly IResourceHandle<DriverManager> _driverManager;
-
-        public AudioFormat AudioFormat => ActualDeviceParams.AudioFormat;
-
-        private readonly TransformBlock<AudioDataMessage, AudioDataMessage> _processor;
-        private IDisposable _link;
-
+        public override string NodeName => "OutputDevice";
+        private readonly IResourceHandle<DeviceManager> _driverManager;
+        public readonly OutputDeviceParams Params;
         public VirtualOutput Device { get; private set; }
 
         private int _counter;
         private long _lag;
         public double LagMs { get; private set; }
-        public ActualDeviceParams ActualDeviceParams { get; private set; }
-        public DeviceParams DeviceParams { get; }
-        public OutputDeviceParams Params { get; }
         
         public OutputDevice()
         {
             InitLogger<OutputDevice>();
             _driverManager = Factory.GetDriverManager();
-            DeviceParams = AudioParams.Create<DeviceParams>();
             Params = AudioParams.Create<OutputDeviceParams>();
             Logger.Information("Output device created");
-
-            _processor = new TransformBlock<AudioDataMessage, AudioDataMessage>(msg =>
-            {
-                var now = DateTime.Now.Ticks;
-                var span = now - msg.Time.RealTime;
-                var l = TimeSpan.FromTicks(span).TotalMilliseconds;
-
-                _lag += span;
-                _counter++;
-                if (_counter <= 100)
-                {
-                    return msg;
-                }
-
-                LagMs = TimeSpan.FromTicks(_lag / 100).TotalMilliseconds;
-                _lag = 0;
-                _counter = 0;
-
-                return msg;
-            });
         }
 
-        public AudioLink Update(AudioLink input, OutputDeviceSelection deviceSelection,
-            SamplingFrequency samplingFrequency = SamplingFrequency.Hz44100,
-            int channelOffset = 0, int channels = 2, int desiredLatency = 250, int bufferSize = 1)
+        public void Update(AudioLink input, OutputDeviceSelection deviceSelection)
         {
+            Params.Input.Value = input;
             Params.Device.Value = deviceSelection;
-            DeviceParams.SamplingFrequency.Value = samplingFrequency;
-            DeviceParams.DesiredLatency.Value = desiredLatency;
-            DeviceParams.ChannelOffset.Value = channelOffset;
-            DeviceParams.Channels.Value = channels;
+
             
             if (Params.Device.HasChanged)
             {
@@ -79,50 +47,31 @@ namespace NewAudio.Nodes
                 {
                     StartDevice();
                 }
-
             }
-            
-            PlayParams.Update(input, Params.HasChanged, bufferSize);
-
-            return base.Update(Params);
+            if (Params.Input.HasChanged)
+            {
+                Params.Input.Value.AudioBlock.Connect(Output.AudioBlock);
+            }
         }
 
         public void StartDevice()
         {
-            Device = _driverManager.Resource.GetOutputDevice(Params.Device.Value);
-            if (Device == null)
+            Device = _driverManager.Resource.GetOutputDevice(Params.Device.Value, new AudioBlockFormat()
             {
-                return;
-            }
-
-            ActualDeviceParams = Device.Bind(DeviceParams);
-            _link = _processor.LinkTo(Device.TargetBlock);
-            TargetBlock = _processor;
+                Channels = 2,
+                ChannelMode = ChannelMode.Specified
+            });
+            Output.AudioBlock = Device;
+            Graph.OutputBlock = Device;
         }
 
         public void StopDevice()
         {
-            _link?.Dispose();
+            Graph.Disable();
             Device?.Dispose();
             Device = null;
         }
         
-        public override bool Play()
-        {
-            if (Device != null)
-            {
-                Device.Start();
-                return true;
-            }
-
-            return false;
-        }
-
-        public override void Stop()
-        {
-            Device?.Stop();
-        }
-
         public override string DebugInfo()
         {
             return $"Output device:[{base.DebugInfo()}]";
@@ -137,6 +86,7 @@ namespace NewAudio.Nodes
                 if (disposing)
                 {
                     StopDevice();
+                    Output.Dispose();
                     _driverManager.Dispose();
                 }
 

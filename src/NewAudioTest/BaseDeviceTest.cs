@@ -44,7 +44,7 @@ namespace NewAudioTest
 
     public class BaseDeviceTest : BaseTest
     {
-        public IResourceHandle<DriverManager> DriverManager;
+        public IResourceHandle<DeviceManager> DriverManager;
         public TestDriver InputDriver;
         public TestDriver OutputDriver;
         public TestDriver InOutDriver;

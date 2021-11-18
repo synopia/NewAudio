@@ -14,8 +14,6 @@ namespace NewAudio.Devices
 {
     public abstract class BaseDevice : IDevice
     {
-        protected ILogger Logger;
-        private readonly IResourceHandle<AudioService> _audioService;
 
         public AudioDataProvider AudioDataProvider { get; protected set; }
         public bool IsPlaying { get; private set; }
@@ -46,10 +44,6 @@ namespace NewAudio.Devices
             PlayingParams = AudioParams.Create<ActualDeviceParams>();
         }
 
-        protected void InitLogger<T>()
-        {
-            Logger = _audioService.Resource.GetLogger<T>();
-        }
 
 
         public ActualDeviceParams Add(VirtualInput input)

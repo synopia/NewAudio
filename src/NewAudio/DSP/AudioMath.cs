@@ -48,6 +48,16 @@ namespace NewAudio.Dsp
             return v;
         }
 
+        public static float Floor(float x)
+        {
+            return (float)Math.Floor(x);
+        }
+        
+        public static float Fract(float x)
+        {
+            return x - Floor(x);
+        }
+        
         public static bool IsPowerOfTwo(int x)
         {
             return (x & (x - 1)) == 0;
@@ -55,33 +65,49 @@ namespace NewAudio.Dsp
 
         public static float TanH(float v)
         {
-            return (float)System.Math.Tanh(v);
+            return (float)Math.Tanh(v);
         }
 
         public static float SinF(float v)
         {
-            return (float)System.Math.Sin(v);
+            return (float)Math.Sin(v);
         }
 
         public static float CosF(float v)
         {
-            return (float)System.Math.Cos(v);
+            return (float)Math.Cos(v);
         }
 
         public static float SinH(float v)
         {
-            return (float)System.Math.Sinh(v);
+            return (float)Math.Sinh(v);
         }
 
         public static float SinC(float v)
         {
-            if (System.Math.Abs(v) < 0.0000001f)
+            if (Math.Abs(v) < 0.0000001f)
             {
                 return 1.0f;
             }
 
             v *= Pi;
             return SinF(v) / v;
+        }
+
+        public static bool ThresholdBuffer(AudioBuffer buffer, float threshold, out int recordFrame)
+        {
+            var size = buffer.Size;
+            for (int i = 0; i < size; i++)
+            {
+                if (Math.Abs(buffer[i]) > threshold)
+                {
+                    recordFrame = i % buffer.NumberOfFrames;
+                    return true;
+                }
+            }
+
+            recordFrame = 0;
+            return false;
         }
     }
 }

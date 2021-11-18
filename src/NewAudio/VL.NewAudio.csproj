@@ -5,8 +5,8 @@
         <FileAlignment>512</FileAlignment>
         <LangVersion>9</LangVersion>
         <Platforms>AnyCPU</Platforms>
-        <TargetFramework>net472</TargetFramework>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <TargetFramework>net472</TargetFramework>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <OutputPath>..\..\lib\</OutputPath>
@@ -58,6 +58,16 @@
         <Compile Remove="Devices\WaveDevice.cs" />
         <Compile Remove="Devices\WaveDriver.cs" />
         <Compile Remove="Core\Lifecycle.cs" />
+        <Compile Remove="Device\BaseDevice.cs" />
+        <Compile Remove="Nodes\AudioBufferOut.cs" />
+        <Compile Remove="Nodes\AudioLoopRegion.cs" />
+        <Compile Remove="Nodes\FFT.cs" />
+        <Compile Remove="Nodes\AudioMixer.cs" />
+        <Compile Remove="Device\DirectSound\**" />
+        <Compile Remove="Device\NullAudio\**" />
+        <Compile Remove="Device\Wasapi\**" />
+        <Compile Remove="Device\Wave\**" />
+        <Compile Remove="Nodes\AudioGenerator.cs" />
     </ItemGroup>
     <ItemGroup>
         <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
@@ -69,6 +79,18 @@
         <Reference Include="VL.Lang, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0622-gd89e9c339e\lib\VL.Lang.dll</HintPath>
         </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Remove="Device\DirectSound\**" />
+      <EmbeddedResource Remove="Device\NullAudio\**" />
+      <EmbeddedResource Remove="Device\Wasapi\**" />
+      <EmbeddedResource Remove="Device\Wave\**" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Remove="Device\DirectSound\**" />
+      <None Remove="Device\NullAudio\**" />
+      <None Remove="Device\Wasapi\**" />
+      <None Remove="Device\Wave\**" />
     </ItemGroup>
 
 </Project>

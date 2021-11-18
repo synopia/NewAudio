@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
-using NewAudio.Blocks;
 using NewAudio.Core;
 
 
@@ -16,7 +15,7 @@ namespace NewAudio.Nodes
         public AudioParam<int> DesiredLatency;
     }
 
-    public class AudioGenerator : AudioNode
+    public class AudioGenerator : AudInp
     {
         public override string NodeName => "Gen";
         private AudioGeneratorBlock _audioGeneratorBlock;

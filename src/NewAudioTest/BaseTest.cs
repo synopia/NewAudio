@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using NewAudio.Block;
 using NewAudio.Core;
 using NewAudio.Devices;
 using NUnit.Framework;
@@ -24,7 +25,7 @@ namespace NewAudioTest
 
     public class VLTestApi 
     {
-        private DriverManager _driverManager = new();
+        private DeviceManager _deviceManager = new();
         private AudioService _audioService = new();
         private AudioGraph _audioGraph = new();
 
@@ -38,9 +39,9 @@ namespace NewAudioTest
             return new TestResourceHandle<AudioGraph>(_audioGraph);
         }
 
-        public IResourceHandle<DriverManager> GetDriverManager()
+        public IResourceHandle<DeviceManager> GetDriverManager()
         {
-            return new TestResourceHandle<DriverManager>(_driverManager);
+            return new TestResourceHandle<DeviceManager>(_deviceManager);
         }
     }
 
@@ -67,7 +68,6 @@ namespace NewAudioTest
         [SetUp]
         public void InitTest()
         {
-            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
         }
     }
 }

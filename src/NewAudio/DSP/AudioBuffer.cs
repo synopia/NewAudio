@@ -4,34 +4,30 @@ using System.Runtime.InteropServices;
 
 namespace NewAudio.Dsp
 {
-    public interface IAudioBuffer: IDisposable
+    public abstract class BaseAudioBuffer : IDisposable
     {
-        public int NumberOfFrames { get; }
-        public int NumberOfChannels { get; }
-        public int BytesPerSample { get; }
-        public int Size { get; }
-        public bool IsEmpty { get; }
-        public float[] Data { get; }
-        public float this[int key] { get; set; }
+        protected int _numberOfFrames;
+        protected int _numberOfChannels;
+        protected float[] _data;
 
-        void Zero();
-        void Zero(int startFrame, int numFrames);
-        void ZeroChannel(int channel);
-    }
-    public struct AudioBuffer : IAudioBuffer 
-    {
-        private readonly int _numberOfFrames;
-        private readonly int _numberOfChannels;
-        private readonly float[] _data;
-        public int NumberOfFrames => _numberOfFrames;
+        public virtual int NumberOfFrames
+        {
+            get => _numberOfFrames;
+            set => throw new Exception();
+        }
 
-        public int NumberOfChannels => _numberOfChannels;
+        public virtual int NumberOfChannels
+        {
+            get => _numberOfChannels;
+            set => throw new Exception();
+        }
 
         public int BytesPerSample => 4;
         public int Size => NumberOfChannels * NumberOfFrames;
         public bool IsEmpty => NumberOfFrames == 0;
         public float[] Data => _data;
-        private bool _disposed;
+
+        private bool _disposedValue;
 
         public float this[int key]
         {
@@ -43,6 +39,39 @@ namespace NewAudio.Dsp
         {
             var s = new Span<float>(_data);
             s.Fill(0f);
+        }
+
+        protected BaseAudioBuffer(int numberOfFrames, int numberOfChannels)
+        {
+            _numberOfFrames = numberOfFrames;
+            _numberOfChannels = numberOfChannels;
+            _data = ArrayPool<float>.Shared.Rent(numberOfChannels * numberOfFrames);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    ArrayPool<float>.Shared.Return(_data);
+                    _data = null;
+                }
+
+                _disposedValue = true;
+            }
+        }
+    }
+
+    public class AudioBuffer : BaseAudioBuffer
+    {
+        public AudioBuffer(int numberOfFrames = 0, int numberOfChannels = 1) : base(numberOfFrames, numberOfChannels)
+        {
         }
 
         public Span<float> GetChannel(int channel)
@@ -68,6 +97,7 @@ namespace NewAudio.Dsp
             var numFrames = System.Math.Min(NumberOfFrames, other.NumberOfFrames);
             CopyTo(other, numFrames);
         }
+
         public void CopyTo(AudioBuffer other, int numFrames)
         {
             var numChannels = System.Math.Min(NumberOfChannels, other.NumberOfChannels);
@@ -89,110 +119,13 @@ namespace NewAudio.Dsp
         {
             GetChannel(channel).CopyTo(other.GetChannel(otherChannel));
         }
-        
-        public AudioBuffer(int numberOfFrames, int numberOfChannels) : this()
-        {
-            _numberOfFrames = numberOfFrames;
-            _numberOfChannels = numberOfChannels;
-            _data = ArrayPool<float>.Shared.Rent(numberOfChannels * numberOfFrames);
-        }
-
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                ArrayPool<float>.Shared.Return(_data);
-                _disposed = true;
-            }
-        }
     }
 
-    public struct AudioBufferInterleaved : IAudioBuffer {
-        private readonly int _numberOfFrames;
-        private readonly int _numberOfChannels;
-        private readonly float[] _data;
-        public int NumberOfFrames => _numberOfFrames;
-
-        public int NumberOfChannels => _numberOfChannels;
-
-        public int BytesPerSample => 4;
-        public int Size => NumberOfChannels * NumberOfFrames;
-        public bool IsEmpty => NumberOfFrames == 0;
-        public float[] Data => _data;
-        private bool _disposed;
-
-        public float this[int key]
-        {
-            get => _data[key];
-            set => _data[key] = value;
-        }
-
-        public void Zero()
-        {
-            var s = new Span<float>(_data);
-            s.Fill(0f);
-        }
-
-        public void Zero(int startFrame, int numFrames)
-        {
-            new Span<float>(_data, startFrame*NumberOfChannels, numFrames*NumberOfChannels).Fill(0);
-        }
-
-        public void ZeroChannel(int channel)
-        {
-            for (int i = channel; i < NumberOfFrames; i += NumberOfChannels)
-            {
-                _data[i] = 0;
-            }
-        }
-
-        public AudioBufferInterleaved(int numberOfFrames, int numberOfChannels) : this()
-        {
-            _numberOfFrames = numberOfFrames;
-            _numberOfChannels = numberOfChannels;
-            _data = ArrayPool<float>.Shared.Rent(numberOfChannels * numberOfFrames);
-        }
-
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                ArrayPool<float>.Shared.Return(_data);
-                _disposed = true;
-            }
-        }
-    }
-
-    public struct AudioBufferSpectral : IAudioBuffer
+    public class AudioBufferInterleaved : BaseAudioBuffer
     {
-        private readonly int _numberOfFrames;
-        private readonly int _numberOfChannels;
-        private readonly float[] _data;
-        public int NumberOfFrames => _numberOfFrames;
-
-        public int NumberOfChannels => _numberOfChannels;
-
-        public int BytesPerSample => 4;
-        public int Size => NumberOfChannels * NumberOfFrames;
-        public bool IsEmpty => NumberOfFrames == 0;
-        public float[] Data => _data;
-        private bool _disposed;
-
-        public float this[int key]
-        {
-            get => _data[key];
-            set => _data[key] = value;
-        }
-
-        public void Zero()
-        {
-            var s = new Span<float>(_data);
-            s.Fill(0f);
-        }
-
         public void Zero(int startFrame, int numFrames)
         {
-            new Span<float>(_data, startFrame*NumberOfChannels, numFrames*NumberOfChannels).Fill(0);
+            new Span<float>(_data, startFrame * NumberOfChannels, numFrames * NumberOfChannels).Fill(0);
         }
 
         public void ZeroChannel(int channel)
@@ -201,51 +134,46 @@ namespace NewAudio.Dsp
             {
                 _data[i] = 0;
             }
+        }
+
+        public AudioBufferInterleaved(int numberOfFrames = 0, int numberOfChannels = 1) : base(numberOfFrames,
+            numberOfChannels)
+        {
+        }
+    }
+
+    public class AudioBufferSpectral : AudioBuffer
+    {
+        public AudioBufferSpectral(int numberOfFrames = 0) : base(numberOfFrames / 2, 2)
+        {
         }
 
         public Span<float> GetReal()
         {
             return new Span<float>(_data, 0, NumberOfFrames);
         }
+
         public Span<float> GetImag()
         {
             return new Span<float>(_data, NumberOfFrames, NumberOfFrames);
         }
-        public AudioBufferSpectral(int numberOfFrames): this() 
-        {
-            _numberOfFrames = numberOfFrames/2;
-            _numberOfChannels = 2;
-            _data = ArrayPool<float>.Shared.Rent(_numberOfChannels * numberOfFrames);
-        }
-
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                ArrayPool<float>.Shared.Return(_data);
-                _disposed = true;
-            }
-        }        
     }
 
-    public struct DynamicAudioBuffer : IAudioBuffer
+    public class DynamicAudioBuffer : AudioBuffer
     {
-        private int _numberOfFrames;
-        private int _numberOfChannels;
         private int _allocatedSize;
-        private float[] _data;
 
-        public int NumberOfFrames
+        public override int NumberOfFrames
         {
-            get=> _numberOfFrames;
+            get => _numberOfFrames;
             set
             {
-                _numberOfChannels = value;
+                _numberOfFrames = value;
                 Resize();
             }
         }
 
-        public int NumberOfChannels
+        public override int NumberOfChannels
         {
             get => _numberOfChannels;
             set
@@ -255,41 +183,15 @@ namespace NewAudio.Dsp
             }
         }
 
-        public int BytesPerSample => 4;
-        public int Size => NumberOfChannels * NumberOfFrames;
-        public bool IsEmpty => NumberOfFrames == 0;
-        public float[] Data => _data;
-        private bool _disposed;
-
-        public float this[int key]
-        {
-            get => _data[key];
-            set => _data[key] = value;
-        }
-
-        public void Zero()
-        {
-            var s = new Span<float>(_data);
-            s.Fill(0f);
-        }
-
-        public void Zero(int startFrame, int numFrames)
-        {
-            new Span<float>(_data, startFrame*NumberOfChannels, numFrames*NumberOfChannels).Fill(0);
-        }
-
-        public void ZeroChannel(int channel)
-        {
-            for (int i = channel; i < NumberOfFrames; i += NumberOfChannels)
-            {
-                _data[i] = 0;
-            }
-        }
-
-        public DynamicAudioBuffer(int numberOfFrames=0, int numberOfChannels=1): this() 
+        public void SetSize(int numberOfFrames, int numberOfChannels)
         {
             _numberOfFrames = numberOfFrames;
             _numberOfChannels = numberOfChannels;
+            Resize();
+        }
+        
+        public DynamicAudioBuffer(int numberOfFrames = 0, int numberOfChannels = 1) : base(numberOfFrames, numberOfChannels)
+        {
             Resize();
         }
 
@@ -303,10 +205,10 @@ namespace NewAudio.Dsp
                     Array.Copy(_data, newData, Size);
                     ArrayPool<float>.Shared.Return(_data);
                 }
-                
+
                 _allocatedSize = Size;
                 _data = newData;
-            }            
+            }
         }
 
         private void Resize()
@@ -319,19 +221,10 @@ namespace NewAudio.Dsp
                     Array.Copy(_data, newData, _allocatedSize);
                     ArrayPool<float>.Shared.Return(_data);
                 }
-                
+
                 _allocatedSize = Size;
                 _data = newData;
             }
         }
-        
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                _disposed = true;
-            }
-        }        
-        
     }
 }

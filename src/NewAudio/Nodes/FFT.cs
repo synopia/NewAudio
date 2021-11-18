@@ -20,7 +20,7 @@ namespace NewAudio.Nodes
         public AudioParam<WindowFunction> WindowFunction;
     }
 
-    public abstract class BaseFFT : AudioNode
+    public abstract class BaseFFT : AudioBlock
     {
         protected double[] Window;
 
