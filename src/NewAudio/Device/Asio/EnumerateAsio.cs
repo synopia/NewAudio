@@ -11,7 +11,7 @@ namespace NewAudio.Devices
 
             foreach (var asio in AsioOut.GetDriverNames())
             {
-                list.Add(new DeviceSelection((DriverManager dm)=>new AsioDriver(dm, asio), "ASIO", asio, true, true));
+                list.Add(new DeviceSelection((DeviceManager dm)=>new AsioDevice(dm, asio), "ASIO", asio, true, true));
             }
 
             return list;

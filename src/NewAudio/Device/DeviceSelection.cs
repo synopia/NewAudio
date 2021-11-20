@@ -5,13 +5,13 @@ namespace NewAudio.Devices
     public class DeviceSelection
     {
         public string Name { get; }
-        public Func<DriverManager, IDriver> Factory { get; }
+        public Func<DeviceManager, IDevice> Factory { get; }
         public string NamePrefix { get; }
 
         public bool IsInputDevice { get; }
         public bool IsOutputDevice { get; }
 
-        public DeviceSelection(Func<DriverManager, IDriver> factory, string namePrefix, string name, bool isInputDevice, bool isOutputDevice)
+        public DeviceSelection(Func<DeviceManager, IDevice> factory, string namePrefix, string name, bool isInputDevice, bool isOutputDevice)
         {
             Factory = factory;
             Name = name;

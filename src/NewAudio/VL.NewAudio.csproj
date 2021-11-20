@@ -68,6 +68,7 @@
         <Compile Remove="Device\NullAudio\**" />
         <Compile Remove="Device\Wasapi\**" />
         <Compile Remove="Device\Wave\**" />
+        <Compile Remove="Device\Asio\AsioDevice__.cs" />
     </ItemGroup>
     <ItemGroup>
         <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">

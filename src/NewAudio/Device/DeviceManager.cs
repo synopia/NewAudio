@@ -6,12 +6,12 @@ using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Devices
 {
-    public class DriverManager : IDisposable
+    public class DeviceManager : IDisposable
     {
         private readonly List<DeviceSelection> _deviceSelections = new();
-        private readonly List<IResourceHandle<IDriver>> _drivers = new();
+        private readonly List<IResourceHandle<IDevice>> _drivers = new();
 
-        public DriverManager()
+        public DeviceManager()
         {
             Init();
         }
@@ -42,17 +42,17 @@ namespace NewAudio.Devices
 
             var provider = ResourceProvider.NewPooledSystemWide(selection.ToString(), s =>
             {
-                var driver = selection.Factory(this);
-                driver.Initialize();
-                return driver;
-            }).Finally(RemoveDriver);
+                var device = selection.Factory(this);
+                device.Initialize();
+                return device;
+            }).Finally(RemoveDevice);
 
             var handle = provider.GetHandle();
             _drivers.Add(handle);
-            return handle.Resource.CreateDevice(selection, format);
+            return handle;
         }
 
-        public VirtualInput GetInputDevice(InputDeviceSelection inputDeviceSelection, AudioBlockFormat format)
+        public InputDeviceBlock GetInputDevice(InputDeviceSelection inputDeviceSelection, DeviceBlockFormat format)
         {
             var device = GetHandle(inputDeviceSelection.Value, format);
             if (device == null)
@@ -60,17 +60,18 @@ namespace NewAudio.Devices
                 return null;
             }
 
-            return new VirtualInput(device, format);
+            return device.Resource.CreateInput(device, format);
         }
 
-        public VirtualOutput GetOutputDevice(OutputDeviceSelection outputDeviceSelection, AudioBlockFormat format)
+        public OutputDeviceBlock GetOutputDevice(OutputDeviceSelection outputDeviceSelection, DeviceBlockFormat format)
         {
             var device = GetHandle(outputDeviceSelection.Value, format);
             if (device == null)
             {
                 return null;
             }
-            return new VirtualOutput(device, format);
+
+            return device.Resource.CreateOutput(device, format);
         }
 
         public IEnumerable<DeviceSelection> GetInputDevices()
@@ -84,7 +85,7 @@ namespace NewAudio.Devices
         }
 
         
-        public void RemoveDriver(IDriver d)
+        public void RemoveDevice(IDevice d)
         {
             foreach (var handle in _drivers.ToArray())
             {

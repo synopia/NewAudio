@@ -2,6 +2,7 @@
 using NewAudio.Core;
 using NewAudio.Devices;
 using NewAudio.Dsp;
+using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Block
 {
@@ -69,19 +70,32 @@ namespace NewAudio.Block
         }
     }
 
-    
+    public class DeviceBlockFormat : AudioBlockFormat
+    {
+        public int ChannelOffset;
+
+        public DeviceBlockFormat WithChannelOffset(int offset)
+        {
+            ChannelOffset = offset;
+            return this;
+        }
+    }
     public abstract class OutputDeviceBlock : OutputBlock
     {
         public override string Name => $"OutputDeviceBlock ({Device?.Name})";
-        protected IDevice Device { get; set; }
+        private IResourceHandle<IDevice> _device;
+        public IDevice Device => _device.Resource;
         private bool _wasEnabledBeforeParamChange;
-        public int OutputChannelOffset { get; set; }
+        public int ChannelOffset { get; set; }
         
-        protected OutputDeviceBlock(IDevice device, AudioBlockFormat format) : base(format.WithAutoEnable(false))
+        protected OutputDeviceBlock(IResourceHandle<IDevice> device, DeviceBlockFormat format) : base(format.WithAutoEnable(false))
         {
-            Device = device;
+            _device = device;
             Device.DeviceParamsWillChange += DeviceParamsWillChange;
             Device.DeviceParamsDidChange += DeviceParamsDidChange;
+
+            ChannelOffset = format.ChannelOffset;
+            
             var deviceChannels = Device.MaxNumberOfOutputChannels;
             if (ChannelMode != ChannelMode.Specified)
             {
@@ -123,6 +137,7 @@ namespace NewAudio.Block
                 {
                     Device.DeviceParamsWillChange -= DeviceParamsWillChange;
                     Device.DeviceParamsDidChange -= DeviceParamsDidChange;
+                    _device.Dispose();
                 }
 
                 _disposedValue = disposing;

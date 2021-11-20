@@ -18,7 +18,7 @@ namespace NewAudio.Nodes
     public class AudioEngine : AudioNode
     {
         private readonly IResourceHandle<AudioGraph> _graph;
-        private readonly IResourceHandle<DriverManager> _driverManager;
+        private readonly IResourceHandle<DeviceManager> _driverManager;
 
         public readonly AudioEngineParams Params;
         public override string NodeName => "AudioEngine";
@@ -35,7 +35,7 @@ namespace NewAudio.Nodes
             try
             {
                 var currentFrame = VLSession.Instance.UserRuntime.Frame;
-                // Params.Enabled.Value = enable;
+                Params.Enabled.Value = enable;
                 Params.CurrentFrame.Value = currentFrame;
                 Params.SamplingFrequency.Value = samplingFrequency;
                 Params.FramesPerBlock.Value = framesPerBlock;
@@ -49,7 +49,7 @@ namespace NewAudio.Nodes
                 if (Params.HasChanged)
                 {
                     Params.Commit();
-                    Graph.OutputDevice?.UpdateFormat((int)Params.SamplingFrequency.Value, Params.FramesPerBlock.Value);
+                    // ((AsioOutputDevice)Graph.OutputBlock).Device.UpdateFormat((int)Params.SamplingFrequency.Value, Params.FramesPerBlock.Value);
                     
                     Graph.SetEnabled(Params.Enabled.Value);
                 }

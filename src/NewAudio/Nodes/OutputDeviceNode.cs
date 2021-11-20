@@ -15,30 +15,34 @@ namespace NewAudio.Nodes
         public AudioParam<bool> Enable;
         public AudioParam<AudioLink> Input;
         public AudioParam<OutputDeviceSelection> Device;
+        public AudioParam<int> ChannelOffset;
+        public AudioParam<int> NumberOfChannels;
     }
-    public class OutputDevice : AudioNode
+    public class OutputDeviceNode : AudioNode
     {
         public override string NodeName => "OutputDevice";
-        private readonly IResourceHandle<DriverManager> _driverManager;
+        private readonly IResourceHandle<DeviceManager> _driverManager;
         public readonly OutputDeviceParams Params;
-        public VirtualOutput Device { get; private set; }
+        public OutputDeviceBlock Device { get; private set; }
 
         private int _counter;
         private long _lag;
         public double LagMs { get; private set; }
         
-        public OutputDevice()
+        public OutputDeviceNode()
         {
-            InitLogger<OutputDevice>();
+            InitLogger<OutputDeviceNode>();
             _driverManager = Factory.GetDriverManager();
             Params = AudioParams.Create<OutputDeviceParams>();
         }
 
-        public bool Update(bool enable, AudioLink input, OutputDeviceSelection deviceSelection)
+        public bool Update(bool enable, AudioLink input, OutputDeviceSelection deviceSelection, int channelOffset, int channels)
         {
             Params.Input.Value = input;
             Params.Device.Value = deviceSelection;
             Params.Enable.Value = enable;
+            Params.ChannelOffset.Value = channelOffset;
+            Params.NumberOfChannels.Value = channels;
             
             if (Params.Device.HasChanged)
             {
@@ -49,6 +53,12 @@ namespace NewAudio.Nodes
                 {
                     StartDevice();
                 }
+            }
+
+            if (Params.ChannelOffset.HasChanged || Params.NumberOfChannels.HasChanged)
+            {
+                // Device.NumberOfChannels = Params.NumberOfChannels.Value;
+                // Device.ChannelOffset = Params.ChannelOffset.Value;
             }
             if (Params.HasChanged)
             {
@@ -65,9 +75,10 @@ namespace NewAudio.Nodes
 
         public void StartDevice()
         {
-            Device = _driverManager.Resource.GetOutputDevice(Params.Device.Value, new AudioBlockFormat()
+            Device = _driverManager.Resource.GetOutputDevice(Params.Device.Value, new DeviceBlockFormat()
             {
-                Channels = 2,
+                ChannelOffset = Params.ChannelOffset.Value,
+                Channels = Params.NumberOfChannels.Value,
                 ChannelMode = ChannelMode.Specified
             });
             AudioBlock = Device;

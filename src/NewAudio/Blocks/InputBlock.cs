@@ -1,6 +1,7 @@
 ﻿using System;
 using NewAudio.Core;
 using NewAudio.Devices;
+using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Block
 {
@@ -30,10 +31,12 @@ namespace NewAudio.Block
     public abstract class InputDeviceBlock : InputBlock
     {
         public override string Name => $"InputDeviceBlock ({Device?.Name})";
-        protected IDevice Device { get; set; }
+        private IResourceHandle<IDevice> _device;
+        protected IDevice Device => _device.Resource;
         private  ulong _lastOverrun;
         private  ulong _lastUnderrun;
         private float _ringBufferPadding = 2;
+        public int InputChannelOffset { get; set; }
 
         public float RingBufferPadding
         {
@@ -61,9 +64,9 @@ namespace NewAudio.Block
             }
         }
 
-        protected InputDeviceBlock(IDevice device, AudioBlockFormat format) : base(format)
+        protected InputDeviceBlock(IResourceHandle<IDevice> device, AudioBlockFormat format) : base(format)
         {
-            Device = device;
+            _device = device;
             
             var deviceChannels = Device.NumberOfInputChannels;
             if (ChannelMode != ChannelMode.Specified)
@@ -87,6 +90,20 @@ namespace NewAudio.Block
         {
             _lastOverrun = Graph.NumberOfProcessedFrames;
         }
-        
+        private bool _disposedValue;
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _device.Dispose();
+                }
+
+                _disposedValue = disposing;
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }

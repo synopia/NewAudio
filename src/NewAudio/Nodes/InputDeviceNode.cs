@@ -14,17 +14,17 @@ namespace NewAudio.Nodes
         public AudioParam<InputDeviceSelection> Device;
     }
 
-    public class InputDevice : AudioNode
+    public class InputDeviceNode : AudioNode
     {
         public override string NodeName => "Input";
-        private IResourceHandle<DriverManager> _driverManager;
-        public VirtualInput Device { get; private set; }
+        private IResourceHandle<DeviceManager> _driverManager;
+        public InputDeviceBlock Device { get; private set; }
         public InputDeviceParams Params { get; }
 
-        public InputDevice()
+        public InputDeviceNode()
         {
             
-            InitLogger<InputDevice>();
+            InitLogger<InputDeviceNode>();
             _driverManager = Factory.GetDriverManager();
             Params = AudioParams.Create<InputDeviceParams>();
         }
@@ -45,7 +45,7 @@ namespace NewAudio.Nodes
 
         public void StartDevice()
         {
-            Device = _driverManager.Resource.GetInputDevice(Params.Device.Value, new AudioBlockFormat());
+            Device = _driverManager.Resource.GetInputDevice(Params.Device.Value, new DeviceBlockFormat());
             
         }
 

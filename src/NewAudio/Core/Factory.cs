@@ -32,9 +32,9 @@ namespace NewAudio.Core
             return pool.GetHandle();
         }
 
-        public static IResourceHandle<DriverManager> GetDriverManager()
+        public static IResourceHandle<DeviceManager> GetDriverManager()
         {
-            var pool = ResourceProvider.NewPooledSystemWide("DriverManager", _ => new DriverManager());
+            var pool = ResourceProvider.NewPooledSystemWide("DriverManager", _ => new DeviceManager());
             return pool.GetHandle();
         }
     }

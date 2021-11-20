@@ -22,7 +22,7 @@ namespace NewAudioTest
             Logger.Information("{X}", deviceSelections);
             var d = deviceSelections[0];//.SeFirst();
             Logger.Information("{D}", d.Name);
-            var o = deviceManager.GetOutputDevice(new OutputDeviceSelection(d.ToString()), new AudioBlockFormat(){Channels = 2});
+            var o = deviceManager.GetOutputDevice(new OutputDeviceSelection(d.ToString()), new DeviceBlockFormat(){Channels = 2});
             o.Graph.OutputBlock = o;
             Logger.Information("{D}", o);
 

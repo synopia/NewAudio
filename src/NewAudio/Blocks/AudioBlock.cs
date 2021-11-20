@@ -16,7 +16,7 @@ namespace NewAudio.Block
         MatchesInput,
         MatchesOutput
     }
-    public struct AudioBlockFormat
+    public class AudioBlockFormat
     {
         public int Channels;
         public ChannelMode ChannelMode;
@@ -80,7 +80,7 @@ namespace NewAudio.Block
         public int NumberOfChannels
         {
             get => _numberOfChannels;
-            protected set
+            set
             {
                 if (_numberOfChannels == value)
                 {

@@ -1,105 +1,93 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using NAudio.Wave;
-using NAudio.Wave.Asio;
 using NewAudio.Block;
 using NewAudio.Core;
-using NewAudio.Dsp;
-using NewAudio.Internal;
-using NewAudio.Nodes;
 using Serilog;
 using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Devices
 {
-    public interface IDevice : IDisposable
+    public class DeviceParams : AudioParams
     {
-        public OutputDeviceBlock Output { get; set; }
-        int NumberOfInputChannels { get; }
-        int NumberOfOutputChannels { get; }
-        int InputChannelOffset { get; }
-        int OutputChannelOffset { get; }
+        public AudioParam<int> SampleRate;
+        public AudioParam<int> FramesPerBlock;
+    }
+
+    public interface IDevice: IDisposable
+    {
+        OutputDeviceBlock CreateOutput(IResourceHandle<IDevice> device, DeviceBlockFormat format);
+        InputDeviceBlock CreateInput(IResourceHandle<IDevice> device, DeviceBlockFormat format);
         int MaxNumberOfInputChannels { get; }
         int MaxNumberOfOutputChannels { get; }
+        int NumberOfInputChannels { get; }
+        int NumberOfOutputChannels { get; }
         int SampleRate { get; }
         int FramesPerBlock { get; }
         string Name { get; }
+        DeviceParams DeviceParams { get; }
+        bool IsInitialized { get; }
+        bool IsProcessing { get; }
+        void Update();
         void Initialize();
         void Uninitialize();
         void EnableProcessing();
         void DisableProcessing();
-        void Update();
-
-        void UpdateFormat(int sampleRate, int framesPerBlock);
         Action DeviceParamsWillChange { get; set; }
         Action DeviceParamsDidChange { get; set; }
+
     }
-    
+
     public abstract class BaseDevice : IDevice
     {
         private readonly IResourceHandle<AudioService> _audioService;
-        protected readonly IDriver Driver;
         protected ILogger Logger;
-        private int _sampleRate;
-        private int _framesPerBlock;
+        private bool _disposedValue;
+        protected readonly DeviceManager DeviceManager;
+        public Action DeviceParamsWillChange { get; set; }
+        public Action DeviceParamsDidChange { get; set; }
 
+        public int MaxNumberOfInputChannels { get; protected set; }
+        public int MaxNumberOfOutputChannels{ get; protected  set; }
+        public int NumberOfInputChannels { get; protected set; }
+        public int NumberOfOutputChannels{ get; protected  set; }
+        public int SampleRate => DeviceParams.SampleRate.Value;
+        public int FramesPerBlock => DeviceParams.FramesPerBlock.Value;
+        
         public abstract string Name { get; }
-        public abstract int NumberOfInputChannels { get; }
-        public abstract int NumberOfOutputChannels { get; }
-        public abstract int InputChannelOffset { get; }
-        public abstract int OutputChannelOffset { get; }
-        public int MaxNumberOfInputChannels => Driver.MaxNumberOfInputChannels;
-        public int MaxNumberOfOutputChannels => Driver.MaxNumberOfOutputChannels;
 
-        public Action DeviceParamsWillChange
-        {
-            get=> Driver.DeviceParamsWillChange;
-            set => Driver.DeviceParamsWillChange += value;
-        }
+     
+        public DeviceParams DeviceParams { get; }
+        public abstract bool IsInitialized { get; protected set; }
+        public abstract bool IsProcessing { get; protected set;}
 
-        public Action DeviceParamsDidChange
-        {
-            get=> Driver.DeviceParamsDidChange;
-            set => Driver.DeviceParamsDidChange += value;
-        }
-
-        public int SampleRate => Driver.SampleRate;
-
-        public int FramesPerBlock => Driver.FramesPerBlock;
-
-        public OutputDeviceBlock Output { get; set; }
-
-
-        protected BaseDevice(IDriver driver)
+        protected BaseDevice(DeviceManager deviceManager)
         {
             _audioService = Factory.GetAudioService();
-            Driver = driver;
+            DeviceManager = deviceManager;
+            DeviceParams = AudioParams.Create<DeviceParams>();
+            DeviceParams.OnChange += UpdateFormat;
         }
-
         protected void InitLogger<T>()
         {
             Logger = _audioService.Resource.GetLogger<T>();
         }
 
-        public void UpdateFormat(int sampleRate, int framesPerBlock)
-        {
-            Driver.DriverParams.SampleRate.Value = sampleRate;
-            Driver.DriverParams.FramesPerBlock.Value = framesPerBlock;
-        }
+        public abstract OutputDeviceBlock CreateOutput(IResourceHandle<IDevice> device, DeviceBlockFormat format);
+        public abstract InputDeviceBlock CreateInput(IResourceHandle<IDevice> device, DeviceBlockFormat format);
 
+        protected abstract void UpdateFormat();
+
+        public void Update()
+        {
+            if (DeviceParams.HasChanged)
+            {
+                DeviceParams.Update();
+            }
+        }
         public abstract void Initialize();
         public abstract void Uninitialize();
         public abstract void EnableProcessing();
         public abstract void DisableProcessing();
-
-        public virtual void Update()
-        {
-            
-        }
-
-        private bool _disposedValue;
 
         public void Dispose()
         {
@@ -108,17 +96,19 @@ namespace NewAudio.Devices
 
         protected virtual void Dispose(bool disposing)
         {
-            Logger.Information("Dispose called for Device {This} ({Disposing})", Name, disposing);
+            Logger.Information("Dispose called for Driver {This} ({Disposing})", this.Name, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
                 {
-                    _audioService?.Dispose();
+                    _audioService?.Dispose();    
+                    
                 }
 
                 _disposedValue = true;
             }
         }
-    }
 
+ 
+    }
 }
