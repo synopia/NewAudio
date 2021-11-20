@@ -6,16 +6,26 @@ using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Core
 {
+    public class AudioPin : AudioBlock
+    {
+        public override string Name => "Output Pin";
+
+        public AudioPin() : base(new AudioBlockFormat(){ChannelMode = ChannelMode.MatchesInput, AutoEnable = true})
+        {
+        }
+    }
+    
     public class AudioLink : IDisposable
     {
         private readonly IResourceHandle<AudioGraph> _graph;
 
-        public AudioBlock AudioBlock;
+        public readonly AudioPin Pin;
         public AudioFormat Format { get; set; }
 
         public AudioLink() 
         {
             _graph = Factory.GetAudioGraph();
+            Pin = new AudioPin();
         }
 
 

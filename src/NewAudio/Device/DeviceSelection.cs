@@ -1,17 +1,19 @@
-﻿namespace NewAudio.Devices
+﻿using System;
+
+namespace NewAudio.Devices
 {
     public class DeviceSelection
     {
         public string Name { get; }
-        public string DriverName { get; }
+        public Func<DriverManager, IDriver> Factory { get; }
         public string NamePrefix { get; }
 
         public bool IsInputDevice { get; }
         public bool IsOutputDevice { get; }
 
-        public DeviceSelection(string driverName, string namePrefix, string name, bool isInputDevice, bool isOutputDevice)
+        public DeviceSelection(Func<DriverManager, IDriver> factory, string namePrefix, string name, bool isInputDevice, bool isOutputDevice)
         {
-            DriverName = driverName;
+            Factory = factory;
             Name = name;
             NamePrefix = namePrefix;
             IsInputDevice = isInputDevice;

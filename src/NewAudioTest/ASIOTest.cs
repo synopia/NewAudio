@@ -18,29 +18,31 @@ namespace NewAudioTest
         {
             InitLogger<AsioTest>();
             var deviceManager = Factory.GetDriverManager().Resource;
-            var d = deviceManager.GetOutputDevices().First();
+            var deviceSelections = deviceManager.GetOutputDevices().ToArray();
+            Logger.Information("{X}", deviceSelections);
+            var d = deviceSelections[0];//.SeFirst();
             Logger.Information("{D}", d.Name);
-            var o = deviceManager.GetOutputDevice(new OutputDeviceSelection(d.ToString()), new AudioBlockFormat());
+            var o = deviceManager.GetOutputDevice(new OutputDeviceSelection(d.ToString()), new AudioBlockFormat(){Channels = 2});
             o.Graph.OutputBlock = o;
             Logger.Information("{D}", o);
 
             var sine = new SineGenBlock(new AudioBlockFormat(){AutoEnable = true});
-            var noise = new NoiseBlock(new AudioBlockFormat(){AutoEnable = true});
+            var noise = new NoiseGenBlock(new AudioBlockFormat(){AutoEnable = true});
             var gain = new MultiplyBlock(new AudioBlockFormat() { AutoEnable = true });
-            sine.Params.Freq.Value = 1000;
-            gain.Params.Value.Value = 0.000000f;
-            
+            sine.Params.Freq.Value = 100;
+            gain.Params.Value.Value = 0.10f;
+            // sine.Enable();
+            // gain.Enable();
             // noise.Connect(gain);
             sine.Connect(gain);
             gain.Connect(o);
             
-            sine.Enable();
-            gain.Enable();
+       
             noise.Enable();
             o.Graph.Enable();
             
-            Task.Delay(1000).Wait();
-            o.Graph.UninitializeAllNodes();
+            Task.Delay(10000).Wait();
+            // o.Graph.UninitializeAllNodes();
         }
     }
 }

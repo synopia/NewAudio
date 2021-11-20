@@ -67,9 +67,6 @@ namespace NewAudio.Block
 
             return false;
         }
-
-
-        // public abstract int FillBuffer(byte[] buffer, int offset, int count);
     }
 
     
@@ -78,11 +75,14 @@ namespace NewAudio.Block
         public override string Name => $"OutputDeviceBlock ({Device?.Name})";
         protected IDevice Device { get; set; }
         private bool _wasEnabledBeforeParamChange;
+        public int OutputChannelOffset { get; set; }
         
         protected OutputDeviceBlock(IDevice device, AudioBlockFormat format) : base(format.WithAutoEnable(false))
         {
             Device = device;
-            var deviceChannels = Device.NumberOfOutputChannels;
+            Device.DeviceParamsWillChange += DeviceParamsWillChange;
+            Device.DeviceParamsDidChange += DeviceParamsDidChange;
+            var deviceChannels = Device.MaxNumberOfOutputChannels;
             if (ChannelMode != ChannelMode.Specified)
             {
                 ChannelMode = ChannelMode.Specified;
@@ -94,14 +94,15 @@ namespace NewAudio.Block
                 NumberOfChannels = deviceChannels;
             }
         }
-        protected void DeviceParamsWillChange()
+
+        private void DeviceParamsWillChange()
         {
             _wasEnabledBeforeParamChange = IsEnabled;
             Graph.Disable();
             Graph.UninitializeAllNodes();
         }
 
-        protected void DeviceParamsDidChange()
+        private void DeviceParamsDidChange()
         {
             Graph.InitializeAllNodes();
             Graph.SetEnabled(_wasEnabledBeforeParamChange);
@@ -110,6 +111,25 @@ namespace NewAudio.Block
         public override int OutputSampleRate => Device?.SampleRate ?? 0;
         public override int OutputFramesPerBlock => Device?.FramesPerBlock ?? 0;
 
-        public abstract void FillBuffer(IntPtr[] buffers, int numSamples);
+        public abstract AudioBuffer RenderInputs();
+        
+        private bool _disposedValue;
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    Device.DeviceParamsWillChange -= DeviceParamsWillChange;
+                    Device.DeviceParamsDidChange -= DeviceParamsDidChange;
+                }
+
+                _disposedValue = disposing;
+            }
+
+            base.Dispose(disposing);
+        }
+
     }
 }

@@ -28,6 +28,7 @@ namespace NewAudio.Dsp
         public float[] Data => _data;
 
         private bool _disposedValue;
+        private GCHandle _gcHandle;
 
         public float this[int key]
         {

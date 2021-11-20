@@ -36,12 +36,12 @@ namespace NewAudio.Block
         }
     }
 
-    public class NoiseBlock : GenBlock
+    public class NoiseGenBlock : GenBlock
     {
         public override string Name => "Noise";
         private Random _random = new Random();
         
-        public NoiseBlock(AudioBlockFormat format) : base(format)
+        public NoiseGenBlock(AudioBlockFormat format) : base(format)
         {
         }
 
@@ -68,7 +68,7 @@ namespace NewAudio.Block
             var incr = Params.Freq.Value * _period;
             for (var i = 0; i < data.Length; i++)
             {
-                data[i] = AudioMath.SinF(_phase * 2 * AudioMath.TwoPi);
+                data[i] = AudioMath.SinF(_phase * AudioMath.TwoPi);
                 _phase = AudioMath.Fract(_phase + incr);
             }
         }

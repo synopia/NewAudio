@@ -15,58 +15,75 @@ namespace NewAudio.Nodes
         public AudioParam<ulong> CurrentFrame;
         public AudioParam<bool> Enabled;
     }
-    public class AudioEngine : IDisposable
+    public class AudioEngine : AudioNode
     {
-        private readonly IResourceHandle<AudioService> _audioService;
         private readonly IResourceHandle<AudioGraph> _graph;
-        private readonly IResourceHandle<DeviceManager> _driverManager;
-        private readonly ILogger _logger;
+        private readonly IResourceHandle<DriverManager> _driverManager;
 
         public readonly AudioEngineParams Params;
+        public override string NodeName => "AudioEngine";
 
         public AudioEngine()
         {
-            _graph = Factory.GetAudioGraph();
-            _audioService = Factory.GetAudioService();
             _driverManager = Factory.GetDriverManager();
-            _logger = _audioService.Resource.GetLogger<AudioGraph>();
+            InitLogger<AudioEngine>();
             Params = AudioParams.Create<AudioEngineParams>();
         }
 
-        public bool Update(bool enabled, SamplingFrequency samplingFrequency=SamplingFrequency.Hz48000, int framesPerBlock = 512)
+        public bool Update(bool enable, SamplingFrequency samplingFrequency=SamplingFrequency.Hz48000, int framesPerBlock = 512)
         {
-            var currentFrame = VLSession.Instance.UserRuntime.Frame;
-            Params.Enabled.Value = enabled;
-            Params.CurrentFrame.Value = currentFrame;
-            Params.SamplingFrequency.Value = samplingFrequency;
-            Params.FramesPerBlock.Value = framesPerBlock;
-            
-            if (Params.CurrentFrame.HasChanged)
+            try
             {
-                try
+                var currentFrame = VLSession.Instance.UserRuntime.Frame;
+                // Params.Enabled.Value = enable;
+                Params.CurrentFrame.Value = currentFrame;
+                Params.SamplingFrequency.Value = samplingFrequency;
+                Params.FramesPerBlock.Value = framesPerBlock;
+            
+                if (Params.CurrentFrame.HasChanged)
                 {
-                    _driverManager.Resource.UpdateAllDevices();
+                    Params.CurrentFrame.Commit();
+                    _driverManager.Resource.Update();
                 }
-                catch (Exception e)
-                {
-                    _logger.Error(e, "Error in DriverManager");
-                }
-            }
 
-            return enabled;
+                if (Params.HasChanged)
+                {
+                    Params.Commit();
+                    Graph.OutputDevice?.UpdateFormat((int)Params.SamplingFrequency.Value, Params.FramesPerBlock.Value);
+                    
+                    Graph.SetEnabled(Params.Enabled.Value);
+                }
+                
+                return Graph.IsEnabled;
+            }
+            catch (Exception e)
+            {
+                ExceptionHappened(e, "AudioEngine.Update");
+                return false;
+            }
         }
 
-
-
-        public string DebugInfo()
+        public override string DebugInfo()
         {
             return _graph.Resource.DebugInfo();
         }
+        private bool _disposedValue;
+        private Random _random;
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            _graph.Dispose();
-            _driverManager.Dispose();
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _graph.Dispose();
+                    _driverManager.Dispose();
+                }
+
+                _disposedValue = disposing;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

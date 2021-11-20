@@ -2,7 +2,10 @@
 using NewAudio.Block;
 using NewAudio.Core;
 using NewAudio.Devices;
+using VL.Core;
 using VL.Lib.Basics.Resources;
+using VL.Model;
+using Node = VL.MutableModel.Node;
 
 namespace NewAudio.Nodes
 {
@@ -14,16 +17,16 @@ namespace NewAudio.Nodes
     public class InputDevice : AudioNode
     {
         public override string NodeName => "Input";
-        private IResourceHandle<DeviceManager> _driverManager;
+        private IResourceHandle<DriverManager> _driverManager;
         public VirtualInput Device { get; private set; }
         public InputDeviceParams Params { get; }
 
         public InputDevice()
         {
+            
             InitLogger<InputDevice>();
             _driverManager = Factory.GetDriverManager();
             Params = AudioParams.Create<InputDeviceParams>();
-            Logger.Information("Input device created");
         }
         public AudioLink Update(InputDeviceSelection deviceSelection)
         {

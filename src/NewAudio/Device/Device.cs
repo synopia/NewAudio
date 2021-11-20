@@ -3,26 +3,26 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
+using NAudio.Wave.Asio;
 using NewAudio.Block;
 using NewAudio.Core;
 using NewAudio.Dsp;
 using NewAudio.Internal;
+using NewAudio.Nodes;
 using Serilog;
 using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Devices
 {
-    public class DeviceConfig : AudioParams
-    {
-        public AudioParam<int> SampleRate;
-        public AudioParam<int> FramesPerBlock;
-    }
-
     public interface IDevice : IDisposable
     {
         public OutputDeviceBlock Output { get; set; }
         int NumberOfInputChannels { get; }
         int NumberOfOutputChannels { get; }
+        int InputChannelOffset { get; }
+        int OutputChannelOffset { get; }
+        int MaxNumberOfInputChannels { get; }
+        int MaxNumberOfOutputChannels { get; }
         int SampleRate { get; }
         int FramesPerBlock { get; }
         string Name { get; }
@@ -31,54 +31,53 @@ namespace NewAudio.Devices
         void EnableProcessing();
         void DisableProcessing();
         void Update();
+
+        void UpdateFormat(int sampleRate, int framesPerBlock);
+        Action DeviceParamsWillChange { get; set; }
+        Action DeviceParamsDidChange { get; set; }
     }
     
     public abstract class BaseDevice : IDevice
     {
-        protected int _sampleRate;
-        protected int _framesPerBlock;
         private readonly IResourceHandle<AudioService> _audioService;
+        protected readonly IDriver Driver;
         protected ILogger Logger;
+        private int _sampleRate;
+        private int _framesPerBlock;
 
         public abstract string Name { get; }
         public abstract int NumberOfInputChannels { get; }
         public abstract int NumberOfOutputChannels { get; }
+        public abstract int InputChannelOffset { get; }
+        public abstract int OutputChannelOffset { get; }
+        public int MaxNumberOfInputChannels => Driver.MaxNumberOfInputChannels;
+        public int MaxNumberOfOutputChannels => Driver.MaxNumberOfOutputChannels;
 
-        public int SampleRate
+        public Action DeviceParamsWillChange
         {
-            get
-            {
-                if (_sampleRate == 0)
-                {
-                    _sampleRate = Config.SampleRate.Value; 
-                }
-
-                return _sampleRate;
-            }
+            get=> Driver.DeviceParamsWillChange;
+            set => Driver.DeviceParamsWillChange += value;
         }
 
-        public int FramesPerBlock
+        public Action DeviceParamsDidChange
         {
-            get
-            {
-                if (_framesPerBlock == 0)
-                {
-                    _framesPerBlock = Config.FramesPerBlock.Value;
-                }
-
-                return _framesPerBlock;
-            }
+            get=> Driver.DeviceParamsDidChange;
+            set => Driver.DeviceParamsDidChange += value;
         }
 
-        public DeviceConfig Config { get; }
+        public int SampleRate => Driver.SampleRate;
+
+        public int FramesPerBlock => Driver.FramesPerBlock;
+
         public OutputDeviceBlock Output { get; set; }
 
 
-        protected BaseDevice()
+        protected BaseDevice(IDriver driver)
         {
             _audioService = Factory.GetAudioService();
-            Config = AudioParams.Create<DeviceConfig>();
+            Driver = driver;
         }
+
         protected void InitLogger<T>()
         {
             Logger = _audioService.Resource.GetLogger<T>();
@@ -86,18 +85,11 @@ namespace NewAudio.Devices
 
         public void UpdateFormat(int sampleRate, int framesPerBlock)
         {
-            Config.SampleRate.Value = sampleRate;
-            Config.FramesPerBlock.Value = framesPerBlock;
-
-            if (Config.HasChanged)
-            {
-                _sampleRate = 0;
-                _framesPerBlock = 0;
-            }
+            Driver.DriverParams.SampleRate.Value = sampleRate;
+            Driver.DriverParams.FramesPerBlock.Value = framesPerBlock;
         }
 
         public abstract void Initialize();
-
         public abstract void Uninitialize();
         public abstract void EnableProcessing();
         public abstract void DisableProcessing();
@@ -128,78 +120,5 @@ namespace NewAudio.Devices
             }
         }
     }
-    
-    /*
-    public struct DeviceConfigRequest
-    {
-        public AudioFormat AudioFormat { get; set; }
-        public int ChannelOffset { get; set; }
-        public int Channels { get; set; }
-        public int Latency { get; set; }
-        public int FirstChannel => ChannelOffset;
-        public int LastChannel => ChannelOffset + Channels;
-    }
-
-    public struct DeviceConfigResponse
-    {
-        public AudioFormat AudioFormat { get; set; }
-        public int ChannelOffset { get; set; }
-        public int Channels { get; set; }
-        public int Latency { get; set; }
-
-        public int DriverChannels { get; set; }
-        public int FrameSize { get; set; }
-
-        public IEnumerable<SamplingFrequency> SupportedSamplingFrequencies;
-
-        public int FirstChannel => ChannelOffset;
-        public int LastChannel => ChannelOffset + Channels;
-    }
-    
-
-    public class DeviceParams : AudioParams
-    {
-        public AudioParam<SamplingFrequency> SamplingFrequency;
-        public AudioParam<int> DesiredLatency;
-        public AudioParam<int> ChannelOffset;
-        public AudioParam<int> Channels;
-
-        public int FirstChannel => ChannelOffset.Value;
-        public int LastChannel => FirstChannel + Channels.Value;
-
-        public AudioFormat AudioFormat => new AudioFormat((int)SamplingFrequency.Value, 512, Channels.Value);
-    }
-    public class ActualDeviceParams : AudioParams
-    {
-        public AudioParam<int> ConnectedDevices;
-        public AudioParam<bool> IsRecordingDevice;
-        public AudioParam<bool> IsPlayingDevice;
-        public AudioParam<bool> Active;
-        public AudioParam<SamplingFrequency> SamplingFrequency;
-        public AudioParam<int> Latency;
-        public AudioParam<int> ChannelOffset;
-        public AudioParam<int> Channels;
-        public AudioParam<WaveFormat> WaveFormat;
-        public int FirstChannel => ChannelOffset.Value;
-        public int LastChannel => FirstChannel + Channels.Value;
-
-        public AudioFormat AudioFormat => new AudioFormat((int)SamplingFrequency.Value, 512, Channels.Value);
-    }
-
-    public interface IVirtualDevice: IDisposable
-    {
-        IDevice Device { get; }
-        string Name { get; }
-
-        DeviceParams Params { get; }
-        ActualDeviceParams ActualParams { get; }
-        
-        bool IsPlaying { get; }
-        bool IsRecording { get; }
-
-        void Update();
-        void Post(AudioDataMessage msg);
-    }
-    */
 
 }

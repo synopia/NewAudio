@@ -20,7 +20,17 @@ namespace NewAudio.Block
     {
         public int Channels;
         public ChannelMode ChannelMode;
-        public bool AutoEnable;
+        private bool _autoEnable;
+        public bool AutoEnable
+        {
+            get => _autoEnable;
+            set
+            {
+                IsAutoEnableSet = true;
+                _autoEnable = value;
+            }
+        }
+
         public bool IsAutoEnableSet;
 
         public AudioBlockFormat WithChannels(int channels)
@@ -46,9 +56,7 @@ namespace NewAudio.Block
         protected ILogger Logger { get; private set; }
         private readonly IResourceHandle<AudioGraph> _graph;
         public abstract string Name { get; }
-        public int Id { get; }
 
-        private List<Exception> _exceptions = new();
 
         public AudioGraph Graph => _graph.Resource;
         public bool IsEnabled { get; private set; }
@@ -110,16 +118,6 @@ namespace NewAudio.Block
         protected void InitLogger<T>()
         {
             Logger = Graph.GetLogger<T>();
-        }
-
-        public void ExceptionHappened(Exception exception, string method)
-        {
-            if (!_exceptions.Exists(e => e.Message == exception.Message))
-            {
-                Logger.Error(exception, "Exceptions happened in {This}.{Method}", this, method);
-                _exceptions.Add(exception);
-                throw exception;
-            }
         }
 
         public void SetEnabled(bool b)
@@ -423,7 +421,7 @@ namespace NewAudio.Block
 
         public void DoInitialize()
         {
-            if (IsInitialized)
+            if (IsInitialized || FramesPerBlock==0 )
             {
                 return;
             }
@@ -461,16 +459,8 @@ namespace NewAudio.Block
         
         public override string ToString()
         {
-            return $"{Name} ({Id})";
+            return Name;
         }
-
-        public IEnumerable<string> ErrorMessages()
-        {
-            return _exceptions.Select(i => i.Message);
-        }
-
-        
-        
 
         private bool _disposedValue;
 
@@ -486,6 +476,7 @@ namespace NewAudio.Block
             {
                 if (disposing)
                 {
+                    DisconnectAll();
                     InternalBuffer?.Dispose();
                     MixingBuffer?.Dispose();
                     _graph.Dispose();
@@ -496,4 +487,5 @@ namespace NewAudio.Block
             }
         }
     }
+    
 }

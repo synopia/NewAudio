@@ -12,13 +12,14 @@ namespace NewAudio.Nodes
     // ReSharper disable once ClassNeverInstantiated.Global
     public class OutputDeviceParams : AudioParams
     {
+        public AudioParam<bool> Enable;
         public AudioParam<AudioLink> Input;
         public AudioParam<OutputDeviceSelection> Device;
     }
     public class OutputDevice : AudioNode
     {
         public override string NodeName => "OutputDevice";
-        private readonly IResourceHandle<DeviceManager> _driverManager;
+        private readonly IResourceHandle<DriverManager> _driverManager;
         public readonly OutputDeviceParams Params;
         public VirtualOutput Device { get; private set; }
 
@@ -31,27 +32,35 @@ namespace NewAudio.Nodes
             InitLogger<OutputDevice>();
             _driverManager = Factory.GetDriverManager();
             Params = AudioParams.Create<OutputDeviceParams>();
-            Logger.Information("Output device created");
         }
 
-        public void Update(AudioLink input, OutputDeviceSelection deviceSelection)
+        public bool Update(bool enable, AudioLink input, OutputDeviceSelection deviceSelection)
         {
             Params.Input.Value = input;
             Params.Device.Value = deviceSelection;
-
+            Params.Enable.Value = enable;
             
             if (Params.Device.HasChanged)
             {
+                Params.Device.Commit();
+                
                 StopDevice();
                 if (Params.Device.Value != null)
                 {
                     StartDevice();
                 }
             }
-            if (Params.Input.HasChanged)
+            if (Params.HasChanged)
             {
-                Params.Input.Value.AudioBlock.Connect(Output.AudioBlock);
+                Params.Commit();
+
+                Params.Input.Value?.Pin.Connect(AudioBlock);
+                Graph.OutputBlock = Device;
+
+                Device?.SetEnabled(Params.Enable.Value);
             }
+
+            return Device?.IsEnabled ?? false;
         }
 
         public void StartDevice()
@@ -61,8 +70,7 @@ namespace NewAudio.Nodes
                 Channels = 2,
                 ChannelMode = ChannelMode.Specified
             });
-            Output.AudioBlock = Device;
-            Graph.OutputBlock = Device;
+            AudioBlock = Device;
         }
 
         public void StopDevice()
@@ -74,7 +82,7 @@ namespace NewAudio.Nodes
         
         public override string DebugInfo()
         {
-            return $"Output device:[{base.DebugInfo()}]";
+            return $"Output device:[{Params.Device.Value}]";
         }
 
         private bool _disposedValue;

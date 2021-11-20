@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace NewAudio
+namespace NewAudio.Internal
 {
     public class MSQueue<T>
     {

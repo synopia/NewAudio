@@ -7,6 +7,7 @@
         <IsPackable>false</IsPackable>
         <TargetFramework>net472</TargetFramework>
         <OutputType>Exe</OutputType>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <OutputPath>..\..\lib-test\</OutputPath>
@@ -22,6 +23,8 @@
         <PlatformTarget>AnyCPU</PlatformTarget>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
+        <PackageReference Include="BenchmarkDotNet.Annotations" Version="0.13.1" />
         <PackageReference Include="NUnit" Version="3.13.2" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
         <ProjectReference Include="..\NewAudio\VL.NewAudio.csproj" />

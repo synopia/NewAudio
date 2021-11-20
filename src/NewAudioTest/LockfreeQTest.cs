@@ -1,4 +1,5 @@
 ﻿using NewAudio;
+using NewAudio.Internal;
 using NUnit.Framework;
 
 namespace NewAudioTest

@@ -16,18 +16,12 @@ namespace NewAudio.Block
         {
             _resourceHandle = resourceHandle;
             InitLogger<VirtualOutput>();
+            Device.Output = this;
+            Graph.OutputDevice = resourceHandle.Resource;
         }
 
-        public override unsafe void FillBuffer(IntPtr[] buffers, int numSamples)
-        {
-            RenderInputs();
-            for (int ch = 0; ch < NumberOfChannels; ch++)
-            {
-                Marshal.Copy(InternalBuffer.Data, ch*FramesPerBlock, buffers[ch], numSamples);
-            }
-        }
 
-        public unsafe void RenderInputs()
+        public override AudioBuffer RenderInputs()
         {
             Graph.PreProcess();
             
@@ -37,15 +31,10 @@ namespace NewAudio.Block
             {
                 InternalBuffer.Zero();
             }
-
-            /*fixed (byte* ptr = _sampleBuffer)
-            {
-                var i = new IntPtr(ptr);
-                Marshal.Copy(InternalBuffer.Data, 0, i, Device.FramesPerBlock * NumberOfChannels);
-            }
-
-            RingBuffer.Write(_sampleBuffer, Device.FramesPerBlock * NumberOfChannels);*/
+          
             Graph.PostProcess();
+
+            return InternalBuffer;
         }
         
         protected override void Initialize()
@@ -68,7 +57,6 @@ namespace NewAudio.Block
 
             _sampleBuffer = new byte[Device.FramesPerBlock * NumberOfChannels * 4];
             RingBuffer = new RingBuffer<byte>(NumberOfChannels * Device.FramesPerBlock * 4*2);
-            Device.Output = this;
             // Device.RingBuffer = RingBuffer;
         }
 

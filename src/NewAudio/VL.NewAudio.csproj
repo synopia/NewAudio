@@ -20,6 +20,7 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <OutputPath>..\..\lib\</OutputPath>
+        <Optimize>true</Optimize>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Abodit.StateMachine" Version="3.21.83.7" />
@@ -67,17 +68,16 @@
         <Compile Remove="Device\NullAudio\**" />
         <Compile Remove="Device\Wasapi\**" />
         <Compile Remove="Device\Wave\**" />
-        <Compile Remove="Nodes\AudioGenerator.cs" />
     </ItemGroup>
     <ItemGroup>
         <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0622-gd89e9c339e\lib\VL.Core.dll</HintPath>
+            <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0628-g2669aa5c35\lib\VL.Core.dll</HintPath>
         </Reference>
         <Reference Include="VL.CoreLib, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0622-gd89e9c339e\lib\VL.CoreLib.dll</HintPath>
+            <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0628-g2669aa5c35\lib\VL.CoreLib.dll</HintPath>
         </Reference>
         <Reference Include="VL.Lang, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0622-gd89e9c339e\lib\VL.Lang.dll</HintPath>
+            <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0628-g2669aa5c35\lib\VL.Lang.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>

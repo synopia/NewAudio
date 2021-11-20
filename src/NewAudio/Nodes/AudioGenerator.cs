@@ -1,82 +1,73 @@
 ﻿using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
+using NewAudio.Block;
 using NewAudio.Core;
 
 
 namespace NewAudio.Nodes
 {
-    public class AudioGeneratorParams : AudioParams
+    public enum GeneratorType
     {
-        public AudioParam<SamplingFrequency> SamplingFrequency;
-        public AudioParam<bool> Interleaved;
-        public AudioParam<int> SampleCount;
-        public AudioParam<int> Channels;
-        public AudioParam<int> DesiredLatency;
+        Noise,
+        Sine
+    }
+    public class AudioGeneratorParams : GenBlockParams
+    {
+        public AudioParam<bool> Enable;
+        public AudioParam<GeneratorType> GeneratorType;
     }
 
-    public class AudioGenerator : AudInp
+    public class AudioGenerator : AudioNode
     {
-        public override string NodeName => "Gen";
-        private AudioGeneratorBlock _audioGeneratorBlock;
-        private AudioFormat _format;
+        public override string NodeName => "AudioGenerator";
+        private GenBlock _genBlock;
         public AudioGeneratorParams Params { get; }
         
         public AudioGenerator()
         {
             InitLogger<AudioGenerator>();
             Params = AudioParams.Create<AudioGeneratorParams>();
-            Logger.Information("AudioGenerator created");
-            _format = new AudioFormat(48000, 512);
         }
 
-        public AudioLink Update(SamplingFrequency samplingFrequency = SamplingFrequency.Hz44100, int sampleCount = 512,
-            int channels = 2, int desiredLatency = 250, bool interleaved = true)
+        public AudioLink Update(bool enable, float frequency, GeneratorType type, out bool enabled)
         {
-            Params.SamplingFrequency.Value = samplingFrequency;
-            Params.SampleCount.Value = sampleCount;
-            Params.DesiredLatency.Value = desiredLatency;
-            Params.Channels.Value = channels;
-            Params.Interleaved.Value = interleaved;
-            PlayParams.Update(null, Params.HasChanged);
+            Params.GeneratorType.Value = type;
+            Params.Freq.Value = frequency;
+            Params.Enable.Value = enable;
             
+            if (Params.GeneratorType.HasChanged || _genBlock==null)
+            {
+                if (_genBlock != null)
+                {
+                    _genBlock.Dispose();
+                }
+
+                if (type == GeneratorType.Noise)
+                {
+                    _genBlock = new NoiseGenBlock(new AudioBlockFormat(){AutoEnable = true});
+                } else if (type == GeneratorType.Sine)
+                {
+                    _genBlock = new SineGenBlock(new AudioBlockFormat(){AutoEnable = true});
+                    
+                }
+
+                AudioBlock = _genBlock;
+            }
+
+            if (Params.Freq.HasChanged && _genBlock!=null )
+            {
+                _genBlock.Params.Freq.Value = Params.Freq.Value;
+            }
+
             if (Params.HasChanged)
             {
-                PlayParams.Reset.Value = true;
-                _format = new AudioFormat((int)Params.SamplingFrequency.Value, Params.SampleCount.Value,
-                    Params.Channels.Value, Params.Interleaved.Value);
-                Output.Format = _format;    
+                Params.Commit();
+                _genBlock?.SetEnabled(Params.Enable.Value);
             }
-
-            return base.Update(Params);
-        }
-
-        public override bool Play()
-        {
-            if (Params.SampleCount.Value > 0 && Params.Channels.Value > 0)
-            {
-                _audioGeneratorBlock = new AudioGeneratorBlock();
-                _format = new AudioFormat((int)Params.SamplingFrequency.Value, Params.SampleCount.Value,
-                    Params.Channels.Value, Params.Interleaved.Value);
-                Output.Format = _format;
-                var buffer = new BufferBlock<AudioDataMessage>(new DataflowBlockOptions()
-                {
-                    BoundedCapacity = 1
-                });
-                _audioGeneratorBlock.Create(buffer, _format);
-                Output.SourceBlock = buffer;
-                return true;
-            }
-
-            return false;
-        }
-
-        public override void Stop()
-        {
-            _audioGeneratorBlock?.Stop();
-            _audioGeneratorBlock = null;
-            _format = default;
-            Output.SourceBlock = null;
+            
+            enabled = _genBlock?.IsEnabled ?? false;
+            return Output;
         }
 
         private bool _disposedValue;
@@ -87,19 +78,13 @@ namespace NewAudio.Nodes
             {
                 if (disposing)
                 {
-                    _audioGeneratorBlock.Dispose();
-                    _audioGeneratorBlock = null;
+                    _genBlock.Dispose();
                 }
 
                 _disposedValue = disposing;
             }
 
             base.Dispose(disposing);
-        }
-
-        public override string DebugInfo()
-        {
-            return $"[{this}, {base.DebugInfo()}]";
         }
     }
 }

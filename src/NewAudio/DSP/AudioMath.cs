@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using NAudio.Dsp;
 using SharedMemory;
 

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using NewAudio.Core;
+using NewAudio.Devices;
+using NewAudio.Nodes;
 using Serilog;
 using VL.Lib.Basics.Resources;
 
@@ -26,10 +28,11 @@ namespace NewAudio.Block
             _logger.Information("AudioGraph initialized, id={Id}", _nextId);
         }
 
+        public IDevice OutputDevice { get; set; }
         public ulong NumberOfProcessedFrames { get; private set; }
         public double NumberOfProcessedSeconds =>NumberOfProcessedFrames/(double)SampleRate;
-        public int SampleRate => OutputBlock.OutputSampleRate;
-        public int FramesPerBlock => OutputBlock.OutputFramesPerBlock;
+        public int SampleRate => OutputBlock?.OutputSampleRate ?? 0;
+        public int FramesPerBlock => OutputBlock?.OutputFramesPerBlock ?? 0;
         public bool IsEnabled { get; private set; }
         public double TimeDuringLastProcessLoop { get; private set; }
         public HashSet<AudioBlock> AutoPulledNodes { get; } = new();
@@ -139,6 +142,7 @@ namespace NewAudio.Block
                 InitRecursive(node, traversed);
             }
         }
+        
         public void UninitializeAllNodes()
         {
             var traversed = new HashSet<AudioBlock>();
