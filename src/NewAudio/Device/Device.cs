@@ -4,6 +4,7 @@ using NewAudio.Block;
 using NewAudio.Core;
 using Serilog;
 using VL.Lib.Basics.Resources;
+using VL.NewAudio;
 
 namespace NewAudio.Devices
 {
@@ -39,7 +40,7 @@ namespace NewAudio.Devices
 
     public abstract class BaseDevice : IDevice
     {
-        private readonly IResourceHandle<AudioService> _audioService;
+        private readonly IAudioService _audioService;
         protected ILogger Logger;
         private bool _disposedValue;
         protected readonly DeviceManager DeviceManager;
@@ -62,14 +63,14 @@ namespace NewAudio.Devices
 
         protected BaseDevice(DeviceManager deviceManager)
         {
-            _audioService = Factory.GetAudioService();
+            _audioService = Resources.GetAudioService();
             DeviceManager = deviceManager;
             DeviceParams = AudioParams.Create<DeviceParams>();
             DeviceParams.OnChange += UpdateFormat;
         }
         protected void InitLogger<T>()
         {
-            Logger = _audioService.Resource.GetLogger<T>();
+            Logger = Resources.GetLogger<T>();
         }
 
         public abstract OutputDeviceBlock CreateOutput(IResourceHandle<IDevice> device, DeviceBlockFormat format);

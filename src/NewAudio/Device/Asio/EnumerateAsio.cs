@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using NAudio.Wave;
 
-namespace NewAudio.Devices
+namespace NewAudio.Devices.Asio
 {
     public class EnumerateAsio
     {
@@ -11,7 +11,9 @@ namespace NewAudio.Devices
 
             foreach (var asio in AsioOut.GetDriverNames())
             {
-                list.Add(new DeviceSelection((DeviceManager dm)=>new AsioDevice(dm, asio), "ASIO", asio, true, true));
+                list.Add(new DeviceSelection(( dm)=>
+                    new AsioDevice(dm, asio), 
+                    "ASIO", asio, true, true));
             }
 
             return list;

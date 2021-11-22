@@ -1,77 +1,121 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NewAudio.Block;
+using NewAudio.Core;
+using NewAudio.Nodes;
 using VL.Lib.Basics.Resources;
+using VL.NewAudio;
+using Xt;
 
 namespace NewAudio.Devices
 {
     public class DeviceManager : IDisposable
     {
+        public IAudioService AudioService { get; } 
         private readonly List<DeviceSelection> _deviceSelections = new();
-        private readonly List<IResourceHandle<IDevice>> _drivers = new();
+        private readonly List<IResourceHandle<IXtDevice>> _device = new();
 
+        public List<IResourceHandle<IXtDevice>> Devices => _device;
         public DeviceManager()
         {
+            AudioService = Resources.GetAudioService();
             Init();
         }
 
         public void Update()
         {
-            foreach (var handle in _drivers)
+            foreach (var handle in _device)
             {
-                handle.Resource.Update();
+                // handle.Resource.Update();
             }
         }
         
         public void Init()
         {
             _deviceSelections.Clear();
+            var systems = new[] { XtSystem.ASIO, XtSystem.WASAPI, XtSystem.DirectSound };
+            foreach (var system in systems)
+            {
+                using var list = AudioService.GetService(system).OpenDeviceList(XtEnumFlags.Output);
 
-            _deviceSelections.AddRange(EnumerateAsio.GetDeviceSelections());
+                for (int d = 0; d < list.GetCount(); d++)
+                {
+                    string id = list.GetId(d);
+                    var caps = list.GetCapabilities(id);
+                
+                    _deviceSelections.Add(new DeviceSelection(system, id, list.GetName(id), (caps & XtDeviceCaps.Input) != 0, (caps & XtDeviceCaps.Output) != 0));                
+                }                
+            }
             _deviceSelections.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.Ordinal));
+            
+            OutputDeviceDefinition.Instance.Clear();
+            foreach (var selection in GetOutputDevices())
+            {
+                OutputDeviceDefinition.Instance.AddEntry(selection.ToString(), selection);
+            }
+            InputDeviceDefinition.Instance.Clear();
+            foreach (var selection in GetInputDevices())
+            {
+                InputDeviceDefinition.Instance.AddEntry(selection.ToString(), selection);
+            }
         }
 
-        private IResourceHandle<IDevice> GetHandle(string name, AudioBlockFormat format)
+        public InputDeviceBlock GetInputDevice(InputDeviceSelection inputDeviceSelection)
         {
-            var selection = _deviceSelections.Find(d => d.ToString() == name);
-            if (selection == null)
+            var selection = (DeviceSelection)inputDeviceSelection.Tag;
+            Trace.Assert(selection.IsInputDevice);
+
+            var handle = AudioService.OpenDevice(selection.System, selection.Id);
+
+            Devices.Add(handle);
+            var mix = handle.Resource.GetMix();
+            var format = new DeviceBlockFormat();
+            if (mix != null)
             {
-                return null;
+                format.SampleRate = mix.Value.rate;                
             }
+            format.Channels = handle.Resource.GetChannelCount(false);
 
-            var provider = ResourceProvider.NewPooledSystemWide(selection.ToString(), s =>
-            {
-                var device = selection.Factory(this);
-                device.Initialize();
-                return device;
-            }).Finally(RemoveDevice);
-
-            var handle = provider.GetHandle();
-            _drivers.Add(handle);
-            return handle;
-        }
-
-        public InputDeviceBlock GetInputDevice(InputDeviceSelection inputDeviceSelection, DeviceBlockFormat format)
-        {
-            var device = GetHandle(inputDeviceSelection.Value, format);
-            if (device == null)
-            {
-                return null;
-            }
-
-            return device.Resource.CreateInput(device, format);
+            return new InputDeviceBlock(selection.Name, handle, format);
         }
 
         public OutputDeviceBlock GetOutputDevice(OutputDeviceSelection outputDeviceSelection, DeviceBlockFormat format)
         {
-            var device = GetHandle(outputDeviceSelection.Value, format);
-            if (device == null)
+            var selection = (DeviceSelection)outputDeviceSelection.Tag;
+            Trace.Assert(selection.IsOutputDevice);
+
+            var handle = AudioService.OpenDevice(selection.System, selection.Id);
+            Devices.Add(handle);
+
+            var device = handle.Resource;
+            device.SupportsAccess(true);
+            var mix = device.GetMix();
+            if (mix != null)
             {
-                return null;
+                if (format.SampleRate == 0)
+                {
+                    format.SampleRate = mix.Value.rate;
+                }
+
+                format.DefaultSample = mix.Value.sample;
             }
 
-            return device.Resource.CreateOutput(device, format);
+            if (format.Channels == 0)
+            {
+                format.Channels = device.GetChannelCount(true);
+            }
+
+            try
+            {
+                return new OutputDeviceBlock(selection.Name, handle, format);
+            }
+            catch (Exception e)
+            {
+                handle.Dispose();
+                throw;
+            }
         }
 
         public IEnumerable<DeviceSelection> GetInputDevices()
@@ -85,13 +129,13 @@ namespace NewAudio.Devices
         }
 
         
-        public void RemoveDevice(IDevice d)
+        public void RemoveDevice(IXtDevice d)
         {
-            foreach (var handle in _drivers.ToArray())
+            foreach (var handle in _device.ToArray())
             {
                 if (handle.Resource == d)
                 {
-                    _drivers.Remove(handle);
+                    _device.Remove(handle);
                     handle.Dispose();
                 }
             }
@@ -101,7 +145,7 @@ namespace NewAudio.Devices
 
         public void Dispose()
         {
-            foreach (var handle in _drivers)
+            foreach (var handle in _device)
             {
                 handle?.Dispose();
             }

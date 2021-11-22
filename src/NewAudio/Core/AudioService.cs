@@ -1,50 +1,79 @@
-﻿using Serilog;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using NewAudio.Block;
+using NewAudio.Devices;
+using Serilog;
 using Serilog.Formatting.Display;
+using VL.Core;
+using VL.Lib.Basics.Resources;
+using VL.NewAudio;
+using Xt;
 
 namespace NewAudio.Core
 {
-    public enum LifecyclePhase
+    public interface IAudioService : IDisposable
     {
-        Uninitialized,
-        Stop,
-        Play,
-        Invalid
+        IXtPlatform Platform { get; }
+
+        IXtService GetService(XtSystem system);
+        IResourceHandle<IXtDevice> OpenDevice(XtSystem system, string id);
+        void CloseDevice(string id);
+        int GetNextId();
     }
-    
-    public class AudioService
+
+    public class AudioService : IAudioService
     {
-        public AudioService()
-        {
-            _logger = new LoggerConfiguration()
-                .Enrich.WithThreadId()
-                .WriteTo.Console(new MessageTemplateTextFormatter(
-                    "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}"))
-                .WriteTo.Seq("http://localhost:5341")
-                // .WriteTo.File("NewAudio.log",
-                // outputTemplate:
-                // "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}")
-                .MinimumLevel.Debug()
-                .CreateLogger();
-            Log.Logger = _logger;
-
-            Log.Logger.Information("============================================");
-            Log.Logger.Information("Initializing Audio Service");
-        }
-
-        private readonly ILogger _logger;
+        private ILogger _logger = Resources.GetLogger<AudioService>();
         private int _nextId;
-
-        public ILogger GetLogger<T>()
+        public IXtPlatform Platform { get; }
+        
+        private Dictionary<XtSystem, IXtService> _services = new ();
+        private Dictionary<string, IResourceHandle<IXtDevice>> _devices = new ();
+        
+        public AudioService(IXtPlatform platform)
         {
-            // ReSharper disable once ContextualLoggerProblem
-            return _logger.ForContext<T>();
+            _logger.Information("============================================");
+            _logger.Information("Initializing Audio Service");
+            Platform = platform;
+        }
+        
+        public IXtService GetService(XtSystem system)
+        {
+            if (_services.ContainsKey(system))
+            {
+                return _services[system];
+            }
+            var service =  Platform.GetService(system);
+            _services[system] = service;
+
+            return service;
         }
 
+        public IResourceHandle<IXtDevice> OpenDevice(XtSystem system, string id)
+        {
+            var device = ResourceProvider.NewPooledSystemWide($"Device.{id}", _ => GetService(system).OpenDevice(id)).Finally(
+                d =>
+                {
+                    CloseDevice(id);
+                });
+            var handle = device.GetHandle();
+            _devices[id] = handle;
+            return handle;
+        }
+
+        public void CloseDevice(string id)
+        {
+            var handle = _devices[id];
+            handle?.Dispose();
+            _devices.Remove(id);
+        }
+        
         public int GetNextId()
         {
             return _nextId++;
         }
-
+        
         public void Dispose()
         {
             Dispose(true);
@@ -58,6 +87,14 @@ namespace NewAudio.Core
             {
                 if (disposing)
                 {
+                    _logger.Information("Disposing AudioService");
+                    foreach (var device in _devices.ToArray())
+                    {
+                        device.Value?.Dispose();
+                    }
+                    Platform.Dispose();
+                    _logger.Information("==============================");
+
                 }
 
                 _disposedValue = disposing;

@@ -2,13 +2,13 @@
 using NewAudio.Dsp;
 using VL.Lib.Basics.Resources;
 
-namespace NewAudio.Devices.Asio
+namespace NewAudio.Devices.Wasapi
 {
-    public class AsioOutputDevice: OutputDeviceBlock
+    public class WasapiOutputDevice : OutputDeviceBlock
     {
-        public AsioOutputDevice(IResourceHandle<IDevice> device, DeviceBlockFormat format) : base(device, format)
+        public WasapiOutputDevice(IResourceHandle<IDevice> device, DeviceBlockFormat format) : base(device, format)
         {
-            InitLogger<AsioOutputDevice>();
+            InitLogger<WasapiOutputDevice>();
             Graph.OutputBlock = this;
         }
 
@@ -16,7 +16,7 @@ namespace NewAudio.Devices.Asio
         {
             var deviceFrames = Device.FramesPerBlock;
             bool reconfigureMixingBuffer = false;
-            
+
             Device.Initialize();
 
             if (NumberOfChannels > Device.MaxNumberOfOutputChannels)
@@ -29,23 +29,6 @@ namespace NewAudio.Devices.Asio
             {
                 SetupProcessWithMixing();
             }
-
-            // _sampleBuffer = new byte[Device.FramesPerBlock * NumberOfChannels * 4];
-            // RingBuffer = new RingBuffer<byte>(NumberOfChannels * Device.FramesPerBlock * 4*2);
-            // Device.RingBuffer = RingBuffer;
-        }
-
-        protected override void EnableProcessing()
-        {
-            Device.EnableProcessing();
-        }
-
-        protected override void DisableProcessing()
-        {
-        }
-
-        protected override void Uninitialize()
-        {
         }
 
         public override AudioBuffer RenderInputs()
@@ -63,5 +46,19 @@ namespace NewAudio.Devices.Asio
 
             return InternalBuffer;
         }
+
+        protected override void EnableProcessing()
+        {
+            Device.EnableProcessing();
+        }
+
+        protected override void DisableProcessing()
+        {
+        }
+
+        protected override void Uninitialize()
+        {
+        }
+
     }
 }

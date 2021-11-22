@@ -1,6 +1,5 @@
 ﻿using System;
 using NewAudio.Core;
-using NewAudio.Devices;
 using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Block
@@ -28,11 +27,12 @@ namespace NewAudio.Block
     }
 
 
-    public abstract class InputDeviceBlock : InputBlock
+    public class InputDeviceBlock : InputBlock
     {
-        public override string Name => $"InputDeviceBlock ({Device?.Name})";
-        private IResourceHandle<IDevice> _device;
-        protected IDevice Device => _device.Resource;
+        public override string Name { get; }
+        private IResourceHandle<IXtDevice> _device;
+        protected IXtDevice Device => _device.Resource;
+        private readonly AudioBlockFormat _format;
         private  ulong _lastOverrun;
         private  ulong _lastUnderrun;
         private float _ringBufferPadding = 2;
@@ -64,11 +64,16 @@ namespace NewAudio.Block
             }
         }
 
-        protected InputDeviceBlock(IResourceHandle<IDevice> device, AudioBlockFormat format) : base(format)
+        public InputDeviceBlock(string name, IResourceHandle<IXtDevice> device, AudioBlockFormat format) : base(format)
         {
+            var s = $"InputDeviceBlock ({name})";
+            Name = s;
             _device = device;
-            
-            var deviceChannels = Device.NumberOfInputChannels;
+            _format = format;
+            InitLogger<InputDeviceBlock>();
+            Logger.Information("{Name} created", s);
+
+            var deviceChannels = _format.Channels;
             if (ChannelMode != ChannelMode.Specified)
             {
                 ChannelMode = ChannelMode.Specified;
@@ -76,9 +81,9 @@ namespace NewAudio.Block
             }
             if (deviceChannels < NumberOfChannels)
             {
-                Logger.Error("Cannot aquire {Channel} channels! Max: {DeviceChannels}", NumberOfChannels, deviceChannels);
                 NumberOfChannels = deviceChannels;
             }
+            
         }
         
         protected void MarkUnderrun()

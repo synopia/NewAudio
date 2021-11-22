@@ -17,7 +17,7 @@ namespace NewAudioTest
         public void TestAsio()
         {
             InitLogger<AsioTest>();
-            var deviceManager = Factory.GetDriverManager().Resource;
+            var deviceManager = Factory.GetDeviceManager().Resource;
             var deviceSelections = deviceManager.GetOutputDevices().ToArray();
             Logger.Information("{X}", deviceSelections);
             var d = deviceSelections[0];//.SeFirst();

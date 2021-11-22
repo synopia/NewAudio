@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Diagnostics;
 using NewAudio.Block;
 using NewAudio.Core;
 using NewAudio.Devices;
 using Serilog;
+using VL.Core;
 using VL.Lib.Basics.Resources;
 using VL.Model;
+using VL.NewAudio;
 
 namespace NewAudio.Nodes
 {
@@ -17,17 +20,19 @@ namespace NewAudio.Nodes
     }
     public class AudioEngine : AudioNode
     {
-        private readonly IResourceHandle<AudioGraph> _graph;
-        private readonly IResourceHandle<DeviceManager> _driverManager;
-
+        public IResourceHandle<DeviceManager> DeviceManager { get; }
         public readonly AudioEngineParams Params;
         public override string NodeName => "AudioEngine";
 
         public AudioEngine()
         {
-            _driverManager = Factory.GetDriverManager();
+            var audioService = Resources.GetAudioService();
+
+            DeviceManager = Resources.GetDeviceManager();
             InitLogger<AudioEngine>();
             Params = AudioParams.Create<AudioEngineParams>();
+            
+            Logger.Information("AUDIO SERVICE  {AS}", audioService.GetHashCode());
         }
 
         public bool Update(bool enable, SamplingFrequency samplingFrequency=SamplingFrequency.Hz48000, int framesPerBlock = 512)
@@ -43,7 +48,7 @@ namespace NewAudio.Nodes
                 if (Params.CurrentFrame.HasChanged)
                 {
                     Params.CurrentFrame.Commit();
-                    _driverManager.Resource.Update();
+                    DeviceManager.Resource.Update();
                 }
 
                 if (Params.HasChanged)
@@ -65,19 +70,21 @@ namespace NewAudio.Nodes
 
         public override string DebugInfo()
         {
-            return _graph.Resource.DebugInfo();
+            return Graph.DebugInfo();
         }
         private bool _disposedValue;
         private Random _random;
 
         protected override void Dispose(bool disposing)
         {
+            Trace.WriteLine($"Dispose called for AudioEngine {NodeName} ({disposing})");
+
             if (!_disposedValue)
             {
                 if (disposing)
                 {
-                    _graph.Dispose();
-                    _driverManager.Dispose();
+                    Graph.Dispose();
+                    DeviceManager.Dispose();
                 }
 
                 _disposedValue = disposing;

@@ -10,7 +10,7 @@ using NewAudio.Core;
 using NewAudio.Dsp;
 using VL.Lib.Basics.Resources;
 
-namespace NewAudio.Devices
+namespace NewAudio.Devices.Asio
 {
     public class AsioDevice : BaseDevice, IWaveProvider
     {
@@ -34,7 +34,7 @@ namespace NewAudio.Devices
         public AsioDevice(DeviceManager dm, string driverName): base(dm)
         {
             _driverName = driverName;
-            InitLogger<AsioDriver>();
+            InitLogger<AsioDevice>();
             
             DeviceParams.SampleRate.Value = 48000;
         }

@@ -15,30 +15,19 @@ namespace NewAudio.Devices
 
         public static InputDeviceSelection CreateDefault()
         {
-            return CreateDefaultBase("Null: Input");
+            return CreateDefaultBase();
         }
     }
 
-    public class InputDeviceDefinition : DynamicEnumDefinitionBase<InputDeviceDefinition>
+    public class InputDeviceDefinition : ManualDynamicEnumDefinitionBase<InputDeviceDefinition>
     {
-        protected override IReadOnlyDictionary<string, object> GetEntries()
+        protected override void Initialize()
         {
-            var devices = new Dictionary<string, object>();
-            // todo
-            var driverManager = Factory.GetDriverManager().Resource;
-
-            foreach (var device in driverManager.GetInputDevices())
-            {
-                devices[device.ToString()] = null;
-            }
-
-            return devices;
+            AddEntry("-", null);
         }
 
-        protected override IObservable<object> GetEntriesChangedObservable()
-        {
-            return HardwareChangedEvents.HardwareChanged;
-        }
+        public new static InputDeviceDefinition Instance =>
+            ManualDynamicEnumDefinitionBase<InputDeviceDefinition>.Instance;
 
         protected override bool AutoSortAlphabetically => false;
     }

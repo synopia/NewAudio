@@ -1,8 +1,8 @@
 ﻿using System;
 using NewAudio.Core;
-using NewAudio.Devices;
 using NewAudio.Dsp;
 using VL.Lib.Basics.Resources;
+using Xt;
 
 namespace NewAudio.Block
 {
@@ -68,35 +68,72 @@ namespace NewAudio.Block
 
             return false;
         }
+        public AudioBuffer RenderInputs()
+        {
+            Graph.PreProcess();
+            
+            InternalBuffer.Zero();
+            PullInputs(InternalBuffer);
+            if (CheckNotClipping())
+            {
+                InternalBuffer.Zero();
+            }
+          
+            Graph.PostProcess();
+
+            return InternalBuffer;
+        }
     }
 
     public class DeviceBlockFormat : AudioBlockFormat
     {
-        public int ChannelOffset;
+        public int SampleRate;
+        public XtSample DefaultSample;
 
+        public float BufferSize;
+        public int ChannelOffset;
+        
         public DeviceBlockFormat WithChannelOffset(int offset)
         {
             ChannelOffset = offset;
             return this;
         }
+        
     }
-    public abstract class OutputDeviceBlock : OutputBlock
+    public class OutputDeviceBlock : OutputBlock
     {
-        public override string Name => $"OutputDeviceBlock ({Device?.Name})";
-        private IResourceHandle<IDevice> _device;
-        public IDevice Device => _device.Resource;
+        public override string Name { get; }
+        private IResourceHandle<IXtDevice> _device;
+        public IXtDevice Device => _device.Resource;
         private bool _wasEnabledBeforeParamChange;
         public int ChannelOffset { get; set; }
+        public readonly DeviceBlockFormat Format;
         
-        protected OutputDeviceBlock(IResourceHandle<IDevice> device, DeviceBlockFormat format) : base(format.WithAutoEnable(false))
+        public int MaxNumberOfChannels => Device.GetChannelCount(true);
+        private int _framesPerBlock;
+        private int _sampleRate;
+
+        public override int OutputSampleRate => _sampleRate;
+        public override int OutputFramesPerBlock => _framesPerBlock;
+        
+
+        private IConvertWriter _converter;
+
+        public OutputDeviceBlock(string name, IResourceHandle<IXtDevice> device, DeviceBlockFormat format) : base(format.WithAutoEnable(false))
         {
+            var s = $"OutputDeviceBlock ({name})";
+            Name = s;
             _device = device;
-            Device.DeviceParamsWillChange += DeviceParamsWillChange;
-            Device.DeviceParamsDidChange += DeviceParamsDidChange;
+            Format = format;
+            InitLogger<OutputDeviceBlock>();
+            Logger.Information("{Name} created ({@Format})", s, Format);
+             
+            // Device.DeviceParamsWillChange += DeviceParamsWillChange;
+            // Device.DeviceParamsDidChange += DeviceParamsDidChange;
 
             ChannelOffset = format.ChannelOffset;
             
-            var deviceChannels = Device.MaxNumberOfOutputChannels;
+            var deviceChannels = format.Channels;
             if (ChannelMode != ChannelMode.Specified)
             {
                 ChannelMode = ChannelMode.Specified;
@@ -107,8 +144,87 @@ namespace NewAudio.Block
             {
                 NumberOfChannels = deviceChannels;
             }
+
+            _sampleRate = Format.SampleRate;
+            
+            var mix = new XtMix(Format.SampleRate, Format.DefaultSample);
+            _streamFormat = new XtFormat(mix, new XtChannels(0, 0, NumberOfChannels, 0));
+
+            var formatOkay = Device.SupportsFormat(_streamFormat);
+            if (!formatOkay)
+            {
+                throw new FormatException();
+            }
+
+            var sampleFormat = _streamFormat.mix.sample;
+            
+            _converter ??= sampleFormat switch
+            {
+                XtSample.Float32 => new ConvertWriter<Float32Sample, NonInterleaved>(),
+                XtSample.Int16 => new ConvertWriter<Int16LsbSample, NonInterleaved>(),
+                XtSample.Int24 => new ConvertWriter<Int24LsbSample, NonInterleaved>(),
+                XtSample.Int32 => new ConvertWriter<Int32LsbSample, NonInterleaved>(),
+                _ => throw new NotImplementedException()
+            };
+            
+            var streamParams = new XtStreamParams(false, OnBuffer, OnRun, OnRunning);
+            var deviceParams = new XtDeviceStreamParams(streamParams, _streamFormat, Format.BufferSize);
+            _stream = Device.OpenStream(deviceParams, null);
+
+            _framesPerBlock = _stream.GetFrames();
+
         }
 
+        protected override void Initialize()
+        {
+            
+        }
+
+        protected override void EnableProcessing()
+        {
+            _stream.Start();
+        }
+
+        protected override void DisableProcessing()
+        {
+            _stream.Stop();
+        }
+
+        protected override void Uninitialize()
+        {
+            _stream.Dispose();
+        }
+
+        private int OnBuffer(XtStream stream, in XtBuffer buffer, object user)
+        {
+            try
+            {
+                var renderBuffer = RenderInputs();
+                if (renderBuffer.NumberOfFrames != FramesPerBlock)
+                {
+                    return 0;
+                }
+                _converter.Write(renderBuffer.Data, buffer.output, renderBuffer.NumberOfFrames, renderBuffer.NumberOfChannels);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+                Logger.Error(exception, "Error in ASIO Thread");
+            }
+
+            return 0;
+        }
+        
+        private void OnRunning(XtStream stream, bool running, ulong error, object user)
+        {
+            
+        }
+        private void OnRun(XtStream stream, int index, object user)
+        {
+            
+        }
+        
+        
         private void DeviceParamsWillChange()
         {
             _wasEnabledBeforeParamChange = IsEnabled;
@@ -122,12 +238,13 @@ namespace NewAudio.Block
             Graph.SetEnabled(_wasEnabledBeforeParamChange);
         }
         
-        public override int OutputSampleRate => Device?.SampleRate ?? 0;
-        public override int OutputFramesPerBlock => Device?.FramesPerBlock ?? 0;
+        
 
-        public abstract AudioBuffer RenderInputs();
+     
         
         private bool _disposedValue;
+        private IXtStream _stream;
+        private XtFormat _streamFormat;
 
         protected override void Dispose(bool disposing)
         {
@@ -135,8 +252,9 @@ namespace NewAudio.Block
             {
                 if (disposing)
                 {
-                    Device.DeviceParamsWillChange -= DeviceParamsWillChange;
-                    Device.DeviceParamsDidChange -= DeviceParamsDidChange;
+                    // Device.DeviceParamsWillChange -= DeviceParamsWillChange;
+                    // Device.DeviceParamsDidChange -= DeviceParamsDidChange;
+                    _stream?.Dispose();
                     _device.Dispose();
                 }
 

@@ -41,6 +41,7 @@
         <PackageReference Include="System.Management" Version="6.0.0" />
         <PackageReference Include="System.Memory" Version="4.5.4" />
         <PackageReference Include="System.Threading.Tasks.Dataflow" Version="6.0.0" />
+        <PackageReference Include="Xt.Audio" Version="1.9.0" />
 
         <!--        <PackageReference Include="System.Management" Version="4.7.0" />-->
         <!--        <PackageReference Include="VL.Core" Version="2021.3.2" />-->
@@ -66,9 +67,10 @@
         <Compile Remove="Nodes\AudioMixer.cs" />
         <Compile Remove="Device\DirectSound\**" />
         <Compile Remove="Device\NullAudio\**" />
-        <Compile Remove="Device\Wasapi\**" />
         <Compile Remove="Device\Wave\**" />
         <Compile Remove="Device\Asio\AsioDevice__.cs" />
+        <Compile Remove="Device\Asio\**" />
+        <Compile Remove="Device\Wasapi\**" />
     </ItemGroup>
     <ItemGroup>
         <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
@@ -84,14 +86,19 @@
     <ItemGroup>
       <EmbeddedResource Remove="Device\DirectSound\**" />
       <EmbeddedResource Remove="Device\NullAudio\**" />
-      <EmbeddedResource Remove="Device\Wasapi\**" />
       <EmbeddedResource Remove="Device\Wave\**" />
+      <EmbeddedResource Remove="Device\Asio\**" />
+      <EmbeddedResource Remove="Device\Wasapi\**" />
     </ItemGroup>
     <ItemGroup>
       <None Remove="Device\DirectSound\**" />
       <None Remove="Device\NullAudio\**" />
-      <None Remove="Device\Wasapi\**" />
       <None Remove="Device\Wave\**" />
+      <None Remove="Device\Asio\**" />
+      <None Remove="Device\Wasapi\**" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Devices" />
     </ItemGroup>
 
 </Project>

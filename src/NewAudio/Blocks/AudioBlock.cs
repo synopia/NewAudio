@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using NewAudio.Core;
 using NewAudio.Dsp;
 using Serilog;
 using VL.Lib.Basics.Resources;
+using VL.NewAudio;
 
 namespace NewAudio.Block
 {
@@ -80,7 +80,7 @@ namespace NewAudio.Block
         public int NumberOfChannels
         {
             get => _numberOfChannels;
-            set
+            protected set
             {
                 if (_numberOfChannels == value)
                 {
@@ -101,7 +101,7 @@ namespace NewAudio.Block
             ProcessInPlace = true;
             _lastProcessedFrame = UInt64.MaxValue;
             
-            _graph = Factory.GetAudioGraph();
+            _graph = Resources.GetAudioGraph();
 
             if (format.Channels> 0)
             {
@@ -117,7 +117,7 @@ namespace NewAudio.Block
 
         protected void InitLogger<T>()
         {
-            Logger = Graph.GetLogger<T>();
+            Logger = Resources.GetLogger<T>();
         }
 
         public void SetEnabled(bool b)
@@ -471,7 +471,9 @@ namespace NewAudio.Block
 
         protected virtual void Dispose(bool disposing)
         {
-            Logger.Information("Dispose called for AudioNode {This} ({Disposing})", this, disposing);
+            Trace.WriteLine($"Dispose called for AudioBlock {Name} ({disposing})");
+
+            Logger.Information("Dispose called for AudioNode {This} ({Disposing})", Name, disposing);
             if (!_disposedValue)
             {
                 if (disposing)

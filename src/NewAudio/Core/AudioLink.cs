@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Threading.Tasks.Dataflow;
 using NewAudio.Block;
-using Serilog;
 using VL.Lib.Basics.Resources;
+using VL.NewAudio;
 
 namespace NewAudio.Core
 {
@@ -24,7 +23,7 @@ namespace NewAudio.Core
 
         public AudioLink() 
         {
-            _graph = Factory.GetAudioGraph();
+            _graph = Resources.GetAudioGraph();
             Pin = new AudioPin();
         }
 
@@ -42,7 +41,8 @@ namespace NewAudio.Core
             {
                 if (disposing)
                 {
-                    
+                    Pin.Dispose();
+                    _graph.Dispose();
                 }
 
                 _disposedValue = disposing;

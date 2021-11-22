@@ -49,6 +49,8 @@
         <Compile Remove="MixBufferTest.cs" />
         <Compile Remove="AudioBufferOutTest.cs" />
         <Compile Remove="LifecycleTests.cs" />
+        <Compile Remove="WasapiTest.cs" />
+        <Compile Remove="ASIOTest.cs" />
     </ItemGroup>
     <ItemGroup>
         <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">

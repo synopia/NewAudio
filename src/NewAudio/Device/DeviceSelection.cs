@@ -1,28 +1,36 @@
 ﻿using System;
+using Xt;
 
 namespace NewAudio.Devices
 {
     public class DeviceSelection
     {
         public string Name { get; }
-        public Func<DeviceManager, IDevice> Factory { get; }
-        public string NamePrefix { get; }
+        public string Id { get; }
+        public XtSystem System { get; }
 
         public bool IsInputDevice { get; }
         public bool IsOutputDevice { get; }
 
-        public DeviceSelection(Func<DeviceManager, IDevice> factory, string namePrefix, string name, bool isInputDevice, bool isOutputDevice)
+        public DeviceSelection(XtSystem system, string id, string name, bool isInputDevice, bool isOutputDevice)
         {
-            Factory = factory;
+            Id = id;
+            System = system;
             Name = name;
-            NamePrefix = namePrefix;
             IsInputDevice = isInputDevice;
             IsOutputDevice = isOutputDevice;
         }
 
         public override string ToString()
         {
-            return $"{NamePrefix}: {Name}";
+            var type = System switch
+            {
+                XtSystem.DirectSound => "DirectSound",
+                XtSystem.ASIO => "ASIO",
+                XtSystem.WASAPI => "Wasapi",
+                _ => ""
+            };
+            return $"{type}: {Name}";
         }
     }
 }

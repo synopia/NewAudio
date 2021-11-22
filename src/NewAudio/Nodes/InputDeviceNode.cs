@@ -5,6 +5,7 @@ using NewAudio.Devices;
 using VL.Core;
 using VL.Lib.Basics.Resources;
 using VL.Model;
+using VL.NewAudio;
 using Node = VL.MutableModel.Node;
 
 namespace NewAudio.Nodes
@@ -17,7 +18,8 @@ namespace NewAudio.Nodes
     public class InputDeviceNode : AudioNode
     {
         public override string NodeName => "Input";
-        private IResourceHandle<DeviceManager> _driverManager;
+        public IResourceHandle<DeviceManager> DeviceManager { get; }
+
         public InputDeviceBlock Device { get; private set; }
         public InputDeviceParams Params { get; }
 
@@ -25,7 +27,7 @@ namespace NewAudio.Nodes
         {
             
             InitLogger<InputDeviceNode>();
-            _driverManager = Factory.GetDriverManager();
+            DeviceManager = Resources.GetDeviceManager();
             Params = AudioParams.Create<InputDeviceParams>();
         }
         public AudioLink Update(InputDeviceSelection deviceSelection)
@@ -45,7 +47,7 @@ namespace NewAudio.Nodes
 
         public void StartDevice()
         {
-            Device = _driverManager.Resource.GetInputDevice(Params.Device.Value, new DeviceBlockFormat());
+            Device = DeviceManager.Resource.GetInputDevice(Params.Device.Value);
             
         }
 
@@ -69,8 +71,8 @@ namespace NewAudio.Nodes
                 if (disposing)
                 {
                     StopDevice();
-                    _driverManager.Dispose();
                     Output.Dispose();
+                    DeviceManager.Dispose();
                 }
 
                 _disposedValue = disposing;

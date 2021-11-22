@@ -48,7 +48,7 @@ namespace NewAudioTest
         {
             *((float*) buffer + n) = value;
         }
-        public unsafe void ConvertFrom(IntPtr[] source, float[] target,  int numFrames, int numChannels, AsioSampleType sampleType)
+        public unsafe void ConvertFrom(IntPtr source, float[] target,  int numFrames, int numChannels, AsioSampleType sampleType)
         {
             Func<IntPtr, int, float> getInputSample;
             if (sampleType == AsioSampleType.Int32LSB)
@@ -66,11 +66,11 @@ namespace NewAudioTest
             {
                 for (int inputChannel = 0; inputChannel < numChannels; inputChannel++)
                 {
-                    target[offset] = getInputSample(source[inputChannel], n);
+                    target[offset] = getInputSample(source+inputChannel, n);
                 }
             }
         }
-        public unsafe void ConvertTo(float[] source, IntPtr[] target, int numFrames, int numChannels, AsioSampleType sampleType)
+        public unsafe void ConvertTo(float[] source, IntPtr target, int numFrames, int numChannels, AsioSampleType sampleType)
         {
             Action<IntPtr, int, float> setOutputSample;
             if (sampleType == AsioSampleType.Int32LSB)
@@ -88,7 +88,7 @@ namespace NewAudioTest
             {
                 for (int outputChannel = 0; outputChannel < numChannels; outputChannel++)
                 {
-                    setOutputSample(target[outputChannel], n, source[offset++]);
+                    setOutputSample(target+outputChannel, n, source[offset++]);
                 }
             }
         }
@@ -97,16 +97,20 @@ namespace NewAudioTest
     [DisassemblyDiagnoser()]
     public class BenchTest
     {
-        private Converter<Float32Sample> _f32 = new ();
-        private Converter<Int16LsbSample> _c16 = new ();
-        private Converter<Int24LsbSample> _c24 = new ();
-        private Converter<Int32LsbSample> _c32 = new ();
+        private ConvertWriter<Float32Sample, Interleaved> _f32i = new ();
+        private ConvertWriter<Int16LsbSample, Interleaved> _i16i = new ();
+        private ConvertWriter<Int24LsbSample, Interleaved> _i24i = new ();
+        private ConvertWriter<Int32LsbSample, Interleaved> _i32i = new ();
+        private ConvertWriter<Float32Sample, NonInterleaved> _f32n = new ();
+        private ConvertWriter<Int16LsbSample, NonInterleaved> _i16n = new ();
+        private ConvertWriter<Int24LsbSample, NonInterleaved> _i24n = new ();
+        private ConvertWriter<Int32LsbSample, NonInterleaved> _i32n = new ();
         private Baseline _baseline = new Baseline();
 
         private float[] _source;
-        private IntPtr[] _target;
-        private float[][] _buffers;
-        private GCHandle[] _handles;
+        private IntPtr _target;
+        private float[] _buffers;
+        private GCHandle _handles;
         private int _frames;
         private int _channels;
 
@@ -115,15 +119,10 @@ namespace NewAudioTest
             _frames = 1024;
             _channels = 2;
             _source = new float[_frames * _channels];
-            _target = new IntPtr[_channels];
-            _handles = new GCHandle[_channels];
-            _buffers = new float[_channels][];
-            for (int c = 0; c < _channels; c++)
-            {
-                _buffers[c] = new float[_frames];
-                _handles[c] = GCHandle.Alloc(_buffers[c], GCHandleType.Pinned);
-                _target[c] = _handles[c].AddrOfPinnedObject();
-            }
+            // _target = new IntPtr();
+            _buffers = new float[_channels*_frames];
+            _handles = GCHandle.Alloc(_buffers, GCHandleType.Pinned);
+            _target = _handles.AddrOfPinnedObject();
 
         }
 
@@ -142,16 +141,28 @@ namespace NewAudioTest
 
         [Benchmark]
         public void FFloat() =>
-            _f32.ConvertTo(_source, _target, _frames, 0, _channels);
+            _f32i.Write(_source, _target, _frames,  _channels);
         [Benchmark]
         public void FInt16() =>
-            _c16.ConvertTo(_source, _target, _frames,0,  _channels);
+            _i16i.Write(_source, _target, _frames,  _channels);
         [Benchmark]
         public void FInt24() =>
-            _c24.ConvertTo(_source, _target, _frames, 0, _channels);
+            _i24i.Write(_source, _target, _frames,  _channels);
         [Benchmark]
         public void FInt32() =>
-            _c32.ConvertTo(_source, _target, _frames, 0, _channels);
+            _i32i.Write(_source, _target, _frames,  _channels);
+        [Benchmark]
+        public void FFloatNI() =>
+            _f32n.Write(_source, _target, _frames,  _channels);
+        [Benchmark]
+        public void FInt16NI() =>
+            _i16n.Write(_source, _target, _frames,  _channels);
+        [Benchmark]
+        public void FInt24NI() =>
+            _i24n.Write(_source, _target, _frames,  _channels);
+        [Benchmark]
+        public void FInt32NI() =>
+            _i32n.Write(_source, _target, _frames,  _channels);
         
         [Test]
         public void Test()

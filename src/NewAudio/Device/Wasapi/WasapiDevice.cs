@@ -1,198 +1,110 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
+using NewAudio.Block;
+using NewAudio.Dsp;
+using VL.Lib.Basics.Resources;
 
-namespace NewAudio.Devices
+namespace NewAudio.Devices.Wasapi
 {
-    public class WasapiDevice : BaseDevice
+    public class WasapiDevice : BaseDevice, IWaveProvider
     {
-        private readonly string _deviceId;
-        private WasapiCapture _capture;
-        private bool _firstLoop = true;
+        private string _name;
+        public override string Name => _name;
+        private readonly string _wasapiId;
+        public string Id => _wasapiId;
+        private readonly List<OutputDeviceBlock> _outputs = new();
+        private readonly List<InputDeviceBlock> _inputs = new();
+ 
+        public override bool IsInitialized { get; protected set; }
+        public override bool IsProcessing { get; protected  set; }
+        public WaveFormat WaveFormat { get; private set; }
+        private IConverter _converter;
+        private WasapiOut _wasapiOut;
+        private MMDevice _device;
 
-        private WasapiLoopbackCapture _loopback;
-        private WasapiOut _wavePlayer;
-
-        private byte[] _temp;
-        private int _tempPos;
-
-        public WasapiDevice(string name, bool isInputDevice, bool isLoopback, string deviceId)
+        public WasapiDevice(DeviceManager deviceManager, string wasapiId, string name) : base(deviceManager)
         {
+            _wasapiId = wasapiId;
+            _name = name;
             InitLogger<WasapiDevice>();
-            Logger.Information("CREATE: WasapiDevice ({Name})", name);
-            Name = name;
-            IsInputDevice = isInputDevice;
-            IsOutputDevice = !isInputDevice;
-            IsLoopback = isLoopback;
-            _deviceId = deviceId;
+            DeviceParams.SampleRate.Value = 48000;
+
         }
 
-        private bool IsLoopback { get; }
-
-        protected override bool Init()
+        public int Read(byte[] buffer, int offset, int count)
         {
-            _firstLoop = true;
-            if (IsOutputDevice && IsPlaying)
-            {
-                var device = new MMDeviceEnumerator().GetDevice(_deviceId);
-                _wavePlayer = new WasapiOut(device, AudioClientShareMode.Shared, true, PlayingParams.Latency.Value);
-                _wavePlayer.Init(AudioDataProvider);
-                _wavePlayer.Play();
-                RecordingParams.Active.Value = false;
-                PlayingParams.Active.Value = true;
-            } else if (IsInputDevice && IsRecording)
-            {
-                if (IsLoopback)
-                {
-                    var device = new MMDeviceEnumerator().GetDevice(_deviceId);
-                    _loopback = new WasapiLoopbackCapture(device);
-                    _loopback.DataAvailable += DataAvailable;
-                    // todo
-                    // _recordingConfig.AudioFormat = _recordingConfig.AudioFormat.WithWaveFormat(_loopback.WaveFormat);
-                    _loopback.StartRecording();
-                    RecordingParams.WaveFormat.Value = _loopback.WaveFormat;
-                }
-                else 
-                {
-                    var device = new MMDeviceEnumerator().GetDevice(_deviceId);
-                    _capture = new WasapiCapture(device)
-                    {
-                        WaveFormat = RecordingParams.AudioFormat.WaveFormat
-                    };
-                    _capture.DataAvailable += DataAvailable;
-                    _capture.StartRecording();
-                    RecordingParams.WaveFormat.Value = _capture.WaveFormat;
-                }
-                RecordingParams.Active.Value = true;
-                PlayingParams.Active.Value = false;
-            }
-
-            return true;
+            Logger.Information("Read {offset} {count}", offset, count);
+            return count - offset;
         }
 
-        protected override bool Stop()
+        public override OutputDeviceBlock CreateOutput(IResourceHandle<IDevice> device, DeviceBlockFormat format)
         {
-            CancellationTokenSource?.Cancel();
-            if (_loopback != null)
-            {
-                _loopback.StopRecording();
-                _loopback.DataAvailable -= DataAvailable;
-                _loopback.Dispose();
-            }
-
-            if (_capture != null)
-            {
-                _capture.StopRecording();
-                _capture.DataAvailable -= DataAvailable;
-                _capture.Dispose();
-            }
-
-            if (_wavePlayer != null)
-            {
-                _wavePlayer.Stop();
-                _wavePlayer.Dispose();
-            }
-
-            return true;
+            var output = new WasapiOutputDevice(device, format);
+            _outputs.Add(output);
+            return output;
         }
 
-        public override string DebugInfo()
+        public override InputDeviceBlock CreateInput(IResourceHandle<IDevice> device, DeviceBlockFormat format)
         {
-            var info = IsPlaying ? $"{_wavePlayer?.PlaybackState}" :
-                IsLoopback ? $"{_loopback?.CaptureState}" : $"{_capture?.CaptureState}";
-            return $"[{this}, {info}, {base.DebugInfo()}]";
+            throw new System.NotImplementedException();
         }
 
-        private void DataAvailable(object sender, WaveInEventArgs evt)
+        protected override void UpdateFormat()
         {
-            if (_firstLoop)
-            {
-                Logger.Information("Wasapi AudioIn Thread started");
-                _firstLoop = false;
-                _temp = new byte[RecordingParams.AudioFormat.BufferSize*RecordingParams.AudioFormat.BytesPerSample];
-                _tempPos = 0;
-            }
-
-            // AudioService.Instance.Flow.PostRequest(new AudioDataRequestMessage(evt.BytesRecorded/4));
-            Logger.Verbose("DataAvailable {Bytes}", evt.BytesRecorded / 4);
-
-            try
-            {
-                var remaining = evt.BytesRecorded;
-                var pos = 0;
-                var token = CancellationTokenSource.Token;
-
-                while (pos < evt.BytesRecorded && !token.IsCancellationRequested )
-                {
-                    var toCopy = Math.Min(_temp.Length - _tempPos, remaining);
-                    if (toCopy < 0 || toCopy > _temp.Length)
-                    {
-                        throw new Exception("Wrong writing position! Multiple threads are operating?");
-                    }
-
-                    Array.Copy(evt.Buffer, pos, _temp, _tempPos, toCopy);
-
-                    _tempPos += toCopy;
-                    pos += toCopy;
-                    remaining -= toCopy;
-
-                    if (_tempPos == _temp.Length)
-                    {
-                        
-                        OnDataReceived(_temp);
-                        // var written = RecordingBuffer.Write(_temp);
-                        _tempPos = 0;
-                        // if (written != _temp.Length && !GenerateSilence)
-                        // {
-                            // Logger.Warning("Wrote to few bytes ({Wrote}, expected: {Expected})", written,
-                                // _temp.Length);
-                        // }
-                    }
-                }
-
-                /*
-                if (!GenerateSilence)
-                {
-                    if (pos != evt.BytesRecorded && !token.IsCancellationRequested)
-                    {
-                        Logger.Warning("pos!=buf {Pos}!={Read}", pos, evt.BytesRecorded);
-                    }
-                }
-            */
-            }
-            catch (Exception e)
-            {
-                Logger.Error(e, "Exception happened in Wasapi Reader");
-                throw;
-            }
+            throw new System.NotImplementedException();
         }
 
-
-        private bool _disposedValue;
-
-        protected override void Dispose(bool disposing)
+        public override void Initialize()
         {
-            if (!_disposedValue)
+            if (IsInitialized)
             {
-                if (disposing)
-                {
-                    Stop();
-
-                    _loopback = null;
-                    _capture = null;
-                    _wavePlayer = null;
-                }
-
-                _disposedValue = disposing;
+                return;
             }
-
-            base.Dispose(disposing);
+            _device = new MMDeviceEnumerator().GetDevice(_wasapiId);
+            _wasapiOut = new WasapiOut(_device, AudioClientShareMode.Shared, true, 0);
+            WaveFormat = _wasapiOut.OutputWaveFormat;
+            _wasapiOut.Init(this);
+            DeviceParams.FramesPerBlock.Value = 512;
+            MaxNumberOfOutputChannels = WaveFormat.Channels;
+            MaxNumberOfInputChannels = 0;
         }
 
-        public override string ToString()
+        public override void Uninitialize()
         {
-            return Name;
+            if (!IsInitialized)
+            {
+                return;
+            }
+            _wasapiOut.Stop();
+            _wasapiOut.Dispose();
+            _wasapiOut = null;
+
+            IsInitialized = false;
+        }
+
+        public override void EnableProcessing()
+        {
+            if (IsProcessing)
+            {
+                return;
+            }
+            NumberOfInputChannels = 0;
+            NumberOfOutputChannels = 2;
+            Logger.Information("{Buffer}", _device.AudioClient.BufferSize);
+            _wasapiOut.Play();
+            IsProcessing = true;
+            Logger.Information("Started Wasapi {Driver}, {SampleRate}, {Frames}, in: {In}, out: {Out}", Name, WaveFormat.SampleRate, DeviceParams.FramesPerBlock.Value, NumberOfInputChannels, NumberOfOutputChannels);
+
+        }
+
+        public override void DisableProcessing()
+        {
+            if (!IsProcessing)
+            {
+                return;
+            }
+            _wasapiOut.Stop();
         }
     }
 }

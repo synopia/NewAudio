@@ -1,23 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NewAudio.Block;
 using NewAudio.Core;
 using Serilog;
+using VL.Core;
 using VL.Lang.Helper;
 using VL.Lib.Basics.Resources;
 using VL.Lib.Collections;
+using VL.NewAudio;
 
 namespace NewAudio.Nodes
 {
     public abstract class AudioNode: IDisposable
     {
+        public IAudioService AudioService { get; } 
+        
         private readonly IResourceHandle<AudioGraph> _graph;
         public AudioGraph Graph => _graph.Resource;
         protected ILogger Logger { get; private set; }
         public abstract string NodeName { get; }
 
-        public readonly AudioLink Output = new();
+        public readonly AudioLink Output;
 
         private AudioBlock _audioBlock;
         protected AudioBlock AudioBlock
@@ -35,6 +40,7 @@ namespace NewAudio.Nodes
                 {
                     inputs = _audioBlock.Inputs;
                     _audioBlock.Dispose();
+                    _audioBlock = null;
                 }
                 if (value != null)
                 {
@@ -60,12 +66,15 @@ namespace NewAudio.Nodes
 
         protected AudioNode()
         {
-            _graph = Factory.GetAudioGraph();
+            AudioService = Resources.GetAudioService();
+            Trace.WriteLine($"AUDIO SERVICE  {AudioService?.GetHashCode()}");
+            _graph = Resources.GetAudioGraph();
+            // Output = new();
         }
 
         protected void InitLogger<T>()
         {
-            Logger = Graph.GetLogger<T>();
+            Logger = Resources.GetLogger<T>();
             Logger.Information("Started AudioNode {Name}", NodeName);
 
         }
@@ -107,13 +116,13 @@ namespace NewAudio.Nodes
 
         protected virtual void Dispose(bool disposing)
         {
-            Logger.Information("Dispose called for AudioNode {This} ({Disposing})", this, disposing);
+            Trace.WriteLine($"Dispose called for AudioNode {NodeName} ({disposing})");
+            Logger.Information("Dispose called for AudioNode {This} ({Disposing})", NodeName, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
                 {
                     _graph.Dispose();
-                    
                 }
 
                 _disposedValue = true;

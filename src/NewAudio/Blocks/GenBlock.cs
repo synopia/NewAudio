@@ -24,7 +24,7 @@ namespace NewAudio.Block
             Init();
         }
 
-        protected override void Initialize()
+        protected override void EnableProcessing()
         {
             _period = 1.0f / SampleRate;
         }

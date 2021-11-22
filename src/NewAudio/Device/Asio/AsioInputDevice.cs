@@ -1,7 +1,7 @@
 ﻿using NewAudio.Block;
 using VL.Lib.Basics.Resources;
 
-namespace NewAudio.Devices
+namespace NewAudio.Devices.Asio
 {
     public class AsioInputDevice: InputDeviceBlock
     {

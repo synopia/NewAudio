@@ -4,26 +4,24 @@ using System.Diagnostics;
 using System.Threading;
 using NewAudio.Core;
 using NewAudio.Devices;
-using NewAudio.Nodes;
 using Serilog;
-using VL.Lib.Basics.Resources;
+using VL.NewAudio;
 
 namespace NewAudio.Block
 {
 
+    
     public class AudioGraph : IDisposable
     {
-        private readonly IResourceHandle<AudioService> _audioService;
-        private readonly ILogger _logger;
+        private readonly IAudioService _audioService = Resources.GetAudioService();
+        private readonly ILogger _logger = Resources.GetLogger<AudioGraph>();
         
         private int _nextId;
 
 
         public AudioGraph()
         {
-            _audioService = Factory.GetAudioService();
-            _logger = _audioService.Resource.GetLogger<AudioGraph>();
-            _nextId = (_audioService.Resource.GetNextId()) << 10;
+            _nextId = (_audioService.GetNextId()) << 10;
             _logger.Information("-----------------------------------------");
             _logger.Information("AudioGraph initialized, id={Id}", _nextId);
         }
@@ -31,8 +29,8 @@ namespace NewAudio.Block
         public IDevice OutputDevice { get; set; }
         public ulong NumberOfProcessedFrames { get; private set; }
         public double NumberOfProcessedSeconds =>NumberOfProcessedFrames/(double)SampleRate;
-        public int SampleRate => OutputBlock?.OutputSampleRate ?? 0;
-        public int FramesPerBlock => OutputBlock?.OutputFramesPerBlock ?? 0;
+        public int SampleRate => _outputBlock?.OutputSampleRate ?? 0;
+        public int FramesPerBlock => _outputBlock?.OutputFramesPerBlock ?? 0;
         public bool IsEnabled { get; private set; }
         public double TimeDuringLastProcessLoop { get; private set; }
         public HashSet<AudioBlock> AutoPulledNodes { get; } = new();
@@ -50,8 +48,8 @@ namespace NewAudio.Block
             {
                 if (_outputBlock != null)
                 {
-                    if (value != null && (_outputBlock.FramesPerBlock != value.FramesPerBlock ||
-                                          _outputBlock.SampleRate != value.SampleRate))
+                    if (value != null && (_outputBlock.OutputFramesPerBlock != value.OutputFramesPerBlock ||
+                                          _outputBlock.OutputSampleRate != value.OutputSampleRate))
                     {
                         UninitializeAllNodes();
                     }
@@ -66,11 +64,6 @@ namespace NewAudio.Block
                     InitializeAllNodes();
                 }
             }
-        }
-
-        public ILogger GetLogger<T>()
-        {
-            return _audioService.Resource.GetLogger<T>();
         }
 
         public int GetNextId()

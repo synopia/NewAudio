@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NewAudio.Core;
 using VL.Lib;
 using VL.Lib.Collections;
+using Xt;
 
 namespace NewAudio.Devices
 {
@@ -15,32 +16,20 @@ namespace NewAudio.Devices
 
         public static OutputDeviceSelection CreateDefault()
         {
-            return CreateDefaultBase("Null: Output");
+            return CreateDefaultBase();
         }
     }
 
 
-    public class OutputDeviceDefinition : DynamicEnumDefinitionBase<OutputDeviceDefinition>
+    public class OutputDeviceDefinition : ManualDynamicEnumDefinitionBase<OutputDeviceDefinition>
     {
-        protected override IReadOnlyDictionary<string, object> GetEntries()
+        protected override void Initialize()
         {
-            var devices = new Dictionary<string, object>();
-            // todo
-            var driverManager = Factory.GetDriverManager().Resource;
-
-            foreach (var device in driverManager.GetOutputDevices())
-            {
-                devices[device.ToString()] = null;
-            }
-
-            return devices;
+            AddEntry("-", null);
         }
 
-        protected override IObservable<object> GetEntriesChangedObservable()
-        {
-            return HardwareChangedEvents.HardwareChanged;
-        }
-
+        public new static OutputDeviceDefinition Instance =>
+            ManualDynamicEnumDefinitionBase<OutputDeviceDefinition>.Instance;
         protected override bool AutoSortAlphabetically => false;
     }
 }
