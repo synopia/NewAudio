@@ -50,29 +50,7 @@
         <!--        <PackageReference Include="VL.CoreLib" Version="2021.3.2" />-->
     </ItemGroup>
     <ItemGroup>
-        <Compile Remove="Nodes\SinGen.cs" />
-        <Compile Remove="Nodes\AudioResampling.cs" />
-        <Compile Remove="Nodes\JoinAudioLinks.cs" />
-        <Compile Remove="Nodes\RingBuffer.cs" />
-        <Compile Remove="Core\AudioParam.cs" />
-        <Compile Remove="Blocks\RingBufferBlock.cs" />
-        <Compile Remove="Nodes\AudioDrivers.cs" />
-        <Compile Remove="Devices\DirectSoundDevice.cs" />
-        <Compile Remove="Devices\DirectSoundDriver.cs" />
-        <Compile Remove="Devices\WaveDevice.cs" />
-        <Compile Remove="Devices\WaveDriver.cs" />
-        <Compile Remove="Core\Lifecycle.cs" />
-        <Compile Remove="Device\BaseDevice.cs" />
-        <Compile Remove="Nodes\AudioBufferOut.cs" />
-        <Compile Remove="Nodes\AudioLoopRegion.cs" />
-        <Compile Remove="Nodes\FFT.cs" />
-        <Compile Remove="Nodes\AudioMixer.cs" />
-        <Compile Remove="Device\DirectSound\**" />
-        <Compile Remove="Device\NullAudio\**" />
-        <Compile Remove="Device\Wave\**" />
-        <Compile Remove="Device\Asio\AsioDevice__.cs" />
-        <Compile Remove="Device\Asio\**" />
-        <Compile Remove="Device\Wasapi\**" />
+     
     </ItemGroup>
     <ItemGroup>
         <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
@@ -86,21 +64,11 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-      <EmbeddedResource Remove="Device\DirectSound\**" />
-      <EmbeddedResource Remove="Device\NullAudio\**" />
-      <EmbeddedResource Remove="Device\Wave\**" />
-      <EmbeddedResource Remove="Device\Asio\**" />
-      <EmbeddedResource Remove="Device\Wasapi\**" />
+      <Compile Remove="Nodes\AudioResampling.cs" />
+      <Compile Remove="Nodes\AudioBufferOut.cs" />
+      <Compile Remove="Nodes\AudioLoopRegion.cs" />
+      <Compile Remove="Nodes\AudioMixer.cs" />
+      <Compile Remove="Nodes\FFT.cs" />
     </ItemGroup>
-    <ItemGroup>
-      <None Remove="Device\DirectSound\**" />
-      <None Remove="Device\NullAudio\**" />
-      <None Remove="Device\Wave\**" />
-      <None Remove="Device\Asio\**" />
-      <None Remove="Device\Wasapi\**" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Devices" />
-    </ItemGroup>
-
+   
 </Project>
