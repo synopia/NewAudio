@@ -404,6 +404,7 @@ namespace NewAudio.Block
         protected void NotifyConnectionsDidChange()
         {
             // todo inform context
+            Graph.ConnectionsDidChange(this);
         }
 
         protected bool InputChannelsAreUnequal()

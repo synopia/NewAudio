@@ -79,6 +79,7 @@ namespace NewAudio.Devices
         private AudioBuffer _internalOutputBuffer;
         private XtBufferSize _bufferSize;
         private float _chosenBufferSize;
+        private bool _wasEnabledBeforeFormatChange;
 
         public bool IsDisposed => _disposedValue;
 
@@ -90,6 +91,8 @@ namespace NewAudio.Devices
 
         public void UpdateFormat(DeviceFormat deviceFormat)
         {
+            _wasEnabledBeforeFormatChange = IsProcessing;
+            
             DeviceFormatWillChange?.Invoke();
             DisableProcessing();
             Uninitialize();
@@ -161,7 +164,10 @@ namespace NewAudio.Devices
             DeviceFormatDidChange?.Invoke();
 
             Initialize();
-            EnableProcessing();
+            if (_wasEnabledBeforeFormatChange)
+            {
+                EnableProcessing();
+            }
         }
 
         public void Initialize()
@@ -173,12 +179,7 @@ namespace NewAudio.Devices
 
             if (!_formatValid)
             {
-                UpdateFormat(new DeviceFormat()
-                    { SampleRate = 44100, BufferSizeMs = 100, SampleType = XtSample.Float32 });
-                if (!_formatValid)
-                {
-                    return;
-                }
+               return;
             }
 
             _stream = XtDevice.OpenStream(_deviceParams, null);
@@ -275,11 +276,7 @@ namespace NewAudio.Devices
 
             if (!IsInitialized)
             {
-                Initialize();
-                if (!IsInitialized)
-                {
-                    return;
-                }
+                return;
             }
 
             _stream.Start();

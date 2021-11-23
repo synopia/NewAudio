@@ -36,7 +36,7 @@ namespace NewAudio.Nodes
             Logger.Information("AUDIO SERVICE  {AS}", audioService.GetHashCode());
         }
 
-        public bool Update(bool enable, out int framesPerBlock, SamplingFrequency samplingFrequency=SamplingFrequency.Hz48000, float bufferSize=10)
+        public bool Update(bool enable, out int framesPerBlock, SamplingFrequency samplingFrequency=SamplingFrequency.Hz48000, float bufferSize=50)
         {
             try
             {
@@ -49,19 +49,14 @@ namespace NewAudio.Nodes
                 if (Params.CurrentFrame.HasChanged)
                 {
                     Params.CurrentFrame.Commit();
+                    _framesPerBlock = DeviceManager.Resource.UpdateFormat(Params.SamplingFrequency, Params.BufferSize);
                 }
-                
-                
-                if (Params.HasChanged)
+
+                if (Params.Enabled.HasChanged)
                 {
-                    Params.Commit();
-                    _framesPerBlock = DeviceManager.Resource.UpdateFormat(new DeviceFormat()
-                    {
-                        SampleRate = (int)Params.SamplingFrequency.Value,
-                        BufferSizeMs = Params.BufferSize.Value
-                    });
+                    Params.Enabled.Commit();
+                    DeviceManager.Resource.SetEnabled(Params.Enabled.Value);
                     
-                    Graph.SetEnabled(Params.Enabled.Value);
                 }
 
                 framesPerBlock = _framesPerBlock;

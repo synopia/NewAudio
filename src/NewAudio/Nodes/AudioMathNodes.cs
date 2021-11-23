@@ -33,17 +33,13 @@ namespace NewAudio.Nodes
             Params.Value.Value = value;
             Params.Enable.Value = enable;
 
-            if (Params.Operation.HasChanged || _mathBlock==null)
+            if (Params.Operation.HasChanged)
             {
-                if (_mathBlock != null)
-                {
-                    _mathBlock.Dispose();
-                }
+                Params.Operation.Commit();
 
                 if (operation == MathOperation.Multiply)
                 {
-                    _mathBlock = new MultiplyBlock(new AudioBlockFormat(){AutoEnable = true});
-                    
+                    _mathBlock = new MultiplyBlock(new AudioBlockFormat(){AutoEnable = Params.Enable.Value});
                 }
 
                 AudioBlock = _mathBlock;
@@ -51,16 +47,22 @@ namespace NewAudio.Nodes
 
             if (Params.Value.HasChanged && _mathBlock!=null )
             {
+                Params.Value.Commit();
                 _mathBlock.Params.Value.Value = Params.Value.Value;
             }
 
-            if (Params.HasChanged)
+            if (Params.Input.HasChanged && AudioBlock!=null)
             {
-                Params.Commit();
+                Params.Input.Commit();
                 Params.Input.Value?.Pin.Connect(AudioBlock);
-                _mathBlock?.SetEnabled(Params.Enable.Value);
             }
 
+            if (Params.Enable.HasChanged && _mathBlock != null)
+            {
+                Params.Enable.Commit();
+                _mathBlock.SetEnabled(Params.Enable.Value);
+            }
+            
             enabled = _mathBlock?.IsEnabled ?? false;
             return Output;
         }

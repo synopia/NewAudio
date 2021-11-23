@@ -35,12 +35,13 @@ namespace NewAudio.Core
        
         private Dictionary<XtSystem, IXtService> _services = new ();
         private Dictionary<string, IResourceHandle<IXtDevice>> _xtDevices = new ();
+
+        private Message _currentMessage;
         
         public AudioService(IXtPlatform platform)
         {
             platform.OnError += (msg) =>
             {
-                VLSession.Instance.UserRuntime.AddUserRuntimeMessage(new Message(MessageSeverity.Error, msg));
                 _logger.Error("Error: {Message}", msg);
             };
             _logger.Information("============================================");
@@ -48,6 +49,7 @@ namespace NewAudio.Core
             Platform = platform;
             InitSelectionEnums();
             _logger.Information("Found {Inputs} input and {Outputs} output devices", GetInputDevices().Count(), GetOutputDevices().Count());
+            _currentMessage = new Message(MessageSeverity.Error, "Audio ON");
         }
         
         public IXtService GetService(XtSystem system)
@@ -114,14 +116,7 @@ namespace NewAudio.Core
             var xtHandle = xtDevice.GetHandle();
             _xtDevices[id] = xtHandle;
             IResourceProvider<Device> device;
-            try
-            {
-                device = ResourceProvider.NewPooledPerApp(NodeContext.Current, key, _ => new Device(name,xtHandle));
-            }
-            catch (Exception e)
-            {
-                device = ResourceProvider.NewPooledSystemWide( key, _ => new Device(name, xtHandle));
-            }
+            device = ResourceProvider.NewPooledSystemWide( key, _ => new Device(name, xtHandle));
             return device.GetHandle();
         }
 

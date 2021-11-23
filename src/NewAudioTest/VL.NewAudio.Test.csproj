@@ -41,32 +41,19 @@
         <PackageReference Include="NAudio.WinMM" Version="2.0.1" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Remove="WaveInputTest.cs" />
-        <Compile Remove="AudioParamTest.cs" />
-        <Compile Remove="Internal\RingBufferTest.cs" />
-        <Compile Remove="AudioGeneratorBlockTest.cs" />
-        <Compile Remove="BaseDeviceTest.cs" />
-        <Compile Remove="DevicesTest.cs" />
-        <Compile Remove="FFTTest.cs" />
-        <Compile Remove="InOutBlockTest.cs" />
-        <Compile Remove="MixBufferTest.cs" />
-        <Compile Remove="AudioBufferOutTest.cs" />
-        <Compile Remove="LifecycleTests.cs" />
-        <Compile Remove="WasapiTest.cs" />
-    </ItemGroup>
-    <ItemGroup>
-        <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0622-gd89e9c339e\lib\VL.Core.dll</HintPath>
-        </Reference>
-        <Reference Include="VL.CoreLib, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0622-gd89e9c339e\lib\VL.CoreLib.dll</HintPath>
-        </Reference>
-        <Reference Include="VL.Lang, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0622-gd89e9c339e\lib\VL.Lang.dll</HintPath>
-        </Reference>
-    </ItemGroup>
-    <ItemGroup>
       <Folder Include="Internal" />
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Remove="AudioBufferOutTest.cs" />
+      <Compile Remove="FFTTest.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.1-0632-g47c6d01865\lib\VL.Core.dll</HintPath>
+      </Reference>
+      <Reference Include="VL.CoreLib, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.1-0632-g47c6d01865\lib\VL.CoreLib.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

@@ -42,25 +42,10 @@ namespace NewAudio.Nodes
 
             Params.Device.Value = deviceSelection;
             Params.NumberOfChannels.Value = channels;
-
-            if (Params.Input.HasChanged)
+           
+            if (Params.Device.HasChanged )
             {
-                Params.Input.Commit();
-                if (AudioBlock != null)
-                {
-                    AudioBlock.DisconnectAllInputs();
-                    Params.Input.Value?.Pin.Connect(AudioBlock);
-                }
-            }
-            if (Params.Enable.HasChanged || (Params.Enable.Value && OutputDeviceBlock is { IsEnabled: false }))
-            {
-                Params.Enable.Commit();
-                OutputDeviceBlock?.SetEnabled(Params.Enable.Value);
-            }
-            
-            if (Params.HasChanged )
-            {
-                Params.Commit();
+                Params.Device.Commit();
 
                 StopDevice();
                 if (Params.Device.Value != null)
@@ -68,6 +53,20 @@ namespace NewAudio.Nodes
                     StartDevice();
                 }
             }
+            
+            if (Params.Input.HasChanged && AudioBlock!=null)
+            {
+                Params.Input.Commit();
+                AudioBlock.DisconnectAllInputs();
+                Params.Input.Value?.Pin.Connect(AudioBlock);
+            }
+            
+            if (Params.Enable.HasChanged && OutputDeviceBlock!=null )
+            {
+                Params.Enable.Commit();
+                OutputDeviceBlock.SetEnabled(Params.Enable.Value);
+            }
+            
             maxNumberOfChannels = OutputDeviceBlock?.Device?.MaxNumberOfOutputChannels ?? 0;
             return OutputDeviceBlock?.IsEnabled ?? false;
         }
@@ -88,13 +87,10 @@ namespace NewAudio.Nodes
                 AudioBlock = null;
                 ExceptionHappened(e, "StartDevice");
             }
-            AudioBlock = OutputDeviceBlock;
+            OutputDeviceBlock.IsAutoEnable = Params.Enable.Value;
+            Params.Input.Value?.Pin.Connect(OutputDeviceBlock);
             Graph.OutputBlock = OutputDeviceBlock;
-            Params.Input.Value?.Pin.Connect(AudioBlock);
-            if (Params.Enable.Value)
-            {
-                OutputDeviceBlock.Enable();
-            }
+            AudioBlock = OutputDeviceBlock;
         }
 
         public void StopDevice()

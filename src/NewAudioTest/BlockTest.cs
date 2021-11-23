@@ -190,6 +190,8 @@ namespace NewAudioTest
         [Test]
         public void TestOutputDeviceWithNewDevice()
         {
+            var sr = new AudioParam<SamplingFrequency>(SamplingFrequency.Hz48000);
+            var bs = new AudioParam<float>(40);
             var outputSelection =
                 new OutputDeviceSelection(AudioService.GetOutputDevices().First().ToString());
             using (var output = DeviceManager.GetOutputDevice(outputSelection,new AudioBlockFormat(){Channels = 2}))
@@ -198,7 +200,7 @@ namespace NewAudioTest
 
                 var sine = new SineGenBlock(new AudioBlockFormat());
                 sine.Connect(Graph.OutputBlock);
-                DeviceManager.UpdateFormat(new DeviceFormat(){SampleRate = 48000, BufferSizeMs = 10});
+                DeviceManager.UpdateFormat(sr,bs);
                 Assert.AreEqual(48000, output.OutputSampleRate);
                 Assert.AreEqual(512, output.FramesPerBlock);
                 var buf = output.RenderInputs();
@@ -213,13 +215,16 @@ namespace NewAudioTest
         [Test]
         public void TestOutputDeviceCloseFailsafe()
         {
+            var sr = new AudioParam<SamplingFrequency>(SamplingFrequency.Hz48000);
+            var bs = new AudioParam<float>(40);
+
             using (var handle = Resources.GetDeviceManager())
             {
                 var deviceManager = handle.Resource;
                 var outputSelection =
                     new OutputDeviceSelection(AudioService.GetOutputDevices().First().ToString());
                 var output = deviceManager.GetOutputDevice(outputSelection, new AudioBlockFormat(){Channels = 2});
-                DeviceManager.UpdateFormat(new DeviceFormat(){SampleRate = 48000, BufferSizeMs = 10});
+                DeviceManager.UpdateFormat(sr,bs);
                 Graph.OutputBlock = output;
                 var sine = new SineGenBlock(new AudioBlockFormat());
 
@@ -238,12 +243,15 @@ namespace NewAudioTest
         [Test]
         public void TestSetOutputLast()
         {
+            var sr = new AudioParam<SamplingFrequency>(SamplingFrequency.Hz48000);
+            var bs = new AudioParam<float>(40);
+
             using (var deviceManager = Resources.GetDeviceManager().Resource)
             {
                 var outputSelection =
                     new OutputDeviceSelection(AudioService.GetOutputDevices().First().ToString());
                 using var output = deviceManager.GetOutputDevice(outputSelection, new AudioBlockFormat(){Channels = 2});
-                DeviceManager.UpdateFormat(new DeviceFormat(){SampleRate = 48000, BufferSizeMs = 10});
+                DeviceManager.UpdateFormat(sr,bs);
 
                 var sine = new SineGenBlock(new AudioBlockFormat());
                 var gain = new MultiplyBlock(new AudioBlockFormat());

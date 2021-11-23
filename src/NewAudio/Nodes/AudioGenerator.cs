@@ -36,29 +36,32 @@ namespace NewAudio.Nodes
             Params.Freq.Value = frequency;
             Params.Enable.Value = enable;
             
-            if (Params.GeneratorType.HasChanged || _genBlock==null)
+            if (Params.GeneratorType.HasChanged )
             {
+                Params.GeneratorType.Commit();
                 if (type == GeneratorType.Noise)
                 {
-                    _genBlock = new NoiseGenBlock(new AudioBlockFormat(){AutoEnable = true});
+                    _genBlock = new NoiseGenBlock(new AudioBlockFormat(){AutoEnable = enable});
                 } else if (type == GeneratorType.Sine)
                 {
-                    _genBlock = new SineGenBlock(new AudioBlockFormat(){AutoEnable = true});
-                    
+                    _genBlock = new SineGenBlock(new AudioBlockFormat(){AutoEnable = enable});
                 }
 
+                _genBlock.Params.Freq = Params.Freq;
                 AudioBlock = _genBlock;
+                
             }
 
-            if (Params.Freq.HasChanged && _genBlock!=null )
-            {
-                _genBlock.Params.Freq.Value = Params.Freq.Value;
-            }
+            // if (Params.Freq.HasChanged && _genBlock!=null )
+            // {
+                // Params.Freq.Commit();
+                // _genBlock.Params.Freq.Value = Params.Freq.Value;
+            // }
 
-            if (Params.HasChanged)
+            if (Params.Enable.HasChanged && _genBlock!=null)
             {
-                Params.Commit();
-                _genBlock?.SetEnabled(Params.Enable.Value);
+                Params.Enable.Commit();
+                _genBlock.SetEnabled(Params.Enable.Value);
             }
             
             enabled = _genBlock?.IsEnabled ?? false;

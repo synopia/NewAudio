@@ -5,7 +5,6 @@ using NewAudio.Core;
 using NewAudio.Devices;
 using NUnit.Framework;
 using Serilog;
-using VL.Lib.Basics.Resources;
 using VL.NewAudio;
 using Xt;
 

@@ -21,18 +21,13 @@ namespace NewAudio.Block
             InitLogger<GenBlock>();
             Params = AudioParams.Create<GenBlockParams>();
             
-            Init();
-        }
-
-        protected override void EnableProcessing()
-        {
-            _period = 1.0f / SampleRate;
-        }
-
-        private void Init()
-        {
             ChannelMode = ChannelMode.Specified;
             NumberOfChannels = 1;
+        }
+
+        protected override void Initialize()
+        {
+            _period = 1.0f / SampleRate;
         }
     }
 

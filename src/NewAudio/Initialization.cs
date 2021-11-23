@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using NewAudio.Block;
 using NewAudio.Core;
@@ -96,9 +97,14 @@ namespace VL.NewAudio
     }
     public sealed class Initialization: AssemblyInitializer<Initialization>
     {
-        
         protected override void RegisterServices(IVLFactory factory)
         {
+            /*
+            factory.RegisterNodeFactory(NodeBuilding.NewNodeFactory(factory, "VL.NewAudio.NN", (factory) =>
+            {
+                return NodeBuilding.NewFactoryImpl(AudioNodeFactory.CreateNode(factory).ToImmutableArray()); 
+            }));
+            */
             factory.RegisterService<NodeContext, IResourceProvider<ILogger>>(context =>
             {
                 return ResourceProvider.NewPooledSystemWide("Logger",

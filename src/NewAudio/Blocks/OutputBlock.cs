@@ -9,10 +9,6 @@ namespace NewAudio.Block
 {
     public abstract class OutputBlock : AudioBlock
     {
-        private int _counter;
-        private long _lag;
-        public double LagMs { get; private set; }
-
         private ulong _lastClip;
         private bool _clipDetectionEnabled;
         private float _clipThreshold;
@@ -121,7 +117,11 @@ namespace NewAudio.Block
             Graph.PreProcess();
             
             InternalBuffer.Zero();
-            PullInputs(InternalBuffer);
+            if (IsEnabled)
+            {
+                PullInputs(InternalBuffer);
+            }
+
             if (CheckNotClipping())
             {
                 InternalBuffer.Zero();
@@ -161,6 +161,7 @@ namespace NewAudio.Block
             {
                 if (disposing)
                 {
+                    SetEnabled(false);
                     Device.DeviceFormatWillChange -= DeviceParamsWillChange;
                     Device.DeviceFormatDidChange -= DeviceParamsDidChange;
                     Device.DetachOutput(this);

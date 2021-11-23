@@ -2414,9 +2414,9 @@
     </Node>
   </Patch>
   <PlatformDependency Id="FwEC1swQmeqNZRvXH7Cl5U" Location="VL.NewAudio.dll" />
-  <NugetDependency Id="Cd9IgeOg4aDNmfXBD9Nodu" Location="VL.Lang" Version="2021.4.0-0628-g2669aa5c35" />
-  <NugetDependency Id="L3qhGd3buGoQBmHW3Gf3vu" Location="VL.Fundamentals" Version="2021.4.0-0628-g2669aa5c35" />
-  <NugetDependency Id="TRYiwWmB3wuMaoB2p353qz" Location="VL.CoreLib" Version="2021.4.0-0628-g2669aa5c35" />
+  <NugetDependency Id="Cd9IgeOg4aDNmfXBD9Nodu" Location="VL.Lang" Version="2021.4.0-0632-g47c6d01865" />
+  <NugetDependency Id="L3qhGd3buGoQBmHW3Gf3vu" Location="VL.Fundamentals" Version="2021.4.0-0632-g47c6d01865" />
+  <NugetDependency Id="TRYiwWmB3wuMaoB2p353qz" Location="VL.CoreLib" Version="2021.4.0-0632-g47c6d01865" />
   <NugetDependency Id="MbQqbGC4UfOLfyUcAdgbRV" Location="NAudio" Version="2.0.1" />
   <NugetDependency Id="AOEsjfdiv5jOFUUoiG3TqI" Location="NAudio.Asio" Version="2.0.0" />
   <NugetDependency Id="RY8Kj3xf13oPrQPSps9mcO" Location="NAudio.Core" Version="2.0.0" />
@@ -2424,7 +2424,7 @@
   <NugetDependency Id="V6vuiyWokqyQTf3dZDGzoq" Location="NAudio.Wasapi" Version="2.0.0" />
   <NugetDependency Id="EpEmghV38s1QKZ1e7t07wG" Location="NAudio.WinForms" Version="2.0.1" />
   <NugetDependency Id="Nne5cxi3pYPPFGRCREUGem" Location="NAudio.WinMM" Version="2.0.1" />
-  <NugetDependency Id="PFaNp3Lkw2GNWjUzaJVrfo" Location="VL.HDE" Version="2021.4.0-0628-g2669aa5c35" />
-  <NugetDependency Id="CWi7ZIUqE8HLyIDVQn2YXk" Location="VL.Skia" Version="2021.4.0-0628-g2669aa5c35" />
+  <NugetDependency Id="PFaNp3Lkw2GNWjUzaJVrfo" Location="VL.HDE" Version="2021.4.0-0632-g47c6d01865" />
+  <NugetDependency Id="CWi7ZIUqE8HLyIDVQn2YXk" Location="VL.Skia" Version="2021.4.0-0632-g47c6d01865" />
   <DocumentDependency Id="SOZX7BhG6R9PXahXdJawZ9" Location="./vl/IIR Filter.vl" IsForward="true" />
 </Document>

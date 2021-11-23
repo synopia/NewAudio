@@ -25,13 +25,27 @@ namespace NewAudio.Core
 
     public class AudioParam<T> : IAudioParam<T>, IAudioParam
     {
+        private bool _init = true;
+        
         private T _currentValue;
         private T _lastValue;
+
+        public AudioParam()
+        {
+        }
+
+        public AudioParam(T currentValue)
+        {
+            _currentValue = currentValue;
+        }
 
         public T Value
         {
             get => _currentValue;
-            set => _currentValue = value;
+            set
+            {
+                _currentValue = value;
+            }
         }
 
         object IAudioParam.Value
@@ -40,7 +54,7 @@ namespace NewAudio.Core
             set => _currentValue = (T)value;
         }
 
-        public bool HasChanged => !Equals(_lastValue, _currentValue);
+        public bool HasChanged => !Equals(_lastValue, _currentValue) || _init;
         public T LastValue => _lastValue;
         object IAudioParam.LastValue => _lastValue;
 
@@ -48,11 +62,13 @@ namespace NewAudio.Core
 
         public void Commit()
         {
+            _init = false;
             _lastValue = _currentValue;
         }
 
         public void Rollback()
         {
+            _init = false;
             _currentValue = _lastValue;
         }
     }
