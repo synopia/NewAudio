@@ -47,7 +47,7 @@ namespace NewAudio.Nodes
 
         public void StartDevice()
         {
-            Device = DeviceManager.Resource.GetInputDevice(Params.Device.Value);
+            Device = DeviceManager.Resource.GetInputDevice(Params.Device.Value, new AudioBlockFormat());
             
         }
 

@@ -17,6 +17,7 @@ namespace NewAudio.Core
 
     public interface IXtStream : IDisposable
     {
+        XtStream GetXtStream();
         XtFormat GetFormat();
         int GetFrames();
         XtLatency GetLatency();
@@ -42,6 +43,9 @@ namespace NewAudio.Core
 
     public interface IXtPlatform : IDisposable
     {
+        Action<string> OnError { get; set; }
         IXtService GetService(XtSystem system);
+        void DoOnError(string message);
+
     }
 }

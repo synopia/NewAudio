@@ -26,7 +26,6 @@ namespace NewAudio.Block
             _logger.Information("AudioGraph initialized, id={Id}", _nextId);
         }
 
-        public IDevice OutputDevice { get; set; }
         public ulong NumberOfProcessedFrames { get; private set; }
         public double NumberOfProcessedSeconds =>NumberOfProcessedFrames/(double)SampleRate;
         public int SampleRate => _outputBlock?.OutputSampleRate ?? 0;
@@ -263,7 +262,7 @@ namespace NewAudio.Block
             {
                 if (disposing)
                 {
-                    _audioService.Dispose();
+                    UninitializeAllNodes();
                 }
 
                 _disposedValue = disposing;

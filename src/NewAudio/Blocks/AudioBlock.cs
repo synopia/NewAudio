@@ -471,9 +471,7 @@ namespace NewAudio.Block
 
         protected virtual void Dispose(bool disposing)
         {
-            Trace.WriteLine($"Dispose called for AudioBlock {Name} ({disposing})");
-
-            Logger.Information("Dispose called for AudioNode {This} ({Disposing})", Name, disposing);
+            Logger.Information("Dispose called for AudioBlock {This} ({Disposing})", Name, disposing);
             if (!_disposedValue)
             {
                 if (disposing)
@@ -482,7 +480,6 @@ namespace NewAudio.Block
                     InternalBuffer?.Dispose();
                     MixingBuffer?.Dispose();
                     _graph.Dispose();
-                    
                 }
 
                 _disposedValue = true;

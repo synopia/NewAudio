@@ -22,6 +22,7 @@ namespace VL.NewAudio
         private static IAudioService _audioService;
         private static AudioGraph _audioGraph;
         private static DeviceManager _deviceManager;
+        private static ILogger _logger;
 
         /// <summary>
         /// Only used for testing purpose
@@ -29,10 +30,22 @@ namespace VL.NewAudio
         /// <param name="platform">The Xt implementation to use. Use TestPlatform to mock the whole audio system</param>
         public static void SetResources(IXtPlatform platform)
         {
+            _logger =  new LoggerConfiguration()
+                .Enrich.WithThreadId()
+                .WriteTo.Console(new MessageTemplateTextFormatter(
+                    "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}"))
+                .MinimumLevel.Debug()
+                .CreateLogger();
             SetResources(new AudioService(platform));
         }
         public static void SetResources(IAudioService service, AudioGraph graph=null, DeviceManager deviceManager=null)
         {
+            _logger =  new LoggerConfiguration()
+                .Enrich.WithThreadId()
+                .WriteTo.Console(new MessageTemplateTextFormatter(
+                    "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}"))
+                .MinimumLevel.Debug()
+                .CreateLogger();
             _audioService = service;
             _audioGraph = graph ?? new AudioGraph();
             _deviceManager = deviceManager ?? new DeviceManager();
@@ -40,6 +53,11 @@ namespace VL.NewAudio
 
         public static ILogger GetLogger<T>()
         {
+            if (_logger != null)
+            {
+                // ReSharper disable once ContextualLoggerProblem
+                return _logger.ForContext<T>();
+            }
             var provider = NodeContext.Current.Factory.CreateService<IResourceProvider<ILogger>>(NodeContext.Current);
             var logger = provider.GetHandle().Resource;
             // ReSharper disable once ContextualLoggerProblem
@@ -91,9 +109,6 @@ namespace VL.NewAudio
                             .WriteTo.Console(new MessageTemplateTextFormatter(
                                 "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}"))
                             .WriteTo.Seq("http://localhost:5341")
-                            // .WriteTo.File("NewAudio.log",
-                            // outputTemplate:
-                            // "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}")
                             .MinimumLevel.Debug()
                             .CreateLogger();
                         return logger;
@@ -106,15 +121,28 @@ namespace VL.NewAudio
             // There can be only one XtAudio instance. Should be used by all opened VL documents/apps
             factory.RegisterService<NodeContext, IResourceProvider<IAudioService>>(context =>
             {
+                // return ResourceProvider.NewPooledPerApp(context,
+                    // factory: () =>
+                    // {
+                        // var platform = new RPlatform(XtAudio.Init("NewAudio", IntPtr.Zero));
+                        // var audioService = new AudioService(platform);
+                        
+                        // return audioService;
+                    // },delayDisposalInMilliseconds:0).Finally(a =>
+                // {
+                    // a.Dispose();
+                // });
                 return ResourceProvider.NewPooledSystemWide("NewAudio",
-                    factory: (key) =>
-                    {
-                        var platform = new RPlatform(XtAudio.Init("NewAudio", IntPtr.Zero));
-                        var audioService = new AudioService(platform);
-                        return audioService;
-                    },delayDisposalInMilliseconds:0).Finally(a =>
+                factory: (key) =>
                 {
-                    a.Dispose();
+                var platform = new RPlatform(XtAudio.Init("NewAudio", IntPtr.Zero));
+                XtAudio.SetOnError(platform.DoOnError);
+                var audioService = new AudioService(platform);
+                         
+                return audioService;
+                },delayDisposalInMilliseconds:0).Finally(a =>
+                {
+                a.Dispose();
                 });
             });
             

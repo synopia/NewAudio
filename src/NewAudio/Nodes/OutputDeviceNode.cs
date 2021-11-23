@@ -13,10 +13,7 @@ namespace NewAudio.Nodes
         public AudioParam<bool> Enable;
         public AudioParam<AudioLink> Input;
         public AudioParam<OutputDeviceSelection> Device;
-        public AudioParam<int> ChannelOffset;
         public AudioParam<int> NumberOfChannels;
-        public AudioParam<SamplingFrequency> SampleFrequency;
-        public AudioParam<float> BufferSize;
     }
 
     public class OutputDeviceNode : AudioNode
@@ -24,7 +21,7 @@ namespace NewAudio.Nodes
         public override string NodeName => "OutputDevice";
         public IResourceHandle<DeviceManager> DeviceManager { get; }
         public readonly OutputDeviceParams Params;
-        public OutputDeviceBlock Device { get; private set; }
+        public OutputDeviceBlock OutputDeviceBlock { get; private set; }
 
         public OutputDeviceNode()
         {
@@ -33,17 +30,18 @@ namespace NewAudio.Nodes
             Params = AudioParams.Create<OutputDeviceParams>();
         }
 
-        public bool Update(bool enable, AudioLink input, OutputDeviceSelection deviceSelection, int channelOffset,
-            int channels, out int maxNumberOfChannels, SamplingFrequency samplingFrequency=SamplingFrequency.Hz48000, float bufferSize=10)
+        public bool Update(bool enable, AudioLink input, OutputDeviceSelection deviceSelection, out int maxNumberOfChannels, int channels=2)
         {
+            if (InExceptionTimeOut())
+            {
+                maxNumberOfChannels = -1;
+                return false;
+            }
             Params.Input.Value = input;
             Params.Enable.Value = enable;
 
             Params.Device.Value = deviceSelection;
-            Params.ChannelOffset.Value = channelOffset;
             Params.NumberOfChannels.Value = channels;
-            Params.SampleFrequency.Value = samplingFrequency;
-            Params.BufferSize.Value = bufferSize;
 
             if (Params.Input.HasChanged)
             {
@@ -54,10 +52,10 @@ namespace NewAudio.Nodes
                     Params.Input.Value?.Pin.Connect(AudioBlock);
                 }
             }
-            if (Params.Enable.HasChanged || (Params.Enable.Value && Device is { IsEnabled: false }))
+            if (Params.Enable.HasChanged || (Params.Enable.Value && OutputDeviceBlock is { IsEnabled: false }))
             {
                 Params.Enable.Commit();
-                Device?.SetEnabled(Params.Enable.Value);
+                OutputDeviceBlock?.SetEnabled(Params.Enable.Value);
             }
             
             if (Params.HasChanged )
@@ -70,41 +68,40 @@ namespace NewAudio.Nodes
                     StartDevice();
                 }
             }
-            maxNumberOfChannels = Device?.MaxNumberOfChannels ?? 0;
-            
-            return Device?.IsEnabled ?? false;
+            maxNumberOfChannels = OutputDeviceBlock?.Device?.MaxNumberOfOutputChannels ?? 0;
+            return OutputDeviceBlock?.IsEnabled ?? false;
         }
 
         public void StartDevice()
         {
             try
             {
-                Device = DeviceManager.Resource.GetOutputDevice(Params.Device.Value, new DeviceBlockFormat()
+                OutputDeviceBlock = DeviceManager.Resource.GetOutputDevice(Params.Device.Value, new AudioBlockFormat()
                 {
                     Channels = Params.NumberOfChannels.Value,
-                    ChannelOffset = Params.ChannelOffset.Value,
-                    SampleRate = (int)Params.SampleFrequency.Value,
-                    BufferSize = Params.BufferSize.Value
                 });
             }
             catch (Exception e)
             {
-                Device?.Dispose();
-                Device = null;
+                OutputDeviceBlock?.Dispose();
+                OutputDeviceBlock = null;
                 AudioBlock = null;
                 ExceptionHappened(e, "StartDevice");
             }
-            AudioBlock = Device;
-            Graph.OutputBlock = Device;
+            AudioBlock = OutputDeviceBlock;
+            Graph.OutputBlock = OutputDeviceBlock;
             Params.Input.Value?.Pin.Connect(AudioBlock);
+            if (Params.Enable.Value)
+            {
+                OutputDeviceBlock.Enable();
+            }
         }
 
         public void StopDevice()
         {
             Graph.Disable();
-            Graph.OutputBlock = null;
-            Device?.Dispose();
-            Device = null;
+            OutputDeviceBlock?.Dispose();
+            OutputDeviceBlock = null;
         }
 
         public override string DebugInfo()

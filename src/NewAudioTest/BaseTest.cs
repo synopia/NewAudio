@@ -6,6 +6,7 @@ using NewAudio.Devices;
 using NUnit.Framework;
 using Serilog;
 using VL.Lib.Basics.Resources;
+using VL.NewAudio;
 using Xt;
 
 namespace NewAudioTest
@@ -14,12 +15,15 @@ namespace NewAudioTest
 
     public class BaseTest : IDisposable
     {
-        protected BaseTest()
+        protected ILogger Logger;
+        protected IXtPlatform Platform;
+        protected  IAudioService AudioService;
+        protected AudioGraph Graph;
+        protected DeviceManager DeviceManager;
+        protected bool MockAudio;
+        protected BaseTest(bool mockAudio=true)
         {
-        }
-
-        protected void InitLogger<T>()
-        {
+            MockAudio = mockAudio;
         }
 
         public void Dispose()
@@ -29,11 +33,30 @@ namespace NewAudioTest
         [SetUp]
         public void InitTest()
         {
+            if (MockAudio)
+            {
+                Platform = new TestPlatform();
+            }
+            else
+            {
+                Platform = new RPlatform(XtAudio.Init("Test", IntPtr.Zero));
+            }
+
+            Resources.SetResources(Platform);
+
+            Logger = Resources.GetLogger<BaseTest>();
+            AudioService = Resources.GetAudioService();
+            Graph = Resources.GetAudioGraph().Resource;
+            DeviceManager = Resources.GetDeviceManager().Resource;
+
         }
 
         [TearDown]
         public void EndTest()
         {
+            DeviceManager.Dispose();
+            Graph.Dispose();
+            AudioService.Dispose();
         }
     }
 }

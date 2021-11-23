@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Xt;
 
 namespace NewAudio.Dsp
 {
@@ -37,18 +39,46 @@ namespace NewAudio.Dsp
 
     public interface IConvertReader
     {
-        void Read(IntPtr source, float[] target, int numFrames, int numChannels);
+        void Read(XtBuffer source, int sourceStartFrame, AudioBuffer target, int targetStartFrame, int numFrames);
     }
 
     public interface IConvertWriter
     {
-        void Write(float[] source, IntPtr target, int numFrames, int numChannels);
+        void Write(AudioBuffer source, int sourceStartFrame, XtBuffer target, int targetStartFrame, int numFrames);
     }
+
+    internal static class ConvertHelper
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int FrameSize<TSampleType>() where TSampleType: struct, ISampleType
+        {
+            if (typeof(TSampleType) == typeof(Float32Sample))
+            {
+                return 4;
+            } 
+            
+            if (typeof(TSampleType) == typeof(Int16LsbSample))
+            {
+                return 2;
+            } 
+            if (typeof(TSampleType) == typeof(Int24LsbSample))
+            {
+                return 3;
+            } 
+            if (typeof(TSampleType) == typeof(Int32LsbSample))
+            {
+                return 4;
+            }
+
+            throw new NotImplementedException();
+        }
+    } 
 
     public sealed class ConvertWriter<TSampleType, TMemoryAccess> : IConvertWriter
         where TSampleType : struct, ISampleType
         where TMemoryAccess : struct, IMemoryAccess
     {
+     
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private unsafe int Write(byte* buf, float value)
         {
@@ -76,55 +106,64 @@ namespace NewAudio.Dsp
 
             if (typeof(TSampleType) == typeof(Int32LsbSample))
             {
-                *(int*)buf = (int)(value * int.MaxValue);
+                *(int*)buf = (int)((double)value * int.MaxValue);
                 return 4;
             }
 
             throw new Exception();
         }
 
-        private unsafe void WriteInterleaved(float[] source, IntPtr target, int numFrames, int numChannels)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private unsafe void WriteInterleaved(AudioBuffer source, int sourceStartFrame, XtBuffer target, int targetStartFrame, int numFrames)
         {
-            var offset = 0;
-            for (int i = 0; i < numFrames; i++)
+            var targetOffset = ConvertHelper.FrameSize<TSampleType>()*source.NumberOfChannels*targetStartFrame;
+            for (int i = sourceStartFrame; i < sourceStartFrame+numFrames; i++)
             {
-                for (int ch = 0; ch < numChannels; ch++)
+                for (int ch = 0; ch < source.NumberOfChannels; ch++)
                 {
                     // ReSharper disable once PossibleNullReferenceException
-                    offset += Write(&(((byte*)target)[offset]), source[ch*numFrames+i]);
+                    targetOffset += Write(&(((byte*)target.output)[targetOffset]), source[ch*source.NumberOfFrames+i]);
                 }
             }
         }
-        private unsafe void WriteNonInterleaved(float[] source, IntPtr target, int numFrames, int numChannels)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private unsafe void WriteNonInterleaved(AudioBuffer source, int sourceStartFrame, XtBuffer target, int targetStartFrame, int numFrames)
         {
-            int offset = 0;
-            var targetOffset = 0;
-            for (int ch = 0; ch < numChannels; ch++)
+            if (typeof(TSampleType) == typeof(Float32Sample))
             {
-                for (int i = 0; i < numFrames; i++)
+                for (int ch = 0; ch <source.NumberOfChannels ; ch++)
                 {
-                    // ReSharper disable once PossibleNullReferenceException
-                    targetOffset += Write(&((byte*)target)[targetOffset], source[offset++]);
+                    new Span<float>(source.Data, sourceStartFrame+ch*source.NumberOfFrames, numFrames).CopyTo(
+                        // ReSharper disable once PossibleNullReferenceException
+                        new Span<float>(&((float**)target.output)[ch][targetStartFrame], numFrames));
                 }
+                return;
             }
-        }
 
-        public unsafe void Write(float[] source, IntPtr target, int numFrames, int numChannels)
+            for (int ch = 0; ch < source.NumberOfChannels; ch++)
+            {
+                var targetOffset = ConvertHelper.FrameSize<TSampleType>()*targetStartFrame;
+                
+                for (int i = sourceStartFrame; i < sourceStartFrame+numFrames; i++)
+                {
+                    // ReSharper disable once PossibleNullReferenceException
+                    targetOffset += Write(&((byte**)target.output)[ch][targetOffset], source[i+ch*source.NumberOfFrames]);
+                }
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Write(AudioBuffer source, int sourceStartFrame, XtBuffer target, int targetStartFrame, int numFrames)
         {
+            Trace.Assert(sourceStartFrame+numFrames<=source.NumberOfFrames);
+            Trace.Assert(targetStartFrame+numFrames<=target.frames);
+            
             if (typeof(TMemoryAccess) == typeof(Interleaved))
             {
-                WriteInterleaved(source, target, numFrames, numChannels);
+                WriteInterleaved(source,sourceStartFrame, target, targetStartFrame, numFrames);
             }
             else
             {
-                if (typeof(TSampleType) == typeof(Float32Sample))
-                {
-                    new Span<float>(source,0, numFrames*numChannels).CopyTo(new Span<float>((void*)target, numFrames*numChannels));                    
-                }
-                else
-                {
-                    WriteNonInterleaved(source, target, numFrames, numChannels);
-                }
+                WriteNonInterleaved(source, sourceStartFrame,target, targetStartFrame,numFrames);
             }
         }
     }
@@ -133,6 +172,10 @@ namespace NewAudio.Dsp
         where TSampleType : struct, ISampleType
         where TMemoryAccess : struct, IMemoryAccess
     {
+        const double Int32ToFloat=1.0 / 2147483648.0;
+        const float Int24ToFloat=1.0f / 8388607.0f;
+        const float Int16ToFloat=1.0f / short.MaxValue;
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private unsafe int Read(byte* buf, out float value)
         {
@@ -144,21 +187,20 @@ namespace NewAudio.Dsp
 
             if (typeof(TSampleType) == typeof(Int16LsbSample))
             {
-                value = *(short*)buf / (float)short.MaxValue;
+                value = *(short*)buf * Int16ToFloat;
                 return 2;
             }
 
             if (typeof(TSampleType) == typeof(Int24LsbSample))
             {
-                const float normalizer = 8388607;
                 var sample = *buf | (*(buf + 1) << 8) | ((sbyte)*(buf + 2) << 16);
-                value = sample / normalizer;
+                value = sample * Int16ToFloat;
                 return 3;
             }
 
             if (typeof(TSampleType) == typeof(Int32LsbSample))
             {
-                value = *(int*)buf / (float)int.MaxValue;
+                value = (float) (*(int*)buf * Int32ToFloat);
                 return 4;
             }
 
@@ -166,47 +208,52 @@ namespace NewAudio.Dsp
         }
 
 
-        private unsafe void ReadInterleaved(IntPtr source, float[] target, int numFrames, int numChannels)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private unsafe void ReadInterleaved(XtBuffer source, int sourceStartFrame, AudioBuffer target, int targetStartFrame, int numFrames)
         {
-            int offset = 0;
-            for (int i = 0; i < numFrames; i++)
+            int offset = ConvertHelper.FrameSize<TSampleType>()*sourceStartFrame*target.NumberOfChannels;
+            for (int i = targetStartFrame; i < targetStartFrame+numFrames; i++)
             {
-                for (int ch = 0; ch < numChannels; ch++)
+                for (int ch = 0; ch < target.NumberOfChannels; ch++)
                 {
                     // ReSharper disable once PossibleNullReferenceException
-                    offset += Read(&((byte*)source)[offset], out target[ch*numFrames+i]);
+                    offset += Read(&((byte*)source.input)[offset], out target.Data[ch*target.NumberOfFrames+i]);
                 }
             }
         }
-        private unsafe void ReadNonInterleaved(IntPtr source, float[] target, int numFrames,int numChannels)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private unsafe void ReadNonInterleaved(XtBuffer source, int sourceStartFrame, AudioBuffer target, int targetStartFrame, int numFrames)
         {
-            int offset = 0;
-            int sourceOffset = 0;
-            for (int ch = 0; ch < numChannels; ch++)
+            if (typeof(TSampleType) == typeof(Float32Sample))
             {
-                for (int i = 0; i < numFrames; i++)
+                for (int ch = 0; ch < target.NumberOfChannels; ch++)
                 {
                     // ReSharper disable once PossibleNullReferenceException
-                    sourceOffset += Read(&((byte*)source)[sourceOffset], out target[offset++]);
+                    new Span<float>(&((float**)source.input)[ch][sourceStartFrame], numFrames).CopyTo(
+                        new Span<float>(target.Data, targetStartFrame+ch*target.NumberOfFrames, numFrames));
+                }
+                return;
+            }
+            
+            for (int ch = 0; ch < target.NumberOfChannels; ch++)
+            {
+                int sourceOffset = ConvertHelper.FrameSize<TSampleType>()*sourceStartFrame;
+                for (int i = targetStartFrame; i < targetStartFrame+numFrames; i++)
+                {
+                    // ReSharper disable once PossibleNullReferenceException
+                    sourceOffset += Read(&((byte**)source.input)[ch][sourceOffset], out target.Data[i+ch*target.NumberOfFrames]);
                 }
             }
         }
-        public unsafe void Read(IntPtr source, float[] target, int numFrames, int numChannels)
+        public void Read(XtBuffer source, int sourceStartFrame, AudioBuffer target, int targetStartFrame, int numFrames)
         {
             if (typeof(TMemoryAccess) == typeof(Interleaved))
             {
-                ReadInterleaved(source, target, numFrames, numChannels);
+                ReadInterleaved(source, sourceStartFrame,target,targetStartFrame, numFrames);
             }
             else
             {
-                if (typeof(TSampleType) == typeof(Float32Sample))
-                {
-                    new Span<float>((void*)source, numChannels*numFrames).CopyTo(new Span<float>(target, 0, numFrames*numChannels));
-                }
-                else
-                {
-                    ReadNonInterleaved(source, target, numFrames, numChannels);
-                }
+                ReadNonInterleaved(source, sourceStartFrame,target, targetStartFrame,numFrames);
             }
         }
     }

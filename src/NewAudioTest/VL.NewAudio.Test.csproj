@@ -21,6 +21,9 @@
     <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <OutputPath>..\..\lib-test\</OutputPath>
         <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugType>pdbonly</DebugType>
+        <DebugSymbols>true</DebugSymbols>
+
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
@@ -50,7 +53,6 @@
         <Compile Remove="AudioBufferOutTest.cs" />
         <Compile Remove="LifecycleTests.cs" />
         <Compile Remove="WasapiTest.cs" />
-        <Compile Remove="ASIOTest.cs" />
     </ItemGroup>
     <ItemGroup>
         <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">

@@ -1,5 +1,6 @@
 ﻿using System;
 using NewAudio.Core;
+using NewAudio.Devices;
 using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Block
@@ -30,8 +31,8 @@ namespace NewAudio.Block
     public class InputDeviceBlock : InputBlock
     {
         public override string Name { get; }
-        private IResourceHandle<IXtDevice> _device;
-        protected IXtDevice Device => _device.Resource;
+        private IResourceHandle<Device> _device;
+        protected Device Device => _device.Resource;
         private readonly AudioBlockFormat _format;
         private  ulong _lastOverrun;
         private  ulong _lastUnderrun;
@@ -64,7 +65,7 @@ namespace NewAudio.Block
             }
         }
 
-        public InputDeviceBlock(string name, IResourceHandle<IXtDevice> device, AudioBlockFormat format) : base(format)
+        public InputDeviceBlock(string name, IResourceHandle<Device> device, AudioBlockFormat format) : base(format)
         {
             var s = $"InputDeviceBlock ({name})";
             Name = s;
@@ -73,7 +74,7 @@ namespace NewAudio.Block
             InitLogger<InputDeviceBlock>();
             Logger.Information("{Name} created", s);
 
-            var deviceChannels = _format.Channels;
+            var deviceChannels = Device.MaxNumberOfInputChannels;
             if (ChannelMode != ChannelMode.Specified)
             {
                 ChannelMode = ChannelMode.Specified;

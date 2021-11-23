@@ -9,6 +9,7 @@ using VL.Core;
 using VL.Lang.Helper;
 using VL.Lib.Basics.Resources;
 using VL.Lib.Collections;
+using VL.Model;
 using VL.NewAudio;
 
 namespace NewAudio.Nodes
@@ -22,7 +23,8 @@ namespace NewAudio.Nodes
         protected ILogger Logger { get; private set; }
         public abstract string NodeName { get; }
 
-        public readonly AudioLink Output;
+        public readonly AudioLink Output = new();
+        private ulong _lastException;
 
         private AudioBlock _audioBlock;
         protected AudioBlock AudioBlock
@@ -67,9 +69,7 @@ namespace NewAudio.Nodes
         protected AudioNode()
         {
             AudioService = Resources.GetAudioService();
-            Trace.WriteLine($"AUDIO SERVICE  {AudioService?.GetHashCode()}");
             _graph = Resources.GetAudioGraph();
-            // Output = new();
         }
 
         protected void InitLogger<T>()
@@ -78,11 +78,16 @@ namespace NewAudio.Nodes
             Logger.Information("Started AudioNode {Name}", NodeName);
 
         }
-        
-        
+
+        public bool InExceptionTimeOut()
+        {
+            return VLSession.Instance.UserRuntime.Frame - _lastException < 30;
+        }
         
         public void ExceptionHappened(Exception exception, string method)
         {
+            _lastException = VLSession.Instance.UserRuntime.Frame;
+            
             if (!_exceptions.Exists(e => e.Message == exception.Message))
             {
                 Logger.Error(exception, "Exceptions happened in {This}.{Method}", this, method);
@@ -116,7 +121,6 @@ namespace NewAudio.Nodes
 
         protected virtual void Dispose(bool disposing)
         {
-            Trace.WriteLine($"Dispose called for AudioNode {NodeName} ({disposing})");
             Logger.Information("Dispose called for AudioNode {This} ({Disposing})", NodeName, disposing);
             if (!_disposedValue)
             {

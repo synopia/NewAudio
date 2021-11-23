@@ -28,12 +28,23 @@ namespace NewAudioTest
         {
             return new TestService();
         }
+
+        public Action<string> OnError { get; set; }
+        public void DoOnError(string message)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class TestStream : IXtStream
     {
         public void Dispose()
         {
+        }
+
+        public XtStream GetXtStream()
+        {
+            throw new NotImplementedException();
         }
 
         public XtFormat GetFormat()
@@ -166,6 +177,8 @@ namespace NewAudioTest
     [Apartment(ApartmentState.STA)]
     public class BlockTest : BaseTest
     {
+
+
         [SetUp]
         public void Clear()
         {
@@ -175,25 +188,24 @@ namespace NewAudioTest
 
 
         [Test]
-        public void TestOutputDeviceClose()
+        public void TestOutputDeviceWithNewDevice()
         {
-            InitLogger<BlockTest>();
-            var platform = new TestPlatform();
-            Resources.SetResources(platform);
-            var graph = Resources.GetAudioGraph().Resource;
-            var deviceManager = Resources.GetDeviceManager().Resource;
             var outputSelection =
-                new OutputDeviceSelection(deviceManager.GetOutputDevices().First().ToString());
-            using (var output = deviceManager.GetOutputDevice(outputSelection, new DeviceBlockFormat()))
+                new OutputDeviceSelection(AudioService.GetOutputDevices().First().ToString());
+            using (var output = DeviceManager.GetOutputDevice(outputSelection,new AudioBlockFormat(){Channels = 2}))
             {
-                graph.OutputBlock = output;
-                var sine = new SineGenBlock(new AudioBlockFormat());
-                sine.Connect(graph.OutputBlock);
+                Graph.OutputBlock = output;
 
-                var buf = graph.OutputBlock.RenderInputs();
+                var sine = new SineGenBlock(new AudioBlockFormat());
+                sine.Connect(Graph.OutputBlock);
+                DeviceManager.UpdateFormat(new DeviceFormat(){SampleRate = 48000, BufferSizeMs = 10});
+                Assert.AreEqual(48000, output.OutputSampleRate);
+                Assert.AreEqual(512, output.FramesPerBlock);
+                var buf = output.RenderInputs();
                 Assert.AreEqual(1024, buf.Size);
             }
 
+            AudioService.Dispose();
             Assert.AreEqual(1, CallCounter.TestDeviceCreated);
             Assert.AreEqual(1, CallCounter.TestDeviceDisposed);
         }
@@ -201,26 +213,23 @@ namespace NewAudioTest
         [Test]
         public void TestOutputDeviceCloseFailsafe()
         {
-            InitLogger<BlockTest>();
-            var platform = new TestPlatform();
-            Resources.SetResources(platform);
-            var graph = Resources.GetAudioGraph().Resource;
             using (var handle = Resources.GetDeviceManager())
             {
                 var deviceManager = handle.Resource;
                 var outputSelection =
-                    new OutputDeviceSelection(deviceManager.GetOutputDevices().First().ToString());
-                var output = deviceManager.GetOutputDevice(outputSelection, new DeviceBlockFormat());
-                graph.OutputBlock = output;
+                    new OutputDeviceSelection(AudioService.GetOutputDevices().First().ToString());
+                var output = deviceManager.GetOutputDevice(outputSelection, new AudioBlockFormat(){Channels = 2});
+                DeviceManager.UpdateFormat(new DeviceFormat(){SampleRate = 48000, BufferSizeMs = 10});
+                Graph.OutputBlock = output;
                 var sine = new SineGenBlock(new AudioBlockFormat());
 
-                sine.Connect(graph.OutputBlock);
+                sine.Connect(Graph.OutputBlock);
 
-                var buf = graph.OutputBlock.RenderInputs();
+                var buf = output.RenderInputs();
                 Assert.AreEqual(1024, buf.Size);
                 handle.Resource.Dispose();
             }
-            
+            AudioService.Dispose();
             Assert.AreEqual(1, CallCounter.TestDeviceCreated);
             Assert.AreEqual(1, CallCounter.TestDeviceDisposed);
         }
@@ -229,26 +238,25 @@ namespace NewAudioTest
         [Test]
         public void TestSetOutputLast()
         {
-            InitLogger<BlockTest>();
-            var platform = new TestPlatform();
-            Resources.SetResources(platform);
-            var graph = Resources.GetAudioGraph().Resource;
             using (var deviceManager = Resources.GetDeviceManager().Resource)
             {
                 var outputSelection =
-                    new OutputDeviceSelection(deviceManager.GetOutputDevices().First().ToString());
-                using var output = deviceManager.GetOutputDevice(outputSelection, new DeviceBlockFormat());
+                    new OutputDeviceSelection(AudioService.GetOutputDevices().First().ToString());
+                using var output = deviceManager.GetOutputDevice(outputSelection, new AudioBlockFormat(){Channels = 2});
+                DeviceManager.UpdateFormat(new DeviceFormat(){SampleRate = 48000, BufferSizeMs = 10});
+
                 var sine = new SineGenBlock(new AudioBlockFormat());
                 var gain = new MultiplyBlock(new AudioBlockFormat());
                 sine.Connect(gain);
                 gain.Connect(output);
-                graph.OutputBlock = output;
+                Graph.OutputBlock = output;
                 Assert.AreEqual(512, sine.FramesPerBlock);
-                var buf1 = graph.OutputBlock.RenderInputs();
+                var buf1 = output.RenderInputs();
                 Assert.AreEqual(512, sine.FramesPerBlock);
-                var buf = graph.OutputBlock.RenderInputs();
+                var buf = output.RenderInputs();
                 Assert.AreEqual(1024, buf.Size);
             }
+            AudioService.Dispose();
 
             Assert.AreEqual(1, CallCounter.TestDeviceCreated);
             Assert.AreEqual(1, CallCounter.TestDeviceDisposed);

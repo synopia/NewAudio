@@ -38,11 +38,6 @@ namespace NewAudio.Nodes
             
             if (Params.GeneratorType.HasChanged || _genBlock==null)
             {
-                if (_genBlock != null)
-                {
-                    _genBlock.Dispose();
-                }
-
                 if (type == GeneratorType.Noise)
                 {
                     _genBlock = new NoiseGenBlock(new AudioBlockFormat(){AutoEnable = true});

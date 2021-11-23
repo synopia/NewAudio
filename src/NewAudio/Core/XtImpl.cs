@@ -62,6 +62,11 @@ namespace NewAudio.Core
             _stream = stream;
         }
 
+        public XtStream GetXtStream()
+        {
+            return _stream;
+        }
+
         public XtFormat GetFormat()
         {
             return _stream.GetFormat();
@@ -162,10 +167,16 @@ namespace NewAudio.Core
     public class RPlatform : IXtPlatform
     {
         private XtPlatform _platform;
+        public Action<string> OnError { get; set; }
 
         public RPlatform(XtPlatform platform)
         {
             _platform = platform;
+        }
+
+        public void DoOnError(string message)
+        {
+            OnError?.Invoke(message);
         }
 
         public IXtService GetService(XtSystem system)

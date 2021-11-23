@@ -139,9 +139,10 @@
               <Pin Id="P3sKriMN5fDOX3iSaXIIcJ" Name="Input" Kind="StateInputPin" />
               <Pin Id="RNsRnKVafNeLJpjXJ7Wg6m" Name="Enable" Kind="InputPin" />
               <Pin Id="SG0xyJuOqNtNaRN6lGAjEO" Name="Sampling Frequency" Kind="InputPin" />
-              <Pin Id="IkghNASyBD6Lfed4fT8m5d" Name="Frames Per Block" Kind="InputPin" />
+              <Pin Id="EghY8EPZT7QL5F4ghraff5" Name="Buffer Size" Kind="InputPin" />
               <Pin Id="H4ziOgCO8NIOgJhonrNP2A" Name="Output" Kind="StateOutputPin" />
               <Pin Id="Vtvqg2l1vbXOO00iK6cCC7" Name="Result" Kind="OutputPin" />
+              <Pin Id="KwyWagSj5HjOR7Ifjj3n8C" Name="Frames Per Block" Kind="OutputPin" />
             </Node>
             <Node Bounds="455,558" Id="SGhC7IlkxngP35n8v7PGyZ">
               <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
@@ -157,7 +158,6 @@
             </Node>
             <ControlPoint Id="VLEHycAeCbqNtPypFVDmVv" Bounds="552,704" />
             <ControlPoint Id="SUBCuxbpXhrPHfn5zJT5tQ" Bounds="284,157" />
-            <ControlPoint Id="NgfaWPsGWHKQaavN9emhSj" Bounds="308,184" />
             <Node Bounds="206,621" Id="CT892rJvuHpMECpMmAJvUa">
               <p:NodeReference LastCategoryFullName="NewAudio.Nodes.AudioNode" LastSymbolSource="VL.NewAudio.dll">
                 <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
@@ -195,6 +195,9 @@
               <Pin Id="HT9ar7BVHafPi9Wu2CCznr" Name="Enabled" Kind="OutputPin" />
             </Node>
             <ControlPoint Id="OERUGeEzsJELIu1E0kd3aE" Bounds="251,157" />
+            <ControlPoint Id="Vyzjj2qM7joMfsI3bSUmAH" Bounds="310,187" />
+            <ControlPoint Id="IwZb9HJTPNLPTApugaUCZG" Bounds="336,610" />
+            <ControlPoint Id="VU19doGrjYkK9rm07Xg8bA" Bounds="307,637" />
           </Canvas>
           <ProcessDefinition Id="AZkHgK9WOTaPVlmjyvDCUF">
             <Fragment Id="DKLcnBCzR9TPz1L5ZteLQD" Patch="JT3RIbXqBQmQIeg6lVXvOX" Enabled="true" />
@@ -214,8 +217,6 @@
           <Link Id="FkabVPQHbZfPAxgC7TrlYk" Ids="VmfqIVE5qwgO3Fb95i37V4,GyMwIYQgsXCNR4vJdDohvC" />
           <Link Id="QERttjNVeqgMGaiwQYK8sg" Ids="LvBCaeYxY2eNjRMGW41eRu,SUBCuxbpXhrPHfn5zJT5tQ" IsHidden="true" />
           <Link Id="QGhNQdV9LT6PuS02Xa07XH" Ids="SUBCuxbpXhrPHfn5zJT5tQ,SG0xyJuOqNtNaRN6lGAjEO" />
-          <Link Id="I85cgVxHUsYL7I0EGMjmru" Ids="FMCaCZy0kolOZY5p6dq1O3,NgfaWPsGWHKQaavN9emhSj" IsHidden="true" />
-          <Link Id="SQ3khrSk7vXLU8YEk1WxfM" Ids="NgfaWPsGWHKQaavN9emhSj,IkghNASyBD6Lfed4fT8m5d" />
           <Link Id="PpO15jopwo8Nz17UjSxueS" Ids="VmfqIVE5qwgO3Fb95i37V4,RqLXG2V1xwAL5aPWCpNs6G" />
           <Link Id="LJxweeLhlaDQM8WT6TyigA" Ids="VmfqIVE5qwgO3Fb95i37V4,KfGNikXCVIoNDKIEHKfZqb" />
           <Link Id="LcdZ9UESsbXLzacDPl68nP" Ids="Kfs1HyucfHXQVFbgnvkd11,Vj710xRYNu7Nu981K8FIfF" IsHidden="true" />
@@ -223,12 +224,20 @@
           <Link Id="SHt7eH8FYdrMgY7jSReIqk" Ids="HT9ar7BVHafPi9Wu2CCznr,Kfs1HyucfHXQVFbgnvkd11" />
           <Link Id="MNZSAefUAoMM7eFhtS7m7g" Ids="UjRO7OLxOD0QE05K8FdR9S,OERUGeEzsJELIu1E0kd3aE" IsHidden="true" />
           <Link Id="J6pBckxPBG5P4g8g9TnoBM" Ids="OERUGeEzsJELIu1E0kd3aE,RNsRnKVafNeLJpjXJ7Wg6m" />
+          <Link Id="QxRLRw9iW3bM3OZRyPj2jJ" Ids="DNDLAnTInVHNCT6df7cuPt,Vyzjj2qM7joMfsI3bSUmAH" IsHidden="true" />
+          <Link Id="PRR8S2GpYQvOBW5VpqTP12" Ids="Vyzjj2qM7joMfsI3bSUmAH,EghY8EPZT7QL5F4ghraff5" />
+          <Link Id="UbTxl4IqwS0P6eiVh9J2RF" Ids="IwZb9HJTPNLPTApugaUCZG,NiqexFEGkhKOy5TPtx7Sfy" IsHidden="true" />
+          <Link Id="ObXXPGHgb1bPuMjhCfavfi" Ids="KwyWagSj5HjOR7Ifjj3n8C,IwZb9HJTPNLPTApugaUCZG" />
+          <Link Id="HfIcqOajcGYK9V1wFdq5dK" Ids="VU19doGrjYkK9rm07Xg8bA,VI1nKWAblNoLNXY6iBGJqp" IsHidden="true" />
+          <Link Id="BI5kWc2JrnQMHdlx6q4TXr" Ids="Vtvqg2l1vbXOO00iK6cCC7,VU19doGrjYkK9rm07Xg8bA" />
           <Patch Id="JT3RIbXqBQmQIeg6lVXvOX" Name="Create" ParticipatingElements="NRLokcHrCwEMgBXpa9H2fL" />
           <Patch Id="NsBUKt8ox6cNjvW5ywHozn" Name="Update" ParticipatingElements="APdm3QF3MsUNXxOeEULP1y,QNT1LyTGCh8QWPtFbemdkW,LJxweeLhlaDQM8WT6TyigA,SHt7eH8FYdrMgY7jSReIqk">
             <Pin Id="UjRO7OLxOD0QE05K8FdR9S" Name="Enable" Kind="InputPin" />
             <Pin Id="LvBCaeYxY2eNjRMGW41eRu" Name="Sampling Frequency" Kind="InputPin" />
-            <Pin Id="FMCaCZy0kolOZY5p6dq1O3" Name="Frames Per Block" Kind="InputPin" />
+            <Pin Id="DNDLAnTInVHNCT6df7cuPt" Name="Buffer Size" Kind="InputPin" />
             <Pin Id="Nq8hqxzcfnqPCYw9Pf1Pv0" Name="Debug" Kind="InputPin" />
+            <Pin Id="VI1nKWAblNoLNXY6iBGJqp" Name="Enabled" Kind="OutputPin" />
+            <Pin Id="NiqexFEGkhKOy5TPtx7Sfy" Name="Frames Per Block" Kind="OutputPin" />
             <Pin Id="Vj710xRYNu7Nu981K8FIfF" Name="Params" Kind="OutputPin" />
             <Pin Id="Exob4dJf1UkMmnKsx47Q4b" Name="Errors" Kind="OutputPin" />
             <Pin Id="ORMEZiNNdelLyWWNDDHLFy" Name="Debug" Kind="OutputPin" />
@@ -1486,10 +1495,7 @@
                 <Pin Id="UNn5UkxYVnyPrfFJQzmZJN" Name="Enable" Kind="InputPin" />
                 <Pin Id="TO8MSyaIhZYNqe6vGBT9E3" Name="Input" Kind="InputPin" />
                 <Pin Id="EMBz3SdmNzZOC39jxFhXQL" Name="Device Selection" Kind="InputPin" />
-                <Pin Id="Nr21ZUw7x2ELzohS4ybVqn" Name="Channel Offset" Kind="InputPin" />
                 <Pin Id="E350GVZJKIENq6uhr4LXRL" Name="Channels" Kind="InputPin" />
-                <Pin Id="QmZQq1Yx83vN0lPP19YIEK" Name="Sampling Frequency" Kind="InputPin" />
-                <Pin Id="LvJKdLzRCfvP0qLIKBtZCS" Name="Buffer Size" Kind="InputPin" />
                 <Pin Id="RrhFaL70yw3MhtOXmBsOSc" Name="Output" Kind="StateOutputPin" />
                 <Pin Id="Ec3xZHe56JzPgH7AvFefRR" Name="Result" Kind="OutputPin" />
                 <Pin Id="GVf3wTT50cnNSZONboUN35" Name="Max Number Of Channels" Kind="OutputPin" />
@@ -1520,11 +1526,8 @@
               </Node>
               <ControlPoint Id="MXTSRvBp7mCOeqzbjMaDaX" Bounds="599,277" />
               <ControlPoint Id="PdpjvcQZX1gO9ybG0MV2ge" Bounds="748,592" />
-              <ControlPoint Id="ICGP8ZMxwk2M4lwkOPnSV7" Bounds="759,228" />
               <ControlPoint Id="HQfGK42A4GYOoqJyW36XNR" Bounds="801,262" />
               <ControlPoint Id="Brz8j2gnp5TLvobwZWVMZ3" Bounds="921,579" />
-              <ControlPoint Id="Aucyj8DrtSmNMSRHlhYCCI" Bounds="835,297" />
-              <ControlPoint Id="SpkyK6CXnMbOQXrwMHt0CO" Bounds="866,330" />
             </Canvas>
             <ProcessDefinition Id="HEXP4tHH6iLM88aKKZiDeD">
               <Fragment Id="Vj5WsuZGpQgLIZFiu94LxN" Patch="DnYTaLwuSLjMwm5sdLhw62" Enabled="true" />
@@ -1554,11 +1557,8 @@
               <Pin Id="JWcAa4vSQExMWdhER6YWIa" Name="Errors" Kind="OutputPin" />
               <Pin Id="OjeVexDZiWlNL9i9c0Nc9u" Name="Enable" Kind="InputPin" />
               <Pin Id="VrEsWowPcHeMM9RVKe9M5r" Name="Enabled" Kind="OutputPin" />
-              <Pin Id="MIdLbvYRrRsMXLE82myCZ9" Name="Channel Offset" Kind="InputPin" />
               <Pin Id="Q5sJwjAp10GLoiq6RWJTxw" Name="Channels" Kind="InputPin" DefaultValue="2" />
               <Pin Id="ATHRoXqrFmULEAQB3DUfK4" Name="Max Number Of Channels" Kind="OutputPin" />
-              <Pin Id="Gb7U9oL0BpDLSC3pwqN4Xu" Name="Sampling Frequency" Kind="InputPin" />
-              <Pin Id="QYMGuxRyLJPNtTc2Rd1IKv" Name="Buffer Size" Kind="InputPin" />
             </Patch>
             <Patch Id="UmBNbYl4VlqOknznyUEiU6" Name="Dispose" ParticipatingElements="CTiafnSPplmLbfoyVgkjgH" />
             <Link Id="QaoDSREe5qFMDOBZcTNe0T" Ids="GKWujI8PesiME939PxD34R,EMBz3SdmNzZOC39jxFhXQL" />
@@ -1566,16 +1566,10 @@
             <Link Id="QlmDDfLF5jFLBpE9Y016XS" Ids="MXTSRvBp7mCOeqzbjMaDaX,UNn5UkxYVnyPrfFJQzmZJN" />
             <Link Id="IET0sfgKwTYL7KVvFKE7dy" Ids="PdpjvcQZX1gO9ybG0MV2ge,VrEsWowPcHeMM9RVKe9M5r" IsHidden="true" />
             <Link Id="S9gLEuxOiehLJOx1uTGitH" Ids="Ec3xZHe56JzPgH7AvFefRR,PdpjvcQZX1gO9ybG0MV2ge" />
-            <Link Id="LIkch5dV3RCLJLQ7GhkmeK" Ids="MIdLbvYRrRsMXLE82myCZ9,ICGP8ZMxwk2M4lwkOPnSV7" IsHidden="true" />
-            <Link Id="IjsPB3uc08WN7xVLUOyRM3" Ids="ICGP8ZMxwk2M4lwkOPnSV7,Nr21ZUw7x2ELzohS4ybVqn" />
             <Link Id="SdHBTCebkLGOenoj8ae59u" Ids="Q5sJwjAp10GLoiq6RWJTxw,HQfGK42A4GYOoqJyW36XNR" IsHidden="true" />
             <Link Id="ROchLwIb6SXQAiJ5fIUW8H" Ids="HQfGK42A4GYOoqJyW36XNR,E350GVZJKIENq6uhr4LXRL" />
             <Link Id="NjaIQkHm7KxPIxkE6QCNmY" Ids="Brz8j2gnp5TLvobwZWVMZ3,ATHRoXqrFmULEAQB3DUfK4" IsHidden="true" />
             <Link Id="RGXsA49ONf5LNNgdRRYiei" Ids="GVf3wTT50cnNSZONboUN35,Brz8j2gnp5TLvobwZWVMZ3" />
-            <Link Id="UewlKxpvKlwPOFBXXipox4" Ids="Gb7U9oL0BpDLSC3pwqN4Xu,Aucyj8DrtSmNMSRHlhYCCI" IsHidden="true" />
-            <Link Id="TLWfNov8tsWQdaHvdKCMbP" Ids="Aucyj8DrtSmNMSRHlhYCCI,QmZQq1Yx83vN0lPP19YIEK" />
-            <Link Id="L7pbI8xKtPuLcXIb6QrSQ6" Ids="QYMGuxRyLJPNtTc2Rd1IKv,SpkyK6CXnMbOQXrwMHt0CO" IsHidden="true" />
-            <Link Id="KQyEgDDjVNXLctj121xPHn" Ids="SpkyK6CXnMbOQXrwMHt0CO,LvJKdLzRCfvP0qLIKBtZCS" />
           </Patch>
         </Node>
         <!--

@@ -74,6 +74,10 @@ namespace NewAudio.Dsp
         public AudioBuffer(int numberOfFrames = 0, int numberOfChannels = 1) : base(numberOfFrames, numberOfChannels)
         {
         }
+        public AudioBuffer(float[] data, int numberOfFrames = 0, int numberOfChannels = 1) : base(numberOfFrames, numberOfChannels)
+        {
+            new Span<float>(data, 0, numberOfFrames*numberOfChannels).CopyTo(Data);
+        }
 
         public Span<float> GetChannel(int channel)
         {

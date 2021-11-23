@@ -14,7 +14,7 @@ namespace NewAudio.Nodes
     public class AudioEngineParams : AudioParams
     {
         public AudioParam<SamplingFrequency> SamplingFrequency;
-        public AudioParam<int> FramesPerBlock;
+        public AudioParam<float> BufferSize;
         public AudioParam<ulong> CurrentFrame;
         public AudioParam<bool> Enabled;
     }
@@ -23,6 +23,7 @@ namespace NewAudio.Nodes
         public IResourceHandle<DeviceManager> DeviceManager { get; }
         public readonly AudioEngineParams Params;
         public override string NodeName => "AudioEngine";
+        private int _framesPerBlock = 0;
 
         public AudioEngine()
         {
@@ -35,7 +36,7 @@ namespace NewAudio.Nodes
             Logger.Information("AUDIO SERVICE  {AS}", audioService.GetHashCode());
         }
 
-        public bool Update(bool enable, SamplingFrequency samplingFrequency=SamplingFrequency.Hz48000, int framesPerBlock = 512)
+        public bool Update(bool enable, out int framesPerBlock, SamplingFrequency samplingFrequency=SamplingFrequency.Hz48000, float bufferSize=10)
         {
             try
             {
@@ -43,27 +44,33 @@ namespace NewAudio.Nodes
                 Params.Enabled.Value = enable;
                 Params.CurrentFrame.Value = currentFrame;
                 Params.SamplingFrequency.Value = samplingFrequency;
-                Params.FramesPerBlock.Value = framesPerBlock;
+                Params.BufferSize.Value = bufferSize;
             
                 if (Params.CurrentFrame.HasChanged)
                 {
                     Params.CurrentFrame.Commit();
-                    DeviceManager.Resource.Update();
                 }
-
+                
+                
                 if (Params.HasChanged)
                 {
                     Params.Commit();
-                    // ((AsioOutputDevice)Graph.OutputBlock).Device.UpdateFormat((int)Params.SamplingFrequency.Value, Params.FramesPerBlock.Value);
+                    _framesPerBlock = DeviceManager.Resource.UpdateFormat(new DeviceFormat()
+                    {
+                        SampleRate = (int)Params.SamplingFrequency.Value,
+                        BufferSizeMs = Params.BufferSize.Value
+                    });
                     
                     Graph.SetEnabled(Params.Enabled.Value);
                 }
-                
+
+                framesPerBlock = _framesPerBlock;
                 return Graph.IsEnabled;
             }
             catch (Exception e)
             {
                 ExceptionHappened(e, "AudioEngine.Update");
+                framesPerBlock = 0;
                 return false;
             }
         }

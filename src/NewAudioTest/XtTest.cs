@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using NewAudio.Core;
@@ -39,7 +40,6 @@ namespace NewAudioTest
         public void Test()
         {
           XtAudio.SetOnError(OnError);
-
           using IXtPlatform platform = new RPlatform(XtAudio.Init("X", IntPtr.Zero));
             try
             {
@@ -74,6 +74,7 @@ namespace NewAudioTest
             { Console.WriteLine(XtAudio.GetErrorInfo(e.GetError()));
             } catch (Exception e)
             { Console.WriteLine(e.Message); }
+            AudioService.Dispose();
         }
 
         [Test]

@@ -49,6 +49,11 @@ namespace NewAudio.Dsp
             return v;
         }
 
+        public static float Clamp(float x, float min, float max)
+        {
+            return x < min ? min : x > max ? max : x;
+        }
+        
         public static float Floor(float x)
         {
             return (float)Math.Floor(x);
