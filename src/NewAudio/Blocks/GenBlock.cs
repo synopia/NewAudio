@@ -40,10 +40,10 @@ namespace NewAudio.Block
         {
         }
 
-        protected override void Process(AudioBuffer buffer)
+        protected override void Process(AudioBuffer buffer, int numFrames)
         {
             var data = buffer.Data.AsSpan(FrameProcessRange.Item1, FrameProcessRange.Item2);
-            for (var i = 0; i < data.Length; i++)
+            for (var i = 0; i < numFrames; i++)
             {
                 data[i] = _random.NextFloat(-1f, 1f);
             }
@@ -57,11 +57,11 @@ namespace NewAudio.Block
         {
         }
 
-        protected override void Process(AudioBuffer buffer)
+        protected override void Process(AudioBuffer buffer, int numFrames)
         {
             var data = buffer.Data.AsSpan(FrameProcessRange.Item1, FrameProcessRange.Item2);
             var incr = Params.Freq.Value * _period;
-            for (var i = 0; i < data.Length; i++)
+            for (var i = 0; i < numFrames; i++)
             {
                 data[i] = AudioMath.SinF(_phase * AudioMath.TwoPi);
                 _phase = AudioMath.Fract(_phase + incr);

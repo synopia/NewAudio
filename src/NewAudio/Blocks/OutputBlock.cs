@@ -72,7 +72,7 @@ namespace NewAudio.Block
     {
         public override string Name { get; }
         private IResourceHandle<Device> _device;
-        public Device Device { get=>_device.Resource; }
+        public Device Device => _device.Resource;
 
         private bool _wasEnabledBeforeParamChange;
 
@@ -112,14 +112,14 @@ namespace NewAudio.Block
             return false;
         }
 
-        public AudioBuffer RenderInputs()
+        public AudioBuffer RenderInputs(int numFrames)
         {
             Graph.PreProcess();
             
             InternalBuffer.Zero();
             if (IsEnabled)
             {
-                PullInputs(InternalBuffer);
+                PullInputs(InternalBuffer, numFrames);
             }
 
             if (CheckNotClipping())
@@ -127,7 +127,7 @@ namespace NewAudio.Block
                 InternalBuffer.Zero();
             }
           
-            Graph.PostProcess();
+            Graph.PostProcess(numFrames);
 
             return InternalBuffer;
         }

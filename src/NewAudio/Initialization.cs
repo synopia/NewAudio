@@ -99,12 +99,20 @@ namespace VL.NewAudio
     {
         protected override void RegisterServices(IVLFactory factory)
         {
+            
             /*
-            factory.RegisterNodeFactory(NodeBuilding.NewNodeFactory(factory, "VL.NewAudio.NN", (factory) =>
+            factory.RegisterNodeFactory(NodeBuilding.NewNodeFactory(factory, "NewAudio.Factory", f=>
             {
-                return NodeBuilding.NewFactoryImpl(AudioNodeFactory.CreateNode(factory).ToImmutableArray()); 
-            }));
-            */
+                return NodeBuilding.NewFactoryImpl(new IVLNodeDescription[]
+                {
+                    new AudioNodeDesc<AudioService>(f, ctor: ctx =>
+                    {
+                        var i = new AudioService(null);
+                        return (i, () => i.Dispose());
+                    }, category:"NewAudio",name:"NewAService", hasStateOutput:true),
+                }.ToImmutableArray());
+            }));*/
+            
             factory.RegisterService<NodeContext, IResourceProvider<ILogger>>(context =>
             {
                 return ResourceProvider.NewPooledSystemWide("Logger",

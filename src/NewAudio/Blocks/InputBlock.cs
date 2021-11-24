@@ -1,6 +1,7 @@
 ﻿using System;
 using NewAudio.Core;
 using NewAudio.Devices;
+using NewAudio.Dsp;
 using VL.Lib.Basics.Resources;
 
 namespace NewAudio.Block
@@ -32,13 +33,13 @@ namespace NewAudio.Block
     {
         public override string Name { get; }
         private IResourceHandle<Device> _device;
-        protected Device Device => _device.Resource;
+        public Device Device => _device.Resource;
         private readonly AudioBlockFormat _format;
         private  ulong _lastOverrun;
         private  ulong _lastUnderrun;
         private float _ringBufferPadding = 2;
-        public int InputChannelOffset { get; set; }
 
+        public AudioBuffer InputBuffer => InternalBuffer;
         public float RingBufferPadding
         {
             get => _ringBufferPadding;
@@ -85,8 +86,12 @@ namespace NewAudio.Block
                 NumberOfChannels = deviceChannels;
             }
             
+            Device.AttachInput(this);
         }
-        
+        protected override bool SupportsProcessInPlace()
+        {
+            return false;
+        }
         protected void MarkUnderrun()
         {
             _lastUnderrun = Graph.NumberOfProcessedFrames;
@@ -103,6 +108,8 @@ namespace NewAudio.Block
             {
                 if (disposing)
                 {
+                    SetEnabled(false);
+                    Device.DetachInput(this);
                     _device.Dispose();
                 }
 

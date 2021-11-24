@@ -4,11 +4,10 @@ namespace NewAudio.Dsp
 {
     public static class MixBuffers
     {
-        public static void MixBuffer(AudioBuffer source, AudioBuffer target)
+        public static void MixBuffer(AudioBuffer source, AudioBuffer target, int numFrames)
         {
             int sourceChannels = source.NumberOfChannels;
             int targetChannels = target.NumberOfChannels;
-            var minFrames = Math.Min(source.NumberOfFrames, target.NumberOfFrames);
             if (targetChannels == sourceChannels)
             {
                 source.CopyTo(target);
@@ -24,7 +23,7 @@ namespace NewAudio.Dsp
                 var channel = target.GetChannel(0);
                 for (int ch = 0; ch < sourceChannels; ch++)
                 {
-                    Dsp.AddMul(channel, source.GetChannel(0), downMix, channel, minFrames);
+                    Dsp.AddMul(channel, source.GetChannel(0), downMix, channel, numFrames);
                 }
             } else if (targetChannels < sourceChannels)
             {
@@ -41,19 +40,18 @@ namespace NewAudio.Dsp
             }
         }
         
-        public static void SumMixBuffer(AudioBuffer source, AudioBuffer target)
+        public static void SumMixBuffer(AudioBuffer source, AudioBuffer target, int numFrames)
         {
             int sourceChannels = source.NumberOfChannels;
             int targetChannels = target.NumberOfChannels;
-            var minFrames = Math.Min(source.NumberOfFrames, target.NumberOfFrames);
             if (targetChannels == sourceChannels)
             {
-                Dsp.Add(source.Data, target.Data, target.Data, minFrames);
+                Dsp.Add(source.Data, target.Data, target.Data, numFrames);
             } else if (sourceChannels == 1)
             {
                 for (int ch = 0; ch < targetChannels; ch++)
                 {
-                    Dsp.Add(source.GetChannel(0), target.GetChannel(ch),target.GetChannel(ch),minFrames);
+                    Dsp.Add(source.GetChannel(0), target.GetChannel(ch),target.GetChannel(ch),numFrames);
                 }
             } else if (targetChannels == 1)
             {
@@ -61,19 +59,19 @@ namespace NewAudio.Dsp
                 var channel = target.GetChannel(0);
                 for (int ch = 0; ch < sourceChannels; ch++)
                 {
-                    Dsp.AddMul(channel, source.GetChannel(0), downMix, channel, minFrames);
+                    Dsp.AddMul(channel, source.GetChannel(0), downMix, channel, numFrames);
                 }
             } else if (targetChannels < sourceChannels)
             {
                 for (int ch = 0; ch < targetChannels; ch++)
                 {
-                    Dsp.Add(source.GetChannel(ch), target.GetChannel(ch),target.GetChannel(ch),minFrames);
+                    Dsp.Add(source.GetChannel(ch), target.GetChannel(ch),target.GetChannel(ch),numFrames);
                 }
             } else if (targetChannels > sourceChannels)
             {
                 for (int ch = 0; ch < sourceChannels; ch++)
                 {
-                    Dsp.Add(source.GetChannel(ch), target.GetChannel(ch),target.GetChannel(ch),minFrames);
+                    Dsp.Add(source.GetChannel(ch), target.GetChannel(ch),target.GetChannel(ch),numFrames);
                 }
             }
         }

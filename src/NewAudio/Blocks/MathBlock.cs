@@ -27,9 +27,9 @@ namespace NewAudio.Block
         {
         }
 
-        protected override void Process(AudioBuffer buffer)
+        protected override void Process(AudioBuffer buffer, int numFrames)
         {
-            Dsp.Dsp.Mul(buffer.Data, Params.Value.Value, buffer.Data, buffer.Size);
+            Dsp.Dsp.Mul(buffer.Data, Params.Value.Value, buffer.Data, numFrames);
         }
     }
 }

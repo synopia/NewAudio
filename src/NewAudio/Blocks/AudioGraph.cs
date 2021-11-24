@@ -179,18 +179,18 @@ namespace NewAudio.Block
             AudioThreadId = Thread.CurrentThread.ManagedThreadId;
         }
 
-        public void PostProcess()
+        public void PostProcess(int numFrames)
         {
             // todo
             // ProcessAutoPullNodes();
-            IncrementFrameCount();
+            IncrementFrameCount(numFrames);
             _stopwatch.Stop();
             TimeDuringLastProcessLoop = _stopwatch.Elapsed.Seconds;
         }
 
-        private void IncrementFrameCount()
+        private void IncrementFrameCount(int numFrames)
         {
-            NumberOfProcessedFrames += (ulong)FramesPerBlock;
+            NumberOfProcessedFrames += (ulong)numFrames;
         }
         
         

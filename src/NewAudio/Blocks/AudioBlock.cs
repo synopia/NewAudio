@@ -229,7 +229,7 @@ namespace NewAudio.Block
             NotifyConnectionsDidChange();
         }
 
-        public void PullInputs(AudioBuffer inPlaceBuffer)
+        public void PullInputs(AudioBuffer inPlaceBuffer, int numFrames)
         {
             if (ProcessInPlace)
             {
@@ -238,21 +238,21 @@ namespace NewAudio.Block
                     inPlaceBuffer.Zero();
                     if (IsEnabled)
                     {
-                        Process(inPlaceBuffer);
+                        Process(inPlaceBuffer, numFrames);
                     }
                 }
                 else
                 {
                     var input = Inputs[0];
-                    input.PullInputs(inPlaceBuffer);
+                    input.PullInputs(inPlaceBuffer, numFrames);
                     if (!input.ProcessInPlace)
                     {
-                        MixBuffers.MixBuffer(input.InternalBuffer, inPlaceBuffer);
+                        MixBuffers.MixBuffer(input.InternalBuffer, inPlaceBuffer, numFrames);
                     }
 
                     if (IsEnabled)
                     {
-                        Process(inPlaceBuffer);
+                        Process(inPlaceBuffer, numFrames);
                     }
                 }
             }
@@ -263,7 +263,7 @@ namespace NewAudio.Block
                 {
                     _lastProcessedFrame = numProcessedFrames;
                     MixingBuffer.Zero();
-                    MixInputs();
+                    MixInputs(numFrames);
                 }
             }
         }
@@ -291,26 +291,26 @@ namespace NewAudio.Block
         protected virtual void EnableProcessing(){}
         protected virtual void DisableProcessing(){}
 
-        protected virtual void Process(AudioBuffer buffer)
+        protected virtual void Process(AudioBuffer buffer, int numFrames)
         {
             
         }
 
-        protected virtual void MixInputs()
+        protected virtual void MixInputs(int numFrames)
         {
             foreach (var input in Inputs)
             {
-                input.PullInputs(InternalBuffer);
+                input.PullInputs(InternalBuffer, numFrames);
                 var processedBuffer = input.ProcessInPlace ? InternalBuffer : input.InternalBuffer;
-                MixBuffers.SumMixBuffer(processedBuffer, MixingBuffer);
+                MixBuffers.SumMixBuffer(processedBuffer, MixingBuffer, numFrames);
             }
 
             if (IsEnabled)
             {
-                Process(MixingBuffer);
+                Process(MixingBuffer, numFrames);
             }
             
-            MixBuffers.MixBuffer(MixingBuffer, InternalBuffer);
+            MixBuffers.MixBuffer(MixingBuffer, InternalBuffer, numFrames);
         }
 
         protected virtual bool SupportsInputNumberChannels(int numChannels)

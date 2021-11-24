@@ -69,13 +69,15 @@ namespace NewAudio.Devices
         private IResourceHandle<IXtDevice> _xtDevice;
         private IXtDevice XtDevice => _xtDevice.Resource;
 
-        private IConvertWriter _converter;
+        private IConvertWriter _convertWriter;
+        private IConvertReader _convertReader;
         private IXtStream _stream;
         public XtFormat FormatInUse { get; private set; }
         private bool _formatValid;
         private XtDeviceStreamParams _deviceParams;
         private ulong _error;
-        private int _internalBufferPos;
+        private int _outputBufferPos;
+        private int _inputBufferPos;
         private AudioBuffer _internalOutputBuffer;
         private XtBufferSize _bufferSize;
         private float _chosenBufferSize;
@@ -124,7 +126,7 @@ namespace NewAudio.Devices
 
             if (!SupportNonInterleaved)
             {
-                _converter = testFormat.mix.sample switch
+                _convertWriter = testFormat.mix.sample switch
                 {
                     XtSample.Float32 => new ConvertWriter<Float32Sample, Interleaved>(),
                     XtSample.Int16 => new ConvertWriter<Int16LsbSample, Interleaved>(),
@@ -132,15 +134,31 @@ namespace NewAudio.Devices
                     XtSample.Int32 => new ConvertWriter<Int32LsbSample, Interleaved>(),
                     _ => throw new NotImplementedException()
                 };
+                _convertReader = testFormat.mix.sample switch
+                {
+                    XtSample.Float32 => new ConvertReader<Float32Sample, Interleaved>(),
+                    XtSample.Int16 => new ConvertReader<Int16LsbSample, Interleaved>(),
+                    XtSample.Int24 => new ConvertReader<Int24LsbSample, Interleaved>(),
+                    XtSample.Int32 => new ConvertReader<Int32LsbSample, Interleaved>(),
+                    _ => throw new NotImplementedException()
+                };
             }
             else
             {
-                _converter = testFormat.mix.sample switch
+                _convertWriter = testFormat.mix.sample switch
                 {
                     XtSample.Float32 => new ConvertWriter<Float32Sample, NonInterleaved>(),
                     XtSample.Int16 => new ConvertWriter<Int16LsbSample, NonInterleaved>(),
                     XtSample.Int24 => new ConvertWriter<Int24LsbSample, NonInterleaved>(),
                     XtSample.Int32 => new ConvertWriter<Int32LsbSample, NonInterleaved>(),
+                    _ => throw new NotImplementedException()
+                };
+                _convertReader = testFormat.mix.sample switch
+                {
+                    XtSample.Float32 => new ConvertReader<Float32Sample, NonInterleaved>(),
+                    XtSample.Int16 => new ConvertReader<Int16LsbSample, NonInterleaved>(),
+                    XtSample.Int24 => new ConvertReader<Int24LsbSample, NonInterleaved>(),
+                    XtSample.Int32 => new ConvertReader<Int32LsbSample, NonInterleaved>(),
                     _ => throw new NotImplementedException()
                 };
             }
@@ -211,37 +229,35 @@ namespace NewAudio.Devices
 
             _formatValid = false;
         }
-
-        private int OnBuffer(XtStream stream, in XtBuffer targetBuffer, object user)
+        public void DetachInput(InputDeviceBlock block)
         {
-            if (targetBuffer.output == IntPtr.Zero || _outputDeviceBlocks.Count != 1)
+            _inputDeviceBlocks.Remove(block);
+            _formatValid = false;
+        }
+
+        private int OnBuffer(XtStream stream, in XtBuffer deviceBuffer, object user)
+        {
+            if (deviceBuffer.output == IntPtr.Zero || _outputDeviceBlocks.Count != 1)
             {
                 return 0;
             }
 
+            var inputBlock = _inputDeviceBlocks.Count == 1 ? _inputDeviceBlocks[0] : null;
+            
             Trace.Assert(this == _outputDeviceBlocks[0].Device);
 
-            int remainingFrames = targetBuffer.frames;
-            while (remainingFrames > 0)
+            int frames = deviceBuffer.frames;
+            // read inputs
+            if (inputBlock != null )
             {
-                if (_internalOutputBuffer == null)
-                {
-                    _internalOutputBuffer = _outputDeviceBlocks[0].RenderInputs();
-                    _internalBufferPos = 0;
-                }
-
-                if (_internalBufferPos == 0)
-                {
-                    _converter.Write(_internalOutputBuffer, _internalBufferPos, targetBuffer, 0, remainingFrames);
-                    _internalBufferPos += remainingFrames;
-                    remainingFrames = 0;
-                }
-
-                if (_internalBufferPos >= FramesPerBlock)
-                {
-                    _internalOutputBuffer = null;
-                }
+                _convertReader.Read(deviceBuffer, 0, inputBlock.InputBuffer, 0, frames);
+                _inputBufferPos += frames;
             }
+
+            // render output
+            _internalOutputBuffer = _outputDeviceBlocks[0].RenderInputs(frames);
+            _convertWriter.Write(_internalOutputBuffer, 0, deviceBuffer, 0, frames);
+            _outputBufferPos += frames;
 
             return 0;
         }

@@ -70,7 +70,7 @@ namespace NewAudio.Core
             var systems = new[] { XtSystem.ASIO, XtSystem.WASAPI, XtSystem.DirectSound };
             foreach (var system in systems)
             {
-                using var list = GetService(system).OpenDeviceList(XtEnumFlags.Output);
+                using var list = GetService(system).OpenDeviceList(XtEnumFlags.All);
 
                 for (int d = 0; d < list.GetCount(); d++)
                 {

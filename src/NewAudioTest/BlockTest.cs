@@ -203,7 +203,7 @@ namespace NewAudioTest
                 DeviceManager.UpdateFormat(sr,bs);
                 Assert.AreEqual(48000, output.OutputSampleRate);
                 Assert.AreEqual(512, output.FramesPerBlock);
-                var buf = output.RenderInputs();
+                var buf = output.RenderInputs(512);
                 Assert.AreEqual(1024, buf.Size);
             }
 
@@ -230,7 +230,7 @@ namespace NewAudioTest
 
                 sine.Connect(Graph.OutputBlock);
 
-                var buf = output.RenderInputs();
+                var buf = output.RenderInputs(512);
                 Assert.AreEqual(1024, buf.Size);
                 handle.Resource.Dispose();
             }
@@ -259,15 +259,48 @@ namespace NewAudioTest
                 gain.Connect(output);
                 Graph.OutputBlock = output;
                 Assert.AreEqual(512, sine.FramesPerBlock);
-                var buf1 = output.RenderInputs();
+                var buf1 = output.RenderInputs(512);
                 Assert.AreEqual(512, sine.FramesPerBlock);
-                var buf = output.RenderInputs();
+                var buf = output.RenderInputs(512);
                 Assert.AreEqual(1024, buf.Size);
             }
             AudioService.Dispose();
 
             Assert.AreEqual(1, CallCounter.TestDeviceCreated);
             Assert.AreEqual(1, CallCounter.TestDeviceDisposed);
+        }
+        [Test]
+        public void TestInput()
+        {
+            var sr = new AudioParam<SamplingFrequency>(SamplingFrequency.Hz48000);
+            var bs = new AudioParam<float>(40);
+
+            using (var deviceManager = Resources.GetDeviceManager().Resource)
+            {
+                var outputSelection =
+                    new OutputDeviceSelection(AudioService.GetOutputDevices().First().ToString());
+                using var output = deviceManager.GetOutputDevice(outputSelection, new AudioBlockFormat(){Channels = 2});
+                var inputSelection =new InputDeviceSelection(AudioService.GetInputDevices().First().ToString());
+                using var input = deviceManager.GetInputDevice(inputSelection, new AudioBlockFormat() { Channels = 2 });
+                DeviceManager.UpdateFormat(sr,bs);
+
+                var sine = new SineGenBlock(new AudioBlockFormat());
+                var gain = new MultiplyBlock(new AudioBlockFormat());
+                input.Connect(gain);
+                sine.Connect(gain);
+                gain.Connect(output);
+                
+                Graph.OutputBlock = output;
+                Assert.AreEqual(512, sine.FramesPerBlock);
+                var buf1 = output.RenderInputs(512);
+                Assert.AreEqual(512, sine.FramesPerBlock);
+                var buf = output.RenderInputs(512);
+                Assert.AreEqual(1024, buf.Size);
+            }
+            AudioService.Dispose();
+
+            Assert.AreEqual(2, CallCounter.TestDeviceCreated);
+            Assert.AreEqual(2, CallCounter.TestDeviceDisposed);
         }
     }
 }

@@ -51,9 +51,6 @@
      
     </ItemGroup>
     <ItemGroup>
-        <Reference Include="System.Collections.Immutable, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-          <HintPath>..\..\..\..\..\..\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\System.Collections.Immutable.dll</HintPath>
-        </Reference>
         <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
           <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.1-0632-g47c6d01865\lib\VL.Core.dll</HintPath>
         </Reference>
@@ -79,6 +76,9 @@
       <Compile Remove="Nodes\AudioLoopRegion.cs" />
       <Compile Remove="Nodes\AudioMixer.cs" />
       <Compile Remove="Nodes\FFT.cs" />
+      <Compile Remove="Core\AudioNodeFactory.cs" />
+      <Compile Remove="Core\Documentation.cs" />
+      <Compile Remove="Core\Helper.cs" />
     </ItemGroup>
    
 </Project>
