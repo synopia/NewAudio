@@ -25,7 +25,6 @@ namespace NewAudio.Devices
     {
         protected override void Initialize()
         {
-            AddEntry("-", null);
         }
 
         public new static OutputDeviceDefinition Instance =>

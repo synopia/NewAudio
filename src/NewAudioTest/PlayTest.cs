@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using NewAudio.Block;
 using NewAudio.Core;
 using NewAudio.Devices;
 using NUnit.Framework;
+using Xt;
 
 namespace NewAudioTest
 {
@@ -13,8 +15,9 @@ namespace NewAudioTest
     [Apartment(ApartmentState.STA)]
     public class PlayTest: BaseTest
     {
-        public PlayTest() : base(false)
+        protected override IXtPlatform CreatePlatform()
         {
+            return new TestPlatform(new List<TestDevice>());
         }
 
         [Test]
@@ -29,7 +32,7 @@ namespace NewAudioTest
                 Logger.Information("{D}", d.Name);
                 // var o = DeviceManager.GetOutputDevice(new OutputDeviceSelection(d.ToString()), new AudioBlockFormat(){Channels = 2});
                 using var o = new OutputDeviceBlock(new OutputDeviceSelection("Wasapi: VoiceMeeter Input (VB-Audio VoiceMeeter VAIO) (Exclusive)"), new AudioBlockFormat(){Channels = 2});
-                o.Graph.OutputBlock = o;
+                o.Graph.AddOutput(o);
                 // o.Device.UpdateFormat(new DeviceFormat(){SampleRate = 44100, BufferSizeMs = 100});
                 Logger.Information("{D}", o);
 

@@ -46,7 +46,11 @@ namespace NewAudio.Dsp
             int targetChannels = target.NumberOfChannels;
             if (targetChannels == sourceChannels)
             {
-                Dsp.Add(source.Data, target.Data, target.Data, numFrames);
+                for (int ch = 0; ch < sourceChannels; ch++)
+                {
+                    Dsp.Add(source.GetChannel(ch), target.GetChannel(ch), target.GetChannel(ch), numFrames);
+                    
+                }                
             } else if (sourceChannels == 1)
             {
                 for (int ch = 0; ch < targetChannels; ch++)

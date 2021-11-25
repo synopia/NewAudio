@@ -3,6 +3,7 @@ using NewAudio.Core;
 using NewAudio.Devices;
 using NewAudio.Dsp;
 using VL.Lib.Basics.Resources;
+using Xt;
 
 namespace NewAudio.Block
 {
@@ -28,6 +29,23 @@ namespace NewAudio.Block
         }
     }
 
+    public delegate void InputProcessor(AudioBuffer buffer, int sampleRate, int frames);
+    public class InputProcessorBlock : InputBlock
+    {
+        public override string Name => "Input Processor";
+        private InputProcessor _inputProcessor;
+        
+        public InputProcessorBlock(InputProcessor processor, AudioBlockFormat format) : base(format)
+        {
+            InitLogger<InputProcessorBlock>();
+            _inputProcessor = processor;
+        }
+
+        protected override void Process(AudioBuffer buffer, int numFrames)
+        {
+            _inputProcessor.Invoke(buffer, SampleRate, numFrames);
+        }
+    }
 
     public class InputDeviceBlock : InputBlock
     {
@@ -86,11 +104,22 @@ namespace NewAudio.Block
                 NumberOfChannels = deviceChannels;
             }
 
-            Session = _audioService.OpenDevice(((DeviceSelection)selection.Tag).DeviceId, new ChannelConfig{InputChannels = NumberOfChannels});
+            Session = _audioService.OpenDevice(((DeviceSelection)selection.Tag).DeviceId, Graph.GraphId, new ChannelConfig{InputChannels = NumberOfChannels},GetBuffer);
             var s = $"InputDeviceBlock ({DeviceCaps.Name})";
             Name = s;
             Logger.Information("{Name} created", s);
         }
+
+        private AudioBuffer GetBuffer(int numFrames)
+        {
+            return InternalBuffer;
+        }
+
+        protected override void MixInputs(int numFrames)
+        {
+            
+        }
+
         protected override bool SupportsProcessInPlace()
         {
             return false;
@@ -104,6 +133,17 @@ namespace NewAudio.Block
         {
             _lastOverrun = Graph.NumberOfProcessedFrames;
         }
+        
+        protected override void EnableProcessing()
+        {
+            
+            _audioService.OpenStream(Session.SessionId);
+        }
+
+        protected override void DisableProcessing()
+        {
+            _audioService.CloseStream(Session.SessionId);
+        } 
         private bool _disposedValue;
         protected override void Dispose(bool disposing)
         {

@@ -43,8 +43,8 @@ namespace NewAudio.Block
             _clipThreshold = threshold;
         }
 
-        public abstract int OutputSampleRate { get; }
-        public abstract int OutputFramesPerBlock { get; }
+        // public abstract int OutputSampleRate { get; }
+        // public abstract int OutputFramesPerBlock { get; }
 
         public override void Connect(AudioBlock output)
         {
@@ -72,10 +72,8 @@ namespace NewAudio.Block
     {
         public override string Name { get; }
 
-        private bool _wasEnabledBeforeParamChange;
-
-        public override int OutputSampleRate => Session.Format.SampleRate;
-        public override int OutputFramesPerBlock => Session.Format.FramesPerBlock;
+        // public override int OutputSampleRate => Session.Format.SampleRate;
+        // public override int OutputFramesPerBlock => Session.Format.FramesPerBlock;
         private IAudioService _audioService;
         public Session Session { get; }
         public DeviceCaps DeviceCaps { get; }
@@ -101,12 +99,10 @@ namespace NewAudio.Block
                 NumberOfChannels = deviceChannels;
             }
             
-            Session = _audioService.OpenDevice(((DeviceSelection)selection.Tag).DeviceId, new ChannelConfig{OutputChannels = NumberOfChannels});
+            Session = _audioService.OpenDevice(((DeviceSelection)selection.Tag).DeviceId, Graph.GraphId, new ChannelConfig{OutputChannels = NumberOfChannels}, RenderInputs);
             
             var s = $"OutputDeviceBlock ({DeviceCaps.Name})";
             Name = s;
-            // Device.DeviceFormatWillChange += DeviceParamsWillChange;
-            // Device.DeviceFormatDidChange += DeviceParamsDidChange;
             
             Logger.Information("{Name} created", s);
         }
@@ -118,8 +114,6 @@ namespace NewAudio.Block
 
         public AudioBuffer RenderInputs(int numFrames)
         {
-            Graph.PreProcess();
-            
             InternalBuffer.Zero();
             if (IsEnabled)
             {
@@ -131,8 +125,6 @@ namespace NewAudio.Block
                 InternalBuffer.Zero();
             }
           
-            Graph.PostProcess(numFrames);
-
             return InternalBuffer;
         }
         
@@ -147,21 +139,7 @@ namespace NewAudio.Block
             _audioService.CloseStream(Session.SessionId);
         }
 
-        private void DeviceParamsWillChange()
-        {
-            _wasEnabledBeforeParamChange = IsEnabled;
-            Graph.Disable();
-            Graph.UninitializeAllNodes();
-        }
-
-        private void DeviceParamsDidChange()
-        {
-            Graph.InitializeAllNodes();
-            Graph.SetEnabled(_wasEnabledBeforeParamChange);
-        }
-        
         private bool _disposedValue;
-
 
         protected override void Dispose(bool disposing)
         {
@@ -170,8 +148,6 @@ namespace NewAudio.Block
                 if (disposing)
                 {
                     SetEnabled(false);
-                    // Device.DeviceFormatWillChange -= DeviceParamsWillChange;
-                    // Device.DeviceFormatDidChange -= DeviceParamsDidChange;
                     _audioService.CloseDevice(Session.SessionId);
                 }
 

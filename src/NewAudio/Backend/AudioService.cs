@@ -67,8 +67,8 @@ namespace NewAudio.Core
         private readonly List<DeviceSelection> _defaultDevices = new();
         private readonly List<DeviceSelection> _deviceSelections = new();
         private readonly Dictionary<XtSystem, IXtService> _services = new();
-
-
+        
+        private readonly Dictionary<string, GraphState> _graphs = new();
         private readonly Dictionary<string, DeviceState> _devices = new();
         private readonly Dictionary<string, Session> _sessions = new();
 
@@ -78,6 +78,8 @@ namespace NewAudio.Core
         public bool IsRunning { get; private set; }
         private CancellationTokenSource _cts = new();
         private AutoResetEvent _readyEvent = new(false);
+
+        public List<Session> Sessions => _sessions.Values.ToList();
 
         public AudioServiceThread(ILogger logger, IResourceProvider<IXtPlatform> platformProvider)
         {
@@ -94,7 +96,7 @@ namespace NewAudio.Core
             _thread.IsBackground = true;
             _thread.Start();
 
-            _readyEvent.WaitOne();
+            _readyEvent.WaitOne(2000);
         }
 
         private void StopThread()
@@ -168,7 +170,7 @@ namespace NewAudio.Core
                     state.XtStream?.Stop();
                     state.XtDevice?.Dispose();
                 }
-                _platform.Dispose();
+                _platform?.Dispose();
             }
         }
 
@@ -192,33 +194,59 @@ namespace NewAudio.Core
             }
         }
 
-        private int OnBuffer(XtStream stream, in XtBuffer deviceBuffer, object user)
+        public int OnBuffer(in XtBuffer deviceBuffer)
         {
-            /*
-            if (deviceBuffer.output == IntPtr.Zero || _outputDeviceBlocks.Count != 1)
+            if (deviceBuffer.output == IntPtr.Zero)
             {
                 return 0;
             }
-
-            var inputBlock = _inputDeviceBlocks.Count == 1 ? _inputDeviceBlocks[0] : null;
-            
-            Trace.Assert(this == _outputDeviceBlocks[0].Device);
-
-            int frames = deviceBuffer.frames;
-            // read inputs
-            if (inputBlock != null )
+            var frames = deviceBuffer.frames;
+            foreach (var graphs in _graphs.Values)
             {
-                _convertReader.Read(deviceBuffer, 0, inputBlock.InputBuffer, 0, frames);
-                _inputBufferPos += frames;
+                graphs.BeforeAudioBufferFill?.Invoke(frames);
             }
-
-            // render output
-            _internalOutputBuffer = _outputDeviceBlocks[0].RenderInputs(frames);
-            _convertWriter.Write(_internalOutputBuffer, 0, deviceBuffer, 0, frames);
-            _outputBufferPos += frames;
-            */
-
+            foreach (var entry in _devices)
+            {
+                var deviceId = entry.Key;
+                var device = entry.Value;
+                var all = _sessions.Values.Where(s =>
+                    s.DeviceId == deviceId && s.IsProcessing && s.OnAudioBufferRequest != null).ToArray();
+                var outputs = all.Where(o => o.Channels.OutputChannels > 0).ToArray();
+                var inputs = all.Where(o => o.Channels.InputChannels > 0).ToArray();
+                if (inputs.Length > 0)
+                {
+                    foreach (var input in inputs)
+                    {
+                        device.ConvertReader.Read(deviceBuffer, 0, input.OnAudioBufferRequest(frames), 0, frames);
+                    }
+                }
+                if (outputs.Length == 0)
+                {
+                    continue;
+                } 
+                if (outputs.Length == 1)
+                {
+                    var outputBuffer = outputs[0].OnAudioBufferRequest.Invoke(frames);
+                    device.ConvertWriter.Write(outputBuffer, 0, deviceBuffer, 0, frames);
+                    continue;
+                }
+                device.OutputBuffer.Zero();
+                foreach (var output in outputs)
+                {
+                    var outBuffer = output.OnAudioBufferRequest.Invoke(frames);
+                    MixBuffers.SumMixBuffer(outBuffer, device.OutputBuffer, frames);
+                }
+                device.ConvertWriter.Write(device.OutputBuffer, 0, deviceBuffer, 0, frames);
+            }
+            foreach (var graphs in _graphs.Values)
+            {
+                graphs.AfterAudioBufferFill?.Invoke(frames);
+            }
             return 0;
+        }
+        private int OnBuffer(XtStream stream, in XtBuffer deviceBuffer, object user)
+        {
+            return OnBuffer(deviceBuffer);
         }
 
         private void OnRunning(XtStream stream, bool running, ulong error, object user)
@@ -299,6 +327,7 @@ namespace NewAudio.Core
             var session = _sessions[sessionId];
             session.IsProcessing = false;
             session.IsInitialized = false;
+            _sessions.Remove(sessionId);
 
             var all = _sessions.Values.Where(s => s.DeviceId == session.DeviceId).ToArray();
             if (!all.Any(d => d.IsInitialized))
@@ -315,7 +344,25 @@ namespace NewAudio.Core
                 entry.IsProcessing = false;
             }
 
-            _sessions.Remove(sessionId);
+        }
+
+
+        public string RegisterAudioGraph( BeforeDeviceConfigChange onBeforeDeviceConfigChange, AfterDeviceConfigChange onAfterDeviceConfigChange,BeforeAudioBufferFill beforeAudioBufferFill, AfterAudioBufferFill afterAudioBufferFill)
+        {
+            var id = Guid.NewGuid().ToString();
+            _graphs[id] = new GraphState()
+            {
+                BeforeAudioBufferFill = beforeAudioBufferFill,
+                AfterAudioBufferFill = afterAudioBufferFill,
+                BeforeDeviceConfigChange = onBeforeDeviceConfigChange,
+                AfterDeviceConfigChange = onAfterDeviceConfigChange,
+            };
+            return id;
+        }
+
+        public void UnregisterAudioGraph(string graphId)
+        {
+            _graphs.Remove(graphId);
         }
 
         private void InitializeDevice(string sessionId, string deviceId, ChannelConfig config)
@@ -356,6 +403,10 @@ namespace NewAudio.Core
             if (!device.IsInitialized)
             {
                 _logger.Information("Initializing device");
+                foreach (var graphState in _graphs.Values)
+                {
+                    graphState.BeforeDeviceConfigChange?.Invoke(device);
+                }
                 var all = _sessions.Values.Where(s => s.DeviceId == device.DeviceId).ToArray();
 
                 var outputChannels = all.Length > 0 ? all.Max(b => b.ChannelConfig.OutputChannels) : 0;
@@ -405,13 +456,30 @@ namespace NewAudio.Core
                 device.Format.FramesPerBlock = device.XtStream.GetFrames();
                 _logger.Information("Device started, Sample rate={SampleRate}, Format={Type}", device.Format.SampleRate,
                     device.Format.SampleType);
+
+                device.OutputBuffer = new AudioBuffer(device.Format.FramesPerBlock, outputChannels);
                 device.IsInitialized = true;
-                
+                foreach (var graphState in _graphs.Values)
+                {
+                    graphState.AfterDeviceConfigChange?.Invoke(device);
+                }
+
+                int playingStreams = 0;
                 for (var i = 0; i < all.Length; i++)
                 {
                     all[i].Channels = all[i].ChannelConfig;
                     all[i].Format = device.Format;
                     all[i].IsInitialized = true;
+                    if (all[i].IsProcessing)
+                    {
+                        playingStreams++;
+                    }
+                }
+
+                if (playingStreams > 0)
+                {
+                    device.XtStream.Start();
+                    device.IsProcessing = true;
                 }
             }
         }
@@ -500,7 +568,6 @@ namespace NewAudio.Core
                 return entry;
             }
 
-            _logger.Information("OpenDevice {Device}", entry.Caps.Name);
             entry.XtDevice = GetService(entry.Caps.System).OpenDevice(deviceId);
             entry.Channels = new ChannelConfig();
             entry.Format = new FormatConfig();
@@ -512,16 +579,18 @@ namespace NewAudio.Core
             return entry;
         }
 
-        public Session OpenDevice(string deviceId, ChannelConfig config)
+        public Session OpenDevice(string deviceId, string graphId, ChannelConfig config, OnAudioBufferRequest onAudioBufferRequest)
         {
             var sessionId = Guid.NewGuid().ToString();
             var session = new Session()
             {
                 SessionId = sessionId,
                 DeviceId = deviceId,
+                GraphId = graphId,
                 ChannelConfig = config,
                 Channels = new ChannelConfig(),
-                Format = new FormatConfig()
+                Format = new FormatConfig(),
+                OnAudioBufferRequest = onAudioBufferRequest
             };
             _sessions[sessionId] = session;
             _fastQueue.Enqueue(new OpenDeviceEvent { SessionId = sessionId,DeviceId = deviceId, Config = config });
@@ -588,7 +657,7 @@ namespace NewAudio.Core
             {
                 using var list = GetService(system).OpenDeviceList(XtEnumFlags.All);
                 var outputDefault = GetService(system).GetDefaultDeviceId(true);
-                var inputDefault = GetService(system).GetDefaultDeviceId(true);
+                var inputDefault = GetService(system).GetDefaultDeviceId(false);
 
 
                 for (int d = 0; d < list.GetCount(); d++)

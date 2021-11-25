@@ -1,9 +1,6 @@
-﻿using System;
-using NewAudio.Block;
+﻿using NewAudio.Block;
 using NewAudio.Core;
 using NewAudio.Devices;
-using VL.Lib.Basics.Resources;
-using NewAudio;
 
 namespace NewAudio.Nodes
 {
@@ -28,20 +25,22 @@ namespace NewAudio.Nodes
             Params = AudioParams.Create<OutputDeviceParams>();
         }
 
-        public bool Update(bool enable, AudioLink input, OutputDeviceSelection deviceSelection, out int maxNumberOfChannels, int channels=2)
+        public bool Update(bool enable, AudioLink input, OutputDeviceSelection deviceSelection,
+            out int maxNumberOfChannels, int channels = 2)
         {
             if (InExceptionTimeOut())
             {
                 maxNumberOfChannels = -1;
                 return false;
             }
+
             Params.Input.Value = input;
             Params.Enable.Value = enable;
 
             Params.Device.Value = deviceSelection;
             Params.NumberOfChannels.Value = channels;
-           
-            if (Params.Device.HasChanged )
+
+            if (Params.Device.HasChanged)
             {
                 Params.Device.Commit();
 
@@ -51,20 +50,20 @@ namespace NewAudio.Nodes
                     StartDevice();
                 }
             }
-            
-            if (Params.Input.HasChanged && AudioBlock!=null)
+
+            if (Params.Input.HasChanged && AudioBlock != null)
             {
                 Params.Input.Commit();
                 AudioBlock.DisconnectAllInputs();
                 Params.Input.Value?.Pin.Connect(AudioBlock);
             }
-            
-            if (Params.Enable.HasChanged && OutputDeviceBlock!=null )
+
+            if (Params.Enable.HasChanged && OutputDeviceBlock != null)
             {
                 Params.Enable.Commit();
                 OutputDeviceBlock.SetEnabled(Params.Enable.Value);
             }
-            
+
             maxNumberOfChannels = OutputDeviceBlock?.DeviceCaps.MaxOutputChannels ?? 0;
             return OutputDeviceBlock?.IsEnabled ?? false;
         }
@@ -77,7 +76,7 @@ namespace NewAudio.Nodes
             });
 
             Params.Input.Value?.Pin.Connect(OutputDeviceBlock);
-            Graph.OutputBlock = OutputDeviceBlock;
+            Graph.AddOutput(OutputDeviceBlock);
             AudioBlock = OutputDeviceBlock;
         }
 
@@ -104,6 +103,7 @@ namespace NewAudio.Nodes
                     StopDevice();
                     Output.Dispose();
                 }
+
                 _disposedValue = disposing;
             }
 

@@ -15,36 +15,25 @@ namespace NewAudioTest
     public class BaseTest : IDisposable
     {
         protected ILogger Logger;
-        protected Func<IXtPlatform> PlatformFunc;
-        protected IXtPlatform Platform;
-        protected  IAudioService AudioService;
+        protected IAudioService AudioService;
         protected AudioGraph Graph;
-        protected bool MockAudio;
-        protected BaseTest(bool mockAudio=true)
-        {
-            MockAudio = mockAudio;
-        }
 
         public void Dispose()
         {
         }
-
+        
         [SetUp]
-        public void InitTest()
+        public void Init()
         {
-            if (MockAudio)
-            {
-                PlatformFunc = ()=>new TestPlatform();
-            }
-            else
-            {
-                PlatformFunc = ()=>new RPlatform(XtAudio.Init("Test", IntPtr.Zero));
-            }
-
-            Resources.SetResources(PlatformFunc);
+            Resources.SetResources(CreatePlatform);
             Logger = Resources.GetLogger<BaseTest>();
             AudioService = Resources.GetAudioService();
             Graph = Resources.GetAudioGraph().Resource;
+        }
+
+        protected virtual IXtPlatform CreatePlatform()
+        {
+            return new RPlatform(XtAudio.Init("Test", IntPtr.Zero));
         }
 
         [TearDown]

@@ -1,4 +1,5 @@
-﻿using NewAudio.Core;
+﻿using System;
+using NewAudio.Core;
 using NewAudio.Dsp;
 using Xt;
 
@@ -20,10 +21,26 @@ namespace NewAudio.Devices
         public int FramesPerBlock;
     }
 
+    public delegate void BeforeDeviceConfigChange(DeviceState device);
+    public delegate void AfterDeviceConfigChange(DeviceState device);
+
+    public delegate AudioBuffer OnAudioBufferRequest(int frames);
+    public delegate void BeforeAudioBufferFill(int frames);
+    public delegate void AfterAudioBufferFill(int frames);
+
+    public class GraphState
+    {
+        public string GraphId;
+        public BeforeAudioBufferFill BeforeAudioBufferFill;
+        public AfterAudioBufferFill AfterAudioBufferFill;
+        public BeforeDeviceConfigChange BeforeDeviceConfigChange;
+        public AfterDeviceConfigChange AfterDeviceConfigChange;
+    }
     public class Session
     {
         public string SessionId;
         public string DeviceId;
+        public string GraphId;
         public ChannelConfig ChannelConfig;
 
         public ChannelConfig Channels;
@@ -31,6 +48,8 @@ namespace NewAudio.Devices
         
         public bool IsInitialized;
         public bool IsProcessing;
+
+        public OnAudioBufferRequest OnAudioBufferRequest;
     }
     
     public class DeviceState
@@ -44,6 +63,7 @@ namespace NewAudio.Devices
 
         public bool IsInitialized;
         public bool IsProcessing;
+        public AudioBuffer OutputBuffer;
         public IConvertReader ConvertReader;
         public IConvertWriter ConvertWriter;
         

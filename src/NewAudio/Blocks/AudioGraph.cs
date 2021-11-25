@@ -1,88 +1,95 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using NewAudio.Core;
 using NewAudio.Devices;
 using Serilog;
-using NewAudio;
 
 namespace NewAudio.Block
 {
-
-    
     public class AudioGraph : IDisposable
     {
         private readonly IAudioService _audioService = Resources.GetAudioService();
         private readonly ILogger _logger = Resources.GetLogger<AudioGraph>();
-        
-        private int _nextId;
+        public string GraphId { get; }
+        private bool _wasEnabledBeforeParamChange;
 
         public AudioGraph()
         {
+            GraphId = _audioService.RegisterAudioGraph(BeforeDeviceConfigChange, AfterDeviceConfigChange,
+                BeforeAudioBufferFill, AfterAudioBufferFill);
             _logger.Information("-----------------------------------------");
-            _logger.Information("AudioGraph initialized, id={Id}", _nextId);
+            _logger.Information("AudioGraph initialized, id={GraphId}", GraphId);
+        }
+
+        private void BeforeDeviceConfigChange(DeviceState device)
+        {
+            _wasEnabledBeforeParamChange = IsEnabled;
+            Disable();
+            UninitializeAllNodes();
+        }
+
+        private void AfterDeviceConfigChange(DeviceState device)
+        {
+            SampleRate = device.Format.SampleRate;
+            FramesPerBlock = device.Format.FramesPerBlock;
+
+            InitializeAllNodes();
+            SetEnabled(_wasEnabledBeforeParamChange);
+        }
+
+        private void BeforeAudioBufferFill(int numFrames)
+        {
+            PreProcess();
+        }
+
+        private void AfterAudioBufferFill(int numFrames)
+        {
+            PostProcess(numFrames);
         }
 
         public ulong NumberOfProcessedFrames { get; private set; }
-        public double NumberOfProcessedSeconds =>NumberOfProcessedFrames/(double)SampleRate;
-        public int SampleRate => _outputBlock?.OutputSampleRate ?? 0;
-        public int FramesPerBlock => _outputBlock?.OutputFramesPerBlock ?? 0;
+        public double NumberOfProcessedSeconds => NumberOfProcessedFrames / (double)SampleRate;
+        public int SampleRate { get; private set; }
+        public int FramesPerBlock { get; private set; }
         public bool IsEnabled { get; private set; }
         public double TimeDuringLastProcessLoop { get; private set; }
         public HashSet<AudioBlock> AutoPulledNodes { get; } = new();
         public int AudioThreadId { get; set; }
         private Stopwatch _stopwatch = Stopwatch.StartNew();
-        private OutputBlock _outputBlock;
+        private List<OutputBlock> _outputBlocks = new();
 
-        public OutputBlock OutputBlock
+        public void AddOutput(OutputBlock block)
         {
-            get
-            {
-                return _outputBlock;
-            }
-            set
-            {
-                if (_outputBlock != null)
-                {
-                    if (value != null && (_outputBlock.OutputFramesPerBlock != value.OutputFramesPerBlock ||
-                                          _outputBlock.OutputSampleRate != value.OutputSampleRate))
-                    {
-                        UninitializeAllNodes();
-                    }
-                    else
-                    {
-                        UninitializeNode(_outputBlock);
-                    }
-                }
-                _outputBlock = value;
-                if (_outputBlock!=null)
-                {
-                    InitializeAllNodes();
-                }
-            }
+            _outputBlocks.Add(block);
+            InitializeAllNodes();
         }
 
-        public int GetNextId()
+        public void RemoveOutput(OutputBlock block)
         {
-            return _nextId++;
+            _outputBlocks.Remove(block);
         }
-
 
         public void Enable()
         {
-            if (IsEnabled || OutputBlock==null)
+            if (IsEnabled || _outputBlocks.Count == 0)
             {
                 return;
             }
 
-            if (!OutputBlock.IsInitialized)
+            foreach (var block in _outputBlocks.Where(block => !block.IsInitialized))
             {
-                OutputBlock.DoInitialize();
+                block.DoInitialize();
             }
 
+
             IsEnabled = true;
-            OutputBlock.Enable();
+            foreach (var block in _outputBlocks)
+            {
+                block.Enable();
+            }
         }
 
         public void Disable()
@@ -92,8 +99,11 @@ namespace NewAudio.Block
                 return;
             }
 
-            OutputBlock?.Disable(); 
-            
+            foreach (var block in _outputBlocks)
+            {
+                block.Disable();
+            }
+
             IsEnabled = false;
         }
 
@@ -111,13 +121,13 @@ namespace NewAudio.Block
 
         public void ConnectionsDidChange(AudioBlock block)
         {
-            
         }
 
         public void InitializeNode(AudioBlock block)
         {
             block.DoInitialize();
         }
+
         public void UninitializeNode(AudioBlock block)
         {
             block.DoUninitialize();
@@ -126,17 +136,25 @@ namespace NewAudio.Block
         public void InitializeAllNodes()
         {
             var traversed = new HashSet<AudioBlock>();
-            InitRecursive(OutputBlock, traversed);
+            foreach (var block in _outputBlocks)
+            {
+                InitRecursive(block, traversed);
+            }
+
             foreach (var node in AutoPulledNodes)
             {
                 InitRecursive(node, traversed);
             }
         }
-        
+
         public void UninitializeAllNodes()
         {
             var traversed = new HashSet<AudioBlock>();
-            UninitRecursive(OutputBlock, traversed);
+            foreach (var block in _outputBlocks)
+            {
+                UninitRecursive(block, traversed);
+            }
+
             foreach (var node in AutoPulledNodes)
             {
                 UninitRecursive(node, traversed);
@@ -147,7 +165,11 @@ namespace NewAudio.Block
         {
             var traversed = new HashSet<AudioBlock>();
 
-            DisconnectRecursive(OutputBlock, traversed);
+            foreach (var block in _outputBlocks)
+            {
+                DisconnectRecursive(block, traversed);
+            }
+
             foreach (var node in AutoPulledNodes)
             {
                 DisconnectRecursive(node, traversed);
@@ -161,7 +183,6 @@ namespace NewAudio.Block
 
         public void RemoveAutoPullNode(AudioBlock block)
         {
-            
         }
 
         public bool IsAudioThread()
@@ -169,7 +190,6 @@ namespace NewAudio.Block
             return AudioThreadId == Thread.CurrentThread.ManagedThreadId;
         }
 
-        
 
         public void PreProcess()
         {
@@ -190,8 +210,8 @@ namespace NewAudio.Block
         {
             NumberOfProcessedFrames += (ulong)numFrames;
         }
-        
-        
+
+
         public string DebugInfo()
         {
             return null;
@@ -210,9 +230,10 @@ namespace NewAudio.Block
             {
                 DisconnectRecursive(input, traversed);
             }
-            
+
             block.DisconnectAllInputs();
         }
+
         protected void InitRecursive(AudioBlock block, HashSet<AudioBlock> traversed)
         {
             if (block == null || traversed.Contains(block))
@@ -228,6 +249,7 @@ namespace NewAudio.Block
 
             block.ConfigureConnections();
         }
+
         protected void UninitRecursive(AudioBlock block, HashSet<AudioBlock> traversed)
         {
             if (block == null || traversed.Contains(block))
@@ -242,10 +264,9 @@ namespace NewAudio.Block
             }
 
             block.DoUninitialize();
-            
         }
-        
-        
+
+
         public void Dispose()
         {
             Dispose(true);
