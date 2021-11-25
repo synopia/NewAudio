@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using NAudio.Dsp;
-using SharedMemory;
 
 namespace NewAudio.Dsp
 {
@@ -50,6 +49,10 @@ namespace NewAudio.Dsp
         }
 
         public static float Clamp(float x, float min, float max)
+        {
+            return x < min ? min : x > max ? max : x;
+        }
+        public static double ClampD(double x, double min, double max)
         {
             return x < min ? min : x > max ? max : x;
         }

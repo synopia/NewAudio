@@ -2410,4 +2410,5 @@
   <NugetDependency Id="PFaNp3Lkw2GNWjUzaJVrfo" Location="VL.HDE" Version="2021.4.1-0632-g47c6d01865" />
   <NugetDependency Id="CWi7ZIUqE8HLyIDVQn2YXk" Location="VL.Skia" Version="2021.4.1-0632-g47c6d01865" />
   <DocumentDependency Id="SOZX7BhG6R9PXahXdJawZ9" Location="./vl/IIR Filter.vl" IsForward="true" />
+  <NugetDependency Id="PFCcUi1LcEkQTJyDRt4Ngy" Location="VL.NewAudio" Version="0.3.0-alpha" />
 </Document>

@@ -1,4 +1,5 @@
 ﻿using System;
+using NewAudio.Core;
 using Xt;
 
 namespace NewAudio.Devices
@@ -6,17 +7,16 @@ namespace NewAudio.Devices
     public class DeviceSelection
     {
         public string Name { get; }
-        public string Id { get; }
-        public XtSystem System { get; }
-
+        public string DeviceId { get; }
         public bool IsInputDevice { get; }
         public bool IsOutputDevice { get; }
+        public XtSystem System { get; }
 
         public DeviceSelection(XtSystem system, string id, string name, bool isInputDevice, bool isOutputDevice)
         {
-            Id = id;
-            System = system;
+            DeviceId = id;
             Name = name;
+            System = system;
             IsInputDevice = isInputDevice;
             IsOutputDevice = isOutputDevice;
         }

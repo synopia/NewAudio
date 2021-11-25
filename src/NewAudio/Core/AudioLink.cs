@@ -1,7 +1,7 @@
 ﻿using System;
 using NewAudio.Block;
 using VL.Lib.Basics.Resources;
-using VL.NewAudio;
+using NewAudio;
 
 namespace NewAudio.Core
 {

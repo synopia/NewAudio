@@ -31,13 +31,14 @@ namespace NewAudio.Block
 
     public class InputDeviceBlock : InputBlock
     {
+        private readonly IAudioService _audioService;
         public override string Name { get; }
-        private IResourceHandle<Device> _device;
-        public Device Device => _device.Resource;
         private readonly AudioBlockFormat _format;
         private  ulong _lastOverrun;
         private  ulong _lastUnderrun;
         private float _ringBufferPadding = 2;
+        public Session Session { get; }
+        public DeviceCaps DeviceCaps { get; }
 
         public AudioBuffer InputBuffer => InternalBuffer;
         public float RingBufferPadding
@@ -66,16 +67,15 @@ namespace NewAudio.Block
             }
         }
 
-        public InputDeviceBlock(string name, IResourceHandle<Device> device, AudioBlockFormat format) : base(format)
+        public InputDeviceBlock(InputDeviceSelection selection, AudioBlockFormat format) : base(format)
         {
-            var s = $"InputDeviceBlock ({name})";
-            Name = s;
-            _device = device;
+            _audioService = Resources.GetAudioService();
             _format = format;
             InitLogger<InputDeviceBlock>();
-            Logger.Information("{Name} created", s);
 
-            var deviceChannels = Device.MaxNumberOfInputChannels;
+            DeviceCaps = _audioService.GetDeviceInfo((DeviceSelection)selection.Tag);
+
+            var deviceChannels = DeviceCaps.MaxInputChannels;
             if (ChannelMode != ChannelMode.Specified)
             {
                 ChannelMode = ChannelMode.Specified;
@@ -85,8 +85,11 @@ namespace NewAudio.Block
             {
                 NumberOfChannels = deviceChannels;
             }
-            
-            Device.AttachInput(this);
+
+            Session = _audioService.OpenDevice(((DeviceSelection)selection.Tag).DeviceId, new ChannelConfig{InputChannels = NumberOfChannels});
+            var s = $"InputDeviceBlock ({DeviceCaps.Name})";
+            Name = s;
+            Logger.Information("{Name} created", s);
         }
         protected override bool SupportsProcessInPlace()
         {
@@ -109,8 +112,7 @@ namespace NewAudio.Block
                 if (disposing)
                 {
                     SetEnabled(false);
-                    Device.DetachInput(this);
-                    _device.Dispose();
+                    _audioService.CloseDevice(Session.SessionId);
                 }
 
                 _disposedValue = disposing;

@@ -71,27 +71,24 @@ namespace NewAudio.Block
     public class OutputDeviceBlock : OutputBlock
     {
         public override string Name { get; }
-        private IResourceHandle<Device> _device;
-        public Device Device => _device.Resource;
 
         private bool _wasEnabledBeforeParamChange;
 
-        public override int OutputSampleRate => Device.SampleRate;
-        public override int OutputFramesPerBlock => Device.FramesPerBlock;
-
-        public OutputDeviceBlock(string name, IResourceHandle<Device> device, AudioBlockFormat format) : base(format.WithAutoEnable(false))
+        public override int OutputSampleRate => Session.Format.SampleRate;
+        public override int OutputFramesPerBlock => Session.Format.FramesPerBlock;
+        private IAudioService _audioService;
+        public Session Session { get; }
+        public DeviceCaps DeviceCaps { get; }
+        
+        public OutputDeviceBlock(OutputDeviceSelection selection, AudioBlockFormat format) : base(format.WithAutoEnable(false))
         {
-            var s = $"OutputDeviceBlock ({name})";
-            Name = s;
-            _device = device;
+            _audioService = Resources.GetAudioService();
             InitLogger<OutputDeviceBlock>();
-            
-            Logger.Information("{Name} created", s);
 
-            Device.DeviceFormatWillChange += DeviceParamsWillChange;
-            Device.DeviceFormatDidChange += DeviceParamsDidChange;
+            DeviceCaps = _audioService.GetDeviceInfo((DeviceSelection)selection.Tag);
 
-            var deviceChannels = Device.MaxNumberOfOutputChannels;
+
+            var deviceChannels = DeviceCaps.MaxOutputChannels;
             
             if (ChannelMode != ChannelMode.Specified)
             {
@@ -104,7 +101,14 @@ namespace NewAudio.Block
                 NumberOfChannels = deviceChannels;
             }
             
-            Device.AttachOutput(this);
+            Session = _audioService.OpenDevice(((DeviceSelection)selection.Tag).DeviceId, new ChannelConfig{OutputChannels = NumberOfChannels});
+            
+            var s = $"OutputDeviceBlock ({DeviceCaps.Name})";
+            Name = s;
+            // Device.DeviceFormatWillChange += DeviceParamsWillChange;
+            // Device.DeviceFormatDidChange += DeviceParamsDidChange;
+            
+            Logger.Information("{Name} created", s);
         }
 
         protected override bool SupportsProcessInPlace()
@@ -132,12 +136,15 @@ namespace NewAudio.Block
             return InternalBuffer;
         }
         
-        protected override void Initialize()
+        protected override void EnableProcessing()
         {
+            
+            _audioService.OpenStream(Session.SessionId);
         }
 
-        protected override void Uninitialize()
+        protected override void DisableProcessing()
         {
+            _audioService.CloseStream(Session.SessionId);
         }
 
         private void DeviceParamsWillChange()
@@ -155,6 +162,7 @@ namespace NewAudio.Block
         
         private bool _disposedValue;
 
+
         protected override void Dispose(bool disposing)
         {
             if (!_disposedValue)
@@ -162,10 +170,9 @@ namespace NewAudio.Block
                 if (disposing)
                 {
                     SetEnabled(false);
-                    Device.DeviceFormatWillChange -= DeviceParamsWillChange;
-                    Device.DeviceFormatDidChange -= DeviceParamsDidChange;
-                    Device.DetachOutput(this);
-                    _device.Dispose();
+                    // Device.DeviceFormatWillChange -= DeviceParamsWillChange;
+                    // Device.DeviceFormatDidChange -= DeviceParamsDidChange;
+                    _audioService.CloseDevice(Session.SessionId);
                 }
 
                 _disposedValue = disposing;

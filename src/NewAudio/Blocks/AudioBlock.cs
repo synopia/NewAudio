@@ -6,7 +6,7 @@ using NewAudio.Core;
 using NewAudio.Dsp;
 using Serilog;
 using VL.Lib.Basics.Resources;
-using VL.NewAudio;
+using NewAudio;
 
 namespace NewAudio.Block
 {

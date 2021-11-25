@@ -10,7 +10,7 @@ namespace NewAudioTest
 {
     [TestFixture]
     [Apartment(ApartmentState.STA)]
-    public class XtTest: BaseTest
+    public class XtTest
     {
         static void OnError(string message)
             => Console.WriteLine(message);
@@ -74,7 +74,6 @@ namespace NewAudioTest
             { Console.WriteLine(XtAudio.GetErrorInfo(e.GetError()));
             } catch (Exception e)
             { Console.WriteLine(e.Message); }
-            AudioService.Dispose();
         }
 
         [Test]

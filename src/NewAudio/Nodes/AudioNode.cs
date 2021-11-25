@@ -10,7 +10,7 @@ using VL.Lang.Helper;
 using VL.Lib.Basics.Resources;
 using VL.Lib.Collections;
 using VL.Model;
-using VL.NewAudio;
+using NewAudio;
 
 namespace NewAudio.Nodes
 {

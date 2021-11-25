@@ -3,7 +3,6 @@ using Xt;
 
 namespace NewAudio.Core
 {
-    public delegate int XtOnBuffer(IXtStream stream, in XtBuffer buffer, object user);
     public interface IXtDevice : IDisposable
     {
         XtBufferSize GetBufferSize(in XtFormat format);

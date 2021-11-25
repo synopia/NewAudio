@@ -28,9 +28,9 @@ namespace NewAudioTest
                 var d = deviceSelections[0];//.SeFirst();
                 Logger.Information("{D}", d.Name);
                 // var o = DeviceManager.GetOutputDevice(new OutputDeviceSelection(d.ToString()), new AudioBlockFormat(){Channels = 2});
-                var o = DeviceManager.GetOutputDevice(new OutputDeviceSelection("Wasapi: VoiceMeeter Input (VB-Audio VoiceMeeter VAIO) (Exclusive)"), new AudioBlockFormat(){Channels = 2});
+                using var o = new OutputDeviceBlock(new OutputDeviceSelection("Wasapi: VoiceMeeter Input (VB-Audio VoiceMeeter VAIO) (Exclusive)"), new AudioBlockFormat(){Channels = 2});
                 o.Graph.OutputBlock = o;
-                o.Device.UpdateFormat(new DeviceFormat(){SampleRate = 44100, BufferSizeMs = 100});
+                // o.Device.UpdateFormat(new DeviceFormat(){SampleRate = 44100, BufferSizeMs = 100});
                 Logger.Information("{D}", o);
 
                 var sine = new SineGenBlock(new AudioBlockFormat(){AutoEnable = true});
@@ -55,10 +55,6 @@ namespace NewAudioTest
                 Console.WriteLine(e);
                 
             }
-            
-            Graph.Dispose();
-            DeviceManager.Dispose();
-            AudioService.Dispose();
         }
     }
 }

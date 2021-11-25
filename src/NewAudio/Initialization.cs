@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Threading;
 using NewAudio.Block;
 using NewAudio.Core;
 using NewAudio.Devices;
+using NewAudio.Nodes;
 using Serilog;
 using Serilog.Formatting.Display;
 using VL.Core;
@@ -14,42 +16,31 @@ using VL.Lib.Basics.Resources;
 using VL.Model;
 using Xt;
 
-[assembly: AssemblyInitializer(typeof(VL.NewAudio.Initialization))]
-namespace VL.NewAudio
+[assembly: AssemblyInitializer(typeof(NewAudio.Initialization))]
+
+namespace NewAudio
 {
-  
     public static class Resources
     {
+        private static Func<IXtPlatform> _platform;
         private static IAudioService _audioService;
         private static AudioGraph _audioGraph;
-        private static DeviceManager _deviceManager;
         private static ILogger _logger;
 
         /// <summary>
         /// Only used for testing purpose
         /// </summary>
-        /// <param name="platform">The Xt implementation to use. Use TestPlatform to mock the whole audio system</param>
-        public static void SetResources(IXtPlatform platform)
+        public static void SetResources(Func<IXtPlatform> platform, AudioGraph graph = null)
         {
-            _logger =  new LoggerConfiguration()
+            _logger = new LoggerConfiguration()
                 .Enrich.WithThreadId()
                 .WriteTo.Console(new MessageTemplateTextFormatter(
                     "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}"))
                 .MinimumLevel.Debug()
                 .CreateLogger();
-            SetResources(new AudioService(platform));
-        }
-        public static void SetResources(IAudioService service, AudioGraph graph=null, DeviceManager deviceManager=null)
-        {
-            _logger =  new LoggerConfiguration()
-                .Enrich.WithThreadId()
-                .WriteTo.Console(new MessageTemplateTextFormatter(
-                    "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj} {Properties}{NewLine}{Exception}"))
-                .MinimumLevel.Debug()
-                .CreateLogger();
-            _audioService = service;
+            _platform = platform;
+            _audioService = new AudioServiceThread(_logger, ResourceProvider.New(()=>platform.Invoke()));
             _audioGraph = graph ?? new AudioGraph();
-            _deviceManager = deviceManager ?? new DeviceManager();
         }
 
         public static ILogger GetLogger<T>()
@@ -59,12 +50,13 @@ namespace VL.NewAudio
                 // ReSharper disable once ContextualLoggerProblem
                 return _logger.ForContext<T>();
             }
+
             var provider = NodeContext.Current.Factory.CreateService<IResourceProvider<ILogger>>(NodeContext.Current);
             var logger = provider.GetHandle().Resource;
             // ReSharper disable once ContextualLoggerProblem
             return logger.ForContext<T>();
         }
-        
+
         public static IAudioService GetAudioService()
         {
             if (_audioService != null)
@@ -72,47 +64,40 @@ namespace VL.NewAudio
                 return _audioService;
             }
 
-            var provider = NodeContext.Current.Factory.CreateService<IResourceProvider<IAudioService>>(NodeContext.Current);
+            var provider =
+                NodeContext.Current.Factory.CreateService<IResourceProvider<IAudioService>>(NodeContext.Current);
             return provider.GetHandle().Resource;
         }
+
         public static IResourceHandle<AudioGraph> GetAudioGraph()
         {
             if (_audioGraph != null)
             {
                 return new TestResourceHandle<AudioGraph>(_audioGraph);
             }
-            var provider = NodeContext.Current.Factory.CreateService<IResourceProvider<AudioGraph>>(NodeContext.Current);
+
+            var provider =
+                NodeContext.Current.Factory.CreateService<IResourceProvider<AudioGraph>>(NodeContext.Current);
             return provider.GetHandle();
         }
-        public static IResourceHandle<DeviceManager> GetDeviceManager()
-        {
-            if (_deviceManager != null)
-            {
-                return new TestResourceHandle<DeviceManager>(_deviceManager);
-            }
-            var provider = NodeContext.Current.Factory.CreateService<IResourceProvider<DeviceManager>>(NodeContext.Current);
-            return provider.GetHandle();
-        }
-        
     }
-    public sealed class Initialization: AssemblyInitializer<Initialization>
+
+    public sealed class Initialization : AssemblyInitializer<Initialization>
     {
         protected override void RegisterServices(IVLFactory factory)
         {
-            
-            /*
-            factory.RegisterNodeFactory(NodeBuilding.NewNodeFactory(factory, "NewAudio.Factory", f=>
+            factory.RegisterNodeFactory(NodeBuilding.NewNodeFactory(factory, "NewAudio.Factory", f =>
             {
                 return NodeBuilding.NewFactoryImpl(new IVLNodeDescription[]
                 {
-                    new AudioNodeDesc<AudioService>(f, ctor: ctx =>
+                    new AudioNodeDesc<AudioGenerator>(f, ctor: ctx =>
                     {
-                        var i = new AudioService(null);
+                        var i = new AudioGenerator();
                         return (i, () => i.Dispose());
-                    }, category:"NewAudio",name:"NewAService", hasStateOutput:true),
+                    }, category: "NewAudio.Nodes", name: "AService", hasStateOutput: true),
                 }.ToImmutableArray());
-            }));*/
-            
+            }));
+
             factory.RegisterService<NodeContext, IResourceProvider<ILogger>>(context =>
             {
                 return ResourceProvider.NewPooledSystemWide("Logger",
@@ -126,68 +111,41 @@ namespace VL.NewAudio
                             .MinimumLevel.Debug()
                             .CreateLogger();
                         return logger;
-                    },delayDisposalInMilliseconds:0).Finally(a =>
-                {
-                    a.Dispose();
-                });
+                    }, delayDisposalInMilliseconds: 0).Finally(a => { a.Dispose(); });
             });
-            
+
             // There can be only one XtAudio instance. Should be used by all opened VL documents/apps
+            factory.RegisterService<string, IResourceProvider<IXtPlatform>>(context =>
+            {
+                return ResourceProvider.NewPooledSystemWide("NewAudio.XtPlatform",
+                    factory: (key) =>
+                    {
+                        return new RPlatform(XtAudio.Init("NewAudio", IntPtr.Zero));
+                    }, delayDisposalInMilliseconds: 0).Finally(a => { a.Dispose(); });
+            });
             factory.RegisterService<NodeContext, IResourceProvider<IAudioService>>(context =>
             {
-                // return ResourceProvider.NewPooledPerApp(context,
-                    // factory: () =>
-                    // {
-                        // var platform = new RPlatform(XtAudio.Init("NewAudio", IntPtr.Zero));
-                        // var audioService = new AudioService(platform);
-                        
-                        // return audioService;
-                    // },delayDisposalInMilliseconds:0).Finally(a =>
-                // {
-                    // a.Dispose();
-                // });
-                return ResourceProvider.NewPooledSystemWide("NewAudio",
-                factory: (key) =>
-                {
-                var platform = new RPlatform(XtAudio.Init("NewAudio", IntPtr.Zero));
-                XtAudio.SetOnError(platform.DoOnError);
-                var audioService = new AudioService(platform);
-                         
-                return audioService;
-                },delayDisposalInMilliseconds:0).Finally(a =>
-                {
-                a.Dispose();
-                });
+                return ResourceProvider.NewPooledSystemWide("NewAudioThread",
+                    factory: (key) =>
+                    {
+                        var logger = context.Factory.CreateService<IResourceProvider<ILogger>>(context).GetHandle()
+                            .Resource;
+                        var p = context.Factory.CreateService<IResourceProvider<IXtPlatform>>("NewAudio.XtPlatform");
+                        return new AudioServiceThread(logger, p);
+                    }, delayDisposalInMilliseconds: 0).Finally(a => { a.Dispose(); });
             });
-            
+
             // One AudioGraph per app. TODO maybe make AudioGraph a VL node, that needs a connected output node  
             factory.RegisterService<NodeContext, IResourceProvider<AudioGraph>>(context =>
             {
                 return ResourceProvider.NewPooledPerApp(context,
-                    factory: () =>
-                    {
-                        return new AudioGraph();
-                    },delayDisposalInMilliseconds:0).Finally(ag =>
-                {
-                    ag.Dispose();
-                });
+                        factory: () => { return new AudioGraph(); }, delayDisposalInMilliseconds: 0)
+                    .Finally(ag => { ag.Dispose(); });
             });
-            
-            // One DeviceManager per AudioGraph/app. Keeps track of devices and their configuration used by the AudioGraph
-            factory.RegisterService<NodeContext, IResourceProvider<DeviceManager>>(context =>
-            {
-                return ResourceProvider.NewPooledPerApp(context,
-                    factory: () =>
-                    {
-                        return new DeviceManager();
-                    },delayDisposalInMilliseconds:0).Finally(dm =>
-                {
-                    dm.Dispose();
-                });
-            });
+
         }
     }
-    
+
     public class TestResourceHandle<T> : IResourceHandle<T>
     {
         public TestResourceHandle(T resource)
@@ -205,5 +163,4 @@ namespace VL.NewAudio
 
         public T Resource { get; }
     }
-
 }

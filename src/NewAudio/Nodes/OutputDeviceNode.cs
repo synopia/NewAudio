@@ -3,7 +3,7 @@ using NewAudio.Block;
 using NewAudio.Core;
 using NewAudio.Devices;
 using VL.Lib.Basics.Resources;
-using VL.NewAudio;
+using NewAudio;
 
 namespace NewAudio.Nodes
 {
@@ -19,14 +19,12 @@ namespace NewAudio.Nodes
     public class OutputDeviceNode : AudioNode
     {
         public override string NodeName => "OutputDevice";
-        public IResourceHandle<DeviceManager> DeviceManager { get; }
         public readonly OutputDeviceParams Params;
         public OutputDeviceBlock OutputDeviceBlock { get; private set; }
 
         public OutputDeviceNode()
         {
             InitLogger<OutputDeviceNode>();
-            DeviceManager = Resources.GetDeviceManager();
             Params = AudioParams.Create<OutputDeviceParams>();
         }
 
@@ -67,27 +65,17 @@ namespace NewAudio.Nodes
                 OutputDeviceBlock.SetEnabled(Params.Enable.Value);
             }
             
-            maxNumberOfChannels = OutputDeviceBlock?.Device?.MaxNumberOfOutputChannels ?? 0;
+            maxNumberOfChannels = OutputDeviceBlock?.DeviceCaps.MaxOutputChannels ?? 0;
             return OutputDeviceBlock?.IsEnabled ?? false;
         }
 
         public void StartDevice()
         {
-            try
+            OutputDeviceBlock = new OutputDeviceBlock(Params.Device.Value, new AudioBlockFormat()
             {
-                OutputDeviceBlock = DeviceManager.Resource.GetOutputDevice(Params.Device.Value, new AudioBlockFormat()
-                {
-                    Channels = Params.NumberOfChannels.Value,
-                });
-            }
-            catch (Exception e)
-            {
-                OutputDeviceBlock?.Dispose();
-                OutputDeviceBlock = null;
-                AudioBlock = null;
-                ExceptionHappened(e, "StartDevice");
-            }
-            OutputDeviceBlock.IsAutoEnable = Params.Enable.Value;
+                Channels = Params.NumberOfChannels.Value,
+            });
+
             Params.Input.Value?.Pin.Connect(OutputDeviceBlock);
             Graph.OutputBlock = OutputDeviceBlock;
             AudioBlock = OutputDeviceBlock;
@@ -115,7 +103,6 @@ namespace NewAudio.Nodes
                 {
                     StopDevice();
                     Output.Dispose();
-                    DeviceManager.Dispose();
                 }
                 _disposedValue = disposing;
             }

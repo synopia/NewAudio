@@ -5,7 +5,7 @@ using System.Threading;
 using NewAudio.Core;
 using NewAudio.Devices;
 using Serilog;
-using VL.NewAudio;
+using NewAudio;
 
 namespace NewAudio.Block
 {
@@ -18,10 +18,8 @@ namespace NewAudio.Block
         
         private int _nextId;
 
-
         public AudioGraph()
         {
-            _nextId = (_audioService.GetNextId()) << 10;
             _logger.Information("-----------------------------------------");
             _logger.Information("AudioGraph initialized, id={Id}", _nextId);
         }
