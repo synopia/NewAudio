@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using NewAudio.Block;
+using NewAudio.Processor;
 using NewAudio.Core;
 using NewAudio.Devices;
 using NUnit.Framework;

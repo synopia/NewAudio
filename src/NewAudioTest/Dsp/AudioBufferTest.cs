@@ -27,12 +27,12 @@ namespace NewAudioTest.Dsp
             {
                 buf[i] = i;
             }
-            var fs = buf.GetChannel(0);
+            var fs = buf.GetReadChannel(0);
             for (var i = 0; i < 512; i++)
             {
                 Assert.AreEqual(i, fs[i]);
             }
-            fs = buf.GetChannel(1);
+            fs = buf.GetReadChannel(1);
             for (var i = 0; i < 512; i++)
             {
                 Assert.AreEqual(512+i, fs[i]);

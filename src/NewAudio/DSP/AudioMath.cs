@@ -106,12 +106,15 @@ namespace NewAudio.Dsp
         public static bool ThresholdBuffer(AudioBuffer buffer, float threshold, out int recordFrame)
         {
             var size = buffer.Size;
-            for (int i = 0; i < size; i++)
+            for (int ch = 0; ch < buffer.NumberOfChannels; ch++)
             {
-                if (Math.Abs(buffer[i]) > threshold)
+                for (int i = 0; i < size; i++)
                 {
-                    recordFrame = i % buffer.NumberOfFrames;
-                    return true;
+                    if (Math.Abs(buffer[ch, i]) > threshold)
+                    {
+                        recordFrame = i % buffer.NumberOfFrames;
+                        return true;
+                    }
                 }
             }
 

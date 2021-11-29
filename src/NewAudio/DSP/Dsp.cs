@@ -4,7 +4,11 @@ namespace NewAudio.Dsp
 {
     public static class Dsp
     {
-        public static void Fill(float value, Span<float> target, int length)
+        public static void CopyFrom(this Span<float> target, Span<float> source, int length)
+        {
+            source.Slice(0, length).CopyTo(target);
+        }
+        public static void Fill(this Span<float> target, float value, int length)
         {
             for (int i = 0; i < length; i++)
             {
@@ -29,6 +33,11 @@ namespace NewAudio.Dsp
             {
                 target[i] = array[i]+scalar;
             }
+        }
+
+        public static void Add(this Span<float> target, Span<float> source, int length)
+        {
+            Add(source, target, target, length);
         }
         public static void Add(Span<float> arrayOne, Span<float> arrayTwo, Span<float> target, int length)
         {

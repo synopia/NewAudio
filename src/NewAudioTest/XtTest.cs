@@ -51,6 +51,7 @@ namespace NewAudioTest
                     IXtService service = platform.GetService(s);
                     using IXtDeviceList all = service.OpenDeviceList(XtEnumFlags.All);
                     Console.WriteLine("System: " + s);
+                    Console.WriteLine("  Capabilities: " + service.GetCapabilities());
                     string defaultInput = service.GetDefaultDeviceId(false);
                     if (defaultInput != null)
                     {

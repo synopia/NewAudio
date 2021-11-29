@@ -41,11 +41,22 @@
         <PackageReference Include="NAudio.WinMM" Version="2.0.1" />
     </ItemGroup>
     <ItemGroup>
-      <Folder Include="Internal" />
-    </ItemGroup>
-    <ItemGroup>
       <Compile Remove="AudioBufferOutTest.cs" />
       <Compile Remove="FFTTest.cs" />
+      <Compile Remove="Nodes\FFTTest.cs" />
+      <Compile Remove="Nodes\AudioBufferOutTest.cs" />
+      <Compile Remove="Internal\**" />
+      <Compile Remove="Nodes\**" />
+      <Compile Remove="AudioParams.cs" />
+      <Compile Remove="BaseProcessorTest.cs" />
+      <Compile Remove="BaseTest.cs" />
+      <Compile Remove="BenchTest.cs" />
+      <Compile Remove="PlayTest.cs" />
+      <Compile Remove="TestDevices.cs" />
+      <Compile Remove="Dsp\ConverterTest.cs" />
+      <Compile Remove="Dsp\AudioBufferTest.cs" />
+      <Compile Remove="Processor\OutputProcessorTest.cs" />
+      <Compile Remove="Processor\RenderProcessorTest.cs" />
     </ItemGroup>
     <ItemGroup>
       <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
@@ -54,6 +65,14 @@
       <Reference Include="VL.CoreLib, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
         <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.1-0632-g47c6d01865\lib\VL.CoreLib.dll</HintPath>
       </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Remove="Internal\**" />
+      <EmbeddedResource Remove="Nodes\**" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Remove="Internal\**" />
+      <None Remove="Nodes\**" />
     </ItemGroup>
 
 </Project>

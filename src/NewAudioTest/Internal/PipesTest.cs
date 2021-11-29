@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using NewAudio.Internal;
 using NUnit.Framework;
 
-namespace NewAudioTest
+namespace NewAudioTest.Internal
 {
     [TestFixture]
     public class PipesTest

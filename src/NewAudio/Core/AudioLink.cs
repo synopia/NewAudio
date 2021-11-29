@@ -1,15 +1,15 @@
 ﻿using System;
-using NewAudio.Block;
+using NewAudio.Processor;
 using VL.Lib.Basics.Resources;
 using NewAudio;
 
 namespace NewAudio.Core
 {
-    public class AudioPin : AudioBlock
+    public class AudioPin : AudioProcessor
     {
         public override string Name => "Output Pin";
 
-        public AudioPin() : base(new AudioBlockFormat(){ChannelMode = ChannelMode.MatchesInput, AutoEnable = true})
+        public AudioPin() : base(new AudioProcessorConfig(){ChannelMode = ChannelMode.MatchesInput, AutoEnable = true})
         {
         }
     }

@@ -1,5 +1,4 @@
 ﻿using System;
-using NewAudio.Core;
 using Xt;
 
 namespace NewAudio.Devices

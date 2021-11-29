@@ -126,7 +126,11 @@ namespace NewAudio.Core
         {
             return new RDeviceList(_service.OpenDeviceList(flags));
         }
-        
+
+        public XtServiceCaps GetCapabilities()
+        {
+            return _service.GetCapabilities();
+        }
     }
 
     public class RDeviceList :  IXtDeviceList

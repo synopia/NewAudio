@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NewAudio.Block;
+using NewAudio.Processor;
 using NewAudio.Core;
 using NewAudio.Devices;
 using NUnit.Framework;
@@ -31,14 +31,14 @@ namespace NewAudioTest
                 var d = deviceSelections[0];//.SeFirst();
                 Logger.Information("{D}", d.Name);
                 // var o = DeviceManager.GetOutputDevice(new OutputDeviceSelection(d.ToString()), new AudioBlockFormat(){Channels = 2});
-                using var o = new OutputDeviceBlock(new OutputDeviceSelection("Wasapi: VoiceMeeter Input (VB-Audio VoiceMeeter VAIO) (Exclusive)"), new AudioBlockFormat(){Channels = 2});
+                using var o = new OutputDeviceProcessor(new OutputDeviceSelection("Wasapi: VoiceMeeter Input (VB-Audio VoiceMeeter VAIO) (Exclusive)"), new AudioProcessorConfig(){Channels = 2});
                 o.Graph.AddOutput(o);
                 // o.Device.UpdateFormat(new DeviceFormat(){SampleRate = 44100, BufferSizeMs = 100});
                 Logger.Information("{D}", o);
 
-                var sine = new SineGenBlock(new AudioBlockFormat(){AutoEnable = true});
-                var noise = new NoiseGenBlock(new AudioBlockFormat(){AutoEnable = true});
-                var gain = new MultiplyBlock(new AudioBlockFormat() { AutoEnable = true });
+                var sine = new SineGenProcessor(new AudioProcessorConfig(){AutoEnable = true});
+                var noise = new NoiseGenProcessor(new AudioProcessorConfig(){AutoEnable = true});
+                var gain = new MultiplyProcessor(new AudioProcessorConfig() { AutoEnable = true });
                 sine.Params.Freq.Value = 1000;
                 gain.Params.Value.Value = 0.30f;
                 // sine.Enable();

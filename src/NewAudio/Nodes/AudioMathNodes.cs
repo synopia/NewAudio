@@ -1,4 +1,4 @@
-﻿using NewAudio.Block;
+﻿using NewAudio.Processor;
 using NewAudio.Core;
 
 namespace NewAudio.Nodes
@@ -17,7 +17,7 @@ namespace NewAudio.Nodes
     public class AudioMathNode: AudioNode
     {
         public override string NodeName => "AudioMath";
-        private MathBlock _mathBlock;
+        private MathProcessor _mathProcessor;
         public AudioMathParams Params;
 
         public AudioMathNode()
@@ -39,31 +39,31 @@ namespace NewAudio.Nodes
 
                 if (operation == MathOperation.Multiply)
                 {
-                    _mathBlock = new MultiplyBlock(new AudioBlockFormat(){AutoEnable = Params.Enable.Value});
+                    _mathProcessor = new MultiplyProcessor(new AudioProcessorConfig(){AutoEnable = Params.Enable.Value});
                 }
 
-                AudioBlock = _mathBlock;
+                AudioProcessor = _mathProcessor;
             }
 
-            if (Params.Value.HasChanged && _mathBlock!=null )
+            if (Params.Value.HasChanged && _mathProcessor!=null )
             {
                 Params.Value.Commit();
-                _mathBlock.Params.Value.Value = Params.Value.Value;
+                _mathProcessor.Params.Value.Value = Params.Value.Value;
             }
 
-            if (Params.Input.HasChanged && AudioBlock!=null)
+            if (Params.Input.HasChanged && AudioProcessor!=null)
             {
                 Params.Input.Commit();
-                Params.Input.Value?.Pin.Connect(AudioBlock);
+                Params.Input.Value?.Pin.Connect(AudioProcessor);
             }
 
-            if (Params.Enable.HasChanged && _mathBlock != null)
+            if (Params.Enable.HasChanged && _mathProcessor != null)
             {
                 Params.Enable.Commit();
-                _mathBlock.SetEnabled(Params.Enable.Value);
+                _mathProcessor.SetEnabled(Params.Enable.Value);
             }
             
-            enabled = _mathBlock?.IsEnabled ?? false;
+            enabled = _mathProcessor?.IsEnabled ?? false;
             return Output;
         }
         
@@ -75,7 +75,7 @@ namespace NewAudio.Nodes
             {
                 if (disposing)
                 {
-                    _mathBlock.Dispose();
+                    _mathProcessor.Dispose();
                 }
 
                 _disposedValue = disposing;

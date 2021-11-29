@@ -30,6 +30,7 @@ namespace NewAudio.Core
         IXtDevice OpenDevice(string id);
         IXtDeviceList OpenDeviceList(XtEnumFlags flags);
         string GetDefaultDeviceId(bool output);
+        XtServiceCaps GetCapabilities();
     }
 
     public interface IXtDeviceList : IDisposable

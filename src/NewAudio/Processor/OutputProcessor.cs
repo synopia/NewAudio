@@ -5,9 +5,9 @@ using NewAudio.Dsp;
 using VL.Lib.Basics.Resources;
 using Xt;
 
-namespace NewAudio.Block
+namespace NewAudio.Processor
 {
-    public abstract class OutputBlock : AudioBlock
+    public abstract class OutputProcessor : AudioProcessor
     {
         private ulong _lastClip;
         private bool _clipDetectionEnabled;
@@ -25,7 +25,7 @@ namespace NewAudio.Block
         }
 
 
-        protected OutputBlock(AudioBlockFormat format) : base(format)
+        protected OutputProcessor(AudioProcessorConfig format) : base(format)
         {
             _clipDetectionEnabled = true;
             _clipThreshold = 2;
@@ -46,7 +46,7 @@ namespace NewAudio.Block
         // public abstract int OutputSampleRate { get; }
         // public abstract int OutputFramesPerBlock { get; }
 
-        public override void Connect(AudioBlock output)
+        public override void Connect(AudioProcessor output)
         {
             throw new InvalidOperationException("Not supported!");
         }
@@ -68,7 +68,7 @@ namespace NewAudio.Block
     
     }
 
-    public class OutputDeviceBlock : OutputBlock
+    public class OutputDeviceProcessor : OutputProcessor
     {
         public override string Name { get; }
 
@@ -78,10 +78,10 @@ namespace NewAudio.Block
         public Session Session { get; }
         public DeviceCaps DeviceCaps { get; }
         
-        public OutputDeviceBlock(OutputDeviceSelection selection, AudioBlockFormat format) : base(format.WithAutoEnable(false))
+        public OutputDeviceProcessor(OutputDeviceSelection selection, AudioProcessorConfig format) : base(format.WithAutoEnable(false))
         {
             _audioService = Resources.GetAudioService();
-            InitLogger<OutputDeviceBlock>();
+            InitLogger<OutputDeviceProcessor>();
 
             DeviceCaps = _audioService.GetDeviceInfo((DeviceSelection)selection.Tag);
 

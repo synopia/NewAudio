@@ -2,15 +2,15 @@
 using System.Linq;
 using System.Threading.Tasks;
 using FFTW.NET;
-using NewAudio.Block;
+using NewAudio.Processor;
 using NewAudio.Devices;
 using NUnit.Framework;
 using Xt;
 
-namespace NewAudioTest
+namespace NewAudioTest.Processor
 {
     [TestFixture]
-    public class RenderBlockTest : BaseBlockTest
+    public class RenderProcessorTest : BaseProcessorTest
     {
         private int _disposeCalled;
         private TestStream _stream;
@@ -78,17 +78,17 @@ namespace NewAudioTest
         {
             var outputSelection =
                 new OutputDeviceSelection(AudioService.GetDefaultOutputDevices().First().ToString());
-            using var output = new OutputDeviceBlock(outputSelection, new AudioBlockFormat() { Channels = 2 });
+            using var output = new OutputDeviceProcessor(outputSelection, new AudioProcessorConfig() { Channels = 2 });
             Graph.AddOutput(output);
             var counter = 1;
-            using var input = new InputProcessorBlock((buffer, sr, frames) =>
+            using var input = new InputDelegateProcessor((buffer, sr, frames) =>
             {
                 for (int i = 0; i < frames; i++)
                 {
                     buffer[i] = counter / (float)sr;
                     counter++;
                 }
-            }, new AudioBlockFormat() { Channels = 1 });
+            }, new AudioProcessorConfig() { Channels = 1 });
             input.Connect(output);
             output.Enable();
             input.Enable();
@@ -123,19 +123,19 @@ namespace NewAudioTest
         {
             var outputSelection =
                 new OutputDeviceSelection(AudioService.GetDefaultOutputDevices().First().ToString());
-            using var output = new OutputDeviceBlock(outputSelection, new AudioBlockFormat() { Channels = 2 });
-            using var output2 = new OutputDeviceBlock(outputSelection, new AudioBlockFormat() { Channels = 4 });
+            using var output = new OutputDeviceProcessor(outputSelection, new AudioProcessorConfig() { Channels = 2 });
+            using var output2 = new OutputDeviceProcessor(outputSelection, new AudioProcessorConfig() { Channels = 4 });
             Graph.AddOutput(output);
             Graph.AddOutput(output2);
             var counter = 1;
-            using var input = new InputProcessorBlock((buffer, sr, frames) =>
+            using var input = new InputDelegateProcessor((buffer, sr, frames) =>
             {
                 for (int i = 0; i < frames; i++)
                 {
                     buffer[i] = counter / (float)sr;
                     counter++;
                 }
-            }, new AudioBlockFormat() { Channels = 1 });
+            }, new AudioProcessorConfig() { Channels = 1 });
             input.Connect(output);
             input.Connect(output2);
             output.Enable();
@@ -174,9 +174,9 @@ namespace NewAudioTest
         {
             var outputSelection =
                 new OutputDeviceSelection("ASIO: InOut");
-            using var output = new OutputDeviceBlock(outputSelection, new AudioBlockFormat() { Channels = 2 });
+            using var output = new OutputDeviceProcessor(outputSelection, new AudioProcessorConfig() { Channels = 2 });
             var inputSelection = new InputDeviceSelection("ASIO: InOut");
-            using var input = new InputDeviceBlock(inputSelection, new AudioBlockFormat() { Channels = 2 });
+            using var input = new InputDeviceProcessor(inputSelection, new AudioProcessorConfig() { Channels = 2 });
             Graph.AddOutput(output);
             input.Connect(output);
             output.Enable();

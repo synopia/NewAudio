@@ -1,29 +1,29 @@
 ﻿using NewAudio.Core;
 using NewAudio.Dsp;
 
-namespace NewAudio.Block
+namespace NewAudio.Processor
 {
     public class MathBlockParams : AudioParams
     {
         public AudioParam<float> Value;
     }
     
-    public abstract class MathBlock: AudioBlock
+    public abstract class MathProcessor: AudioProcessor
     {
         public readonly MathBlockParams Params;
         
-        public MathBlock(AudioBlockFormat format) : base(format)
+        public MathProcessor(AudioProcessorConfig format) : base(format)
         {
-            InitLogger<MathBlock>();
+            InitLogger<MathProcessor>();
             Params = AudioParams.Create<MathBlockParams>();
         }
     }
 
-    public class MultiplyBlock : MathBlock
+    public class MultiplyProcessor : MathProcessor
     {
         public override string Name => "*";
 
-        public MultiplyBlock(AudioBlockFormat format) : base(format)
+        public MultiplyProcessor(AudioProcessorConfig format) : base(format)
         {
         }
 

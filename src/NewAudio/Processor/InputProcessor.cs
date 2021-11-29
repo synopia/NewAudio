@@ -2,14 +2,12 @@
 using NewAudio.Core;
 using NewAudio.Devices;
 using NewAudio.Dsp;
-using VL.Lib.Basics.Resources;
-using Xt;
 
-namespace NewAudio.Block
+namespace NewAudio.Processor
 {
-    public abstract class InputBlock : AudioBlock
+    public abstract class InputProcessor : AudioProcessor
     {
-        protected InputBlock(AudioBlockFormat format) : base(format)
+        protected InputProcessor(AudioProcessorConfig format) : base(format)
         {
             if (ChannelMode != ChannelMode.Specified)
             {
@@ -22,36 +20,36 @@ namespace NewAudio.Block
             }
         }
 
-        protected override void ConnectInput(AudioBlock input)
+        protected override void ConnectInput(AudioProcessor input)
         {
             throw new InvalidOperationException("Not supported!");
 
         }
     }
 
-    public delegate void InputProcessor(AudioBuffer buffer, int sampleRate, int frames);
-    public class InputProcessorBlock : InputBlock
+    public delegate void ProcessorFunction(AudioBuffer buffer, int sampleRate, int frames);
+    public class InputDelegateProcessor : InputProcessor
     {
         public override string Name => "Input Processor";
-        private InputProcessor _inputProcessor;
+        private ProcessorFunction _processor;
         
-        public InputProcessorBlock(InputProcessor processor, AudioBlockFormat format) : base(format)
+        public InputDelegateProcessor(ProcessorFunction processor, AudioProcessorConfig format) : base(format)
         {
-            InitLogger<InputProcessorBlock>();
-            _inputProcessor = processor;
+            InitLogger<InputDelegateProcessor>();
+            _processor = processor;
         }
 
         protected override void Process(AudioBuffer buffer, int numFrames)
         {
-            _inputProcessor.Invoke(buffer, SampleRate, numFrames);
+            _processor.Invoke(buffer, SampleRate, numFrames);
         }
     }
 
-    public class InputDeviceBlock : InputBlock
+    public class InputDeviceProcessor : InputProcessor
     {
         private readonly IAudioService _audioService;
         public override string Name { get; }
-        private readonly AudioBlockFormat _format;
+        private readonly AudioProcessorConfig _format;
         private  ulong _lastOverrun;
         private  ulong _lastUnderrun;
         private float _ringBufferPadding = 2;
@@ -85,11 +83,11 @@ namespace NewAudio.Block
             }
         }
 
-        public InputDeviceBlock(InputDeviceSelection selection, AudioBlockFormat format) : base(format)
+        public InputDeviceProcessor(InputDeviceSelection selection, AudioProcessorConfig format) : base(format)
         {
             _audioService = Resources.GetAudioService();
             _format = format;
-            InitLogger<InputDeviceBlock>();
+            InitLogger<InputDeviceProcessor>();
 
             DeviceCaps = _audioService.GetDeviceInfo((DeviceSelection)selection.Tag);
 

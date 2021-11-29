@@ -7,7 +7,7 @@ using Xt;
 namespace NewAudioTest
 {
     
-    public class BaseBlockTest : BaseTest
+    public class BaseProcessorTest : BaseTest
     {
         [SetUp]
         public void Clear()

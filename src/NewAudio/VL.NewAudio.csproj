@@ -37,6 +37,7 @@
         <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />
         <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
         <PackageReference Include="Serilog.Sinks.Seq" Version="5.1.0" />
+        <PackageReference Include="Shim.System.Numerics" Version="1.0.1" />
         <PackageReference Include="System.Buffers" Version="4.5.1" />
         <PackageReference Include="System.Management" Version="6.0.0" />
         <PackageReference Include="System.Memory" Version="4.5.4" />
@@ -74,6 +75,27 @@
       <Compile Remove="Nodes\AudioLoopRegion.cs" />
       <Compile Remove="Nodes\AudioMixer.cs" />
       <Compile Remove="Nodes\FFT.cs" />
+      <Compile Remove="Processor\GenProcessor.cs" />
+      <Compile Remove="Processor\InputProcessor.cs" />
+      <Compile Remove="Processor\MathProcessor.cs" />
+      <Compile Remove="Processor\OutputProcessor.cs" />
+      <Compile Remove="Nodes\**" />
+      <Compile Remove="Initialization.cs" />
+      <Compile Remove="DSP\MixBuffers.cs" />
+      <Compile Remove="Internal\Decimator.cs" />
+      <Compile Remove="Core\AudioLink.cs" />
+      <Compile Remove="Backend\AudioService.cs" />
+      <Compile Remove="Backend\AudioState.cs" />
+      <Compile Remove="Backend\IAudioService.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Remove="Nodes\**" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Remove="Nodes\**" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Core" />
     </ItemGroup>
    
 </Project>

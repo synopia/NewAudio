@@ -1,4 +1,4 @@
-﻿using NewAudio.Block;
+﻿using NewAudio.Processor;
 using NewAudio.Core;
 using NewAudio.Devices;
 
@@ -17,7 +17,7 @@ namespace NewAudio.Nodes
     {
         public override string NodeName => "OutputDevice";
         public readonly OutputDeviceParams Params;
-        public OutputDeviceBlock OutputDeviceBlock { get; private set; }
+        public OutputDeviceProcessor OutputDeviceProcessor { get; private set; }
 
         public OutputDeviceNode()
         {
@@ -51,40 +51,40 @@ namespace NewAudio.Nodes
                 }
             }
 
-            if (Params.Input.HasChanged && AudioBlock != null)
+            if (Params.Input.HasChanged && AudioProcessor != null)
             {
                 Params.Input.Commit();
-                AudioBlock.DisconnectAllInputs();
-                Params.Input.Value?.Pin.Connect(AudioBlock);
+                AudioProcessor.DisconnectAllInputs();
+                Params.Input.Value?.Pin.Connect(AudioProcessor);
             }
 
-            if (Params.Enable.HasChanged && OutputDeviceBlock != null)
+            if (Params.Enable.HasChanged && OutputDeviceProcessor != null)
             {
                 Params.Enable.Commit();
-                OutputDeviceBlock.SetEnabled(Params.Enable.Value);
+                OutputDeviceProcessor.SetEnabled(Params.Enable.Value);
             }
 
-            maxNumberOfChannels = OutputDeviceBlock?.DeviceCaps.MaxOutputChannels ?? 0;
-            return OutputDeviceBlock?.IsEnabled ?? false;
+            maxNumberOfChannels = OutputDeviceProcessor?.DeviceCaps.MaxOutputChannels ?? 0;
+            return OutputDeviceProcessor?.IsEnabled ?? false;
         }
 
         public void StartDevice()
         {
-            OutputDeviceBlock = new OutputDeviceBlock(Params.Device.Value, new AudioBlockFormat()
+            OutputDeviceProcessor = new OutputDeviceProcessor(Params.Device.Value, new AudioProcessorConfig()
             {
                 Channels = Params.NumberOfChannels.Value,
             });
 
-            Params.Input.Value?.Pin.Connect(OutputDeviceBlock);
-            Graph.AddOutput(OutputDeviceBlock);
-            AudioBlock = OutputDeviceBlock;
+            Params.Input.Value?.Pin.Connect(OutputDeviceProcessor);
+            Graph.AddOutput(OutputDeviceProcessor);
+            AudioProcessor = OutputDeviceProcessor;
         }
 
         public void StopDevice()
         {
             Graph.Disable();
-            OutputDeviceBlock?.Dispose();
-            OutputDeviceBlock = null;
+            OutputDeviceProcessor?.Dispose();
+            OutputDeviceProcessor = null;
         }
 
         public override string DebugInfo()

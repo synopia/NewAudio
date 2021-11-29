@@ -5,7 +5,7 @@ using NewAudio.Devices;
 using NewAudio.Nodes;
 using NUnit.Framework;
 
-namespace NewAudioTest
+namespace NewAudioTest.Nodes
 {
     [TestFixture]
     public class FFTTest : BaseDeviceTest

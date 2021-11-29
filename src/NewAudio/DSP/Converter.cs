@@ -122,7 +122,7 @@ namespace NewAudio.Dsp
                 for (int ch = 0; ch < source.NumberOfChannels; ch++)
                 {
                     // ReSharper disable once PossibleNullReferenceException
-                    targetOffset += Write(&(((byte*)target.output)[targetOffset]), source[ch*source.NumberOfFrames+i]);
+                    targetOffset += Write(&(((byte*)target.output)[targetOffset]), source[ch, i]);
                 }
             }
         }
@@ -133,7 +133,7 @@ namespace NewAudio.Dsp
             {
                 for (int ch = 0; ch <source.NumberOfChannels ; ch++)
                 {
-                    new Span<float>(source.Data, sourceStartFrame+ch*source.NumberOfFrames, numFrames).CopyTo(
+                    source[ch].Span.Slice(sourceStartFrame, numFrames).CopyTo(
                         // ReSharper disable once PossibleNullReferenceException
                         new Span<float>(&((float**)target.output)[ch][targetStartFrame], numFrames));
                 }
@@ -147,7 +147,7 @@ namespace NewAudio.Dsp
                 for (int i = sourceStartFrame; i < sourceStartFrame+numFrames; i++)
                 {
                     // ReSharper disable once PossibleNullReferenceException
-                    targetOffset += Write(&((byte**)target.output)[ch][targetOffset], source[i+ch*source.NumberOfFrames]);
+                    targetOffset += Write(&((byte**)target.output)[ch][targetOffset], source[ch,i]);
                 }
             }
         }
@@ -217,7 +217,8 @@ namespace NewAudio.Dsp
                 for (int ch = 0; ch < target.NumberOfChannels; ch++)
                 {
                     // ReSharper disable once PossibleNullReferenceException
-                    offset += Read(&((byte*)source.input)[offset], out target.Data[ch*target.NumberOfFrames+i]);
+                    offset += Read(&((byte*)source.input)[offset], out var output);
+                    target[ch, i] = output;
                 }
             }
         }
@@ -225,12 +226,12 @@ namespace NewAudio.Dsp
         private unsafe void ReadNonInterleaved(XtBuffer source, int sourceStartFrame, AudioBuffer target, int targetStartFrame, int numFrames)
         {
             if (typeof(TSampleType) == typeof(Float32Sample))
-            {
+            {                
                 for (int ch = 0; ch < target.NumberOfChannels; ch++)
                 {
                     // ReSharper disable once PossibleNullReferenceException
                     new Span<float>(&((float**)source.input)[ch][sourceStartFrame], numFrames).CopyTo(
-                        new Span<float>(target.Data, targetStartFrame+ch*target.NumberOfFrames, numFrames));
+                        target[ch].Span.Slice(targetStartFrame, numFrames));
                 }
                 return;
             }
@@ -241,7 +242,8 @@ namespace NewAudio.Dsp
                 for (int i = targetStartFrame; i < targetStartFrame+numFrames; i++)
                 {
                     // ReSharper disable once PossibleNullReferenceException
-                    sourceOffset += Read(&((byte**)source.input)[ch][sourceOffset], out target.Data[i+ch*target.NumberOfFrames]);
+                    sourceOffset += Read(&((byte**)source.input)[ch][sourceOffset], out var output);
+                    target[ch, i] = output;
                 }
             }
         }

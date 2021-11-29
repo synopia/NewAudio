@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using NewAudio.Block;
+using NewAudio.Processor;
 using NewAudio.Core;
 using Serilog;
 using VL.Core;
@@ -26,37 +26,37 @@ namespace NewAudio.Nodes
         public readonly AudioLink Output = new();
         private ulong _lastException;
 
-        private AudioBlock _audioBlock;
-        protected AudioBlock AudioBlock
+        private AudioProcessor _audioProcessor;
+        protected AudioProcessor AudioProcessor
         {
-            get => _audioBlock;
+            get => _audioProcessor;
             set
             {
-                if (value == _audioBlock)
+                if (value == _audioProcessor)
                 {
                     return;
                 }
 
-                IList<AudioBlock> inputs = null;
-                if (_audioBlock != null)
+                IList<AudioProcessor> inputs = null;
+                if (_audioProcessor != null)
                 {
-                    inputs = _audioBlock.Inputs;
-                    _audioBlock.Dispose();
-                    _audioBlock = null;
+                    inputs = _audioProcessor.Inputs;
+                    _audioProcessor.Dispose();
+                    _audioProcessor = null;
                 }
                 if (value != null)
                 {
-                    _audioBlock = value;
-                    if (_audioBlock is not OutputBlock)
+                    _audioProcessor = value;
+                    if (_audioProcessor is not OutputProcessor)
                     {
-                        _audioBlock.Connect(Output.Pin);
+                        _audioProcessor.Connect(Output.Pin);
                     }
 
                     if (inputs != null)
                     {
                         foreach (var input in inputs)
                         {
-                            input.Connect(_audioBlock);
+                            input.Connect(_audioProcessor);
                         }
                     }
                 }

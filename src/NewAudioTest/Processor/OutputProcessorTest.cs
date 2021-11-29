@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using NewAudio.Block;
+using NewAudio.Processor;
 using NewAudio.Devices;
 using NUnit.Framework;
 using Xt;
 
-namespace NewAudioTest
+namespace NewAudioTest.Processor
 {
     [TestFixture]
-    public class OutputBlockTest : BaseBlockTest
+    public class OutputProcessorTest : BaseProcessorTest
     {
         private int _disposeCalled;
         private TestStream _stream;
@@ -48,7 +48,7 @@ namespace NewAudioTest
         {
             var outputSelection =
                 new OutputDeviceSelection(AudioService.GetDefaultOutputDevices().First().ToString());
-            using var output = new OutputDeviceBlock(outputSelection, new AudioBlockFormat() { Channels = 2 });
+            using var output = new OutputDeviceProcessor(outputSelection, new AudioProcessorConfig() { Channels = 2 });
             Graph.AddOutput(output);
             while (!output.IsInitialized)
             {
@@ -61,7 +61,7 @@ namespace NewAudioTest
                 Task.Delay(10).Wait();
             }
 
-            using var output2 = new OutputDeviceBlock(outputSelection, new AudioBlockFormat() { Channels = 2 });
+            using var output2 = new OutputDeviceProcessor(outputSelection, new AudioProcessorConfig() { Channels = 2 });
             Graph.AddOutput(output2);
 
             Assert.IsTrue(output2.SampleRate != 0);
@@ -121,7 +121,7 @@ namespace NewAudioTest
         {
             var outputSelection =
                 new OutputDeviceSelection(AudioService.GetDefaultOutputDevices().First().ToString());
-            using var output = new OutputDeviceBlock(outputSelection, new AudioBlockFormat() { Channels = 2 });
+            using var output = new OutputDeviceProcessor(outputSelection, new AudioProcessorConfig() { Channels = 2 });
             Graph.AddOutput(output);
             while (!output.IsInitialized)
             {
@@ -136,7 +136,7 @@ namespace NewAudioTest
 
             Assert.IsTrue(_stream.IsRunning());
 
-            using var output2 = new OutputDeviceBlock(outputSelection, new AudioBlockFormat() { Channels = 4 });
+            using var output2 = new OutputDeviceProcessor(outputSelection, new AudioProcessorConfig() { Channels = 4 });
             Graph.AddOutput(output2);
 
             Assert.IsTrue(output2.SampleRate != 0);
@@ -172,7 +172,7 @@ namespace NewAudioTest
         {
             var outputSelection =
                 new OutputDeviceSelection(AudioService.GetDefaultOutputDevices().First().ToString());
-            using var output = new OutputDeviceBlock(outputSelection, new AudioBlockFormat() { Channels = 2 });
+            using var output = new OutputDeviceProcessor(outputSelection, new AudioProcessorConfig() { Channels = 2 });
             Graph.AddOutput(output);
             while (!output.IsInitialized)
             {
@@ -211,7 +211,7 @@ namespace NewAudioTest
         {
             var outputSelection =
                 new OutputDeviceSelection(AudioService.GetDefaultOutputDevices().First().ToString());
-            using (var output = new OutputDeviceBlock(outputSelection, new AudioBlockFormat() { Channels = 2 }))
+            using (var output = new OutputDeviceProcessor(outputSelection, new AudioProcessorConfig() { Channels = 2 }))
             {
                 Graph.AddOutput(output);
                 while (!output.IsInitialized)

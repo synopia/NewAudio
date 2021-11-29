@@ -7,7 +7,7 @@ using NewAudio.Nodes;
 using NUnit.Framework;
 using Serilog;
 
-namespace NewAudioTest
+namespace NewAudioTest.Nodes
 {
     using NewAudioTest;
 

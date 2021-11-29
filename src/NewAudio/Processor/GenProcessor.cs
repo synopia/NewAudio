@@ -3,22 +3,22 @@ using NewAudio.Core;
 using NewAudio.Dsp;
 using VL.Lib.Mathematics;
 
-namespace NewAudio.Block
+namespace NewAudio.Processor
 {
     public class GenBlockParams : AudioParams
     {
         public AudioParam<float> Freq;
     }
     
-    public abstract class GenBlock: InputBlock
+    public abstract class GenProcessor: InputProcessor
     {
         public readonly GenBlockParams Params;
         protected float _period;
         protected float _phase;
         
-        protected GenBlock(AudioBlockFormat format) : base(format)
+        protected GenProcessor(AudioProcessorConfig format) : base(format)
         {
-            InitLogger<GenBlock>();
+            InitLogger<GenProcessor>();
             Params = AudioParams.Create<GenBlockParams>();
             
             ChannelMode = ChannelMode.Specified;
@@ -31,12 +31,12 @@ namespace NewAudio.Block
         }
     }
 
-    public class NoiseGenBlock : GenBlock
+    public class NoiseGenProcessor : GenProcessor
     {
         public override string Name => "Noise";
         private Random _random = new Random();
         
-        public NoiseGenBlock(AudioBlockFormat format) : base(format)
+        public NoiseGenProcessor(AudioProcessorConfig format) : base(format)
         {
         }
 
@@ -49,11 +49,11 @@ namespace NewAudio.Block
             }
         }
     }
-    public class SineGenBlock : GenBlock
+    public class SineGenProcessor : GenProcessor
     {
         public override string Name => "SineGen";
         
-        public SineGenBlock(AudioBlockFormat format) : base(format)
+        public SineGenProcessor(AudioProcessorConfig format) : base(format)
         {
         }
 

@@ -20,10 +20,10 @@ namespace NewAudio.Dsp
             } else if (targetChannels == 1)
             {
                 float downMix = 1.0f / (float)Math.Sqrt(2.0);
-                var channel = target.GetChannel(0);
+                var channel = target.GetReadChannel(0);
                 for (int ch = 0; ch < sourceChannels; ch++)
                 {
-                    Dsp.AddMul(channel, source.GetChannel(0), downMix, channel, numFrames);
+                    Dsp.AddMul(channel, source.GetReadChannel(0), downMix, channel, numFrames);
                 }
             } else if (targetChannels < sourceChannels)
             {
@@ -48,34 +48,34 @@ namespace NewAudio.Dsp
             {
                 for (int ch = 0; ch < sourceChannels; ch++)
                 {
-                    Dsp.Add(source.GetChannel(ch), target.GetChannel(ch), target.GetChannel(ch), numFrames);
+                    Dsp.Add(source.GetReadChannel(ch), target.GetReadChannel(ch), target.GetReadChannel(ch), numFrames);
                     
                 }                
             } else if (sourceChannels == 1)
             {
                 for (int ch = 0; ch < targetChannels; ch++)
                 {
-                    Dsp.Add(source.GetChannel(0), target.GetChannel(ch),target.GetChannel(ch),numFrames);
+                    Dsp.Add(source.GetReadChannel(0), target.GetReadChannel(ch),target.GetReadChannel(ch),numFrames);
                 }
             } else if (targetChannels == 1)
             {
                 float downMix = 1.0f / (float)Math.Sqrt(2.0);
-                var channel = target.GetChannel(0);
+                var channel = target.GetReadChannel(0);
                 for (int ch = 0; ch < sourceChannels; ch++)
                 {
-                    Dsp.AddMul(channel, source.GetChannel(0), downMix, channel, numFrames);
+                    Dsp.AddMul(channel, source.GetReadChannel(0), downMix, channel, numFrames);
                 }
             } else if (targetChannels < sourceChannels)
             {
                 for (int ch = 0; ch < targetChannels; ch++)
                 {
-                    Dsp.Add(source.GetChannel(ch), target.GetChannel(ch),target.GetChannel(ch),numFrames);
+                    Dsp.Add(source.GetReadChannel(ch), target.GetReadChannel(ch),target.GetReadChannel(ch),numFrames);
                 }
             } else if (targetChannels > sourceChannels)
             {
                 for (int ch = 0; ch < sourceChannels; ch++)
                 {
-                    Dsp.Add(source.GetChannel(ch), target.GetChannel(ch),target.GetChannel(ch),numFrames);
+                    Dsp.Add(source.GetReadChannel(ch), target.GetReadChannel(ch),target.GetReadChannel(ch),numFrames);
                 }
             }
         }

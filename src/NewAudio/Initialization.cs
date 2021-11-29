@@ -2,7 +2,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading;
-using NewAudio.Block;
+using NewAudio.Processor;
 using NewAudio.Core;
 using NewAudio.Devices;
 using NewAudio.Nodes;

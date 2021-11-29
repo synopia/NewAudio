@@ -9,7 +9,7 @@ using NewAudio.Internal;
 using NUnit.Framework;
 using Xt;
 
-namespace NewAudioTest
+namespace NewAudioTest.Dsp
 {
     public class ConverterTestData
     {

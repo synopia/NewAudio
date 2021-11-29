@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using NAudio.Wave;
-using NewAudio.Block;
+using NewAudio.Processor;
 using NewAudio.Core;
 
 
@@ -21,7 +21,7 @@ namespace NewAudio.Nodes
     public class AudioGenerator : AudioNode
     {
         public override string NodeName => "AudioGenerator";
-        private GenBlock _genBlock;
+        private GenProcessor _genProcessor;
         public AudioGeneratorParams Params { get; }
         
         public AudioGenerator()
@@ -41,14 +41,14 @@ namespace NewAudio.Nodes
                 Params.GeneratorType.Commit();
                 if (type == GeneratorType.Noise)
                 {
-                    _genBlock = new NoiseGenBlock(new AudioBlockFormat(){AutoEnable = enable});
+                    _genProcessor = new NoiseGenProcessor(new AudioProcessorConfig(){AutoEnable = enable});
                 } else if (type == GeneratorType.Sine)
                 {
-                    _genBlock = new SineGenBlock(new AudioBlockFormat(){AutoEnable = enable});
+                    _genProcessor = new SineGenProcessor(new AudioProcessorConfig(){AutoEnable = enable});
                 }
 
-                _genBlock.Params.Freq = Params.Freq;
-                AudioBlock = _genBlock;
+                _genProcessor.Params.Freq = Params.Freq;
+                AudioProcessor = _genProcessor;
                 
             }
 
@@ -58,13 +58,13 @@ namespace NewAudio.Nodes
                 // _genBlock.Params.Freq.Value = Params.Freq.Value;
             // }
 
-            if (Params.Enable.HasChanged && _genBlock!=null)
+            if (Params.Enable.HasChanged && _genProcessor!=null)
             {
                 Params.Enable.Commit();
-                _genBlock.SetEnabled(Params.Enable.Value);
+                _genProcessor.SetEnabled(Params.Enable.Value);
             }
             
-            enabled = _genBlock?.IsEnabled ?? false;
+            enabled = _genProcessor?.IsEnabled ?? false;
             return Output;
         }
 
@@ -76,7 +76,7 @@ namespace NewAudio.Nodes
             {
                 if (disposing)
                 {
-                    _genBlock.Dispose();
+                    _genProcessor.Dispose();
                 }
 
                 _disposedValue = disposing;

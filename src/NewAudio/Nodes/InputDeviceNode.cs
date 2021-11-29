@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using NewAudio.Block;
+using NewAudio.Processor;
 using NewAudio.Core;
 using NewAudio.Devices;
 using VL.Lib.Basics.Resources;
@@ -18,7 +18,7 @@ namespace NewAudio.Nodes
     {
         public override string NodeName => "Input";
 
-        public InputDeviceBlock InputDeviceBlock { get; private set; }
+        public InputDeviceProcessor InputDeviceProcessor { get; private set; }
         public InputDeviceParams Params { get; }
 
         public InputDeviceNode()
@@ -49,32 +49,32 @@ namespace NewAudio.Nodes
                 }
             }
 
-            if (Params.Enable.HasChanged && InputDeviceBlock != null)
+            if (Params.Enable.HasChanged && InputDeviceProcessor != null)
             {
                 Params.Enable.Commit();
-                AudioBlock.SetEnabled(Params.Enable.Value);
+                AudioProcessor.SetEnabled(Params.Enable.Value);
             }
 
-            maxNumberOfChannels = InputDeviceBlock?.DeviceCaps.MaxInputChannels ?? 0;
-            enabled = InputDeviceBlock?.IsEnabled ?? false;
+            maxNumberOfChannels = InputDeviceProcessor?.DeviceCaps.MaxInputChannels ?? 0;
+            enabled = InputDeviceProcessor?.IsEnabled ?? false;
             
             return Output;
         }
 
         public void StartDevice()
         {
-            InputDeviceBlock = new InputDeviceBlock(Params.Device.Value, new AudioBlockFormat()
+            InputDeviceProcessor = new InputDeviceProcessor(Params.Device.Value, new AudioProcessorConfig()
                 {
                     Channels = Params.NumberOfChannels.Value
                 });
 
-            AudioBlock = InputDeviceBlock;
+            AudioProcessor = InputDeviceProcessor;
         }
 
         public void StopDevice()
         {
-            InputDeviceBlock?.Dispose();
-            InputDeviceBlock = null;
+            InputDeviceProcessor?.Dispose();
+            InputDeviceProcessor = null;
         }
 
         public override string DebugInfo()
