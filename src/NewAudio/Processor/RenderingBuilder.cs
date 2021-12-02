@@ -5,20 +5,20 @@ using VL.Model;
 
 namespace NewAudio.Processor
 {
-    using Node = AudioGraph2.Node;
-    using NodeId = AudioGraph2.NodeId;
+    using Node = AudioGraph.Node;
+    using NodeId = AudioGraph.NodeId;
     
     public struct AssignedBuffer
     {
-        public AudioGraph2.NodeAndChannel Channel;
+        public AudioGraph.NodeAndChannel Channel;
 
         public static AssignedBuffer CreateReadOnlyEmpty()
         {
-            return new AssignedBuffer() { Channel = new AudioGraph2.NodeAndChannel(ZeroNodeId, 0) };
+            return new AssignedBuffer() { Channel = new AudioGraph.NodeAndChannel(ZeroNodeId, 0) };
         }
         public static AssignedBuffer CreateFree()
         {
-            return new AssignedBuffer() { Channel = new AudioGraph2.NodeAndChannel(FreeNodeId, 0) };
+            return new AssignedBuffer() { Channel = new AudioGraph.NodeAndChannel(FreeNodeId, 0) };
         }
 
         public bool IsReadOnlyEmpty => Channel.NodeId == ZeroNodeId;
@@ -27,12 +27,12 @@ namespace NewAudio.Processor
 
         public void SetFree()
         {
-            Channel = new AudioGraph2.NodeAndChannel(FreeNodeId, 0);
+            Channel = new AudioGraph.NodeAndChannel(FreeNodeId, 0);
         }
 
         public void SetAssignedToAnon()
         {
-            Channel = new AudioGraph2.NodeAndChannel(AnonNodeId, 0);
+            Channel = new AudioGraph.NodeAndChannel(AnonNodeId, 0);
         }
 
         private static readonly NodeId AnonNodeId = new(-1);
@@ -43,14 +43,14 @@ namespace NewAudio.Processor
     public class RenderingBuilder
     {
         
-        private AudioGraph2 _graph;
+        private AudioGraph _graph;
         private RenderingProgram _program;
         private List<Node> _orderedNodes = new();
         private List<AssignedBuffer> _audioBuffers = new ();
         private Dictionary<int, int> _delays = new ();
         private int _totalLatency;
 
-        public RenderingBuilder(AudioGraph2 graph, RenderingProgram program)
+        public RenderingBuilder(AudioGraph graph, RenderingProgram program)
         {
             _graph = graph;
             _program = program;
@@ -108,7 +108,7 @@ namespace NewAudio.Processor
             }
         }
 
-        public static List<Node> CreateOrderedNodeList(AudioGraph2 graph)
+        public static List<Node> CreateOrderedNodeList(AudioGraph graph)
         {
             List<Node> result = new();
             Dictionary<Node, HashSet<Node>> nodeParents = new();
@@ -270,7 +270,7 @@ namespace NewAudio.Processor
                 if (inputChannel < numOuts)
                 {
                     var b = _audioBuffers[index];
-                    b.Channel = new AudioGraph2.NodeAndChannel(node.NodeId, inputChannel);
+                    b.Channel = new AudioGraph.NodeAndChannel(node.NodeId, inputChannel);
                     _audioBuffers[index] = b;
                 }
             }
@@ -281,7 +281,7 @@ namespace NewAudio.Processor
                 Trace.Assert(index!=0);
                 channelsToUse.Add(index );
                 var b = _audioBuffers[index];
-                b.Channel = new AudioGraph2.NodeAndChannel(node.NodeId, outputChannel);
+                b.Channel = new AudioGraph.NodeAndChannel(node.NodeId, outputChannel);
                 _audioBuffers[index] = b;
             }
 
@@ -293,10 +293,10 @@ namespace NewAudio.Processor
             _program.AddProcessOp(node,channelsToUse, totalChannels);
         }
 
-        private List<AudioGraph2.NodeAndChannel> GetSourcesForChannel(Node node, int inputChannelIndex)
+        private List<AudioGraph.NodeAndChannel> GetSourcesForChannel(Node node, int inputChannelIndex)
         {
-            var result = new List<AudioGraph2.NodeAndChannel>();
-            AudioGraph2.NodeAndChannel nc = new AudioGraph2.NodeAndChannel(node.NodeId, inputChannelIndex);
+            var result = new List<AudioGraph.NodeAndChannel>();
+            AudioGraph.NodeAndChannel nc = new AudioGraph.NodeAndChannel(node.NodeId, inputChannelIndex);
             foreach (var connection in _graph.GetConnections())
             {
                 if (connection.target == nc)
@@ -323,7 +323,7 @@ namespace NewAudio.Processor
             return buffers.Count - 1;
         }
 
-        private int GetBufferContaining(AudioGraph2.NodeAndChannel output)
+        private int GetBufferContaining(AudioGraph.NodeAndChannel output)
         {
             int i = 0;
             foreach (var buffer in _audioBuffers)
@@ -350,7 +350,7 @@ namespace NewAudio.Processor
             }
         }
 
-        private bool IsBufferNeededLater(int stepIndex, int inputChannel, AudioGraph2.NodeAndChannel output)
+        private bool IsBufferNeededLater(int stepIndex, int inputChannel, AudioGraph.NodeAndChannel output)
         {
             while (stepIndex<_orderedNodes.Count)
             {
@@ -358,8 +358,8 @@ namespace NewAudio.Processor
                 for (int i = 0; i < node.Processor.TotalNumberOfInputChannels; i++)
                 {
                     if (i != inputChannel &&
-                        _graph.IsConnected(new AudioGraph2.Connection(output,
-                            new AudioGraph2.NodeAndChannel(node.NodeId, i))))
+                        _graph.IsConnected(new AudioGraph.Connection(output,
+                            new AudioGraph.NodeAndChannel(node.NodeId, i))))
                     {
                         return true;
                     }

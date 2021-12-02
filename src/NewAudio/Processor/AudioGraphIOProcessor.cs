@@ -6,9 +6,9 @@ namespace NewAudio.Processor
 {
     public class AudioGraphIOProcessor: AudioProcessor
     {
-        private AudioGraph2 _graph;
+        private AudioGraph _graph;
 
-        public AudioGraph2 ParentGraph
+        public AudioGraph ParentGraph
         {
             get => _graph;
             set

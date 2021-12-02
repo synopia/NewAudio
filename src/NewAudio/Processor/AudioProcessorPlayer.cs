@@ -190,12 +190,12 @@ namespace NewAudio.Device
             }
         }
 
-        public void AudioDeviceAboutToStart(IAudioDevice device)
+        public void AudioDeviceAboutToStart(IAudioSession session)
         {
-            var newSampleRate = device.CurrentSampleRate;
-            var newFramesPerBlock = device.CurrentFramesPerBlock;
-            var numChannelIn = device.ActiveInputChannels.Count;
-            var numChannelOut = device.ActiveOutputChannels.Count;
+            var newSampleRate = session.CurrentSampleRate;
+            var newFramesPerBlock = session.CurrentFramesPerBlock;
+            var numChannelIn = session.ActiveInputChannels.Count;
+            var numChannelOut = session.ActiveOutputChannels.Count;
 
             lock (_lock)
             {

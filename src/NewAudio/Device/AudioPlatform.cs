@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using NewAudio.Devices;
 using NewAudio.Dispatcher;
 using NewAudio.Dsp;
 using Xt;
@@ -25,13 +24,14 @@ namespace NewAudio.Device
         void PlayTestSound(int index);
 
         int XRunCount { get; }
+        IAudioSession Open(string inputDeviceId,string outputDeviceId, int numInputs, int numOutputs);
     }
 
     public class CallbackHandler : IAudioDeviceCallback
     {
-        private XtAudioPlatform _owner;
+        private IAudioDeviceCallback _owner;
 
-        public CallbackHandler(XtAudioPlatform owner)
+        public CallbackHandler(IAudioDeviceCallback owner)
         {
             _owner = owner;
         }
@@ -41,9 +41,9 @@ namespace NewAudio.Device
             _owner.AudioDeviceCallback(input, output, numFrames);
         }
 
-        public void AudioDeviceAboutToStart(IAudioDevice device)
+        public void AudioDeviceAboutToStart(IAudioSession session)
         {
-            _owner.AudioDeviceAboutToStart(device);
+            _owner.AudioDeviceAboutToStart(session);
         }
 
         public void AudioDeviceStopped()
@@ -67,7 +67,7 @@ namespace NewAudio.Device
 
         private IAudioService _service;
         private bool _scannedForDevices = false;
-        private IAudioDevice _currentDevice;
+        private AudioSession? _currentSession;
 
         public XtAudioPlatform(XtPlatform platform)
         {
@@ -80,7 +80,7 @@ namespace NewAudio.Device
 
         public void Dispose()
         {
-            _currentDevice?.Dispose();
+            _currentSession?.Dispose();
             _service.Dispose();
             _platform.Dispose();
         }
@@ -100,43 +100,57 @@ namespace NewAudio.Device
 
         public void Close()
         {
-            if (_currentDevice != null)
+            if (_currentSession != null)
             {
-                _currentDevice.Stop();
+                _currentSession.Stop();
             }
         }
 
-        public void Open(string inputDeviceId,string outputDeviceId, int numInputs, int numOutputs)
+        public IAudioSession Open(string inputDeviceId,string outputDeviceId, int numInputs, int numOutputs)
         {
             Close();
 
             ScanIfNeeded();
 
-            _currentDevice = _service.CreateDevice(outputDeviceId, inputDeviceId);
+            var output = _service.OpenDevice(outputDeviceId); 
+            var input = inputDeviceId!=outputDeviceId ? _service.OpenDevice(inputDeviceId) : output;
 
-            numInputs = Math.Min(numInputs, _currentDevice.InputChannelNames.Length);
-            numOutputs = Math.Min(numOutputs, _currentDevice.OutputChannelNames.Length);
+            numInputs = Math.Min(numInputs, input.InputChannelNames.Length);
+            numOutputs = Math.Min(numOutputs, output.OutputChannelNames.Length);
 
             // var sampleType = ChooseBestSampleType(_currentDevice, XtSample.Float32);
-            var sampleRate = ChooseBestSampleRate(_currentDevice, 0);
-            var bufferSize = ChooseBestBufferSize(_currentDevice);
+            var sampleRate = ChooseBestSampleRate(output, 0);
+            var bufferSize = ChooseBestBufferSize(output);
 
-            var res = _currentDevice.Open(AudioChannels.Channels(numInputs), AudioChannels.Channels(numOutputs),
-                sampleRate,
-                bufferSize);
-
-            if (res)
+            
+            if (outputDeviceId != inputDeviceId)
             {
-                _currentDevice.Start(_callbackHandler);
-                Console.WriteLine("SUCCESS !");
-                Thread.Sleep(500);
-                _currentDevice.Stop();
+                output.Open(AudioChannels.Disabled, AudioChannels.Channels(numOutputs),
+                    sampleRate,
+                    bufferSize);
+                input.Open(AudioChannels.Channels(numInputs), AudioChannels.Disabled,
+                    sampleRate,
+                    bufferSize);
+            }
+            else
+            {
+                output.Open(AudioChannels.Channels(numInputs), AudioChannels.Channels(numOutputs),
+                    sampleRate,
+                    bufferSize);
             }
 
+            _currentSession  = new AudioSession(input, output);
+            
+            _currentSession.Start(_callbackHandler);
+            Console.WriteLine("SUCCESS !");
             Thread.Sleep(500);
+            _currentSession.Stop();
+
+            Thread.Sleep(500);
+            return _currentSession;
         }
 
-        private XtSample ChooseBestSampleType(IAudioDevice device, XtSample sample)
+        private XtSample ChooseBestSampleType(AudioSession session, XtSample sample)
         {
             return XtSample.Float32;
         }
@@ -196,9 +210,9 @@ namespace NewAudio.Device
                 }
             }
 
-            if (_currentDevice != null)
+            if (_currentSession != null)
             {
-                callback?.AudioDeviceAboutToStart(_currentDevice);
+                callback.AudioDeviceAboutToStart(_currentSession);
             }
 
             lock (AudioProcessLock)
@@ -211,7 +225,7 @@ namespace NewAudio.Device
         {
             if (callback != null)
             {
-                bool needReinit = _currentDevice != null;
+                bool needReinit = _currentSession != null;
                 lock (AudioProcessLock)
                 {
                     needReinit = needReinit && _callbacks.Contains(callback);
@@ -252,13 +266,13 @@ namespace NewAudio.Device
             }
         }
 
-        public void AudioDeviceAboutToStart(IAudioDevice device)
+        public void AudioDeviceAboutToStart(IAudioSession session)
         {
             lock (AudioProcessLock)
             {
                 for (int i = _callbacks.Count; --i >= 0;)
                 {
-                    _callbacks[i].AudioDeviceAboutToStart(device);
+                    _callbacks[i].AudioDeviceAboutToStart(session);
                 }
             }
 

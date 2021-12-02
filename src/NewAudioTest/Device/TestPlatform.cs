@@ -5,7 +5,7 @@ using NewAudio.Device;
 using NewAudio.Dsp;
 using NewAudioTest.Processor;
 using NUnit.Framework;
-using VL.NewAudio.Device;
+using NewAudio.Device;
 using Xt;
 
 namespace NewAudioTest.Device
@@ -52,15 +52,16 @@ namespace NewAudioTest.Device
 
             using var s = new XtAudioService(xtPlatform);
             s.ScanForDevices();
-            var dLoopback = (XtAudioDevice)s.CreateDevice(loopback, null);
-            var dAsio4All = (XtAudioDevice)s.CreateDevice(asio4all, null);
+            var dLoopback = s.OpenDevice(loopback);
+            var dAsio4All = s.OpenDevice(asio4all);
             IAudioStreamCallback cb = new AU();
-            using var st1 = new AudioStream(dLoopback.Device, 2, true, false, AudioChannels.Stereo, 48000, XtSample.Int32, 100, cb);
-            using var st2 = new AudioStream(dAsio4All.Device, 2, false, true, AudioChannels.Stereo, 48000, XtSample.Int32, 100, cb);
-            st1.CreateStream();
-            st2.CreateStream();
-            st1.Start();
-            st2.Start();
+            using var session = p.Open(loopback, asio4all, 2,2);
+            // using var st1 = new AudioStream(dLoopback.Device, 2, true, false, AudioChannels.Stereo, 48000, XtSample.Int32, 100, cb);
+            // using var st2 = new AudioStream(dAsio4All.Device, 2, false, true, AudioChannels.Stereo, 48000, XtSample.Int32, 100, cb);
+            // st1.CreateStream();
+            // st2.CreateStream();
+            // st1.Start();
+            // st2.Start();
 
             // using var xtPlatform = XtAudio.Init("1", IntPtr.Zero);
             // using var s = new XtAudioService(xtPlatform);

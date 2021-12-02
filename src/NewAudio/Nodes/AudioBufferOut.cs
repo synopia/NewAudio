@@ -245,9 +245,9 @@ namespace NewAudio.Nodes
             return blockSize * bufferSize / inputBufferSize;
         }
 
-        private bool _disposedValue;
+        
         private int _batchSize;
-
+        private bool _disposedValue;
         protected override void Dispose(bool disposing)
         {
             if (!_disposedValue)

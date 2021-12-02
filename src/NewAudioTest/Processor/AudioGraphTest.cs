@@ -39,7 +39,7 @@ namespace NewAudioTest.Processor
         [Test]
         public void TestOrderNodes()
         {
-            var g = new AudioGraph2();
+            var g = new AudioGraph();
             var n1 = g.AddNode(new TestProc());
             var n2 = g.AddNode(new TestProc());
             var n3 = g.AddNode(new TestProc());
@@ -51,21 +51,21 @@ namespace NewAudioTest.Processor
             Assert.AreNotEqual(n3.NodeId, n4.NodeId);
             Assert.AreNotEqual(n5.NodeId, n1.NodeId);
 
-            g.AddConnection(new AudioGraph2.Connection(
-                new AudioGraph2.NodeAndChannel(n1.NodeId, 0),
-                new AudioGraph2.NodeAndChannel(n2.NodeId, 0)));
-            g.AddConnection(new AudioGraph2.Connection(
-                new AudioGraph2.NodeAndChannel(n2.NodeId, 0),
-                new AudioGraph2.NodeAndChannel(n3.NodeId, 0)));
-            g.AddConnection(new AudioGraph2.Connection(
-                new AudioGraph2.NodeAndChannel(n3.NodeId, 0),
-                new AudioGraph2.NodeAndChannel(n4.NodeId, 0)));
-            g.AddConnection(new AudioGraph2.Connection(
-                new AudioGraph2.NodeAndChannel(n4.NodeId, 0),
-                new AudioGraph2.NodeAndChannel(n5.NodeId, 0)));
+            g.AddConnection(new AudioGraph.Connection(
+                new AudioGraph.NodeAndChannel(n1.NodeId, 0),
+                new AudioGraph.NodeAndChannel(n2.NodeId, 0)));
+            g.AddConnection(new AudioGraph.Connection(
+                new AudioGraph.NodeAndChannel(n2.NodeId, 0),
+                new AudioGraph.NodeAndChannel(n3.NodeId, 0)));
+            g.AddConnection(new AudioGraph.Connection(
+                new AudioGraph.NodeAndChannel(n3.NodeId, 0),
+                new AudioGraph.NodeAndChannel(n4.NodeId, 0)));
+            g.AddConnection(new AudioGraph.Connection(
+                new AudioGraph.NodeAndChannel(n4.NodeId, 0),
+                new AudioGraph.NodeAndChannel(n5.NodeId, 0)));
 
             var orderedNodeList = RenderingBuilder.CreateOrderedNodeList(g);
-            Assert.AreEqual(new AudioGraph2.Node[]{n1,n2,n3,n4,n5}, orderedNodeList.ToArray());
+            Assert.AreEqual(new AudioGraph.Node[]{n1,n2,n3,n4,n5}, orderedNodeList.ToArray());
 
             var program = new RenderingProgram();
             var b = new RenderingBuilder(g, program);

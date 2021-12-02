@@ -28,6 +28,12 @@ namespace NewAudio.Dsp
         {
             return (AudioChannelType)ToLong();
         }
+
+        public AudioChannels Limit(int channels)
+        {
+            return new AudioChannels((AudioChannelType)(_channels % ((ulong)1 << channels)));
+        }
+        
         public ulong ToLong()
         {
             return _channels;
@@ -42,6 +48,11 @@ namespace NewAudio.Dsp
         public bool this[int channel]
         {
             get => (_channels&((ulong)1<<channel))!=0;
+        }
+
+        public static AudioChannels FromMask(ulong mask)
+        {
+            return new((AudioChannelType)mask);
         } 
         public static AudioChannels Disabled = new(AudioChannelType.None);
         public static AudioChannels Mono = new(AudioChannelType.Mono);

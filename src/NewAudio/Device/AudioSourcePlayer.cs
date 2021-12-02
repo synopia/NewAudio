@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using NewAudio.Device;
 using NewAudio.Dsp;
-using VL.NewAudio.Sources;
+using NewAudio.Sources;
 
 namespace NewAudio.Device
 {
@@ -123,9 +123,9 @@ namespace NewAudio.Device
             }
         }
 
-        public void AudioDeviceAboutToStart(IAudioDevice device)
+        public void AudioDeviceAboutToStart(IAudioSession session)
         {
-            PrepareToPlay(device.CurrentSampleRate, device.CurrentFramesPerBlock);
+            PrepareToPlay(session.CurrentSampleRate, session.CurrentFramesPerBlock);
         }
         
 

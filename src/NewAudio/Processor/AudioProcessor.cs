@@ -57,7 +57,6 @@ namespace NewAudio.Processor
             {
                 buffer.ZeroChannel(ch);
             }
-
         }
 
 
@@ -92,11 +91,6 @@ namespace NewAudio.Processor
         {
             SampleRate = sampleRate;
             FramesPerBlock = framesPerBlock;
-        }
-
-        protected void InitLogger<T>()
-        {
-            // Logger = Resources.GetLogger<T>();
         }
 
         public override string ToString()

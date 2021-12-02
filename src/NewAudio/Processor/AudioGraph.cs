@@ -9,7 +9,7 @@ using VL.Lib.Basics.Resources;
 namespace NewAudio.Processor
 {
     
-    public class AudioGraph2: AudioProcessor, IAsyncUpdater, IChangeBroadcaster
+    public class AudioGraph: AudioProcessor, IAsyncUpdater, IChangeBroadcaster
     {
         private static void UpdateOnMessageThread(IAsyncUpdater updater)
         {
@@ -37,7 +37,7 @@ namespace NewAudio.Processor
         public override string Name => "Audio Graph";
 
 
-        public AudioGraph2()
+        public AudioGraph()
         {
             _asyncUpdate = new AsyncUpdateSupport(HandleAsyncUpdate);
             _changeBroadcaster = new ChangeBroadcaster();
@@ -721,7 +721,7 @@ namespace NewAudio.Processor
                 Processor = processor;
             }
 
-            public void SetParentGraph(AudioGraph2 graph)
+            public void SetParentGraph(AudioGraph graph)
             {
                 lock (_processorLock)
                 {
@@ -732,7 +732,7 @@ namespace NewAudio.Processor
                 }
             }
 
-            public void Prepare(int newSampleRate, int newFramesPerBlock, AudioGraph2 graph)
+            public void Prepare(int newSampleRate, int newFramesPerBlock, AudioGraph graph)
             {
                 lock (_processorLock)
                 {

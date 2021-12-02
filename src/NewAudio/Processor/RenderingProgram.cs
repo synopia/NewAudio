@@ -86,7 +86,7 @@ namespace NewAudio.Processor
         {
             _renderingOperations.Add(new DelayChannelOp(channel, delaySize));
         }
-        public void AddProcessOp(AudioGraph2.Node node, List<int> channelsUsed, int totalChannels)
+        public void AddProcessOp(AudioGraph.Node node, List<int> channelsUsed, int totalChannels)
         {
             _renderingOperations.Add(new ProcessOp(node, channelsUsed, totalChannels));
         }
@@ -172,13 +172,13 @@ namespace NewAudio.Processor
         
         private struct ProcessOp: IRenderingOperation
         {
-            private AudioGraph2.Node _node;
+            private AudioGraph.Node _node;
             private AudioProcessor _processor;
             private List<int> _channelsToUse;
             private Memory<float>[] _channels;
             private int _totalChannels;
             
-            public ProcessOp(AudioGraph2.Node node, List<int> channelsToUse, int totalChannels) : this()
+            public ProcessOp(AudioGraph.Node node, List<int> channelsToUse, int totalChannels) : this()
             {
                 _node = node;
                 _channelsToUse = channelsToUse;

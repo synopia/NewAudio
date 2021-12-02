@@ -1,12 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using NAudio.CoreAudioApi;
-using NewAudio.Devices;
+using VL.Lib;
 using Xt;
 
 namespace NewAudio.Device
 {
+    public readonly struct DeviceName
+    {
+        public string Name { get; init; }
+        public XtSystem System { get; init; }
+        public string Id { get; init; }
+        public bool IsInput { get; init; }
+        public bool IsOutput { get; init; }
+        
+        public override string ToString()
+        {
+            var type = System switch
+            {
+                XtSystem.DirectSound => "DirectSound",
+                XtSystem.ASIO => "ASIO",
+                XtSystem.WASAPI => "Wasapi",
+                _ => ""
+            };
+            return $"{type}: {Name}";
+        }
+    }
+
     public struct DeviceCaps
     {
         public string DeviceId;
@@ -29,33 +52,35 @@ namespace NewAudio.Device
 
     public interface IAudioService: IDisposable
     {
+        Subject<object> DevicesScanned { get; }
         String SystemName { get; }
         XtSystem System { get; }
 
         void ScanForDevices();
         
-        IEnumerable<DeviceSelection> GetDevices();
-        DeviceSelection GetDefaultDevice(bool output);
-        bool HasSeparateInputsAndOutputs();
+        IEnumerable<DeviceName> GetDevices();
+        DeviceName GetDefaultDevice(bool output);
+        // bool HasSeparateInputsAndOutputs();
 
-        IAudioDevice CreateDevice(string outputDeviceId, string inputDeviceId);
+        IAudioDevice? OpenDevice(string? deviceId);
     }
 
     public class XtAudioService : IAudioService
     {
+        public Subject<object> DevicesScanned { get; } = new Subject<object>();
         public string SystemName => System.ToString();
         public XtSystem System { get; }
-        private readonly List<DeviceSelection> _defaultDevices = new();
-        private readonly List<DeviceSelection> _deviceSelections = new();
+        private readonly List<DeviceName> _defaultDevices = new();
+        private readonly List<DeviceName> _deviceSelections = new();
         private readonly Dictionary<string, DeviceCaps> _deviceCaps = new();
         
         private readonly Dictionary<XtSystem, XtService> _services = new();
         private XtPlatform _platform;
-        private DeviceCaps _currentSelected;
 
         public XtAudioService(XtPlatform platform)
         {
             _platform = platform;
+            ScanForDevices();
         }
 
         public void Dispose()
@@ -63,15 +88,15 @@ namespace NewAudio.Device
             
         }
 
-        public IEnumerable<DeviceSelection> GetDevices()
+        public IEnumerable<DeviceName> GetDevices()
         {
             return _deviceSelections;
         }
 
-        public bool HasSeparateInputsAndOutputs()
-        {
-            return _currentSelected.System != XtSystem.ASIO;
-        }
+        // public bool HasSeparateInputsAndOutputs()
+        // {
+            // return _currentSelected.System != XtSystem.ASIO;
+        // }
 
         private XtService GetService(XtSystem system)
         {
@@ -86,7 +111,7 @@ namespace NewAudio.Device
             return service;
         }
 
-        public DeviceSelection GetDefaultDevice(bool output)
+        public DeviceName GetDefaultDevice(bool output)
         {
             if (output)
             {
@@ -95,13 +120,23 @@ namespace NewAudio.Device
             return GetDefaultInputDevices().First();
         }
 
-        
-        public IAudioDevice CreateDevice(string outputDeviceId, string inputDeviceId)
+        public IAudioDevice? OpenDevice(string? deviceId)
         {
-            var caps = _deviceCaps[outputDeviceId];
-            _currentSelected = caps;
+            if (deviceId==null || !_deviceCaps.ContainsKey(deviceId))
+            {
+                return null;
+            }
+            var caps = _deviceCaps[deviceId];
             return new XtAudioDevice(GetService(caps.System), caps);
         }
+        
+        // public AudioSession CreateSession(string outputDeviceId, string inputDeviceId)
+        // {
+            // var output = OpenDevice(outputDeviceId);
+            // var input = outputDeviceId != inputDeviceId ? OpenDevice(inputDeviceId) : output;
+            
+            // return new AudioSession(input, output);
+        // }
 
         public void ScanForDevices()
         {
@@ -124,8 +159,11 @@ namespace NewAudio.Device
                         var caps = list.GetCapabilities(id);
 
                         var deviceId = id;
-                        var deviceSelection = new DeviceSelection(system, deviceId, list.GetName(id),
-                            (caps & XtDeviceCaps.Input) != 0, (caps & XtDeviceCaps.Output) != 0);
+                        var deviceName = new DeviceName()
+                        {
+                            System = system, Id = deviceId, Name = list.GetName(id),
+                            IsInput = (caps & XtDeviceCaps.Input) != 0, IsOutput = (caps & XtDeviceCaps.Output) != 0
+                        };
                         _deviceCaps[deviceId] = new DeviceCaps()
                             {
                                 Caps = caps,
@@ -137,10 +175,10 @@ namespace NewAudio.Device
                                 Interleaved = device.SupportsAccess(true),
                                 NonInterleaved = device.SupportsAccess(false),
                         };
-                        _deviceSelections.Add(deviceSelection);
+                        _deviceSelections.Add(deviceName);
                         if (id == outputDefault || id == inputDefault)
                         {
-                            _defaultDevices.Add(deviceSelection);
+                            _defaultDevices.Add(deviceName);
                         }
                     }
                     catch (XtException e)
@@ -155,36 +193,30 @@ namespace NewAudio.Device
 
             _deviceSelections.Sort((a, b) => string.Compare(a.ToString(), b.ToString(), StringComparison.Ordinal));
 
-            OutputDeviceDefinition.Instance.Clear();
-            foreach (var selection in GetOutputDevices())
+            DeviceSelectionDefinition.Instance.Clear();
+            foreach (var device in GetDevices())
             {
-                OutputDeviceDefinition.Instance.AddEntry(selection.ToString(), selection);
-            }
-
-            InputDeviceDefinition.Instance.Clear();
-            foreach (var selection in GetInputDevices())
-            {
-                InputDeviceDefinition.Instance.AddEntry(selection.ToString(), selection);
+                DeviceSelectionDefinition.Instance.AddEntry(device.ToString(), device);
             }
         }
-        public IEnumerable<DeviceSelection> GetInputDevices()
+        public IEnumerable<DeviceName> GetInputDevices()
         {
-            return _deviceSelections.Where(i => i.IsInputDevice);
+            return _deviceSelections.Where(i => i.IsInput);
         }
 
-        public IEnumerable<DeviceSelection> GetOutputDevices()
+        public IEnumerable<DeviceName> GetOutputDevices()
         {
-            return _deviceSelections.Where(i => i.IsOutputDevice);
+            return _deviceSelections.Where(i => i.IsOutput);
         }
 
-        public IEnumerable<DeviceSelection> GetDefaultInputDevices()
+        public IEnumerable<DeviceName> GetDefaultInputDevices()
         {
-            return _defaultDevices.Where(i => i.IsInputDevice);
+            return _defaultDevices.Where(i => i.IsInput);
         }
 
-        public IEnumerable<DeviceSelection> GetDefaultOutputDevices()
+        public IEnumerable<DeviceName> GetDefaultOutputDevices()
         {
-            return _defaultDevices.Where(i => i.IsOutputDevice);
+            return _defaultDevices.Where(i => i.IsOutput);
         }
 
     }

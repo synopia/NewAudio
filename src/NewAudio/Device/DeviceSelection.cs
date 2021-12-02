@@ -1,35 +1,55 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reactive.Subjects;
+using VL.Lib;
+using VL.Lib.Collections;
 using Xt;
 
-namespace NewAudio.Devices
+namespace NewAudio.Device
 {
-    public class DeviceSelection
+    [Serializable]
+    public class DeviceSelection : DynamicEnumBase<DeviceSelection, DeviceSelectionDefinition>
     {
-        public string Name { get; }
-        public string DeviceId { get; }
-        public bool IsInputDevice { get; }
-        public bool IsOutputDevice { get; }
-        public XtSystem System { get; }
 
-        public DeviceSelection(XtSystem system, string id, string name, bool isInputDevice, bool isOutputDevice)
+        public static DeviceSelection CreateDefault()
         {
-            DeviceId = id;
-            Name = name;
-            System = system;
-            IsInputDevice = isInputDevice;
-            IsOutputDevice = isOutputDevice;
+            return CreateDefaultBase();
         }
 
-        public override string ToString()
+        public DeviceSelection(string value) : base(value)
         {
-            var type = System switch
+        }
+    }
+
+    public class DeviceSelectionDefinition : ManualDynamicEnumDefinitionBase<DeviceSelectionDefinition>
+    {
+        public new static DeviceSelectionDefinition Instance =>
+            ManualDynamicEnumDefinitionBase<DeviceSelectionDefinition>.Instance;
+
+        /*
+        protected override void Initialize()
+        {
+            _audioService = Resources.GetAudioService();
+        }
+        protected override bool AutoSortAlphabetically => false;
+        
+        
+        protected override IReadOnlyDictionary<string, object> GetEntries()
+        {
+            var result = new Dictionary<string, object>();
+
+            foreach (var device in _audioService.GetDevices())
             {
-                XtSystem.DirectSound => "DirectSound",
-                XtSystem.ASIO => "ASIO",
-                XtSystem.WASAPI => "Wasapi",
-                _ => ""
-            };
-            return $"{type}: {Name}";
+                result[device.ToString()] = device;
+            }
+
+            return result;
         }
+
+        protected override IObservable<object> GetEntriesChangedObservable()
+        {
+            return _audioService.DevicesScanned;
+        }
+    */
     }
 }

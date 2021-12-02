@@ -6,86 +6,65 @@ using NewAudio.Device;
 using NewAudio.Dsp;
 using Xt;
 
-namespace VL.NewAudio.Device
+namespace NewAudio.Device
 {
-    public interface IAudioSession
+    public interface IAudioSession: IDisposable
     {
         void Start();
         void Stop();
+        int CurrentSampleRate { get; }
+        int CurrentFramesPerBlock { get;  }
+        AudioChannels ActiveInputChannels { get; }
+        AudioChannels ActiveOutputChannels { get; }
     }
-    public class AudioSession : IAudioSession, IAudioStreamCallback, IDisposable
-    {
-        private XtAudioDevice _owner;
-        private XtDevice _outputDevice;
-        private XtDevice _inputDevice;
-        private int _maxInputChannels;
-        private int _maxOutputChannels;
-        private AudioChannels _inputChannels;
-        private AudioChannels _outputChannels;
-        private int _sampleRate;
-        private XtSample _sampleType;
-        private double _bufferSize;
-        private bool _interleavedInput;
-        private bool _interleavedOutput;
 
-        private AudioStream _inputStream;
-        private AudioStream _outputStream;
+    public class AudioSession : IAudioSession, IAudioStreamCallback
+    {
+        private class CaptureCallback : IAudioStreamCallback
+        {
+            public int OnBuffer(XtStream stream, in XtBuffer buffer, object user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnXRun(XtStream stream, int index, object user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnRunning(XtStream stream, bool running, ulong error, object user)
+            {
+                throw new NotImplementedException();
+            }
+        }
+        // private XtAudioDevice _owner;
+        private AudioStreamConfig? InputConfig;
+        private AudioStreamConfig OutputConfig;
+
+        public int CurrentSampleRate => OutputConfig.SampleRate;
+        public AudioChannels ActiveInputChannels => InputConfig?.ActiveChannels ?? AudioChannels.Disabled;
+        public AudioChannels ActiveOutputChannels => OutputConfig.ActiveChannels;
+
+        private IAudioStream? _inputStream;
+        private IAudioStream _outputStream;
 
         private int _audioCallbackGuard;
         public double InputLatency { get; private set; }
         public double OutputLatency { get; private set; }
         public int XRuns { get; private set; }
-        public int FramesPerBlock => _outputStream.FramesPerBlock;
+        public int CurrentFramesPerBlock => _outputStream.FramesPerBlock;
+        private IAudioDeviceCallback? _currentCallback;
+        private bool _running;
+        private AudioStreamType _type;
 
-        public AudioSession(XtAudioDevice owner, XtDevice inputDevice, XtDevice outputDevice, int maxInputChannels,
-            AudioChannels inputChannels, int maxOutputChannels, AudioChannels outputChannels, bool interleavedInput,
-            bool interleavedOutput, int sampleRate, XtSample sampleType, double bufferSize)
+        public AudioSession(IAudioDevice? inputDevice, IAudioDevice outputDevice)
         {
-            _owner = owner;
-            _inputDevice = inputDevice;
-            _outputDevice = outputDevice;
-            _maxInputChannels = maxInputChannels;
-            _inputChannels = inputChannels;
-            _maxOutputChannels = maxOutputChannels;
-            _outputChannels = outputChannels;
-            _sampleRate = sampleRate;
-            _sampleType = sampleType;
-            _bufferSize = bufferSize;
-            _interleavedInput = interleavedInput;
-            _interleavedOutput = interleavedOutput;
+            InputConfig = inputDevice?.GetConfig(true);
+            OutputConfig = outputDevice.GetConfig(false);
 
-            Trace.Assert(outputChannels.Count > 0);
-
-            if (inputChannels.Count == 0)
-            {
-                _outputStream = new AudioStream(outputDevice, maxOutputChannels, interleavedOutput, true,
-                    outputChannels, sampleRate, sampleType, bufferSize, this);
-                _outputStream.CreateStream();
-            }
-            else
-            {
-                if (_inputDevice == null)
-                {
-                    _outputStream = new AudioStream(outputDevice, maxOutputChannels, interleavedOutput, true,
-                        outputChannels, sampleRate, sampleType, bufferSize, this);
-                    
-                    _inputStream = new AudioStream(outputDevice, maxInputChannels, interleavedInput, false,
-                        inputChannels, sampleRate, sampleType, bufferSize, null);
-                    
-                    _outputStream.CreateFullDuplexStream(_inputStream);
-                }
-                else
-                {
-                    _outputStream = new AudioStream(outputDevice, maxOutputChannels, interleavedOutput, true,
-                        outputChannels, sampleRate, sampleType, bufferSize, this);
-                    
-                    _inputStream = new AudioStream(inputDevice, maxInputChannels, interleavedInput, false,
-                        inputChannels, sampleRate, sampleType, bufferSize, this);
-                    
-                    _outputStream.CreateStream();
-                    _inputStream.CreateStream(); // TODO
-                }
-            }
+            Trace.Assert(OutputConfig.ActiveChannels.Count > 0);
+            
+            (_type, _outputStream, _inputStream) = OutputConfig.CreateStream(InputConfig, this, new CaptureCallback());
         }
 
         private bool _disposed;
@@ -94,22 +73,91 @@ namespace VL.NewAudio.Device
             if (!_disposed)
             {
                 _disposed = true;
-                _outputStream?.Dispose();
+                _outputStream.Dispose();
                 _inputStream?.Dispose();
 
-                _outputStream = null;
                 _inputStream = null;
             }
         }
 
+        
+        public void Start(IAudioDeviceCallback callback)
+        {
+            Trace.Assert(_outputStream!=null);
+            
+            if (callback != _currentCallback)
+            {
+                callback.AudioDeviceAboutToStart(this);
+                
+                var old = _currentCallback;
+
+                if (old != null)
+                {
+                    if (callback == null)
+                    {
+                        Stop();
+                    }
+                    else
+                    {
+                        SetCallback(callback);   
+                    }
+                
+                    old.AudioDeviceStopped();
+                }
+                else
+                {
+                    Trace.Assert(callback!=null);
+                    SetCallback(callback);
+                    _running = true;
+                    Start();
+                }
+                _currentCallback = callback;
+            }
+        }
+        
+        private void SetCallback(IAudioDeviceCallback? callback)
+        {
+            if (!_running)
+            {
+                _currentCallback = callback;
+                return;
+            }
+
+            while (true)
+            {
+                var old = _currentCallback;
+                if (old == callback)
+                {
+                    break;
+                }
+                if( old!=null && old==Interlocked.CompareExchange(ref _currentCallback, callback, old)){
+                    break;
+                }
+                Thread.Sleep(1);
+            }
+        }
+
+        public void Process(AudioBuffer input, AudioBuffer output, int numFrames)
+        {
+            var cb = Interlocked.Exchange(ref _currentCallback, null);
+            if (cb != null)
+            {
+                cb.AudioDeviceCallback(input, output, numFrames);
+                _currentCallback = cb;
+            }
+            else
+            {
+                output.Zero();
+            }
+        }
+
+        
+        
         public void Start()
         {
             _audioCallbackGuard = 0;
-            if (_inputStream != null)
-            {
-                _inputStream.Start();
-            }
-
+            
+            _inputStream?.Start();
             _outputStream.Start();
         }
 
@@ -119,11 +167,6 @@ namespace VL.NewAudio.Device
             {
                 Thread.Sleep(1);
             }
-
-            _inputStream?.Dispose();
-            _outputStream?.Dispose();
-            _inputStream = null;
-            _outputStream = null;
 
             _audioCallbackGuard = 0;
         }
@@ -136,9 +179,9 @@ namespace VL.NewAudio.Device
                 try
                 {
                     Trace.Assert(stream != null && buffer.output != null);
-                    _owner.Process(_inputStream.Bind(buffer), _outputStream.Bind(buffer), buffer.frames);
+                    Process(_inputStream?.Bind(buffer), _outputStream.Bind(buffer), buffer.frames);
 
-                    var latency = _outputStream.GetLatency();
+                    var latency = _outputStream.Latency;
                     OutputLatency = latency.output;
                     InputLatency = latency.input;
                 }
