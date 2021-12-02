@@ -302,7 +302,7 @@ namespace NewAudio.Core
         }
         public AudioNodeDesc<TInstance> WithEnabledPin(bool output=true)
         {
-            AddInput("Enable", x => x.Enable, (x, v) => x.Enable = v);
+            AddCachedInput("Enable", x => x.Enable, (x, v) => x.Enable = v, false);
             if (output)
             {
                 AddOutput("Enabled", x => x.Enabled);

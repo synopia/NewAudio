@@ -56,6 +56,7 @@ namespace NewAudio.Device
         private IAudioDeviceCallback? _currentCallback;
         private bool _running;
         private AudioStreamType _type;
+        public bool IsRunning => _running;
 
         public AudioSession(IAudioDevice? inputDevice, IAudioDevice outputDevice)
         {
@@ -81,14 +82,17 @@ namespace NewAudio.Device
         }
 
         
-        public void Start(IAudioDeviceCallback callback)
+        public void Start(IAudioDeviceCallback? callback)
         {
             Trace.Assert(_outputStream!=null);
             
             if (callback != _currentCallback)
             {
-                callback.AudioDeviceAboutToStart(this);
-                
+                if (callback != null)
+                {
+                    callback.AudioDeviceAboutToStart(this);
+                }
+
                 var old = _currentCallback;
 
                 if (old != null)
@@ -167,7 +171,10 @@ namespace NewAudio.Device
             {
                 Thread.Sleep(1);
             }
-
+            _inputStream?.Dispose();
+            _outputStream.Dispose();
+            
+            _inputStream = null;
             _audioCallbackGuard = 0;
         }
 

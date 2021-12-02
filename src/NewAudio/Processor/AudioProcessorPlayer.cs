@@ -114,11 +114,14 @@ namespace NewAudio.Device
             var maxChannels = new int[]{_deviceChannels.ins, _deviceChannels.outs, _actualProcessorChannels.ins,
                 _actualProcessorChannels.outs}.Max();
              _tempBuffer.SetSize(maxChannels, _framesPerBlock);
-            // _channels
+             if (_channels.Length < maxChannels)
+             {
+                 _channels = new Memory<float>[maxChannels];
+             }
         }
         
         
-        private AudioProcessor _processor;
+        private AudioProcessor? _processor;
         private object _lock = new();
         private int _sampleRate;
         private int _framesPerBlock;
@@ -127,15 +130,13 @@ namespace NewAudio.Device
         private NumChannels _defaultProcessorChannels;
         private NumChannels _actualProcessorChannels;
         private Memory<float>[] _channels = new Memory<float>[32];
-        private AudioBuffer _tempBuffer = new AudioBuffer();
-        
-        public AudioProcessor CurrentProcessor { get=>_processor; }
+        private AudioBuffer _tempBuffer = new();
         
         public AudioProcessorPlayer()
         {
         }
 
-        public void SetProcessor(AudioProcessor processor)
+        public void SetProcessor(AudioProcessor? processor)
         {
             lock (_lock)
             {
@@ -152,7 +153,7 @@ namespace NewAudio.Device
                     processor.PrepareToPlay(_sampleRate, _framesPerBlock);
                 }
 
-                AudioProcessor old = null;
+                AudioProcessor? old = null;
                 old = _isPrepared ? processor : null;
                 _processor = processor;
                 _isPrepared = true;
@@ -181,8 +182,8 @@ namespace NewAudio.Device
                         if (!_processor.SuspendProcessing)
                         {
                             _processor.Process(buffer);
+                            return;
                         }
-                        return;
                     }
                 }
 

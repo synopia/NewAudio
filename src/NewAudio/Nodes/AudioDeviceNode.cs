@@ -61,7 +61,7 @@ namespace NewAudio.Nodes
         public XtSample[] AvailableSampleTypes => AudioDevice?.AvailableSampleType ?? Array.Empty<XtSample>();
         public double MinBufferSizeMs => AudioDevice?.AvailableBufferSizes.Item1 ?? 0;
         public double MaxBufferSizeMs => AudioDevice?.AvailableBufferSizes.Item2 ?? 0;
-        
+        public override bool Enabled => AudioDevice?.IsOpen() ?? false;
 
         private bool _disposedValue;
 

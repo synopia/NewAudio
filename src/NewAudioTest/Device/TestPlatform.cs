@@ -45,7 +45,7 @@ namespace NewAudioTest.Device
             });
             
             var xtPlatform = XtAudio.Init("1", IntPtr.Zero);
-            using var p = new XtAudioPlatform(xtPlatform);
+            using var p = new XtAudioControl(new XtAudioService(xtPlatform));
             var loopback = "{0.0.0.00000000}.{36de8e18-5f41-4c04-8ebe-cc638b9e1db2}.{4}";
             var asio4all = "{232685C6-6548-49D8-846D-4141A3EF7560}";
             // p.Open(loopback, asio4all, 2, 2);
@@ -55,7 +55,7 @@ namespace NewAudioTest.Device
             var dLoopback = s.OpenDevice(loopback);
             var dAsio4All = s.OpenDevice(asio4all);
             IAudioStreamCallback cb = new AU();
-            using var session = p.Open(loopback, asio4all, 2,2);
+            using var session = p.Open(dLoopback, dAsio4All, AudioChannels.Stereo, AudioChannels.Stereo, 0,0);
             // using var st1 = new AudioStream(dLoopback.Device, 2, true, false, AudioChannels.Stereo, 48000, XtSample.Int32, 100, cb);
             // using var st2 = new AudioStream(dAsio4All.Device, 2, false, true, AudioChannels.Stereo, 48000, XtSample.Int32, 100, cb);
             // st1.CreateStream();

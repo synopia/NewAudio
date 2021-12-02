@@ -8,9 +8,9 @@ namespace NewAudio.Processor
     public class RenderingProgram
     {
         public int NumBuffersNeeded;
-        public AudioBuffer RenderingBuffer;
-        public AudioBuffer CurrentOutputBuffer;
-        public AudioBuffer CurrentInputBuffer;
+        public AudioBuffer RenderingBuffer = new ();
+        public AudioBuffer CurrentOutputBuffer= new ();
+        public AudioBuffer? CurrentInputBuffer;
         private List<IRenderingOperation> _renderingOperations = new ();
         
         struct Context
@@ -45,8 +45,8 @@ namespace NewAudio.Processor
             }
 
             CurrentInputBuffer = buffer;
-            CurrentInputBuffer.SetSize(Math.Max(1, buffer.NumberOfChannels), numFrames);
-            CurrentInputBuffer.Zero();
+            CurrentOutputBuffer.SetSize(Math.Max(1, buffer.NumberOfChannels), numFrames);
+            CurrentOutputBuffer.Zero();
 
             var ctx = new Context()
             {
@@ -200,7 +200,7 @@ namespace NewAudio.Processor
                     _channels[i] = context.AudioBuffers[_channelsToUse[i]];
                 }
 
-                AudioBuffer buffer = new AudioBuffer(_channels, _totalChannels, context.NumFrames);
+                AudioBuffer buffer = new(_channels, _totalChannels, context.NumFrames);
                 if (_processor.SuspendProcessing)
                 {
                     buffer.Zero();

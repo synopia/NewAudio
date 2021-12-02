@@ -46,6 +46,8 @@ namespace NewAudio.Nodes
             Output = new(this);
         }
 
+        public override bool Enabled => true;
+
         public bool RemoveFromGraph()
         {
             Trace.Assert(_graph!=null && _node!=null);

@@ -118,8 +118,9 @@ namespace NewAudio.Device
             if (!_disposed)
             {
                 _disposed = true;
-                AudioBuffer.Dispose();
+                _stream.Stop();
                 _stream.Dispose();
+                AudioBuffer.Dispose();
             }
         }
 

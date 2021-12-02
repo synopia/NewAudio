@@ -13,7 +13,7 @@ namespace NewAudio.Nodes
         public IAudioService AudioService { get; }
         
         public virtual bool Enable { get; set; }
-        public virtual bool Enabled { get; set; }
+        public abstract bool Enabled { get; }
         public List<string> Messages = new List<string>();
         protected AudioNode()
         {

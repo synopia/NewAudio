@@ -14,11 +14,10 @@ namespace VL.NewAudio.Nodes
     public class AudioSessionNode: AudioNode
     {
         private AudioGraph _graph = new();
-        private AudioDeviceNode? _inputDevice;
-        private AudioDeviceNode? _outputDevice;
+        private AudioDeviceNode? _inputDeviceNode;
+        private AudioDeviceNode? _outputDeviceNode;
         private bool _enabled;
-        private AudioSession? _session;
-        private CallbackHandler _callbackHandler;
+        private IAudioControl _control;
         private AudioChannels _inputChannels;
         private AudioChannels _outputChannels;
 
@@ -26,7 +25,42 @@ namespace VL.NewAudio.Nodes
         private string[] _outputChannelNames=Array.Empty<string>();
         private RenderingProgram? _program;
         private AudioLink? _input;
+        private AudioProcessorPlayer _graphPlayer;
+        private AudioGraphIOProcessor _graphInput;
+        private AudioGraphIOProcessor _graphOutput;
+        private AudioGraph.Node _graphInputNode;
+        private AudioGraph.Node _graphOutputNode;
+
+        public AudioSessionNode()
+        {
+            _control = new XtAudioControl(AudioService);
+            _graphInput = new AudioGraphIOProcessor(false);
+            _graphOutput = new AudioGraphIOProcessor(true);
+            _graphInputNode = _graph.AddNode(_graphInput)!;
+            _graphOutputNode = _graph.AddNode(_graphOutput)!;
+            
+            _graphPlayer = new AudioProcessorPlayer();
+            _control.AddAudioCallback(_graphPlayer);
+            _graphPlayer.SetProcessor(_graph);
+        }
         
+        private bool _disposedValue;
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _control.Dispose();
+                }
+
+                _disposedValue = disposing;
+            }
+
+            base.Dispose(disposing);
+        }
+
         public AudioLink? Input
         {
             get => _input;
@@ -43,10 +77,10 @@ namespace VL.NewAudio.Nodes
 
                 if (_input != null )
                 {
-                    _input.Connect(_graph);
+                    _input.Connect(_graph, _graphOutputNode);
                 }
 
-                UpdateGraph();
+                // UpdateGraph();
             }
         }
 
@@ -57,7 +91,7 @@ namespace VL.NewAudio.Nodes
             set
             {
                 _inputChannelNames = value.ToArray();
-                var inputDevice = _inputDevice?.AudioDevice;
+                var inputDevice = _inputDeviceNode?.AudioDevice;
                 if (inputDevice != null)
                 {
                     _inputChannels = UpdateChannels(inputDevice.InputChannelNames, _inputChannelNames);
@@ -71,7 +105,7 @@ namespace VL.NewAudio.Nodes
             set
             {
                 _outputChannelNames = value.ToArray();
-                var outputDevice = _outputDevice?.AudioDevice;
+                var outputDevice = _outputDeviceNode?.AudioDevice;
                 if (outputDevice != null)
                 {
                     _outputChannels = UpdateChannels(outputDevice.OutputChannelNames, _outputChannelNames);
@@ -85,25 +119,25 @@ namespace VL.NewAudio.Nodes
         
         public AudioDeviceNode? InputDevice
         {
-            get => _inputDevice;
+            get => _inputDeviceNode;
             set
             {
-                _inputDevice = value;
+                _inputDeviceNode = value;
                 Update();
             }
         }
 
         public AudioDeviceNode? OutputDevice
         {
-            get => _outputDevice;
+            get => _outputDeviceNode;
             set
             {
-                _outputDevice = value;
+                _outputDeviceNode = value;
                 Update();
             }
         }
 
-        public override bool Enabled
+        public override bool Enable
         {
             get => _enabled;
             set
@@ -112,6 +146,8 @@ namespace VL.NewAudio.Nodes
                 Update();
             }
         }
+
+        public override bool Enabled => _control.IsRunning;
 
         private AudioChannels UpdateChannels(string[] allChannels, string[] selectedChannels)
         {
@@ -131,36 +167,37 @@ namespace VL.NewAudio.Nodes
         
         private void Update()
         {
-            
-            if ( _outputDevice?.AudioDevice != null )
+            if (Enable)
             {
-                var input = _inputDevice?.AudioDevice;
-                var output = _outputDevice.AudioDevice;
-                
-                if (_outputChannels.Count > 0)
+                var outputDevice = _outputDeviceNode?.AudioDevice;
+                if (outputDevice != null)
                 {
-                    if (input != null && output.Id != input.Id)
+                    try
                     {
-                        input.Open(_inputChannels, AudioChannels.Disabled, (int)SamplingFrequency, BufferSize);
-                        output.Open(AudioChannels.Disabled, _outputChannels, (int)SamplingFrequency, BufferSize);
+                        var session = _control.Open(_inputDeviceNode?.AudioDevice, outputDevice, _inputChannels, _outputChannels,
+                            (int)SamplingFrequency,
+                            BufferSize);
                     }
-                    else
+                    catch (Exception e)
                     {
-                        output.Open(_inputChannels, _outputChannels, (int)SamplingFrequency, BufferSize);
+                        Console.WriteLine(e);
+                        
                     }
-
-                    _session = new AudioSession(input, output);
-                    _callbackHandler
-                    _session.Start(_callbackHandler);
                 }
+            }
+            else
+            {
+                _control.Close();
             }
         }
 
 
         public void UpdateGraph()
         {
+
             _program = new RenderingProgram();
             var builder = new RenderingBuilder(_graph, _program);
         }
+
     }
 }

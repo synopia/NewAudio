@@ -9,7 +9,7 @@ using Xt;
 
 namespace NewAudio.Device
 {
-    public interface IAudioPlatform : IChangeBroadcaster, IDisposable
+    public interface IAudioControl : IChangeBroadcaster, IDisposable
     {
         // void OpenAudioDeviceSetup(DeviceConfig[] setup);
         // void OpenAudioDeviceConfig(DeviceConfig config);
@@ -24,7 +24,12 @@ namespace NewAudio.Device
         void PlayTestSound(int index);
 
         int XRunCount { get; }
-        IAudioSession Open(string inputDeviceId,string outputDeviceId, int numInputs, int numOutputs);
+
+        IAudioSession Open(IAudioDevice? inputDevice, IAudioDevice outputDevice, AudioChannels inputChannels,
+            AudioChannels outputChannels, int sampleRate, double bufferSize);
+
+        void Close();
+        bool IsRunning { get; }
     }
 
     public class CallbackHandler : IAudioDeviceCallback
@@ -57,9 +62,8 @@ namespace NewAudio.Device
         }
     }
 
-    public class XtAudioPlatform : IAudioPlatform, IAudioDeviceCallback
+    public class XtAudioControl : IAudioControl, IAudioDeviceCallback
     {
-        private XtPlatform _platform;
         private CallbackHandler _callbackHandler;
         public object AudioProcessLock { get; } = new();
         private List<IAudioDeviceCallback> _callbacks = new();
@@ -69,20 +73,19 @@ namespace NewAudio.Device
         private bool _scannedForDevices = false;
         private AudioSession? _currentSession;
 
-        public XtAudioPlatform(XtPlatform platform)
+        public bool IsRunning => _currentSession?.IsRunning ?? false;
+
+        public XtAudioControl(IAudioService service)
         {
-            _platform = platform;
             _callbackHandler = new CallbackHandler(this);
             _tempBuffer = new AudioBuffer();
 
-            _service = new XtAudioService(platform);
+            _service = service;
         }
 
         public void Dispose()
         {
             _currentSession?.Dispose();
-            _service.Dispose();
-            _platform.Dispose();
         }
 
         public void PlayTestSound(int index)
@@ -106,48 +109,45 @@ namespace NewAudio.Device
             }
         }
 
-        public IAudioSession Open(string inputDeviceId,string outputDeviceId, int numInputs, int numOutputs)
+        public IAudioSession Open(IAudioDevice? inputDevice, IAudioDevice outputDevice, AudioChannels inputChannels, AudioChannels outputChannels, int sampleRate, double bufferSize)
         {
             Close();
 
             ScanIfNeeded();
 
-            var output = _service.OpenDevice(outputDeviceId); 
-            var input = inputDeviceId!=outputDeviceId ? _service.OpenDevice(inputDeviceId) : output;
-
-            numInputs = Math.Min(numInputs, input.InputChannelNames.Length);
-            numOutputs = Math.Min(numOutputs, output.OutputChannelNames.Length);
+            // numInputs = Math.Min(numInputs, inputDevice.InputChannelNames.Length);
+            // numOutputs = Math.Min(numOutputs, outputDevice.OutputChannelNames.Length);
 
             // var sampleType = ChooseBestSampleType(_currentDevice, XtSample.Float32);
-            var sampleRate = ChooseBestSampleRate(output, 0);
-            var bufferSize = ChooseBestBufferSize(output);
+            sampleRate = ChooseBestSampleRate(outputDevice, sampleRate);
+            bufferSize = ChooseBestBufferSize(outputDevice, bufferSize);
 
-            
-            if (outputDeviceId != inputDeviceId)
+            // todo input
+
+            if (outputChannels.Count > 0)
             {
-                output.Open(AudioChannels.Disabled, AudioChannels.Channels(numOutputs),
-                    sampleRate,
-                    bufferSize);
-                input.Open(AudioChannels.Channels(numInputs), AudioChannels.Disabled,
-                    sampleRate,
-                    bufferSize);
-            }
-            else
-            {
-                output.Open(AudioChannels.Channels(numInputs), AudioChannels.Channels(numOutputs),
-                    sampleRate,
-                    bufferSize);
+                if (inputDevice != null && outputDevice.Id != inputDevice.Id)
+                {
+                    outputDevice.Open(AudioChannels.Disabled, outputChannels,
+                        sampleRate,
+                        bufferSize);
+                    inputDevice.Open(inputChannels, AudioChannels.Disabled,
+                        sampleRate,
+                        bufferSize);
+                }
+                else
+                {
+                    outputDevice.Open(inputChannels, outputChannels, sampleRate, bufferSize);
+                }
+
+                _currentSession = new AudioSession(inputDevice, outputDevice);
+
+                _currentSession.Start(_callbackHandler);
+
+                return _currentSession;
             }
 
-            _currentSession  = new AudioSession(input, output);
-            
-            _currentSession.Start(_callbackHandler);
-            Console.WriteLine("SUCCESS !");
-            Thread.Sleep(500);
-            _currentSession.Stop();
-
-            Thread.Sleep(500);
-            return _currentSession;
+            return null;
         }
 
         private XtSample ChooseBestSampleType(AudioSession session, XtSample sample)
@@ -158,7 +158,7 @@ namespace NewAudio.Device
         private int ChooseBestSampleRate(IAudioDevice device, int rate)
         {
             Trace.Assert(device != null);
-            var rates = device.AvailableSampleRates;
+            var rates = device!.AvailableSampleRates;
             if (rates == null || rates.Length == 0)
             {
                 return 44100;
@@ -193,10 +193,14 @@ namespace NewAudio.Device
             return rates[0];
         }
 
-        private double ChooseBestBufferSize(IAudioDevice device)
+        private double ChooseBestBufferSize(IAudioDevice device, double bufferSize)
         {
             Trace.Assert(device != null);
             var (min, max) = device.AvailableBufferSizes;
+            if (min <= bufferSize && bufferSize <= max)
+            {
+                return bufferSize;
+            }
             return (min + max) / 2;
         }
 

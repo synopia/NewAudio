@@ -367,7 +367,10 @@ namespace NewAudio.Dsp
         }
         public void Zero()
         {
-            _data.Memory.Span.Clear();
+            for (int ch = 0; ch < NumberOfChannels; ch++)
+            {
+                _channels[ch].Span.Clear();
+            }            
         }
         public void Zero(int start, int frames)
         {

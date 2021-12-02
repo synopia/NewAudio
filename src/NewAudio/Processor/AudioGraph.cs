@@ -13,14 +13,14 @@ namespace NewAudio.Processor
     {
         private static void UpdateOnMessageThread(IAsyncUpdater updater)
         {
-            if (Dispatcher.Dispatcher.Instance.IsThisDispatcherThread())
+            // if (Dispatcher.Dispatcher.Instance.IsThisDispatcherThread())
             {
                 updater.HandleAsyncUpdate();
             }
-            else
-            {
-                updater.TriggerAsyncUpdate();
-            }
+            // else
+            // {
+                // updater.TriggerAsyncUpdate();
+            // }
         }
         private AsyncUpdateSupport _asyncUpdate;
         private ChangeBroadcaster _changeBroadcaster;
@@ -81,12 +81,16 @@ namespace NewAudio.Processor
             }
         }
 
-        public Node GetNode(int index)
+        public Node? GetNode(int index)
         {
-            throw new NotImplementedException();
+            if (index < 0 || index >= _nodes.Count)
+            {
+                return null;
+            }
+            return _nodes[index];
         }
 
-        public Node GetNode(NodeId id)
+        public Node? GetNode(NodeId id)
         {
             foreach (var node in _nodes)
             {
@@ -99,14 +103,8 @@ namespace NewAudio.Processor
             return null;
         }
 
-        public Node AddNode(AudioProcessor processor, NodeId nodeId=default)
+        public Node? AddNode(AudioProcessor processor, NodeId nodeId=default)
         {
-            if (processor == null)
-            {
-                // todo error
-                return default;
-            }
-
             if (nodeId == default)
             {
                 nodeId.Uid = ++_lastId.Uid;
@@ -117,7 +115,7 @@ namespace NewAudio.Processor
                 if (node.Processor == processor || node.NodeId == nodeId)
                 {
                     // todo error
-                    return default;
+                    return null;
                 }
             }
 
@@ -127,7 +125,7 @@ namespace NewAudio.Processor
             }
 
             processor.PlayHead = PlayHead;
-            Node n = new Node(nodeId, processor);
+            Node n = new(nodeId, processor);
             lock (ProcessLock)
             {
                 _nodes.Add(n);
@@ -140,12 +138,7 @@ namespace NewAudio.Processor
 
         public Node RemoveNode(Node node)
         {
-            if (node != null)
-            {
-                return RemoveNode(node.NodeId);
-            }
-            Trace.Assert(false);
-            return null;
+            return RemoveNode(node.NodeId);
         }
         public Node RemoveNode(NodeId nodeId)
         {
@@ -202,7 +195,7 @@ namespace NewAudio.Processor
 
         public List<Connection> GetConnections()
         {
-            List<Connection> connections = new List<Connection>();
+            List<Connection> connections = new();
             foreach (var node in _nodes)
             {
                 connections.AddRange(GetNodeConnections(node));
@@ -335,11 +328,7 @@ namespace NewAudio.Processor
             {
                 CancelPendingUpdate();
                 Unprepare();
-                if (_program != null)
-                {
-                    _program.ReleaseBuffers();
-                }
-
+                _program?.ReleaseBuffers();
             }
         }
 
@@ -415,15 +404,15 @@ namespace NewAudio.Processor
         {
             
             var program = new RenderingProgram();
-            var b = new RenderingBuilder(this, _program);
+            var b = new RenderingBuilder(this, program);
             lock (ProcessLock)
             {
                 var currentFramesPerBlock = FramesPerBlock;
-                _program.PrepareBuffers(currentFramesPerBlock);
+                program.PrepareBuffers(currentFramesPerBlock);
                 
                 if (AnyNodesNeedPreparing())
                 {
-                    _program.Reset();
+                    program.Reset();
 
                     foreach (var node in _nodes)
                     {
@@ -450,7 +439,7 @@ namespace NewAudio.Processor
 
         }
         
-        private bool CanConnect(Node source, int sourceChannel, Node target, int targetChannel)
+        private bool CanConnect(Node? source, int sourceChannel, Node? target, int targetChannel)
         {
             if (sourceChannel < 0 || targetChannel < 0 || source == target)
             {
@@ -668,7 +657,7 @@ namespace NewAudio.Processor
                 }
             }
 
-            private object _processorLock = new object();
+            private object _processorLock = new();
 
             public readonly struct Connection : IEquatable<Connection>
             {
@@ -697,7 +686,7 @@ namespace NewAudio.Processor
                 {
                     unchecked
                     {
-                        var hashCode = (OtherNode != null ? OtherNode.GetHashCode() : 0);
+                        var hashCode = OtherNode.GetHashCode();
                         hashCode = (hashCode * 397) ^ OtherChannel;
                         hashCode = (hashCode * 397) ^ OwnChannel;
                         return hashCode;
@@ -858,7 +847,7 @@ namespace NewAudio.Processor
         
         
         private bool _disposedValue;
-        private RenderingProgram _program;
+        private RenderingProgram? _program;
 
         protected override void Dispose(bool disposing)
         {
