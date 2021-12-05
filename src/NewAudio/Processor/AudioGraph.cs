@@ -26,6 +26,7 @@ namespace NewAudio.Processor
         private ChangeBroadcaster _changeBroadcaster;
         private List<Node> _nodes = new();
         private NodeId _lastId = new();
+        private RenderingProgram? _program;
 
         private (int, int, bool) _prepareSettings;
         private bool _isPrepared;
@@ -847,7 +848,6 @@ namespace NewAudio.Processor
         
         
         private bool _disposedValue;
-        private RenderingProgram? _program;
 
         protected override void Dispose(bool disposing)
         {

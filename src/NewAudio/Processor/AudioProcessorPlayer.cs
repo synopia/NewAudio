@@ -26,81 +26,22 @@ namespace NewAudio.Device
             public int ins;
             public int outs;
         }
-        private struct ChannelInfo
-        {
-            public ChannelInfo(Memory<float>[] data, int numChannels)
-            {
-                _data = data;
-                this.numChannels = numChannels;
-            }
 
-            public ChannelInfo(AudioBuffer buffer) : this(buffer.GetWriteChannels(), buffer.NumberOfChannels)
-            {
-            }
-
-            public Memory<float>[] _data;
-            public int numChannels;
-        }
-
-        private static void InitializeBuffers(ChannelInfo ins, ChannelInfo outs, int framesPerBlock, int processorIns,
-            int processorOuts, AudioBuffer tempBuffer, Memory<float>[] channels)
-        {
-            Trace.Assert(channels.Length>=Math.Max(processorIns, processorOuts));
-            int totalNumChannels = 0;
-            Action<int> prepareInputChannel = (index) =>
-            {
-                if (ins.numChannels == 0)
-                {
-                    channels[totalNumChannels].Slice(0, framesPerBlock).Span.Clear();
-                }
-                else
-                {
-                    ins._data[index % ins.numChannels].Slice(0, framesPerBlock).Span
-                        .CopyTo(channels[totalNumChannels].Span);
-                }
-            };
-            if (processorIns > processorOuts)
-            {
-                Trace.Assert(tempBuffer.NumberOfChannels>=processorIns-processorOuts);
-                Trace.Assert(tempBuffer.NumberOfFrames>=framesPerBlock);
-
-                for (int i = 0; i < processorOuts; i++)
-                {
-                    channels[totalNumChannels] = outs._data[i];
-                    prepareInputChannel(i);
-                    totalNumChannels++;
-                }
-
-                for (int i = processorOuts; i < processorIns; i++)
-                {
-                    channels[totalNumChannels] = tempBuffer.GetWriteChannel(i - outs.numChannels);
-                    prepareInputChannel(i);
-                    totalNumChannels++;
-                }
-            }
-            else
-            {
-                for (int i = 0; i < processorIns; i++)
-                {
-                    channels[totalNumChannels] = outs._data[i];
-                    prepareInputChannel(i);
-                    totalNumChannels++;
-                }
-
-                for (int i = processorIns; i < processorOuts; i++)
-                {
-                    channels[totalNumChannels] = outs._data[i];
-                    channels[totalNumChannels].Slice(0, framesPerBlock).Span.Clear();
-                    totalNumChannels++;
-                }
-            }
-        }
+        private AudioProcessor? _processor;
+        private readonly object _lock = new();
+        private int _sampleRate;
+        private int _framesPerBlock;
+        private bool _isPrepared;
+        private NumChannels _deviceChannels;
+        private NumChannels _defaultProcessorChannels;
+        private NumChannels _actualProcessorChannels;
+        private readonly AudioBuffer _tempBuffer = new();
         
         private NumChannels FindMostSuitableLayout(AudioProcessor processor)
         {
-            var layouts = new List<NumChannels>();
-            layouts.Add(_deviceChannels);
-            if (_deviceChannels.ins == 0 || _deviceChannels.ins == 1)
+            var layouts = new List<NumChannels> { _deviceChannels };
+            
+            if (_deviceChannels.ins is 0 or 1)
             {
                 layouts.Add(new NumChannels(_defaultProcessorChannels.ins, _deviceChannels.outs));
                 layouts.Add(new NumChannels(_deviceChannels.outs, _deviceChannels.outs));
@@ -111,30 +52,15 @@ namespace NewAudio.Device
 
         private void ResizeChannels()
         {
-            var maxChannels = new int[]{_deviceChannels.ins, _deviceChannels.outs, _actualProcessorChannels.ins,
-                _actualProcessorChannels.outs}.Max();
-             _tempBuffer.SetSize(maxChannels, _framesPerBlock);
-             if (_channels.Length < maxChannels)
-             {
-                 _channels = new Memory<float>[maxChannels];
-             }
+            var maxChannels = new[]{
+                _deviceChannels.ins, _deviceChannels.outs,
+                _actualProcessorChannels.ins,_actualProcessorChannels.outs
+            }.Max();
+            
+            _tempBuffer.SetSize(maxChannels, _framesPerBlock);
         }
         
         
-        private AudioProcessor? _processor;
-        private object _lock = new();
-        private int _sampleRate;
-        private int _framesPerBlock;
-        private bool _isPrepared;
-        private NumChannels _deviceChannels;
-        private NumChannels _defaultProcessorChannels;
-        private NumChannels _actualProcessorChannels;
-        private Memory<float>[] _channels = new Memory<float>[32];
-        private AudioBuffer _tempBuffer = new();
-        
-        public AudioProcessorPlayer()
-        {
-        }
 
         public void SetProcessor(AudioProcessor? processor)
         {
@@ -158,6 +84,7 @@ namespace NewAudio.Device
                 _processor = processor;
                 _isPrepared = true;
                 ResizeChannels();
+                
                 if (old != null)
                 {
                     old.ReleaseResources();
@@ -170,10 +97,8 @@ namespace NewAudio.Device
             lock (_lock)
             {
                 Trace.Assert(_sampleRate>0 && _framesPerBlock>0 );
-                InitializeBuffers(new ChannelInfo(input), new ChannelInfo(output),
-                    numFrames, _actualProcessorChannels.ins, _actualProcessorChannels.outs, _tempBuffer, _channels);
-                var totalNumChannels = Math.Max(_actualProcessorChannels.ins, _actualProcessorChannels.outs);
-                var buffer = new AudioBuffer(_channels, totalNumChannels, numFrames);
+                _tempBuffer.Merge(input, output, _actualProcessorChannels.ins, _actualProcessorChannels.outs);
+
                 if (_processor != null)
                 {
                     Trace.Assert(output.NumberOfChannels==_actualProcessorChannels.outs);
@@ -181,7 +106,7 @@ namespace NewAudio.Device
                     {
                         if (!_processor.SuspendProcessing)
                         {
-                            _processor.Process(buffer);
+                            _processor.Process(_tempBuffer);
                             return;
                         }
                     }
@@ -204,6 +129,7 @@ namespace NewAudio.Device
                 _framesPerBlock = newFramesPerBlock;
                 _deviceChannels = new NumChannels(numChannelIn, numChannelOut);
                 ResizeChannels();
+                
                 if (_processor != null)
                 {
                     if (_isPrepared)

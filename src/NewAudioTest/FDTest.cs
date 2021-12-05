@@ -40,13 +40,11 @@ namespace NewAudioTest
             XtAggregateStreamParams aggregateParams;
             XtMix mix = new XtMix(48000, XtSample.Int32);
             XtFormat inputFormat = new XtFormat(mix, new XtChannels(2, 0, 0, 0));
-            XtFormat inputFormat2 = new XtFormat(mix, new XtChannels(4, 2<<2, 0, 0));
             XtFormat outputFormat = new XtFormat(mix, new XtChannels(0, 0, 2, 0));
 
             using XtPlatform platform = XtAudio.Init(null, IntPtr.Zero);
             XtAudio.SetOnError(OnError);
             XtService service = platform.GetService(XtSystem.WASAPI);
-            XtService service2 = platform.GetService(XtSystem.ASIO);
             if (service == null || (service.GetCapabilities() & XtServiceCaps.Aggregation) == 0) return;
 
             var loopback = "{0.0.0.00000000}.{36de8e18-5f41-4c04-8ebe-cc638b9e1db2}.{4}";
@@ -62,17 +60,13 @@ namespace NewAudioTest
 
             var asio4all = "{232685C6-6548-49D8-846D-4141A3EF7560}";
 
-            string defaultOutput2 = asio4all; //service2.GetDefaultDeviceId(true);
-            if (defaultOutput2 == null) return;
-            using XtDevice output2 = service2.OpenDevice(defaultOutput2);
-            if (!output2.SupportsFormat(inputFormat2)) return;
+          Console.WriteLine(defaultOutput);
 
-            XtAggregateDeviceParams[] deviceParams = new XtAggregateDeviceParams[3];
+            XtAggregateDeviceParams[] deviceParams = new XtAggregateDeviceParams[2];
             deviceParams[0] = new XtAggregateDeviceParams(input, in inputFormat.channels, 30.0);
             deviceParams[1] = new XtAggregateDeviceParams(output, in outputFormat.channels, 30.0);
-            deviceParams[2] = new XtAggregateDeviceParams(output2, in inputFormat2.channels, 30.0);
             XtStreamParams streamParams = new XtStreamParams(true, OnBuffer, OnXRun, OnRunning);
-            aggregateParams = new XtAggregateStreamParams(in streamParams, deviceParams, 3, mix, output);
+            aggregateParams = new XtAggregateStreamParams(in streamParams, deviceParams, 2, mix, output);
             using XtStream stream = service.AggregateStream(in aggregateParams, null);
             using XtSafeBuffer safe = XtSafeBuffer.Register(stream, true);
             stream.Start();

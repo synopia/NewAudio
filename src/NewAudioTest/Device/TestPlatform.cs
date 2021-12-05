@@ -55,7 +55,7 @@ namespace NewAudioTest.Device
             var dLoopback = s.OpenDevice(loopback);
             var dAsio4All = s.OpenDevice(asio4all);
             IAudioStreamCallback cb = new AU();
-            using var session = p.Open(dLoopback, dAsio4All, AudioChannels.Stereo, AudioChannels.Stereo, 0,0);
+            // using var session = p.Open(dLoopback, dAsio4All, AudioChannels.Stereo, AudioChannels.Stereo, 0,0);
             // using var st1 = new AudioStream(dLoopback.Device, 2, true, false, AudioChannels.Stereo, 48000, XtSample.Int32, 100, cb);
             // using var st2 = new AudioStream(dAsio4All.Device, 2, false, true, AudioChannels.Stereo, 48000, XtSample.Int32, 100, cb);
             // st1.CreateStream();

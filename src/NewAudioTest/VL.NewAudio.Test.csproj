@@ -53,8 +53,6 @@
       <Compile Remove="BenchTest.cs" />
       <Compile Remove="PlayTest.cs" />
       <Compile Remove="TestDevices.cs" />
-      <Compile Remove="Dsp\ConverterTest.cs" />
-      <Compile Remove="Dsp\AudioBufferTest.cs" />
       <Compile Remove="Processor\OutputProcessorTest.cs" />
       <Compile Remove="Processor\RenderProcessorTest.cs" />
     </ItemGroup>

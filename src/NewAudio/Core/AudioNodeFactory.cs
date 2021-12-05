@@ -8,6 +8,7 @@ using VL.Core;
 using VL.Core.Diagnostics;
 using VL.Lang;
 using VL.Lang.PublicAPI;
+using Message = VL.Lang.Message;
 
 namespace NewAudio.Core
 {
@@ -16,22 +17,54 @@ namespace NewAudio.Core
         public static AudioNodeDesc<T> NewNode<T>(this IVLNodeDescriptionFactory factory, Func<NodeContext, T> ctor,
             string? name = null, string? category = null, bool hasStateOutput=false) where T : AudioNode
         {
-            return new AudioNodeDesc<T>(factory, ctor: ctx =>
-            {
-                var instance = ctor(ctx);
-                return (instance, instance.Dispose);
-            }, name: name, category: category, hasStateOutput: hasStateOutput);
+            return new AudioNodeDesc<T>(factory, ctor: ctx=>CreateInstanceWithErrorToggle(ctx,ctor), name: name, category: category, hasStateOutput: hasStateOutput);
         }
         public static AudioNodeDesc<AudioProcessorNode<T>> NewProcessorNode<T>(this IVLNodeDescriptionFactory factory, Func<NodeContext, T> ctor,
             string? name = null, string? category = null, bool hasAudioInput = true, bool hasAudioOutput = true, bool hasStateOutput=false) where T : AudioProcessor
         {
-            return new AudioProcessorNodeDesc<T>(factory, ctor: ctx =>
+            return new AudioProcessorNodeDesc<T>(factory, ctor: ctx =>CreateInstanceWithErrorToggle(ctx, c =>
             {
-                var processor = ctor(ctx);
-                var node = new AudioProcessorNode<T>(processor);
+                var processor = ctor(c);
+                return new AudioProcessorNode<T>(processor);
+            }), name: name, category: category, hasAudioInput:hasAudioInput, hasAudioOutput: hasAudioOutput, hasStateOutput: hasStateOutput);
+        }
 
-                return (node, node.Dispose);
-            }, name: name, category: category, hasAudioInput:hasAudioInput, hasAudioOutput: hasAudioOutput, hasStateOutput: hasStateOutput);
+        private static (T, Action) CreateInstanceWithErrorToggle<T>(NodeContext ctx, Func<NodeContext, T> ctor) where T : AudioNode
+        {
+            var instance = ctor(ctx);
+            Message[] visibleErrors = {};
+                
+            var unsubscribe = instance.Messages.Subscribe(ToggleMessage);
+            return (instance, ()=>
+            {
+                foreach (var error in visibleErrors)
+                {
+                    Session.ToggleMessage(error, false);
+                }
+
+                unsubscribe.Dispose();
+                instance.Dispose();
+            });
+            void ToggleMessage(Message[] errors)
+            {
+                foreach (var error in visibleErrors)
+                {
+                    if (Array.IndexOf(errors, error) == -1)
+                    {
+                        Session.ToggleMessage(error, false);                        
+                    }
+                }
+
+                foreach (var error in errors)
+                {
+                    if (Array.IndexOf(visibleErrors, error) == -1)
+                    {
+                        Session.ToggleMessage(error, true);
+                    }
+                }
+
+                visibleErrors = errors;
+            }   
         }
     }
 
@@ -77,11 +110,8 @@ namespace NewAudio.Core
         public IReadOnlyList<IVLPinDescription> Inputs => _inputs;
 
         public IReadOnlyList<IVLPinDescription> Outputs => _outputs;
-        public IEnumerable<VL.Core.Diagnostics.Message> Messages =>  Enumerable.Empty<VL.Core.Diagnostics.Message>();
 
-        // {
-            // get { yield return new Message(MessageType.Error, "Hallo");  }
-        // }
+        public IEnumerable<VL.Core.Diagnostics.Message> Messages => Enumerable.Empty<VL.Core.Diagnostics.Message>();
 
         public string Summary => typeof(TInstance).GetSummary();
 
@@ -95,47 +125,35 @@ namespace NewAudio.Core
             {
                 NodeDescription = this
             };
-            IVLPin[] inputs = _inputs.Select(p => (IVLPin)p.CreatePin(node, instance)).ToArray();
-            IVLPin[] outputs = _outputs.Select(p => (IVLPin)p.CreatePin(node, instance)).ToArray();
+            int index = 0;
+            IVLPin[] inputs = _inputs.Select(p => (IVLPin)p.CreatePin(node, index++, instance)).ToArray();
+            IVLPin[] outputs = _outputs.Select(p => (IVLPin)p.CreatePin(node, index++, instance)).ToArray();
+            instance.InputPinNames = _inputs.Select(i => i.MemberName).Concat(_outputs.Select(i=>i.MemberName).ToArray()).ToArray();
+            
             node.Inputs = inputs;
             node.Outputs = outputs;
-            var cachedMessages = new List<VL.Lang.Message>();
+            List<Message> messages = new();
+            
             node.UpdateAction = () =>
             {
-                if (cachedMessages.Count != instance.Messages.Count)
-                {
-                    if (instance.Messages.Count == 0)
-                    {
-                        foreach (var message in cachedMessages)
-                        {
-                            Session.ToggleMessage(message, false);
-                        }
-                        cachedMessages.Clear();
-                    }
-                    else
-                    {
-                        foreach (var message in instance.Messages)
-                        {
-                            var m = new VL.Lang.Message(context.Path.Stack.Peek(), MessageSeverity.Error, message);
-                            cachedMessages.Add(m);
-                            Session.ToggleMessage(m, true);
-                        }
-                    }
-
-                }
-
                 if (node.NeedsUpdate)
                 {
-                    /*foreach (var input in inputs)
+                    try
                     {
-                        input.Update(instance);
+                        var message = instance.Update(node.UpdateMask);
+                        if (message != null)
+                        {
+                            instance.AddError(message);
+                        }
                     }
-
-                    foreach (var output in outputs)
+                    catch (Exception exception)
                     {
-                        output.Instance = instance;
-                    }*/
-                    node.NeedsUpdate = false;
+                        instance.AddError(new Message(MessageSeverity.Error, exception.Message));
+                    }
+                    finally
+                    {
+                        node.UpdateMask = 0;
+                    }
                 }
             };
             node.DisposeAction = () =>
@@ -161,48 +179,36 @@ namespace NewAudio.Core
             _inputs.Add(new AudioPinDesc(name, typeof(T), summary, remarks)
             {
                 Name = name.InsertSpaces(),
-                CreatePin = (node, instance) => new InputPin<T>(node, instance, getter, setter, getter(instance)),
+                CreatePin = (node, index, instance) => new CachedInputPin<T>(node, index, instance, getter, setter, getter(instance)),
                 IsVisible = isVisible
             });
             return this;
         }
 
+        public AudioNodeDesc<TInstance> AddInput<T>(string name, Func<TInstance, T> getter, Action<TInstance, T> setter, Func<T,T,bool> equals,
+            string? summary = null, string? remarks = null, bool isVisible = true)
+        {
+            _inputs.Add(new AudioPinDesc(name, typeof(T), summary, remarks)
+            {
+                Name = name.InsertSpaces(),
+                CreatePin = (node, index, instance) => new CachedInputPin<T>(node, index, instance, getter, setter, getter(instance), equals),
+                IsVisible = isVisible
+            });
+            return this;
+        }
         public AudioNodeDesc<TInstance> AddInput<T>(string name, Func<TInstance, T> getter, Action<TInstance, T> setter, T defaultValue,
-            string? summary = null, string? remarks = null, bool isVisible = true)
+            string? summary = null, string? remarks = null, bool isVisible = true, string? displayName=null)
         {
             _inputs.Add(new AudioPinDesc(name, typeof(T), summary, remarks)
             {
-                Name = name.InsertSpaces(),
-                CreatePin = (node, instance) => new InputPin<T>(node, instance, getter, setter, defaultValue),
+                Name = displayName ?? name.InsertSpaces(),
+                CreatePin = (node, index, instance) => new CachedInputPin<T>(node, index, instance, getter, setter, defaultValue),
                 IsVisible = isVisible
             });
             return this;
         }
 
-        public AudioNodeDesc<TInstance> AddCachedInput<T>(string name, Func<TInstance, T> getter, Action<TInstance, T> setter, Func<T,T,bool> equals,
-            string? summary = null, string? remarks = null, bool isVisible = true)
-        {
-            _inputs.Add(new AudioPinDesc(name, typeof(T), summary, remarks)
-            {
-                Name = name.InsertSpaces(),
-                CreatePin = (node, instance) => new CachedInputPin<T>(node, instance, getter, setter, getter(instance), equals),
-                IsVisible = isVisible
-            });
-            return this;
-        }
-        public AudioNodeDesc<TInstance> AddCachedInput<T>(string name, Func<TInstance, T> getter, Action<TInstance, T> setter, T defaultValue,
-            string? summary = null, string? remarks = null, bool isVisible = true)
-        {
-            _inputs.Add(new AudioPinDesc(name, typeof(T), summary, remarks)
-            {
-                Name = name.InsertSpaces(),
-                CreatePin = (node, instance) => new CachedInputPin<T>(node, instance, getter, setter, defaultValue),
-                IsVisible = isVisible
-            });
-            return this;
-        }
-
-        static bool SequenceEqual<T>(IEnumerable<T>? one, IEnumerable<T>? two)
+        private static bool SequenceEqual<T>(IEnumerable<T>? one, IEnumerable<T>? two)
         {
             if (one == null)
             {
@@ -217,43 +223,9 @@ namespace NewAudio.Core
             return one.SequenceEqual(two);
         }
         
-        public AudioNodeDesc<TInstance> AddCachedListInput<T>(string name, Func<TInstance, IList<T>> getter, Action<TInstance>? updateAfterSet=null)
+        public AudioNodeDesc<TInstance> AddListInput<T>(string name, Func<TInstance, IEnumerable<T>> getter, Action<TInstance, IEnumerable<T>> setter)
         {
-            return AddCachedInput(name, getter: i => (IReadOnlyList<T>)getter(i),
-                equals: SequenceEqual, setter:
-                (x, v) =>
-                {
-                    var items = getter(x);
-                    items.Clear();
-                    if (v != null)
-                    {
-                        foreach (var item in v)
-                        {
-                            if (item != null)
-                            {
-                                items.Add(item);
-                            }
-                        }
-                    }
-
-                    updateAfterSet?.Invoke(x);
-                });
-        }
-        
-        public AudioNodeDesc<TInstance> AddCachedListInput<T>(string name, Func<TInstance, T[]> getter, Action<TInstance, T[]> setter)
-        {
-            return AddCachedInput(name, getter: i => (IReadOnlyList<T>)getter(i),
-                equals: SequenceEqual, setter:
-                (x, v) =>
-                {
-                    var items = v?.Where(i => i != null);
-                    setter(x, items?.ToArray() ?? Array.Empty<T>());
-                });
-        }
-
-        public AudioNodeDesc<TInstance> AddCachedListInput<T>(string name, Func<TInstance, IEnumerable<T>> getter, Action<TInstance, IEnumerable<T>> setter)
-        {
-            return AddCachedInput(name, getter: getter,
+            return AddInput(name, getter,
                 equals: SequenceEqual, setter:
                 (x, v) =>
                 {
@@ -263,54 +235,42 @@ namespace NewAudio.Core
         }
 
         
-        public AudioNodeDesc<TInstance> AddOutput<T>(string name, Func<TInstance, T> getter, string? summary = null,
-            string? remarks = null, bool isVisible = true)
-        {
-            _outputs.Add(new AudioPinDesc(name, typeof(T), remarks)
-            {
-                Name = name.InsertSpaces(),
-                CreatePin = (node, instance) => new OutputPin<T>(node, instance, getter),
-                IsVisible = isVisible
-            });
-            return this;
-        }
-
-        public AudioNodeDesc<TInstance> AddCachedOutput<T>(string name, Func<TInstance, T> getter,
+        public AudioNodeDesc<TInstance> AddOutput<T>(string name, Func<TInstance, T> getter,
             string? summary = null, string? remarks = null, bool isVisible = true)
         {
             _outputs.Add(new AudioPinDesc(name, typeof(T), summary, remarks)
             {
                 Name = name.InsertSpaces(),
-                CreatePin = (node, instance) => new CachedOutputPin<T>(node, instance, getter),
+                CreatePin = (node, index, instance) => new OutputPin<T>(node, index, instance, getter),
                 IsVisible = isVisible
             });
             return this;
         }
-        public AudioNodeDesc<TInstance> AddCachedOutput<T>(string name, Func<(Func<TInstance, T>,IDisposable)> ctor, string? summary = null, string? remarks = null, bool isVisible = true)
+        public AudioNodeDesc<TInstance> AddOutput<T>(string name, Func<(Func<TInstance, T>,IDisposable)> ctor, string? summary = null, string? remarks = null, bool isVisible = true)
         {
             _outputs.Add(new AudioPinDesc(name, typeof(T), summary, remarks)
             {
                 Name = name.InsertSpaces(),
-                CreatePin = (node, instance) =>
+                CreatePin = (node, index, instance) =>
                 {
                     var (getter, disposable) = ctor();
-                    return new CachedOutputPin<T>(node, instance, getter, disposable);
+                    return new CachedOutputPin<T>(node, index, instance, getter, disposable);
                 },
                 IsVisible = isVisible
             });
             return this;
         }
-        public AudioNodeDesc<TInstance> WithEnabledPin(bool output=true)
+        public AudioNodeDesc<TInstance> WithEnabledPins(bool output=true)
         {
-            AddCachedInput("Enable", x => x.Enable, (x, v) => x.Enable = v, false);
+            AddInput(nameof(AudioNode.IsEnable), x => x.IsEnable, (x, v) => x.IsEnable = v, false, displayName:"Enable");
             if (output)
             {
-                AddOutput("Enabled", x => x.Enabled);
+                AddOutput(nameof(AudioNode.IsEnabled), x => x.IsEnabled);
             }
             return this;
         }
 
-        class AudioPinDesc : IVLPinDescription, IInfo, IVLPinDescriptionWithVisibility
+        private class AudioPinDesc : IVLPinDescription, IInfo, IVLPinDescriptionWithVisibility
         {
             private readonly string _memberName;
             private string? _summary;
@@ -326,29 +286,32 @@ namespace NewAudio.Core
                 Name = memberName;
             }
 
+            public string MemberName => _memberName;
             public string Name { get; init; }
             public Type Type { get; init; }
             public object? DefaultValue { get; init; }
-            public Func<Node, TInstance, Pin> CreatePin { get; init; }
+            public Func<Node, int, TInstance, Pin> CreatePin { get; init; }
             public string Summary => _summary ??= typeof(TInstance).GetSummary(_memberName);
             public string Remarks => _remarks ??= typeof(TInstance).GetRemarks(_memberName);
             public bool IsVisible { get; init; } = true;
         }
 
-        abstract class Pin : IVLPin
+        private abstract class Pin : IVLPin
         {
             protected readonly Node Node;
             public TInstance Instance;
+            protected int Index;
 
-            protected Pin(Node node, TInstance instance)
+            protected Pin(Node node, int index, TInstance instance)
             {
+                Index = index;
                 Node = node;
                 Instance = instance;
             }
 
-            public abstract object BoxedValue { get; set; }
+            protected abstract object BoxedValue { get; set; }
 
-            public virtual void Update(TInstance instance)
+            protected virtual void Update(TInstance instance)
             {
                 Instance = instance;
             }
@@ -360,18 +323,18 @@ namespace NewAudio.Core
             }
         }
 
-        abstract class Pin<T> : Pin, IVLPin<T>
+        private abstract class Pin<T> : Pin, IVLPin<T>
         {
             protected readonly Func<TInstance, T> Getter;
             protected readonly Action<TInstance, T>? Setter;
 
-            protected Pin(Node node, TInstance instance, Func<TInstance, T> getter, Action<TInstance, T>? setter) : base(node, instance)
+            protected Pin(Node node, int index, TInstance instance, Func<TInstance, T> getter, Action<TInstance, T>? setter) : base(node, index, instance)
             {
                 Getter = getter;
                 Setter = setter;
             }
 
-            public sealed override object BoxedValue
+            protected sealed override object BoxedValue
             {
                 get => Value;
                 set => Value = (T)value;
@@ -380,17 +343,19 @@ namespace NewAudio.Core
             public abstract T Value { get; set; }
         }
 
-        class InputPin<T> : Pin<T>
+        private class InputPin<T> : Pin<T>
         {
-            public InputPin(Node node, TInstance instance, Func<TInstance, T> getter, Action<TInstance, T> setter,
+
+            protected InputPin(Node node, int index, TInstance instance, Func<TInstance, T> getter, Action<TInstance, T> setter,
                 T initialValue)
-                : base(node, instance, getter, setter)
+                : base(node, index, instance, getter, setter)
             {
+                Index = index;
                 InitialValue = initialValue;
                 setter(instance, initialValue);
             }
 
-            public T InitialValue { get; }
+            private T InitialValue { get; }
 
             public override T Value
             {
@@ -403,11 +368,12 @@ namespace NewAudio.Core
                     }
 
                     Setter(Instance, value ?? InitialValue);
-                    Node.NeedsUpdate = true;
+                    
+                    Node.UpdateMask |= ((ulong)1<<Index);
                 }
             }
 
-            public override void Update(TInstance instance)
+            protected override void Update(TInstance instance)
             {
                 var currentValue = Getter(Instance);
                 base.Update(instance);
@@ -420,12 +386,12 @@ namespace NewAudio.Core
             }
         }
 
-        class CachedInputPin<T>: InputPin<T>, IVLPin
+        private class CachedInputPin<T>: InputPin<T>
         {
             private readonly Func<T, T, bool> _equals;
             private T _lastValue;
 
-            public CachedInputPin(Node node, TInstance instance, Func<TInstance, T> getter, Action<TInstance, T> setter, T initialValue, Func<T, T, bool>? @equals=null) : base(node, instance, getter, setter, initialValue)
+            public CachedInputPin(Node node, int index, TInstance instance, Func<TInstance, T> getter, Action<TInstance, T> setter, T initialValue, Func<T, T, bool>? @equals=null) : base(node,index, instance,getter, setter, initialValue)
             {
                 _equals = @equals  ?? EqualityComparer<T>.Default.Equals;
                 _lastValue = initialValue;
@@ -444,13 +410,12 @@ namespace NewAudio.Core
                 }
             }
         }
-        
-        
-        
-        class OutputPin<T> : Pin<T>
+
+
+        private class OutputPin<T> : Pin<T>
         {
-            public OutputPin(Node node, TInstance instance, Func<TInstance, T> getter)
-                : base(node, instance, getter, null)
+            public OutputPin(Node node, int index, TInstance instance, Func<TInstance, T> getter)
+                : base(node, index, instance, getter, null)
             {
             }
 
@@ -469,8 +434,8 @@ namespace NewAudio.Core
         class CachedOutputPin<T>: OutputPin<T>, IDisposable
         {
             private readonly IDisposable? _disposable;
-            private T _cached;
-            public CachedOutputPin(Node node, TInstance instance, Func<TInstance, T> getter, IDisposable? disposable=null) : base(node, instance, getter)
+            private T? _cached;
+            public CachedOutputPin(Node node, int index, TInstance instance, Func<TInstance, T> getter, IDisposable? disposable=null) : base(node, index, instance, getter)
             {
                 _disposable = disposable;
             }
@@ -482,7 +447,7 @@ namespace NewAudio.Core
                     if (Node.NeedsUpdate || _cached==null)
                     {
                          Node.Update();
-                         _cached =Getter(Instance);
+                         _cached = Getter(Instance);
                     }
                     return _cached;
                 }
@@ -500,7 +465,9 @@ namespace NewAudio.Core
         {
             public Action? UpdateAction;
             public Action? DisposeAction;
-            public bool NeedsUpdate = true;
+            public ulong UpdateMask;
+            public bool NeedsUpdate => UpdateMask != 0;
+            public List<Message>? CachedMessages;
             
             public Node(NodeContext nodeContext) : base(nodeContext)
             {

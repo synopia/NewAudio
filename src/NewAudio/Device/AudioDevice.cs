@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using NewAudio.Dsp;
+using Serilog;
 using Xt;
 
 namespace NewAudio.Device
 {
+    
     public enum SamplingFrequency
     {
         Hz8000 = 8000,
@@ -28,8 +27,6 @@ namespace NewAudio.Device
 
     public interface IAudioDeviceCallback
     {
-        // void AudioDeviceCallback(Memory<float>[] inputChannelData, int numInputChannels,
-            // Memory<float>[] outputChannelData, int numOutputChannels, int numFrames);
         void AudioDeviceCallback(AudioBuffer input, AudioBuffer output, int numFrames);
 
         void AudioDeviceAboutToStart(IAudioSession session);
@@ -40,130 +37,79 @@ namespace NewAudio.Device
 
     public interface IAudioDevice : IDisposable
     {
+        XtService Service { get; }
+        DeviceCaps Caps { get; }
         string Name { get; }
         string Id { get; }
         XtSystem System { get; }
+        XtDevice Device { get; }
 
         string[] OutputChannelNames { get; }
         string[] InputChannelNames { get; }
         int[] AvailableSampleRates { get; }
-        XtSample[] AvailableSampleType { get; }
+        XtSample[] AvailableSampleTypes { get; }
         (double, double) AvailableBufferSizes { get; }
         double DefaultBufferSize { get; }
 
-        bool Open(AudioChannels inputChannels, AudioChannels outputChannels, int sampleRate, double bufferSize);
-
-        // void Close();
-
-        bool IsOpen();
-        // void Start(IAudioDeviceCallback callback);
-        // void Stop();
-        // bool IsPlaying();
-        string GetLastError();
-
-        // int CurrentFramesPerBlock { get; }
-        int CurrentSampleRate { get; }
-        double CurrentBufferSize { get; }
-        XtSample CurrentSampleType { get; }
-        AudioChannels ActiveOutputChannels { get; }
-        AudioChannels ActiveInputChannels { get; }
-
-        int AvailableInputChannels { get; }
-        int AvailableOutputChannels { get; }
+        int NumAvailableInputChannels { get; }
+        int NumAvailableOutputChannels { get; }
         
-        // double OutputLatency { get; }
-        // double InputLatency { get; }
         bool HasControlPanel { get; }
 
         bool ShowControlPanel();
 
-        // bool SetAudioPreprocessingEnabled(bool b);
-        // int XRunCount { get; }
-
-        AudioStreamConfig GetConfig(bool input);
+        XtSample ChooseBestSampleType(XtSample sample);
+        int ChooseBestSampleRate(int rate);
+        double ChooseBestBufferSize(double bufferSize);
+        
     }
-
 
     public class XtAudioDevice : IAudioDevice
     {
-        private readonly XtService _service;
-        public readonly DeviceCaps Caps;
+        public XtService Service { get; init; }
+        public DeviceCaps Caps { get; }
         public string Name => Caps.Name;
         public string Id => Caps.DeviceId;
         public XtSystem System => Caps.System;
-
-        private XtDevice? _device;
-        public XtDevice? Device => _device;
+        public XtDevice Device { get; init; }
         
-        private string? _error;
-
-        private HashSet<int> _availableSampleRates = new();
-        private HashSet<XtSample> _availableSampleTypes = new();
+        private readonly HashSet<int> _availableSampleRates = new();
+        private readonly HashSet<XtSample> _availableSampleTypes = new();
         private (double, double) _availableBufferSizes;
         private (double, double) _preferredBufferSizes;
 
-        private int _currentSampleRate;
-        private double _currentBufferSize;
-        private XtSample _currentSampleType;
+        private bool _disposed;
+        private ILogger _logger = Resources.GetLogger<IAudioDevice>();
 
-
-        private AudioChannels _currentChannelsOut;
-        private AudioChannels _currentChannelsIn;
-
-        private bool _deviceIsOpen;
-        
         public XtAudioDevice(XtService xtService, DeviceCaps caps)
         {
-            _service = xtService;
+            Service = xtService;
             Caps = caps;
-
-            try
-            {
-                _device = xtService.OpenDevice(Id);
-                UpdateSampleRates();
-            }
-            catch (XtException e)
-            {
-                _device = null;
-                _error = e.Message;
-            }
+            _logger.Information("Opening device '{Name}' ({Id})", Caps.Name, Caps.DeviceId);
+            Device = xtService.OpenDevice(Id);
+            
+            UpdateSampleRates();
         }
 
-        public AudioStreamConfig GetConfig(bool input)
-        {
-            return new AudioStreamConfig()
-            {
-                Device = _device,
-                ActiveChannels = input ? ActiveInputChannels : ActiveOutputChannels,
-                SampleRate = CurrentSampleRate,
-                SampleType = CurrentSampleType,
-                BufferSize = CurrentBufferSize,
-                Interleaved = Caps.Interleaved
-            };
-        }
-
-        private bool _disposed;
         public void Dispose()
         {
             if (!_disposed)
             {
+                _logger.Information("Disposing device {Name}", Caps.Name);
                 _disposed = true;
-                // _session?.Stop();
-                // _session?.Dispose();
-                _device?.Dispose();
-
-                // _session = null;
-                // _device = null;
+                _availableSampleRates.Clear();
+                _availableSampleTypes.Clear();
+                Device.Dispose();
             }
         }
 
         private string[] GetChannelNames(bool output)
         {
-            var cnt = _device.GetChannelCount(output);
+            var cnt = Device.GetChannelCount(output);
             var result = new string[cnt];
             for (int i = 0; i < cnt; i++)
             {
-                result[i] = _device.GetChannelName(output, i);
+                result[i] = Device.GetChannelName(output, i);
             }
 
             return result;
@@ -171,7 +117,6 @@ namespace NewAudio.Device
 
         private void UpdateSampleRates()
         {
-            Trace.Assert(_device != null);
             _availableSampleRates.Clear();
             _availableSampleTypes.Clear();
 
@@ -191,13 +136,11 @@ namespace NewAudio.Device
                     var format = new XtFormat(new XtMix(rate, (XtSample)sample),
                         new XtChannels(Math.Min(2,Caps.MaxInputChannels), 0, Math.Min(2,Caps.MaxOutputChannels),
                             0));
-                    // Console.WriteLine($"Testing {rate}, {sample}, {format.channels.inputs}, {format.channels.outputs}");
-                    if (_device.SupportsFormat(format))
+                    if (Device.SupportsFormat(format))
                     {
-                        // Console.WriteLine($"Format supported: {sample}, {rate}");
                         _availableSampleRates.Add(rate);
                         _availableSampleTypes.Add((XtSample)sample);
-                        var bufferSize = _device.GetBufferSize(format);
+                        var bufferSize = Device.GetBufferSize(format);
                         minBufferSize = Math.Min(bufferSize.min, minBufferSize);
                         maxBufferSize = Math.Max(bufferSize.max, maxBufferSize);
                         minPreferredBufferSize = Math.Min(bufferSize.current, minPreferredBufferSize);
@@ -208,168 +151,94 @@ namespace NewAudio.Device
 
             _availableBufferSizes = (minBufferSize, maxBufferSize);
             _preferredBufferSizes = (minPreferredBufferSize, maxPreferredBufferSize);
+            
+            _logger.Information("Available sample rates: {SampleRates}", _availableSampleRates);
+            _logger.Information("Available buffer size: {MinBufferSize} -> {MaxBufferSize}", minBufferSize, maxBufferSize);
+            _logger.Information("Available sample types: {SampleType}", _availableSampleTypes);
         }
-        public int AvailableInputChannels => Caps.MaxInputChannels;
 
-        public int AvailableOutputChannels => Caps.MaxOutputChannels;
+        
+        public int NumAvailableInputChannels => Caps.MaxInputChannels;
+
+        public int NumAvailableOutputChannels => Caps.MaxOutputChannels;
 
         public string[] OutputChannelNames => GetChannelNames(true);
         public string[] InputChannelNames => GetChannelNames(false);
 
         public int[] AvailableSampleRates => _availableSampleRates.ToArray();
         public (double, double) AvailableBufferSizes => _availableBufferSizes;
-        public XtSample[] AvailableSampleType => _availableSampleTypes.ToArray();
+        public XtSample[] AvailableSampleTypes => _availableSampleTypes.ToArray();
         public double DefaultBufferSize => _preferredBufferSizes.Item1;
-        // public int XRunCount => _session.XRuns;
-        // public int CurrentFramesPerBlock => _session.FramesPerBlock;
-        public int CurrentSampleRate => _currentSampleRate;
-        public double CurrentBufferSize => _currentBufferSize;
-        public XtSample CurrentSampleType => _currentSampleType;
-        public AudioChannels ActiveOutputChannels => _currentChannelsOut;
-        public AudioChannels ActiveInputChannels => _currentChannelsIn;
 
-        // public double OutputLatency => _session.OutputLatency;
-        // public double InputLatency => _session.InputLatency;
 
-        // private AudioSession _session;
-
-        public bool Open(AudioChannels inputChannels, AudioChannels outputChannels, int sampleRate, double bufferSize)
+        public XtSample ChooseBestSampleType(XtSample sample)
         {
-            // Close();
-
-            if (_availableSampleTypes.Count == 0)
+            if (AvailableSampleTypes.Contains(sample))
             {
-                return false;
+                return sample;
             }
-            // Trace.Assert(_currentCallback == null);
-            Trace.Assert(_device != null);
-            // Trace.Assert(_session == null);
-            Trace.Assert(_availableSampleTypes.Count > 0);
 
-            _currentSampleRate = sampleRate;
+            if (AvailableSampleTypes.Contains(XtSample.Float32))
+            {
+                return XtSample.Float32;
+            }
+            if (AvailableSampleTypes.Contains(XtSample.Int32))
+            {
+                return XtSample.Int32;
+            }
+            if (AvailableSampleTypes.Contains(XtSample.Int24))
+            {
+                return XtSample.Int24;
+            }
+            if (AvailableSampleTypes.Contains(XtSample.Int16))
+            {
+                return XtSample.Int16;
+            }
 
-            _currentSampleType = _availableSampleTypes.First();
-            _currentBufferSize = bufferSize > 0 ? bufferSize : DefaultBufferSize;
-
-            var totalNumInputChannels = _device.GetChannelCount(false);
-            var totalNumOutputChannels = _device.GetChannelCount(true);
-
-            _currentChannelsIn = inputChannels.Limit(totalNumInputChannels);
-            _currentChannelsOut = outputChannels.Limit(totalNumOutputChannels);
-
-            _deviceIsOpen = true;
-            return _deviceIsOpen;
+            return XtSample.Float32;
         }
 
-
-        /*
-        public void Close()
+        public int ChooseBestSampleRate(int rate)
         {
-            Stop();
-        }
-
-        public void Stop()
-        {
-            Trace.Assert(_device != null);
-
-            _session?.Stop();
-            _running = false;
-            SetCallback(null);
-        }
-        */
-
-        public bool IsOpen()
-        {
-            return _deviceIsOpen;
-        }
-
-        /*
-        public bool IsPlaying()
-        {
-            return _currentCallback != null;
-        }
-        */
-
-
-        /*
-        public void Start(IAudioDeviceCallback callback)
-        {
-            Trace.Assert(_deviceIsOpen);
-            Trace.Assert(_device!=null);
             
-            if (callback != _currentCallback)
+            if (AvailableSampleRates.Length == 0)
             {
-                callback?.AudioDeviceAboutToStart(this);
-                
-                var old = _currentCallback;
+                return 44100;
+            }
 
-                if (old != null)
+            if (rate > 0 && AvailableSampleRates.Contains(rate))
+            {
+                return rate;
+            }
+
+            var lowestAbove44 = 0;
+            for (int i = AvailableSampleRates.Length; --i >= 0;)
+            {
+                var sr = AvailableSampleRates[i];
+                if (sr >= 44100 && (lowestAbove44 == 0 || sr < lowestAbove44))
                 {
-                    if (callback == null)
-                    {
-                        Stop();
-                    }
-                    else
-                    {
-                        SetCallback(callback);   
-                    }
-                
-                    old.AudioDeviceStopped();
+                    lowestAbove44 = sr;
                 }
-                else
-                {
-                    Trace.Assert(callback!=null);
-                    SetCallback(callback);
-                    _running = true;
-                    _session.Start();
-                }
-                _currentCallback = callback;
-            }
-        }
-        */
-
-        /*
-        private void SetCallback(IAudioDeviceCallback callback)
-        {
-            if (!_running)
-            {
-                _currentCallback = callback;
-                return;
             }
 
-            while (true)
+            if (lowestAbove44 > 0)
             {
-                var old = _currentCallback;
-                if (old == callback)
-                {
-                    break;
-                }
-                if( old!=null && old==Interlocked.CompareExchange(ref _currentCallback, callback, old)){
-                    break;
-                }
-                Thread.Sleep(1);
+                return lowestAbove44;
             }
+
+            return AvailableSampleRates[0];
         }
 
-        public void Process(AudioBuffer input, AudioBuffer output, int numFrames)
+        public double ChooseBestBufferSize(double bufferSize)
         {
-            var cb = Interlocked.Exchange(ref _currentCallback, null);
-            if (cb != null)
+            var (min, max) = AvailableBufferSizes;
+            if (min <= bufferSize && bufferSize <= max)
             {
-                cb.AudioDeviceCallback(input, output, numFrames);
-                _currentCallback = cb;
+                return bufferSize;
             }
-            else
-            {
-                output.Zero();
-            }
+            return (min + max) / 2;
         }
-        */
-        
-        public string GetLastError()
-        {
-            return _error;
-        }
+
 
         public bool ShowControlPanel()
         {

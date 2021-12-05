@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Serilog;
 
 namespace NewAudio.Dsp
 {
@@ -46,7 +47,7 @@ namespace NewAudio.Dsp
         private int _numberOfChannels;
         private int _numberOfFrames;
         private int _allocatedSamples;
-        private IMemoryOwner<float> _data;
+        private IMemoryOwner<float>? _data;
         private Memory<float>[] _preallocated = new Memory<float>[32];
         private Memory<float>[] _channels;
 
@@ -78,7 +79,7 @@ namespace NewAudio.Dsp
             _numberOfFrames = numberOfFrames;
             _numberOfChannels = numberOfChannels;
 
-            AllocateData();
+            _channels = AllocateData();
         }
 
         public AudioBuffer(Memory<float>[] data, int numberOfChannels, int numberOfFrames)
@@ -86,7 +87,8 @@ namespace NewAudio.Dsp
             Trace.Assert(data.Length>=numberOfChannels && numberOfChannels>=0 && numberOfFrames>=0);
             _numberOfChannels = numberOfChannels;
             _numberOfFrames = numberOfFrames;
-            AllocateChannels(data, 0);
+            
+            _channels = AllocateChannels(data, 0);
         }
 
         public AudioBuffer(Memory<float>[] data, int numberOfChannels, int frameOffset, int numberOfFrames)
@@ -94,7 +96,8 @@ namespace NewAudio.Dsp
             Trace.Assert(data.Length>=numberOfChannels && numberOfChannels>=0 && numberOfFrames>=0);
             _numberOfChannels = numberOfChannels;
             _numberOfFrames = numberOfFrames;
-            AllocateChannels(data, frameOffset);
+            
+            _channels = AllocateChannels(data, frameOffset);
         }
 
         public AudioBuffer(AudioBuffer other)
@@ -105,11 +108,11 @@ namespace NewAudio.Dsp
             
             if (_allocatedSamples == 0)
             {
-                AllocateChannels(other._channels, 0);
+                _channels = AllocateChannels(other._channels, 0);
             }
             else
             {
-                AllocateData();
+                _channels = AllocateData();
                 if (other.IsClear)
                 {
                     Zero();
@@ -185,7 +188,7 @@ namespace NewAudio.Dsp
             if (_allocatedSamples > 0)
             {
                 _allocatedSamples = 0;
-                _data.Dispose();
+                _data?.Dispose();
             }
 
             _numberOfChannels = numberOfChannels;
@@ -208,8 +211,70 @@ namespace NewAudio.Dsp
             Trace.Assert(sourceChannel>=0 && sourceChannel<source.NumberOfChannels);
             Trace.Assert(sourceFrame>=0 && sourceFrame+numFrames<=source.NumberOfFrames);
             
-            source._channels[sourceChannel].Slice(sourceFrame, numFrames).CopyTo(_channels[destChannel].Slice(destFrame));
+            var s =source._channels[sourceChannel].Slice(sourceFrame, numFrames);
+            var d = _channels[destChannel].Slice(destFrame, numFrames);
+            s.CopyTo(d);
         }
+
+        private void PrepareChannel(int channel, AudioBuffer input, int index)
+        {
+            if (input.NumberOfChannels == 0)
+            {
+                ZeroChannel(channel);
+            }
+            else
+            {
+                input[index%input.NumberOfChannels].Span.CopyTo(_channels[channel].Span);
+            }
+        }
+        
+        public void Merge(AudioBuffer input, AudioBuffer output, int inputChannels, int outputChannels)
+        {
+            Trace.Assert(input.NumberOfFrames==output.NumberOfFrames);
+            var totalAfterMerge = new[]{input.NumberOfChannels, output.NumberOfChannels, inputChannels, outputChannels}.Max();
+
+            SetSize(totalAfterMerge, input.NumberOfFrames, false, false, true);
+            int channelNumber = 0;
+            
+            if (inputChannels > outputChannels)
+            {
+                Trace.Assert(NumberOfChannels>=inputChannels-outputChannels);
+                Trace.Assert(NumberOfFrames>= input.NumberOfFrames);
+                Trace.Assert(NumberOfFrames>= output.NumberOfFrames);
+
+                for (int i = 0; i < outputChannels; i++)
+                {
+                    _channels[channelNumber] = output[i];
+                    PrepareChannel(channelNumber, input, i);
+                    channelNumber++;
+                }
+
+                for (int i = outputChannels; i < inputChannels; i++)
+                {
+                    PrepareChannel(channelNumber, input, i);
+                    channelNumber++;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < inputChannels; i++)
+                {
+                    _channels[channelNumber] = output[i];
+                    PrepareChannel(channelNumber, input, i);
+                    channelNumber++;
+                }
+
+                for (int i = inputChannels; i < outputChannels; i++)
+                {
+                    _channels[channelNumber] = output[i];
+                    ZeroChannel(channelNumber);
+                    channelNumber++;
+                }
+            }
+            
+            
+        }
+        
 
         public void SetSize(int newNumChannels, int newNumFrames, bool keep = false, bool clearExtra=false,
             bool avoidReallocating = false)
@@ -251,7 +316,7 @@ namespace NewAudio.Dsp
                         }
 
                         _allocatedSamples = newSize;
-                        _data.Dispose();
+                        _data?.Dispose();
                         _data = data;
                         _numberOfChannels = newNumChannels;
                         _numberOfFrames = newNumFrames;
@@ -263,14 +328,14 @@ namespace NewAudio.Dsp
                     {
                         if (clearExtra || IsClear)
                         {
-                            _data.Memory.Span.Clear();
+                            _data?.Memory.Span.Clear();
                         }
                     }
                     else
                     {
                         if (_allocatedSamples > 0)
                         {
-                            _data.Dispose();
+                            _data!.Dispose();
                         }
                         _allocatedSamples = newSize;
                         _data = MemoryPool<float>.Shared.Rent(newSize);
@@ -278,7 +343,7 @@ namespace NewAudio.Dsp
                     _channels = new Memory<float>[newNumChannels];
                     for (int j = 0; j < newNumChannels; j++)
                     {
-                        _channels[j] = _data.Memory.Slice(newNumFrames * j);
+                        _channels[j] = _data!.Memory.Slice(newNumFrames * j, newNumFrames);
                     }
                 }
 
@@ -287,40 +352,43 @@ namespace NewAudio.Dsp
             }
         }
         
-        private void AllocateData()
+        private Memory<float>[] AllocateData()
         {
             _allocatedSamples = _numberOfChannels * _numberOfFrames;
             _data = MemoryPool<float>.Shared.Rent(_allocatedSamples);
-            _channels = new Memory<float>[_numberOfChannels + 1];
+            _channels = new Memory<float>[_numberOfChannels];
 
             for (int i = 0; i < _numberOfChannels; i++)
             {
-                _channels[i] = _data.Memory.Slice(i * _numberOfFrames);
+                _channels[i] = _data.Memory.Slice(i * _numberOfFrames, _numberOfFrames);
             }
 
-            _channels[_numberOfChannels] = null;
             IsClear = false;
+
+            return _channels;
         }
 
-        private void AllocateChannels(Memory<float>[] data, int offset)
+        private Memory<float>[] AllocateChannels(Memory<float>[] data, int offset)
         {
             Trace.Assert(offset>=0 );
-            if (_numberOfChannels+1 < _preallocated.Length)
+            if (_numberOfChannels <= _preallocated.Length)
             {
                 _channels = _preallocated;
             }
             else
             {
-                _channels = new Memory<float>[_numberOfChannels + 1];
+                _channels = new Memory<float>[_numberOfChannels];
             }
 
             for (int i = 0; i < _numberOfChannels; i++)
             {
-                _channels[i] = data[i].Slice(offset);
+                _channels[i] = data[i].Slice(offset, _numberOfFrames);
             }
 
-            _channels[_numberOfChannels] = null;
+            
             IsClear = false;
+
+            return _channels;
         }
 
         public Span<float> GetReadChannel(int channel)

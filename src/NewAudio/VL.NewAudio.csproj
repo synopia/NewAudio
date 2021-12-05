@@ -8,13 +8,14 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <TargetFramework>net472</TargetFramework>
         <Nullable>enable</Nullable>
+        <NoWarn>1701,1702,1591,1570,1587,1591</NoWarn>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <OutputPath>..\..\lib\</OutputPath>
         <DocumentationFile>..\..\lib\VL.NewAudio.xml</DocumentationFile>
-        <NoWarn>1701;1702;1591;1570;1587;1591</NoWarn>
+        <NoWarn>1701,1702,1591,1570,1587,1591</NoWarn>
         <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
         <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>

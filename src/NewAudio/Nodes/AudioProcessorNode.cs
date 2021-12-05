@@ -1,6 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using NewAudio.Core;
 using NewAudio.Processor;
+using VL.Lang;
 
 namespace NewAudio.Nodes
 {
@@ -39,14 +41,18 @@ namespace NewAudio.Nodes
             }
         }
 
-
         public AudioProcessorNode(TProcessor processor)
         {
             Processor = processor;
             Output = new(this);
         }
 
-        public override bool Enabled => true;
+        public override Message? Update(ulong mask)
+        {
+            return null;
+        }
+
+        public override bool IsEnabled => true;
 
         public bool RemoveFromGraph()
         {
@@ -62,6 +68,10 @@ namespace NewAudio.Nodes
         {
             _graph = graph;
             _node = _graph.AddNode(Processor);
+            if (_node == null)
+            {
+                throw new InvalidOperationException("Cannot create node");
+            }
             _input?.Connect(graph, _node);
             return _node;
         }

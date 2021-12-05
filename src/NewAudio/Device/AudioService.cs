@@ -9,6 +9,7 @@ using Xt;
 
 namespace NewAudio.Device
 {
+    
     public readonly struct DeviceName
     {
         public string Name { get; init; }
@@ -62,7 +63,7 @@ namespace NewAudio.Device
         DeviceName GetDefaultDevice(bool output);
         // bool HasSeparateInputsAndOutputs();
 
-        IAudioDevice? OpenDevice(string? deviceId);
+        IAudioDevice OpenDevice(string deviceId);
     }
 
     public class XtAudioService : IAudioService
@@ -76,13 +77,19 @@ namespace NewAudio.Device
         
         private readonly Dictionary<XtSystem, XtService> _services = new();
         private XtPlatform _platform;
+        private string? _lastError;
 
         public XtAudioService(XtPlatform platform)
         {
             _platform = platform;
+            // XtAudio.SetOnError(OnError);
             ScanForDevices();
         }
 
+        private void OnError(string message)
+        {
+            _lastError = message;
+        }
         public void Dispose()
         {
             
@@ -120,29 +127,20 @@ namespace NewAudio.Device
             return GetDefaultInputDevices().First();
         }
 
-        public IAudioDevice? OpenDevice(string? deviceId)
+        public IAudioDevice OpenDevice(string deviceId)
         {
-            if (deviceId==null || !_deviceCaps.ContainsKey(deviceId))
+            if (!_deviceCaps.ContainsKey(deviceId))
             {
-                return null;
+                throw new InvalidOperationException($"Device {deviceId} not found!");
             }
             var caps = _deviceCaps[deviceId];
             return new XtAudioDevice(GetService(caps.System), caps);
         }
         
-        // public AudioSession CreateSession(string outputDeviceId, string inputDeviceId)
-        // {
-            // var output = OpenDevice(outputDeviceId);
-            // var input = outputDeviceId != inputDeviceId ? OpenDevice(inputDeviceId) : output;
-            
-            // return new AudioSession(input, output);
-        // }
-
         public void ScanForDevices()
         {
               _deviceSelections.Clear();
             var systems = new[] { XtSystem.ASIO, XtSystem.WASAPI, XtSystem.DirectSound };
-            // var systems = new[] {  XtSystem.DirectSound };
             foreach (var system in systems)
             {
                 using var list = GetService(system).OpenDeviceList(XtEnumFlags.All);

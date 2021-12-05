@@ -1,64 +1,115 @@
 ﻿using System;
+using System.Linq;
 using NewAudio.Dsp;
 using Xt;
 
 namespace NewAudio.Device
 {
-    public enum AudioStreamType
+
+    public class AudioStreamConfig
     {
-        OnlyInput,
-        OnlyOutput,
-        MixedSystems,
-        MixedDevices,
-        FullDuplex
-    }
+        public IAudioDevice? AudioDevice { get; init; }
+        public XtService Service => AudioDevice?.Service ?? throw new InvalidOperationException();
+        public XtDevice Device => AudioDevice?.Device ?? throw new InvalidOperationException();
+        public AudioChannels ActiveOutputChannels { get; set; }
+        public AudioChannels ActiveInputChannels { get; set; }
+        public int SampleRate { get; set; }
+        public XtSample SampleType { get; set; }
+        public bool Interleaved { get; set; }
+        public double BufferSize { get; set; }
+        public bool IsEnabled { get; set; }
 
-    public readonly struct AudioStreamConfig
-    {
-        public XtDevice Device { get; init; }
-        public XtSystem System { get; init; }
-        public AudioChannels ActiveChannels { get; init; }
-        public int SampleRate { get; init; }
-        public XtSample SampleType { get; init; }
-        public bool Interleaved { get; init; }
-        public double BufferSize { get; init; }
+        public XtMix Mix => new(SampleRate, SampleType);
 
+        public AudioStreamConfig(IAudioDevice? audioDevice)
+        {
+            AudioDevice = audioDevice;
+        }
 
-        private (AudioStreamType, IAudioStream, IAudioStream?) Factory<TSampleType, TMemoryAccess>(AudioStreamConfig? inputConfig, IAudioStreamCallback renderCallback, IAudioStreamCallback? captureCallback)
+        public bool IsValid =>
+            AudioDevice.AvailableSampleTypes.Contains(SampleType) &&
+            AudioDevice.AvailableSampleRates.Contains(SampleRate) &&
+            AudioDevice.AvailableBufferSizes.Item1 <= BufferSize &&
+            BufferSize <= AudioDevice.AvailableBufferSizes.Item2 &&
+            ActiveInputChannels.Count <= AudioDevice.NumAvailableInputChannels &&
+            ActiveOutputChannels.Count <= AudioDevice.NumAvailableOutputChannels;
+
+        
+        public void Config(AudioChannels inputChannels, AudioChannels outputChannels, int sampleRate, double bufferSize)
+        {
+            SampleRate = AudioDevice.ChooseBestSampleRate(sampleRate);
+            SampleType = AudioDevice.ChooseBestSampleType(XtSample.Float32);
+            BufferSize = AudioDevice.ChooseBestBufferSize(bufferSize);
+
+            ActiveInputChannels = inputChannels.Limit(AudioDevice.NumAvailableInputChannels);
+            ActiveOutputChannels = outputChannels.Limit(AudioDevice.NumAvailableOutputChannels);
+        }
+        
+        
+        private IAudioStream Factory<TSampleType, TMemoryAccess>(AudioStreamConfig[]? secondary, bool input)
             where TSampleType : struct, ISampleType
             where TMemoryAccess : struct, IMemoryAccess
         {
-            if (inputConfig == null)
+            if (input)
             {
-                return (AudioStreamType.OnlyOutput, new AudioOutputStream<TSampleType, TMemoryAccess>(Device, ActiveChannels, SampleRate,
-                    BufferSize, renderCallback), null);
+                return new AudioInputStream<TSampleType, TMemoryAccess>(this);
+            }
+            
+            if (secondary==null || secondary.Length==0)
+            {
+                if (ActiveInputChannels.Count == 0)
+                {
+                    return new AudioOutputStream<TSampleType, TMemoryAccess>(this);
+                }
+
+                if ((Service.GetCapabilities() & XtServiceCaps.FullDuplex) != 0)
+                {
+                    return new FullDuplexAudioStream<TSampleType, TMemoryAccess>(this);                    
+                }
+            } 
+            
+            if (secondary?.Length == 1 && secondary[0].Device==Device && (Service.GetCapabilities() & XtServiceCaps.FullDuplex) != 0 )
+            {
+                return new FullDuplexAudioStream<TSampleType, TMemoryAccess>(this);
+            }
+            
+            if( secondary!=null )
+            {
+                var aggregationAvailable = (Service.GetCapabilities() & XtServiceCaps.Aggregation) != 0 &&
+                    secondary.All(s => (s.Service.GetCapabilities() & XtServiceCaps.Aggregation) != 0);
+
+                if (aggregationAvailable)
+                {
+                    return new AggregateAudioStream<TSampleType, TMemoryAccess>(this, secondary);
+                }
+                
             }
 
-            var i = inputConfig.Value;
-            if (i.Device == Device)
-            {
-                var input = new AudioInputStream<TSampleType, TMemoryAccess>(i.Device, i.ActiveChannels, i.SampleRate,
-                    i.BufferSize, null);
-                return (AudioStreamType.FullDuplex, new AudioFullDuplexStream<TSampleType, TMemoryAccess>(input, ActiveChannels, SampleRate,
-                    BufferSize, renderCallback), input);
-            }
-            var input2 = new AudioInputStream<TSampleType, TMemoryAccess>(i.Device, i.ActiveChannels, i.SampleRate,
-                i.BufferSize, captureCallback);
-
-            var type = i.System == System ? AudioStreamType.MixedDevices : AudioStreamType.MixedSystems; 
-            return (type, new AudioOutputStream<TSampleType, TMemoryAccess>( Device,ActiveChannels, SampleRate, BufferSize, renderCallback), input2);
+            throw new InvalidOperationException("No compatible session mode found!");
         }
 
-        public (AudioStreamType, IAudioStream, IAudioStream?) CreateStream(AudioStreamConfig? inputConfig, IAudioStreamCallback renderCallback, IAudioStreamCallback? captureCallback)
+        public IAudioStream CreateInputStream()
+        {
+            return CreateStream(Array.Empty<AudioStreamConfig>(), true);
+        }
+        public IAudioStream CreateStream()
+        {
+            return CreateStream(Array.Empty<AudioStreamConfig>());
+        }
+        public IAudioStream CreateStream(AudioStreamConfig inputConfig)
+        {
+            return CreateStream(new[] { inputConfig });
+        }
+        public IAudioStream CreateStream(AudioStreamConfig[]? inputConfigs, bool input=false)
         {
             if (Interleaved)
             {
                 return SampleType switch
                 {
-                    XtSample.Float32 => Factory<Float32Sample, Interleaved>(inputConfig, renderCallback, captureCallback),
-                    XtSample.Int32 => Factory<Int32LsbSample, Interleaved>(inputConfig, renderCallback, captureCallback),
-                    XtSample.Int24 => Factory<Int24LsbSample, Interleaved>(inputConfig, renderCallback, captureCallback),
-                    XtSample.Int16 => Factory<Int16LsbSample, Interleaved>(inputConfig, renderCallback, captureCallback),
+                    XtSample.Float32 => Factory<Float32Sample, Interleaved>(inputConfigs, input),
+                    XtSample.Int32 => Factory<Int32LsbSample, Interleaved>(inputConfigs, input),
+                    XtSample.Int24 => Factory<Int24LsbSample, Interleaved>(inputConfigs, input),
+                    XtSample.Int16 => Factory<Int16LsbSample, Interleaved>(inputConfigs, input),
                     _ => throw new ArgumentOutOfRangeException(nameof(SampleType), SampleType, null)
                 };
             }
@@ -66,10 +117,10 @@ namespace NewAudio.Device
             {
                 return SampleType switch
                 {
-                    XtSample.Float32 => Factory<Float32Sample, NonInterleaved>(inputConfig, renderCallback, captureCallback),
-                    XtSample.Int32 => Factory<Int32LsbSample, NonInterleaved>(inputConfig, renderCallback, captureCallback),
-                    XtSample.Int24 => Factory<Int24LsbSample, NonInterleaved>(inputConfig, renderCallback, captureCallback),
-                    XtSample.Int16 => Factory<Int16LsbSample, NonInterleaved>(inputConfig, renderCallback, captureCallback),
+                    XtSample.Float32 => Factory<Float32Sample, NonInterleaved>(inputConfigs, input),
+                    XtSample.Int32 => Factory<Int32LsbSample, NonInterleaved>(inputConfigs, input),
+                    XtSample.Int24 => Factory<Int24LsbSample, NonInterleaved>(inputConfigs, input),
+                    XtSample.Int16 => Factory<Int16LsbSample, NonInterleaved>(inputConfigs, input),
                     _ => throw new ArgumentOutOfRangeException(nameof(SampleType), SampleType, null)
                 };
             }

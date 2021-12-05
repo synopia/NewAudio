@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using NewAudio.Device;
 
 namespace NewAudio.Dsp
 {
@@ -72,6 +73,25 @@ namespace NewAudio.Dsp
             }
             return new AudioChannels((AudioChannelType)value);
         }
+        
+        
+        public static AudioChannels FromNames(IAudioDevice device, bool input, string[] selectedChannels)
+        {
+            int channel = 0;
+            ulong channelMask = 0;
+            string[] allChannels = input ? device.InputChannelNames : device.OutputChannelNames;
+            foreach (var channelName in allChannels)
+            {
+                if (selectedChannels.Contains(channelName))
+                {
+                    channelMask |= (ulong)1 << channel;
+                }
+
+                channel++;
+            }
+            return FromMask(channelMask);
+        }
+
     }
 
 }

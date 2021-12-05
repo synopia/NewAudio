@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using NewAudio.Device;
 using NewAudio.Dsp;
+using Serilog;
 using Xt;
 
 namespace NewAudio.Device
@@ -11,11 +12,15 @@ namespace NewAudio.Device
     public interface IAudioSession: IDisposable
     {
         void Start();
-        void Stop();
+        void Close();
         int CurrentSampleRate { get; }
         int CurrentFramesPerBlock { get;  }
         AudioChannels ActiveInputChannels { get; }
         AudioChannels ActiveOutputChannels { get; }
+        
+        AudioStreamType Type { get; }
+        double InputLatency { get; }
+        double OutputLatency { get; }
     }
 
     public class AudioSession : IAudioSession, IAudioStreamCallback
@@ -38,34 +43,34 @@ namespace NewAudio.Device
             }
         }
         // private XtAudioDevice _owner;
-        private AudioStreamConfig? InputConfig;
-        private AudioStreamConfig OutputConfig;
+        private AudioStreamConfig Config => _stream.Config;
 
-        public int CurrentSampleRate => OutputConfig.SampleRate;
-        public AudioChannels ActiveInputChannels => InputConfig?.ActiveChannels ?? AudioChannels.Disabled;
-        public AudioChannels ActiveOutputChannels => OutputConfig.ActiveChannels;
+        public int CurrentSampleRate => Config.SampleRate;
+        public AudioChannels ActiveInputChannels => AudioChannels.Channels(_stream.NumInputChannels);
+        public AudioChannels ActiveOutputChannels => AudioChannels.Channels(_stream.NumOutputChannels);
 
-        private IAudioStream? _inputStream;
-        private IAudioStream _outputStream;
+        private readonly IAudioStream _stream;
 
         private int _audioCallbackGuard;
         public double InputLatency { get; private set; }
         public double OutputLatency { get; private set; }
         public int XRuns { get; private set; }
-        public int CurrentFramesPerBlock => _outputStream.FramesPerBlock;
+        public int CurrentFramesPerBlock => _stream.FramesPerBlock;
         private IAudioDeviceCallback? _currentCallback;
-        private bool _running;
-        private AudioStreamType _type;
-        public bool IsRunning => _running;
+        public AudioStreamType Type => _stream.Type;
+        public bool IsRunning { get; private set; }
+        private ILogger _logger = Resources.GetLogger<AudioSession>();
 
-        public AudioSession(IAudioDevice? inputDevice, IAudioDevice outputDevice)
+        public AudioSession(IAudioStream stream)
         {
-            InputConfig = inputDevice?.GetConfig(true);
-            OutputConfig = outputDevice.GetConfig(false);
+            _stream = stream;
 
-            Trace.Assert(OutputConfig.ActiveChannels.Count > 0);
-            
-            (_type, _outputStream, _inputStream) = OutputConfig.CreateStream(InputConfig, this, new CaptureCallback());
+            if (_stream.NumOutputChannels <= 0)
+            {
+                throw new InvalidOperationException("At least one output channel is needed!");
+            }
+            _logger.Information("Opening session for stream {@Config}", stream.Config);
+            _stream.Open(this);
         }
 
         private bool _disposed;
@@ -73,25 +78,21 @@ namespace NewAudio.Device
         {
             if (!_disposed)
             {
+                _logger.Information("Disposing session for stream {@Config}", _stream.Config);
                 _disposed = true;
-                _outputStream.Dispose();
-                _inputStream?.Dispose();
-
-                _inputStream = null;
+                _stream.Dispose();
             }
         }
 
         
         public void Start(IAudioDeviceCallback? callback)
         {
-            Trace.Assert(_outputStream!=null);
-            
+            Trace.Assert(_stream!=null);
+            _logger.Information("Session start");
+      
             if (callback != _currentCallback)
             {
-                if (callback != null)
-                {
-                    callback.AudioDeviceAboutToStart(this);
-                }
+                callback?.AudioDeviceAboutToStart(this);
 
                 var old = _currentCallback;
 
@@ -99,7 +100,7 @@ namespace NewAudio.Device
                 {
                     if (callback == null)
                     {
-                        Stop();
+                        Close();
                     }
                     else
                     {
@@ -112,7 +113,6 @@ namespace NewAudio.Device
                 {
                     Trace.Assert(callback!=null);
                     SetCallback(callback);
-                    _running = true;
                     Start();
                 }
                 _currentCallback = callback;
@@ -121,7 +121,7 @@ namespace NewAudio.Device
         
         private void SetCallback(IAudioDeviceCallback? callback)
         {
-            if (!_running)
+            if (!IsRunning)
             {
                 _currentCallback = callback;
                 return;
@@ -161,20 +161,18 @@ namespace NewAudio.Device
         {
             _audioCallbackGuard = 0;
             
-            _inputStream?.Start();
-            _outputStream.Start();
+            _stream.Start();
+            _logger.Information("AudioSession stream started");
         }
 
-        public void Stop()
+        public void Close()
         {
             while (Interlocked.CompareExchange(ref _audioCallbackGuard, 1, 0) == 1)
             {
                 Thread.Sleep(1);
             }
-            _inputStream?.Dispose();
-            _outputStream.Dispose();
-            
-            _inputStream = null;
+            _logger.Information("AudioSession closing stream");
+            _stream.Dispose();
             _audioCallbackGuard = 0;
         }
 
@@ -186,15 +184,18 @@ namespace NewAudio.Device
                 try
                 {
                     Trace.Assert(stream != null && buffer.output != null);
-                    Process(_inputStream?.Bind(buffer), _outputStream.Bind(buffer), buffer.frames);
+                    var inputBuffer = _stream.BindInput(buffer);
+                    var outputBuffer = _stream.BindOutput(buffer);
+                    Process(inputBuffer, outputBuffer, buffer.frames);
 
-                    var latency = _outputStream.Latency;
+                    var latency = _stream.Latency;
                     OutputLatency = latency.output;
                     InputLatency = latency.input;
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    _logger.Error(e, "Exception in AudioSession.OnBuffer!");
+                    throw;
                 }
                 finally
                 {
@@ -213,7 +214,8 @@ namespace NewAudio.Device
 
         public void OnRunning(XtStream stream, bool running, ulong error, object user)
         {
-            Console.WriteLine($"OnRunning {running}, {error}");
+            _logger.Information("AudioStream.OnRunning: running={Running}, error={Error}", running, error);
+            IsRunning = running;
         }
 
         

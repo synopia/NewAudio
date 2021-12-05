@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
 using NewAudio.Dsp;
+using Serilog;
 
 namespace NewAudio.Processor
 {
     public class AudioGraphIOProcessor: AudioProcessor
     {
-        private AudioGraph _graph;
+        private AudioGraph? _graph;
 
-        public AudioGraph ParentGraph
+        public AudioGraph? ParentGraph
         {
             get => _graph;
             set
@@ -23,12 +24,8 @@ namespace NewAudio.Processor
             }
         }
 
-        public override string Name
-        {
-            get => _isOutput ? "Audio Output" : "Audio Input";
-
-        }
-        private bool _isOutput;
+        public override string Name => _isOutput ? "Audio Output" : "Audio Input";
+        private readonly bool _isOutput;
 
         public bool IsInput => !_isOutput;
         public bool IsOutput => _isOutput;
@@ -41,7 +38,7 @@ namespace NewAudio.Processor
 
         public override void Process(AudioBuffer buffer)
         {
-            var program = _graph.Program;
+            var program = _graph!.Program;
             if (IsOutput)
             {
                 var currentOutput = program.CurrentOutputBuffer;
@@ -52,7 +49,7 @@ namespace NewAudio.Processor
             }
             else
             {
-                var currentInput = program.CurrentInputBuffer;
+                var currentInput = program.CurrentInputBuffer!;
                 for (int i = Math.Min(currentInput.NumberOfChannels, buffer.NumberOfChannels); --i >= 0;)
                 {
                     buffer.CopyFrom(i, 0, currentInput, i, 0, buffer.NumberOfFrames);
