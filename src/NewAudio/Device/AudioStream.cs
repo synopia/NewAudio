@@ -34,7 +34,7 @@ namespace NewAudio.Device
         AudioStreamConfig Config { get; }
         void Start();
         void Open(IAudioStreamCallback? callback);
-        AudioBuffer BindInput(XtBuffer buffer);
+        AudioBuffer? BindInput(XtBuffer buffer);
         AudioBuffer BindOutput(XtBuffer buffer);
         XtLatency Latency { get; }
 
@@ -187,9 +187,9 @@ namespace NewAudio.Device
             return AudioBuffer;
         }
 
-        public virtual AudioBuffer BindInput(XtBuffer buffer)
+        public virtual AudioBuffer? BindInput(XtBuffer buffer)
         {
-            return AudioBuffer!;
+            return null;
         }
 
         public virtual AudioBuffer BindOutput(XtBuffer buffer)
@@ -335,7 +335,7 @@ namespace NewAudio.Device
             _inputStream.CreateBuffers(NumInputChannels, FramesPerBlock);
         }
 
-        public override AudioBuffer BindInput(XtBuffer buffer)
+        public override AudioBuffer? BindInput(XtBuffer buffer)
         {
             return _inputStream.BindInput(buffer);
         }
@@ -432,7 +432,7 @@ namespace NewAudio.Device
             CreateBuffers(NumOutputChannels, FramesPerBlock);
         }
 
-        public override AudioBuffer BindInput(XtBuffer buffer)
+        public override AudioBuffer? BindInput(XtBuffer buffer)
         {
             return _inputStream.BindInput(buffer);
         }

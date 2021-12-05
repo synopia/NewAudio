@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using NewAudio.Processor;
 using VL.Lib.Basics.Resources;
 using NewAudio;
@@ -10,43 +12,17 @@ namespace NewAudio.Core
     
     public class AudioLink : IDisposable
     {
-        private IAudioProcessorNode _owner;
-        private AudioGraph.Connection? _connection;
-        private AudioGraph? _graph;
-        
-        public AudioFormat Format { get; set; }
+        public AudioGraph.Node Node { get; }
+        private int[] _channels = {0};
 
-        public AudioLink(IAudioProcessorNode owner)
+        public AudioLink(AudioGraph.Node node)
         {
-            _owner = owner;
-            
+            Node = node;
         }
 
-        public void Disconnect()
+        public IEnumerable<AudioGraph.NodeAndChannel> NodeAndChannels
         {
-            Trace.Assert(_graph!=null);
-            
-            if (_connection.HasValue)
-            {
-                _graph!.RemoveConnection(_connection.Value);
-            }
-
-            _owner.RemoveFromGraph();
-            _graph = null;
-            _connection = null;
-        }
-        public AudioGraph.Node Connect(AudioGraph graph, AudioGraph.Node? target=null)
-        {
-            _graph = graph;
-            var source = _owner.AddToGraph(graph);
-            if (target != null)
-            {
-                _connection = new AudioGraph.Connection(new AudioGraph.NodeAndChannel(source.NodeId, 0),
-                    new AudioGraph.NodeAndChannel(target.NodeId, 0));
-                _graph?.AddConnection(_connection.Value);
-            }
-            
-            return source;
+            get { return _channels.Select(ch => new AudioGraph.NodeAndChannel(Node.NodeId, ch)); }
         }
 
         public void Dispose()

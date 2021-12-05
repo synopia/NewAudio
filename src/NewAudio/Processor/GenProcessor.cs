@@ -15,6 +15,12 @@ namespace NewAudio.Processor
         
         protected GenProcessor()
         {
+            SetChannels(0, 1);
+        }
+        
+        public override bool IsBusStateSupported(AudioBusState layout)
+        {
+            return layout.MainBusInputChannels == 0 && layout.MainBusOutputChannels == 1;
         }
 
         protected abstract float NextSample();

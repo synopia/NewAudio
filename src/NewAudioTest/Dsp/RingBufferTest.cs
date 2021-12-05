@@ -12,10 +12,10 @@ namespace NewAudioTest.Dsp
         [Test]
         public void TestReadAll()
         {
-            RingBuffer<int> buf = new RingBuffer<int>(100);
+            RingBuffer buf = new RingBuffer(100);
 
-            int[] a = new int[buf.Size];
-            int[] b = new int[buf.Size];
+            float[] a = new float[buf.Size];
+            float[] b = new float[buf.Size];
 
             for (int i = 0; i < buf.Size; i++)
             {
@@ -35,7 +35,7 @@ namespace NewAudioTest.Dsp
         [Test]
         public void TestThreaded()
         {
-            var rb = new RingBuffer<int>(100);
+            var rb = new RingBuffer(100);
             var numReads = 10000;
             var readBufferSize = 511;
             var writeBufferSize = 493;
@@ -44,7 +44,7 @@ namespace NewAudioTest.Dsp
 
             var reader = Task.Run(() =>
             {
-                int[] buf = new int[readBufferSize];
+                float[] buf = new float[readBufferSize];
                 var current = 0;
                 while (currReads < numReads)
                 {
@@ -64,7 +64,7 @@ namespace NewAudioTest.Dsp
             });
             var writer = Task.Run(() =>
             {
-                int[] buf = new int[writeBufferSize];
+                float[] buf = new float[writeBufferSize];
                 var current = 0;
                 while (currReads < numReads)
                 {

@@ -4,9 +4,9 @@ using System.Runtime.InteropServices;
 
 namespace NewAudio.Dsp
 {
-    public class RingBuffer<T>
+    public class RingBuffer
     {
-        private T[] _data;
+        private float[]? _data;
         private int _allocatedSize;
         private int _writeIndex;
         private int _readIndex;
@@ -26,10 +26,10 @@ namespace NewAudio.Dsp
             _allocatedSize = size + 1;
             if (_data!=null)
             {
-                ArrayPool<T>.Shared.Return(_data);
+                ArrayPool<float>.Shared.Return(_data);
               
             } 
-            _data = ArrayPool<T>.Shared.Rent(_allocatedSize);
+            _data = ArrayPool<float>.Shared.Rent(_allocatedSize);
             Clear();
         }
 
@@ -39,9 +39,13 @@ namespace NewAudio.Dsp
             _readIndex = 0;
         }
 
-        public bool Write(T[] array, int count)
+        public bool Write(float[] array, int count)
         {
-            // todo lock
+            return Write(array.AsSpan(), count);
+        }
+
+        public bool Write(Span<float> array, int count)
+        {
             var writeIndex = _writeIndex;
             var readIndex = _readIndex;
 
@@ -55,13 +59,16 @@ namespace NewAudio.Dsp
             {
                 var countA = _allocatedSize - writeIndex;
                 var countB = count - countA;
-                Array.Copy(array,0, _data, writeIndex,countA );
-                Array.Copy(array,countA, _data, 0,countB );
+                array.Slice(0, countA).CopyTo(_data.AsSpan(writeIndex, countA));
+                // Array.Copy(array,0, _data, writeIndex,countA );
+                array.Slice(countA, countB).CopyTo(_data.AsSpan(0, countB));
+                // Array.Copy(array,countA, _data, 0,countB );
                 writeIndexAfter -= _allocatedSize;
             }
             else
             {
-                Array.Copy(array, 0, _data, writeIndex, count);
+                array.Slice(0, count).CopyTo(_data.AsSpan(writeIndex, count));
+                // Array.Copy(array, 0, _data, writeIndex, count);
                 if (writeIndexAfter == _allocatedSize)
                 {
                     writeIndexAfter = 0;
@@ -72,9 +79,8 @@ namespace NewAudio.Dsp
             return true;
         }
 
-        public bool Read(T[] array, int count)
+        public bool Read(float[] array, int count)
         {
-            // todo lock
             var writeIndex = _writeIndex;
             var readIndex = _readIndex;
             

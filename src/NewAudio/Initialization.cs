@@ -73,20 +73,13 @@ namespace NewAudio
                 NodeContext.Current.Factory.CreateService<IResourceProvider<IAudioService>>(NodeContext.Current);
             return provider.GetHandle().Resource;
         }
-        /*
 
         public static IResourceHandle<AudioGraph> GetAudioGraph()
         {
-            if (_audioGraph != null)
-            {
-                return new TestResourceHandle<AudioGraph>(_audioGraph);
-            }
-
             var provider =
                 NodeContext.Current.Factory.CreateService<IResourceProvider<AudioGraph>>(NodeContext.Current);
             return provider.GetHandle();
         }
-    */
     }
 
     public sealed class Initialization : AssemblyInitializer<Initialization>
@@ -122,12 +115,17 @@ namespace NewAudio
                         .AddOutput(nameof(AudioStreamConfigNode.Config), x=>x.Config)
                         .WithEnabledPins(),
                     f.NewNode(_=>new AudioStreamNode(), category:category, name: "AudioStream", hasStateOutput:false)
-                        .AddInput(nameof(AudioStreamNode.Input), x=>x.Input, (x,v)=>x.Input=v, defaultValue:null)
                         .AddInput(nameof(AudioStreamNode.Primary), x=>x.Primary, (x,v)=>x.Primary=v)
-                        .AddListInput(nameof(AudioStreamNode.Seconary), x=>x.Seconary, (x,v)=>x.Seconary=v)
+                        .AddListInput(nameof(AudioStreamNode.Secondary), x=>x.Secondary, (x,v)=>x.Secondary=v)
+                        .AddOutput(nameof(AudioStreamNode.InputLatency), x=>x.InputLatency)
+                        .AddOutput(nameof(AudioStreamNode.OutputLatency), x=>x.OutputLatency)
+                        .AddOutput(nameof(AudioStreamNode.Type), x=>x.Type)
+                        
                         .WithEnabledPins(),
 
                     f.NewProcessorNode(_=>new AudioGraphIOProcessor(false), category:category, name:"Input", hasAudioInput:false, hasAudioOutput:true, hasStateOutput:false)
+                        .WithEnabledPins(),
+                    f.NewProcessorNode(_=>new AudioGraphIOProcessor(true), category:category, name:"Output", hasAudioInput:true, hasAudioOutput:false, hasStateOutput:false)
                         .WithEnabledPins(),
                     f.NewProcessorNode(_=>new NoiseGenProcessor(), category:category, name: "Noise", hasAudioInput:false, hasAudioOutput:true, hasStateOutput:false)
                         .WithEnabledPins(),
@@ -137,6 +135,10 @@ namespace NewAudio
                     f.NewProcessorNode(_=>new MultiplyProcessor(), category:category, name: "*", hasAudioInput:true, hasAudioOutput:true, hasStateOutput:false)
                         .AddInput(nameof(SineGenProcessor.Freq), x=>x.Processor.Value, (x,v)=>x.Processor.Value=v)
                         .WithEnabledPins(),
+                    f.NewNode(_=>new MonitorNode(), category:category, update:x=>x.FillBuffer(),name: "Monitor", hasStateOutput:false)
+                        .AddInput("Audio In", x=>x.Input, (x,v)=>x.Input=v)
+                        .AddInput(nameof(MonitorNode.BufferSize), x=>x.BufferSize, (x,v)=>x.BufferSize=v)
+                        .AddOutput(nameof(MonitorNode.Buffer), x=>x.Buffer)
                 }.ToImmutableArray());
             }));
 
@@ -144,10 +146,7 @@ namespace NewAudio
             factory.RegisterService<string, IResourceProvider<XtPlatform>>(context =>
             {
                 return ResourceProvider.NewPooledSystemWide("NewAudio.XtPlatform",
-                    factory: (key) =>
-                    {
-                        return XtAudio.Init("NewAudio", IntPtr.Zero);
-                    }, delayDisposalInMilliseconds: 0).Finally(a =>
+                    (_) => XtAudio.Init("NewAudio", IntPtr.Zero)).Finally(a =>
                 {
                     a.Dispose();
                 });
@@ -158,24 +157,15 @@ namespace NewAudio
                 return ResourceProvider.NewPooledSystemWide("IAudioService",
                     factory: (key) =>
                     {
-                        // var logger = context.Factory.CreateService<IResourceProvider<ILogger>>(context).GetHandle()
-                            // .Resource;
                         var p = context.Factory.CreateService<IResourceProvider<XtPlatform>>("NewAudio.XtPlatform");
                         return new XtAudioService(p.GetHandle().Resource); // AudioServiceThread(logger, p);
                     }, delayDisposalInMilliseconds: 0).Finally(a => { a.Dispose(); });
             });
-            
 
-            // One AudioGraph per app. TODO maybe make AudioGraph a VL node, that needs a connected output node  
-            /*
             factory.RegisterService<NodeContext, IResourceProvider<AudioGraph>>(context =>
             {
-                return ResourceProvider.NewPooledPerApp(context,
-                        factory: () => { return new AudioGraph(); }, delayDisposalInMilliseconds: 0)
-                    .Finally(ag => { ag.Dispose(); });
+                return ResourceProvider.NewPooledPerApp(context, factory: () => new AudioGraph());
             });
-            */
-
         }
     }
 

@@ -34,7 +34,7 @@ namespace NewAudio.Device
         {
         }
 
-        public void AudioDeviceCallback(AudioBuffer input,AudioBuffer output, int numFrames)
+        public void AudioDeviceCallback(AudioBuffer? input, AudioBuffer output, int numFrames)
         {
             Trace.Assert(_sampleRate>0 && _framesPerBlock>0 );
             lock (_readLock)

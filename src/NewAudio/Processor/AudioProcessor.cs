@@ -15,12 +15,12 @@ namespace NewAudio.Processor
         protected ILogger Logger { get; private set; }
 
         public abstract string Name { get; }
-        public AudioBusState Bus => _bus.CurrentState;
-        private AudioBuses _bus;
-        public int TotalNumberOfInputChannels => _bus.CurrentState.TotalNumberOfInputChannels;
-        public int TotalNumberOfOutputChannels => _bus.CurrentState.TotalNumberOfOutputChannels;
-        public int MainBusInputChannels => _bus.CurrentState.MainBusInputChannels;
-        public int MainBusOutputChannels => _bus.CurrentState.MainBusOutputChannels;
+        public AudioBusState Bus => BusConfig.CurrentState;
+        protected readonly AudioBuses BusConfig;
+        public int TotalNumberOfInputChannels => BusConfig.CurrentState.TotalNumberOfInputChannels;
+        public int TotalNumberOfOutputChannels => BusConfig.CurrentState.TotalNumberOfOutputChannels;
+        public int MainBusInputChannels => BusConfig.CurrentState.MainBusInputChannels;
+        public int MainBusOutputChannels => BusConfig.CurrentState.MainBusOutputChannels;
         public int SampleRate { get; private set; }
         public int FramesPerBlock { get; private set; }
         public int LatencySamples { get; set; }
@@ -34,11 +34,11 @@ namespace NewAudio.Processor
         protected AudioProcessor(): this(new AudioBuses()
             .WithInput("Input", AudioChannels.Stereo)
             .WithOutput("Output", AudioChannels.Stereo)){}
-        protected AudioProcessor(AudioBuses buses)
+        
+        protected AudioProcessor(AudioBuses busesConfig)
         {
-            _bus = buses;
-            _bus.SetMainEnabled(true);
-            _bus.Apply(this);
+            BusConfig = busesConfig;
+            BusConfig.Apply(this);
         }
 
         public abstract void PrepareToPlay(int sampleRate, int framesPerBlock);
@@ -60,9 +60,9 @@ namespace NewAudio.Processor
         }
 
 
-        public bool IsBusStateSupported(AudioBusState layout)
+        public virtual bool IsBusStateSupported(AudioBusState layout)
         {
-            return layout.MainBusInputChannels == 2 && layout.MainBusOutputChannels == 2;
+            return true;// layout.MainBusInputChannels == 2 && layout.MainBusOutputChannels == 2;
         }
 
 
@@ -83,8 +83,23 @@ namespace NewAudio.Processor
 
         public virtual void Reset(){}
 
+        public void SetChannels(int numIns, int numOuts)
+        {
+            if (TotalNumberOfInputChannels != numIns)
+            {
+                BusConfig.MainInput.SetNumberOfChannels(numIns);
+            }
+
+            if (TotalNumberOfOutputChannels != numOuts)
+            {
+                BusConfig.MainOutput.SetNumberOfChannels(numOuts);
+            }
+            BusConfig.Apply(this);
+        }
+        
         public void SetPlayConfig(int numIns, int numOuts, int sampleRate, int framesPerBlock)
         {
+            SetChannels(numIns, numOuts);
             SetRateAndFrameSize(sampleRate, framesPerBlock);
         }
         public void SetRateAndFrameSize(int sampleRate, int framesPerBlock)

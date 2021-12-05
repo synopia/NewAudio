@@ -27,7 +27,7 @@ namespace NewAudio.Device
 
     public interface IAudioDeviceCallback
     {
-        void AudioDeviceCallback(AudioBuffer input, AudioBuffer output, int numFrames);
+        void AudioDeviceCallback(AudioBuffer? input, AudioBuffer output, int numFrames);
 
         void AudioDeviceAboutToStart(IAudioSession session);
         void AudioDeviceStopped();

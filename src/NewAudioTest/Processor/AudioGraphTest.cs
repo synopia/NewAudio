@@ -2,74 +2,56 @@
 using NewAudio.Dsp;
 using NewAudio.Processor;
 using NUnit.Framework;
+using VL.NewAudio.Processor;
 
 namespace NewAudioTest.Processor
 {
     [TestFixture]
     public class AudioGraphTest
     {
-        public class TestProc : AudioProcessor
-        {
-            private float phase = 0;
-            public override string Name => "Test";
-
-            public override void PrepareToPlay(int sampleRate, int framesPerBlock)
-            {
-            }
-
-            
-            public override void Process(AudioBuffer buffer)
-            {
-                for (int i = 0; i < buffer.NumberOfFrames; i++)
-                {
-                    var sample = AudioMath.SinF(AudioMath.TwoPi * phase)*0.1f;
-                    for (int ch = 0; ch < buffer.NumberOfChannels; ch++)
-                    {
-                        buffer[ch, i] = sample;
-                    }
-                    phase = AudioMath.Fract(phase + 1000f / SampleRate);
-                }   
-            }
-
-            public override void ReleaseResources()
-            {
-            }
-        }
 
         [Test]
         public void TestOrderNodes()
         {
             var g = new AudioGraph();
-            var n1 = g.AddNode(new TestProc());
-            var n2 = g.AddNode(new TestProc());
-            var n3 = g.AddNode(new TestProc());
-            var n4 = g.AddNode(new TestProc());
-            var n5 = g.AddNode(new TestProc());
+            g.SetChannels(2,2);
+            var gen = g.AddNode(new SineGenProcessor());
+            var proc = g.AddNode(new MultiplyProcessor());
+            var output = g.AddNode(new AudioGraphIOProcessor(true));
+            var monitor = g.AddNode(new MonitorProcessor());
+            Assert.NotNull(gen);
+            Assert.NotNull(output);
+            Assert.NotNull(monitor);
+            Assert.NotNull(proc);
 
-            Assert.AreNotEqual(n1.NodeId, n2.NodeId);
-            Assert.AreNotEqual(n2.NodeId, n3.NodeId);
-            Assert.AreNotEqual(n3.NodeId, n4.NodeId);
-            Assert.AreNotEqual(n5.NodeId, n1.NodeId);
-
+            
             g.AddConnection(new AudioGraph.Connection(
-                new AudioGraph.NodeAndChannel(n1.NodeId, 0),
-                new AudioGraph.NodeAndChannel(n2.NodeId, 0)));
+                new AudioGraph.NodeAndChannel(gen.NodeId, 0),
+                new AudioGraph.NodeAndChannel(proc.NodeId, 0)));
             g.AddConnection(new AudioGraph.Connection(
-                new AudioGraph.NodeAndChannel(n2.NodeId, 0),
-                new AudioGraph.NodeAndChannel(n3.NodeId, 0)));
+                new AudioGraph.NodeAndChannel(proc.NodeId, 0),
+                new AudioGraph.NodeAndChannel(output.NodeId, 0)));
             g.AddConnection(new AudioGraph.Connection(
-                new AudioGraph.NodeAndChannel(n3.NodeId, 0),
-                new AudioGraph.NodeAndChannel(n4.NodeId, 0)));
+                new AudioGraph.NodeAndChannel(proc.NodeId, 0),
+                new AudioGraph.NodeAndChannel(output.NodeId, 1)));
+            // g.AddConnection(new AudioGraph.Connection(
+                // new AudioGraph.NodeAndChannel(n1.NodeId, 1),
+                // new AudioGraph.NodeAndChannel(output.NodeId, 1)));
             g.AddConnection(new AudioGraph.Connection(
-                new AudioGraph.NodeAndChannel(n4.NodeId, 0),
-                new AudioGraph.NodeAndChannel(n5.NodeId, 0)));
+                new AudioGraph.NodeAndChannel(proc.NodeId, 0),
+                new AudioGraph.NodeAndChannel(monitor.NodeId, 0)));
+            // g.AddConnection(new AudioGraph.Connection(
+                // new AudioGraph.NodeAndChannel(gen.NodeId, 0),
+                // new AudioGraph.NodeAndChannel(monitor.NodeId, 1)));
 
             var orderedNodeList = RenderingBuilder.CreateOrderedNodeList(g);
-            Assert.AreEqual(new AudioGraph.Node[]{n1,n2,n3,n4,n5}, orderedNodeList.ToArray());
+            Assert.AreEqual(new[]{gen,proc, output, monitor}, orderedNodeList.ToArray());
 
             var program = new RenderingProgram();
             var b = new RenderingBuilder(g, program);
-            Assert.AreEqual(1, program.NumBuffersNeeded);
+            var code = program.ToCode;
+            Console.WriteLine(code);
+            Assert.AreEqual(2, program.NumBuffersNeeded);
         }
     }
 }

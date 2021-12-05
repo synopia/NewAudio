@@ -14,19 +14,19 @@ namespace NewAudio.Core
 {
     public static class AudioNodeFactory
     {
-        public static AudioNodeDesc<T> NewNode<T>(this IVLNodeDescriptionFactory factory, Func<NodeContext, T> ctor,
+        public static AudioNodeDesc<T> NewNode<T>(this IVLNodeDescriptionFactory factory, Func<NodeContext, T> ctor, Action<T>? update=null,
             string? name = null, string? category = null, bool hasStateOutput=false) where T : AudioNode
         {
-            return new AudioNodeDesc<T>(factory, ctor: ctx=>CreateInstanceWithErrorToggle(ctx,ctor), name: name, category: category, hasStateOutput: hasStateOutput);
+            return new AudioNodeDesc<T>(factory, ctor: ctx=>CreateInstanceWithErrorToggle(ctx,ctor), name: name, category: category, hasStateOutput: hasStateOutput, update:update);
         }
-        public static AudioNodeDesc<AudioProcessorNode<T>> NewProcessorNode<T>(this IVLNodeDescriptionFactory factory, Func<NodeContext, T> ctor,
+        public static AudioNodeDesc<AudioProcessorNode<T>> NewProcessorNode<T>(this IVLNodeDescriptionFactory factory, Func<NodeContext, T> ctor, Action<AudioProcessorNode<T>>? update=null,
             string? name = null, string? category = null, bool hasAudioInput = true, bool hasAudioOutput = true, bool hasStateOutput=false) where T : AudioProcessor
         {
             return new AudioProcessorNodeDesc<T>(factory, ctor: ctx =>CreateInstanceWithErrorToggle(ctx, c =>
             {
                 var processor = ctor(c);
                 return new AudioProcessorNode<T>(processor);
-            }), name: name, category: category, hasAudioInput:hasAudioInput, hasAudioOutput: hasAudioOutput, hasStateOutput: hasStateOutput);
+            }),update, name: name, category: category, hasAudioInput:hasAudioInput, hasAudioOutput: hasAudioOutput, hasStateOutput: hasStateOutput);
         }
 
         private static (T, Action) CreateInstanceWithErrorToggle<T>(NodeContext ctx, Func<NodeContext, T> ctor) where T : AudioNode
@@ -71,7 +71,7 @@ namespace NewAudio.Core
     public class AudioProcessorNodeDesc<TProcessor> : AudioNodeDesc<AudioProcessorNode<TProcessor>>
         where TProcessor : AudioProcessor
     {
-        public AudioProcessorNodeDesc(IVLNodeDescriptionFactory factory, Func<NodeContext, (AudioProcessorNode<TProcessor>, Action)> ctor, string? name, string? category, bool hasAudioInput, bool hasAudioOutput, bool hasStateOutput) : base(factory, ctor, name, category, hasStateOutput)
+        public AudioProcessorNodeDesc(IVLNodeDescriptionFactory factory, Func<NodeContext, (AudioProcessorNode<TProcessor>, Action)> ctor,Action<AudioProcessorNode<TProcessor>>? update, string? name, string? category, bool hasAudioInput, bool hasAudioOutput, bool hasStateOutput) : base(factory, ctor, update, name, category, hasStateOutput)
         {
             if (hasAudioInput)
             {
@@ -88,15 +88,17 @@ namespace NewAudio.Core
         private readonly List<AudioPinDesc> _inputs = new();
         private readonly List<AudioPinDesc> _outputs = new();
         private readonly Func<NodeContext, (TInstance, Action)> _ctor;
+        private readonly Action<TInstance>? Update;
 
-        public AudioNodeDesc(IVLNodeDescriptionFactory factory, Func<NodeContext, (TInstance, Action)> ctor,
+        public AudioNodeDesc(IVLNodeDescriptionFactory factory, Func<NodeContext, (TInstance, Action)> ctor, Action<TInstance>? update,
             string? name, string? category, bool hasStateOutput)
         {
             Factory = factory;
             _ctor = ctor;
             Name = name ?? typeof(TInstance).Name;
             Category = category ?? string.Empty;
-
+            Update = update;
+            
             if (hasStateOutput)
             {
                 AddOutput("Output", x => x);
@@ -123,7 +125,7 @@ namespace NewAudio.Core
             var (instance, onDispose) = _ctor(context);
             var node = new Node(context)
             {
-                NodeDescription = this
+                NodeDescription = this,
             };
             int index = 0;
             IVLPin[] inputs = _inputs.Select(p => (IVLPin)p.CreatePin(node, index++, instance)).ToArray();
@@ -155,6 +157,7 @@ namespace NewAudio.Core
                         node.UpdateMask = 0;
                     }
                 }
+                Update?.Invoke(instance);
             };
             node.DisposeAction = () =>
             {

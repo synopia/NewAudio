@@ -216,9 +216,9 @@ namespace NewAudio.Dsp
             s.CopyTo(d);
         }
 
-        private void PrepareChannel(int channel, AudioBuffer input, int index)
+        private void PrepareChannel(int channel, AudioBuffer? input, int index)
         {
-            if (input.NumberOfChannels == 0)
+            if (input==null || input.NumberOfChannels == 0)
             {
                 ZeroChannel(channel);
             }
@@ -228,18 +228,18 @@ namespace NewAudio.Dsp
             }
         }
         
-        public void Merge(AudioBuffer input, AudioBuffer output, int inputChannels, int outputChannels)
+        public void Merge(AudioBuffer? input, AudioBuffer output, int inputChannels, int outputChannels)
         {
-            Trace.Assert(input.NumberOfFrames==output.NumberOfFrames);
-            var totalAfterMerge = new[]{input.NumberOfChannels, output.NumberOfChannels, inputChannels, outputChannels}.Max();
+            Trace.Assert(input==null || input.NumberOfFrames==output.NumberOfFrames);
+            var totalAfterMerge = new[]{input?.NumberOfChannels ?? 0, output.NumberOfChannels, inputChannels, outputChannels}.Max();
 
-            SetSize(totalAfterMerge, input.NumberOfFrames, false, false, true);
+            SetSize(totalAfterMerge, output.NumberOfFrames, false, false, true);
             int channelNumber = 0;
             
             if (inputChannels > outputChannels)
             {
                 Trace.Assert(NumberOfChannels>=inputChannels-outputChannels);
-                Trace.Assert(NumberOfFrames>= input.NumberOfFrames);
+                Trace.Assert(NumberOfFrames>= (input?.NumberOfFrames ?? 0));
                 Trace.Assert(NumberOfFrames>= output.NumberOfFrames);
 
                 for (int i = 0; i < outputChannels; i++)
@@ -271,8 +271,6 @@ namespace NewAudio.Dsp
                     channelNumber++;
                 }
             }
-            
-            
         }
         
 

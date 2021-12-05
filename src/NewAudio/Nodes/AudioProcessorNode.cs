@@ -1,24 +1,18 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Linq;
 using NewAudio.Core;
 using NewAudio.Processor;
 using VL.Lang;
 
 namespace NewAudio.Nodes
 {
-    public interface IAudioProcessorNode
-    {
-        bool RemoveFromGraph();
-        AudioGraph.Node AddToGraph(AudioGraph graph);
-    }
-    public class AudioProcessorNode<TProcessor> : AudioNode, IAudioProcessorNode where TProcessor: AudioProcessor
+    public class AudioProcessorNode<TProcessor> : AudioNode where TProcessor: AudioProcessor
     {
         public readonly TProcessor Processor;
 
-        private AudioGraph.Node? _node;
-        private AudioGraph? _graph;
+        private AudioGraph.Node _node;
+        private AudioGraph _graph;
         private AudioLink? _input;
-        
+
         public readonly AudioLink Output;
         public AudioLink? Input
         {
@@ -30,21 +24,42 @@ namespace NewAudio.Nodes
                     return;
                 }
 
-                _input?.Disconnect();
+                if (_input != null)
+                {
+                    var sourceId = _input.Node.NodeId;
+                    var targetId = _node.NodeId;
+                    foreach (var connection in _graph.GetConnections().Where(c=> c.source.NodeId == sourceId && c.target.NodeId==targetId))
+                    {
+                        _graph.RemoveConnection(connection);
+                    }
+                }
 
                 _input = value;
 
-                if (_input != null && _graph!=null && _node!=null)
+                if (_input != null)
                 {
-                     _input.Connect(_graph, _node);
+                    int ch = 0;
+                    foreach (var input in _input.NodeAndChannels)
+                    {
+                        var connection = new AudioGraph.Connection(input, new AudioGraph.NodeAndChannel(_node.NodeId, ch));
+                        _graph.AddConnection(connection);
+                        ch++;
+                        if (ch >= Processor.TotalNumberOfInputChannels)
+                        {
+                            ch = 0;
+                        }
+                    }
                 }
+                
             }
         }
 
         public AudioProcessorNode(TProcessor processor)
         {
             Processor = processor;
-            Output = new(this);
+            _graph = Resources.GetAudioGraph().Resource;
+            _node = _graph.AddNode(Processor)!;
+            Output = new(_node);
         }
 
         public override Message? Update(ulong mask)
@@ -52,29 +67,8 @@ namespace NewAudio.Nodes
             return null;
         }
 
-        public override bool IsEnabled => true;
+        public override bool IsEnabled => IsEnable;
 
-        public bool RemoveFromGraph()
-        {
-            Trace.Assert(_graph!=null && _node!=null);
-            _input?.Disconnect();
-            _graph!.RemoveNode(_node!);
-            _graph = null;
-            _node = null;
-            return true;
-        }
-        
-        public AudioGraph.Node AddToGraph(AudioGraph graph)
-        {
-            _graph = graph;
-            _node = _graph.AddNode(Processor);
-            if (_node == null)
-            {
-                throw new InvalidOperationException("Cannot create node");
-            }
-            _input?.Connect(graph, _node);
-            return _node;
-        }
         
         private bool _disposedValue;
         protected override void Dispose(bool disposing)
@@ -83,6 +77,7 @@ namespace NewAudio.Nodes
             {
                 if (disposing)
                 {
+                    _graph.RemoveNode(_node);
                     Processor.Dispose();
                 }
 

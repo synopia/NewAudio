@@ -41,7 +41,7 @@ namespace NewAudio.Device
             _owner = owner;
         }
 
-        public void AudioDeviceCallback(AudioBuffer input, AudioBuffer output, int numFrames)
+        public void AudioDeviceCallback(AudioBuffer? input, AudioBuffer output, int numFrames)
         {
             _owner.AudioDeviceCallback(input, output, numFrames);
         }
@@ -157,7 +157,7 @@ namespace NewAudio.Device
         }
 
 
-        public void AudioDeviceCallback(AudioBuffer input, AudioBuffer output, int numFrames)
+        public void AudioDeviceCallback(AudioBuffer? input, AudioBuffer output, int numFrames)
         {
             lock (AudioProcessLock)
             {

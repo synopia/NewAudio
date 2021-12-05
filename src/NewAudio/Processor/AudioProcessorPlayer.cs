@@ -92,7 +92,7 @@ namespace NewAudio.Device
             }
         }
 
-        public void AudioDeviceCallback(AudioBuffer input, AudioBuffer output, int numFrames)
+        public void AudioDeviceCallback(AudioBuffer? input, AudioBuffer output, int numFrames)
         {
             lock (_lock)
             {

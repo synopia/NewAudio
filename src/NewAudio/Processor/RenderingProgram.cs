@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Linq;
 using NewAudio.Dsp;
 
 namespace NewAudio.Processor
@@ -12,6 +13,7 @@ namespace NewAudio.Processor
         public AudioBuffer CurrentOutputBuffer= new ();
         public AudioBuffer? CurrentInputBuffer;
         private List<IRenderingOperation> _renderingOperations = new ();
+        public string ToCode=>string.Join("\n", _renderingOperations.Select(i=>i.ToCode()));
         
         struct Context
         {
@@ -23,6 +25,7 @@ namespace NewAudio.Processor
         interface IRenderingOperation
         {
             void Perform(Context context);
+            string ToCode();
         }
 
         public void Perform(AudioBuffer buffer, AudioPlayHead playHead)
@@ -72,15 +75,15 @@ namespace NewAudio.Processor
         }
         public  void AddClearChannelOp(int index)
         {
-            CreateOp((ctx)=>ctx.AudioBuffers[index].Span.Fill(0, ctx.NumFrames));
+            CreateOp($"clear({index})", (ctx)=>ctx.AudioBuffers[index].Span.Fill(0, ctx.NumFrames));
         }
         public  void AddCopyChannelOp(int source, int target)
         {
-            CreateOp((ctx)=>ctx.AudioBuffers[target].Span.CopyFrom(ctx.AudioBuffers[source].Span,ctx.NumFrames));
+            CreateOp($"copy({source}, {target})", (ctx)=>ctx.AudioBuffers[target].Span.CopyFrom(ctx.AudioBuffers[source].Span,ctx.NumFrames));
         }
         public  void AddAddChannelOp(int source, int target)
         {
-            CreateOp((ctx)=>ctx.AudioBuffers[target].Span.Add(ctx.AudioBuffers[source].Span,ctx.NumFrames));
+            CreateOp($"add({source}, {target})", (ctx)=>ctx.AudioBuffers[target].Span.Add(ctx.AudioBuffers[source].Span,ctx.NumFrames));
         }
         public  void AddDelayChannelOp(int channel, int delaySize)
         {
@@ -111,17 +114,23 @@ namespace NewAudio.Processor
 
         delegate void PerformOpDelegate(Context ctx);
 
-        private void CreateOp(PerformOpDelegate op)
+        private void CreateOp(string code,PerformOpDelegate op)
         {
-            _renderingOperations.Add(new PerformOp(op));
+            _renderingOperations.Add(new PerformOp(code, op));
         }
         
         private struct PerformOp: IRenderingOperation
         {
             private PerformOpDelegate _delegate;
-
-            public PerformOp(PerformOpDelegate @delegate)
+            private string _code;
+            public string ToCode()
             {
+                return _code;
+            }
+
+            public PerformOp(string code, PerformOpDelegate @delegate)
+            {
+                _code = code;
                 _delegate = @delegate;
             }
 
@@ -139,6 +148,12 @@ namespace NewAudio.Processor
             private int _writeIndex;
             private int _readIndex;
             private float[] _buffer;
+
+            public string ToCode()
+            {
+                return $"delay({_channel}, {_bufferSize})";
+            }
+
             public DelayChannelOp(int channel, int delaySize) : this()
             {
                 _channel = channel;
@@ -177,7 +192,12 @@ namespace NewAudio.Processor
             private List<int> _channelsToUse;
             private Memory<float>[] _channels;
             private int _totalChannels;
-            
+
+            public string ToCode()
+            {
+                return $"{_node.Processor.Name}.process({_node.NodeId}, [{string.Join(",", _channelsToUse)}])";
+            }
+
             public ProcessOp(AudioGraph.Node node, List<int> channelsToUse, int totalChannels) : this()
             {
                 _node = node;

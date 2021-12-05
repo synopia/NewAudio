@@ -141,7 +141,7 @@ namespace NewAudio.Device
             }
         }
 
-        public void Process(AudioBuffer input, AudioBuffer output, int numFrames)
+        public void Process(AudioBuffer? input, AudioBuffer output, int numFrames)
         {
             var cb = Interlocked.Exchange(ref _currentCallback, null);
             if (cb != null)
@@ -195,7 +195,6 @@ namespace NewAudio.Device
                 catch (Exception e)
                 {
                     _logger.Error(e, "Exception in AudioSession.OnBuffer!");
-                    throw;
                 }
                 finally
                 {

@@ -8,7 +8,7 @@ namespace NewAudio.Processor
     using Node = AudioGraph.Node;
     using NodeId = AudioGraph.NodeId;
     
-    public struct AssignedBuffer
+    public class AssignedBuffer
     {
         public AudioGraph.NodeAndChannel Channel;
 
@@ -55,7 +55,8 @@ namespace NewAudio.Processor
             _graph = graph;
             _program = program;
             _orderedNodes = CreateOrderedNodeList(graph);
-
+            _audioBuffers.Add(AssignedBuffer.CreateReadOnlyEmpty());
+            
             for (int i = 0; i < _orderedNodes.Count; i++)
             {
                 CreateRenderingOpsForNode(_orderedNodes[i], i);
@@ -97,8 +98,7 @@ namespace NewAudio.Processor
 
                 if (parents.Add(parentNode))
                 {
-                    HashSet<Node> parentParents = null;
-                    if (otherParents.TryGetValue(parentNode, out parentParents))
+                    if (otherParents.TryGetValue(parentNode, out HashSet<Node> parentParents))
                     {
                         parents.AddRange(parentParents);
                         continue;
@@ -271,7 +271,6 @@ namespace NewAudio.Processor
                 {
                     var b = _audioBuffers[index];
                     b.Channel = new AudioGraph.NodeAndChannel(node.NodeId, inputChannel);
-                    _audioBuffers[index] = b;
                 }
             }
 
@@ -282,7 +281,6 @@ namespace NewAudio.Processor
                 channelsToUse.Add(index );
                 var b = _audioBuffers[index];
                 b.Channel = new AudioGraph.NodeAndChannel(node.NodeId, outputChannel);
-                _audioBuffers[index] = b;
             }
 
             _delays[node.NodeId.Uid] = maxLatency + processor.LatencySamples;

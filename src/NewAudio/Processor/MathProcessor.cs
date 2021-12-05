@@ -10,7 +10,14 @@ namespace NewAudio.Processor
         
         protected MathProcessor()
         {
+            SetChannels(1,1);
         }
+
+        public override bool IsBusStateSupported(AudioBusState layout)
+        {
+            return layout.TotalNumberOfInputChannels == layout.TotalNumberOfOutputChannels;
+        }
+
         protected abstract float NextSample(float input);
 
         public override void PrepareToPlay(int sampleRate, int framesPerBlock)

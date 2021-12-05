@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Windows.Forms;
+using NewAudio;
 using NewAudio.Core;
 using NewAudio.Device;
 using NewAudio.Nodes;
@@ -14,10 +15,10 @@ namespace VL.NewAudio.Nodes
 {
     public class AudioStreamNode : AudioNode
     {
-        private readonly AudioGraph _graph = new();
+        private readonly AudioGraph _graph;
         private readonly IAudioControl _control;
-        private AudioLink? _input;
-        private readonly AudioGraph.Node _graphOutputNode;
+        // private AudioLink? _input;
+        // private readonly AudioGraph.Node _graphOutputNode;
         private bool _disposed;
         private IAudioSession? _session;
 
@@ -41,7 +42,7 @@ namespace VL.NewAudio.Nodes
         /// <item>Any other combination only works using ring buffers, which will introduce latency</item>
         /// </list>
         /// </remarks>
-        public IEnumerable<AudioStreamConfig>? Seconary { get; set; }
+        public IEnumerable<AudioStreamConfig> Secondary { get; set; }
 
         public double InputLatency => _session?.InputLatency ?? 0;
         public double OutputLatency => _session?.OutputLatency ?? 0;
@@ -50,6 +51,7 @@ namespace VL.NewAudio.Nodes
         /// Returns the current type of the session. 
         /// </summary>
         public AudioStreamType? Type => _session?.Type;
+        /*
         public AudioLink? Input
         {
             get => _input;
@@ -60,24 +62,28 @@ namespace VL.NewAudio.Nodes
                     return;
                 }
 
-                _input?.Disconnect();
+                _input?.Disconnect(_graph);
 
                 _input = value;
 
                 _input?.Connect(_graph, _graphOutputNode);
             }
         }
+        */
 
         public AudioStreamNode()
         {
+            _graph = Resources.GetAudioGraph().Resource;
+            
             _control = new XtAudioControl(AudioService);
-            AudioGraphIOProcessor graphOutput = new(true);
-            _graphOutputNode = _graph.AddNode(graphOutput)!;
+            // AudioGraphIOProcessor graphOutput = new(true);
+            // _graphOutputNode = _graph.AddNode(graphOutput)!;
+            
             AudioProcessorPlayer graphPlayer = new();
             graphPlayer.SetProcessor(_graph);
             _control.AddAudioCallback(graphPlayer);
 
-            Seconary = Array.Empty<AudioStreamConfig>();
+            Secondary = Array.Empty<AudioStreamConfig>();
         }
 
         protected override void Dispose(bool disposing)
@@ -106,9 +112,13 @@ namespace VL.NewAudio.Nodes
                 return null;
             }
             
-            if (HasChanged(nameof(IsEnable), mask) || HasChanged(nameof(Primary), mask) || HasChanged(nameof(Seconary), mask))
+            if (HasChanged(nameof(IsEnable), mask) || HasChanged(nameof(Primary), mask) || HasChanged(nameof(Secondary), mask))
             {
-                _session = _control.Open(Primary, Seconary?.ToArray());
+                
+                _session = _control.Open(Primary, Secondary.ToArray());
+                var ins = _session.ActiveInputChannels.Count;
+                var outs = _session.ActiveOutputChannels.Count;
+                _graph.SetChannels(ins, outs);
             }
 
             return null;

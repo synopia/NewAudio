@@ -19,7 +19,7 @@ namespace NewAudio.Processor
                 {
                     var outChannels = IsOutput ? _graph.TotalNumberOfOutputChannels : 0;
                     var inChannels = IsInput ? _graph.TotalNumberOfInputChannels : 0;
-                    SetPlayConfig(inChannels, outChannels, SampleRate, FramesPerBlock );
+                    SetPlayConfig(outChannels, inChannels, SampleRate, FramesPerBlock );
                 }
             }
         }
@@ -30,6 +30,10 @@ namespace NewAudio.Processor
         public bool IsInput => !_isOutput;
         public bool IsOutput => _isOutput;
 
+        public override bool IsBusStateSupported(AudioBusState layout)
+        {
+            return IsInput ? layout.MainInput.Count == 0 : layout.MainOutput.Count == 0;
+        }
 
         public AudioGraphIOProcessor(bool isOutput)
         {
