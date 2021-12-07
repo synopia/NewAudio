@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using NAudio.Dsp;
 
-namespace NewAudio.Dsp
+namespace VL.NewAudio.Dsp
 {
     public static class AudioMath
     {
@@ -19,23 +18,62 @@ namespace NewAudio.Dsp
 
         public static double[] CreateWindow(WindowFunction windowFunction, int size)
         {
-            Func<int, int, double> function = windowFunction switch
+            return windowFunction switch
             {
-                WindowFunction.Hamming => FastFourierTransform.HammingWindow,
-                WindowFunction.Hann => FastFourierTransform.HannWindow,
-                WindowFunction.BlackmanHarris => FastFourierTransform.BlackmannHarrisWindow,
-                _ => (_, _) => 1
+                WindowFunction.Hamming => HammingWindow(size),
+                WindowFunction.Hann => HannWindow(size),
+                WindowFunction.BlackmanHarris => BlackmanHarrisWindow(size),
+                _ => throw new ArgumentOutOfRangeException(nameof(windowFunction), windowFunction, null)
             };
+        }
 
-            var window = new double[size];
-            for (var i = 0; i < size; i++)
-            {
-                window[i] = function(i, size);
+        public static double[] BlackmanHarrisWindow(int size)
+        {
+            double[] window = new double[size];
+
+            double alpha = 0.16;
+            double a0 = 0.5 * (1 - alpha);
+            double a1 = 0.5;
+            double a2 = 0.5 * alpha;
+            double oneOverN = 1.0 / ( size - 1 );
+            
+            for( int i = 0; i < size; i++ ) {
+                double x = i * oneOverN;
+                window[i] = a0 - a1 * Math.Cos( 2.0 * Math.PI * x ) + a2 * Math.Cos( 4.0 * Math.PI * x );
             }
 
             return window;
         }
 
+        public static double[] HammingWindow(int size)
+        {
+            double[] window = new double[size];
+            double alpha = 0.53836;
+            double beta	= 1.0 - alpha;
+            double oneOverN	= 1.0 / ( size - 1 );
+
+            for( int i = 0; i < size; i++ ) {
+                double x = i * oneOverN;
+                window[i] = alpha - beta * Math.Cos( 2.0 * Math.PI * x );
+            }
+
+            return window;
+        }
+
+        public static double[] HannWindow(int size)
+        {
+            double[] window = new double[size];
+            double alpha = 0.5;
+            double oneOverN	= 1.0 / ( size - 1 );
+
+            for( int i = 0; i < size; i++ ) {
+                double x  = i * oneOverN;
+                window[i] = alpha * ( 1.0 - Math.Cos( 2.0 * Math.PI * x ) );
+            }
+
+            return window;
+        }
+        
         public static uint UpperPow2(uint v)
         {
             v--;

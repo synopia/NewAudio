@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 
-namespace NewAudio.Dispatcher
+namespace VL.NewAudio.Dispatcher
 {
     public class Dispatcher: IDisposable
     {

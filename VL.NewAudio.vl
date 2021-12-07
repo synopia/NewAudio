@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Document xmlns:p="property" Id="GE7lZS7pUESMJSNmab4G3U" LanguageVersion="2021.4.0.629" Version="0.128">
+<Document xmlns:p="property" Id="GE7lZS7pUESMJSNmab4G3U" LanguageVersion="2021.4.1.687" Version="0.128">
   <Patch Id="NPzPdUqOvlmQXbRDVVJru0">
     <Canvas Id="Ck0FfZbKeR3LiyIJ1anS3b" DefaultCategory="NewAudio" CanvasType="FullCategory">
       <!--
@@ -42,7 +42,99 @@
           </Patch>
         </Node>
       </Canvas>
-      <Canvas Id="BrxhpNgcDYuPE7aXZ89gzh" Name="Loop" Position="691,533" />
+      <Canvas Id="BrxhpNgcDYuPE7aXZ89gzh" Name="Loop" Position="691,533">
+        <!--
+
+    ************************ AudioGraphRegion ************************
+
+-->
+        <Node Name="AudioGraphRegion" Bounds="408,584" Id="RcRaQDlLoALNq07zKCOnCl">
+          <p:NodeReference>
+            <Choice Kind="ForwardDefinition" Name="Forward" />
+            <FullNameCategoryReference ID="Primitive" />
+          </p:NodeReference>
+          <p:TypeAnnotation LastCategoryFullName="VL.NewAudio.Nodes" LastSymbolSource="VL.NewAudio.dll">
+            <CategoryReference Kind="AssemblyCategory" Name="VL" />
+            <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
+            <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
+            <Choice Kind="ClassType" Name="AudioGraphRegion`1" />
+          </p:TypeAnnotation>
+          <Patch Id="P78zNO2J9RlMVdW7EUjiCa" IsGeneric="true">
+            <Canvas Id="U1LWD4Vm3zwQSp2gEVxBKG" CanvasType="Group">
+              <!--
+
+    ************************ Create ************************
+
+-->
+              <Node Name="Create" Bounds="367,389,162,94" Id="Upy4OdEy3w0LIzMOTlmMHI">
+                <p:NodeReference LastCategoryFullName="VL.Model.Fragment" LastSymbolSource="VL.Lang.vl">
+                  <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                  <Choice Kind="OperationDefinition" Name="Operation" />
+                  <CategoryReference Kind="RecordType" Name="Fragment" NeedsToBeDirectParent="true" />
+                </p:NodeReference>
+                <Pin Id="QWdON0ohPcOPB595QJZ3DD" Name="Input" Kind="StateInputPin" />
+                <Pin Id="EcKpWWAGkCpMaLLdjUWeB3" Name="Operation" Kind="OutputPin" />
+                <Patch Id="VZ7156mypquLtZRx7HwdQ6" IsGeneric="true">
+                  <Node Bounds="425,432,92,26" AutoConnect="true" Id="I2TJt91fkZ0NGVg1VuaTLv">
+                    <p:NodeReference LastCategoryFullName="VL.NewAudio.Nodes.AudioGraphRegion`1" LastSymbolSource="VL.NewAudio.dll">
+                      <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                      <CategoryReference Kind="AssemblyCategory" Name="VL" />
+                      <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
+                      <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
+                      <CategoryReference Kind="AssemblyCategory" Name="AudioGraphRegion`1" />
+                      <Choice Kind="OperationCallFlag" Name="Create" />
+                    </p:NodeReference>
+                    <Pin Id="ILikytOfPFHLlfAMiOxb3n" Name="Output" Kind="StateOutputPin" />
+                  </Node>
+                  <Pin Id="Diz8KvQter1PODFYCLV9Tc" Name="Output" Kind="OutputPin" />
+                </Patch>
+              </Node>
+              <!--
+
+    ************************ Update ************************
+
+-->
+              <Node Name="Update" Bounds="690,375,80,80" Id="VqJsmmCTbOpQBOy3AiBsj4">
+                <p:NodeReference LastCategoryFullName="VL.Model.Fragment" LastSymbolSource="VL.Lang.vl">
+                  <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                  <Choice Kind="OperationDefinition" Name="Operation" />
+                  <CategoryReference Kind="RecordType" Name="Fragment" NeedsToBeDirectParent="true" />
+                </p:NodeReference>
+                <Pin Id="S6wsvjbIwLVLk8qWiCDh4t" Name="Input" Kind="StateInputPin" />
+                <Pin Id="AICogAnrcLOO6mo2TF62Ok" Name="Operation" Kind="OutputPin" />
+                <Patch Id="RwPtUL0yW6QQUFNUFbXRyF" IsGeneric="true">
+                  <Node Bounds="729,417" AutoConnect="true" Id="LRfigAWVF3wPKqY26hqesA">
+                    <p:NodeReference LastCategoryFullName="VL.NewAudio.Nodes.AudioGraphRegion`1" LastSymbolSource="VL.NewAudio.dll">
+                      <CategoryReference Kind="AssemblyCategory" Name="VL" />
+                      <CategoryReference Kind="AssemblyCategory" Name="NewAudio" />
+                      <CategoryReference Kind="AssemblyCategory" Name="Nodes" />
+                      <CategoryReference Kind="AssemblyCategory" Name="AudioGraphRegion`1" />
+                      <Choice Kind="OperationCallFlag" Name="Update" />
+                      <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                    </p:NodeReference>
+                    <Pin Id="EDxwOeqa9DQQMaIcaUdi1k" Name="Input (this)" Kind="StateInputPin" />
+                    <Pin Id="Na9LKRHiYLFMi7TDJ3BbJi" Name="Input" Kind="InputPin" />
+                    <Pin Id="IITI8VS2N60PMqbaFyrc33" Name="Create" Kind="InputPin" />
+                    <Pin Id="IU7u6bz1iEcNuuKeNUhJbf" Name="Update" Kind="InputPin" />
+                    <Pin Id="LiVjbQ0WzbfLvyORxUwnJ2" Name="Output" Kind="StateOutputPin" />
+                    <Pin Id="BfSnlSkYzvSPdVSNf4N0sS" Name="Result" Kind="OutputPin" />
+                  </Node>
+                  <Pin Id="QCfebRLvI3FLoW049z1rX2" Name="Input (this)" Kind="InputPin" />
+                  <Pin Id="EA9IDqlrlZyLefUqp7mAZS" Name="Input" Kind="InputPin" />
+                  <Pin Id="NmeQzp7fZOkLFrqeuiONzw" Name="Create" Kind="InputPin" />
+                  <Pin Id="SHS6lVttKU5OgkqiDSGTTq" Name="Update" Kind="InputPin" />
+                  <Pin Id="Mf8mfF1mszCMUyPZEj822S" Name="Output" Kind="OutputPin" />
+                  <Pin Id="O0XuFBxOfxrL2q8k4PAhD3" Name="Result" Kind="OutputPin" />
+                </Patch>
+              </Node>
+            </Canvas>
+            <ProcessDefinition Id="LCfMmAbjQkxPtvHj4nz4en">
+              <Fragment Id="QVZ1SdkkheAOZ7Sh9tierb" Patch="Upy4OdEy3w0LIzMOTlmMHI" Enabled="true" />
+              <Fragment Id="NH1oKh0DNCUNNQm0ZLGHKf" Patch="VqJsmmCTbOpQBOy3AiBsj4" Enabled="true" />
+            </ProcessDefinition>
+          </Patch>
+        </Node>
+      </Canvas>
       <Canvas Id="GHIFTnZswtUOThZ36Dlvg6" Name="Nodes" Position="411,495" />
       <!--
 
@@ -99,12 +191,12 @@
     </Node>
   </Patch>
   <PlatformDependency Id="FwEC1swQmeqNZRvXH7Cl5U" Location="VL.NewAudio.dll" />
-  <NugetDependency Id="Cd9IgeOg4aDNmfXBD9Nodu" Location="VL.Lang" Version="2021.4.0" />
-  <NugetDependency Id="L3qhGd3buGoQBmHW3Gf3vu" Location="VL.Fundamentals" Version="2021.4.0" />
-  <NugetDependency Id="TRYiwWmB3wuMaoB2p353qz" Location="VL.CoreLib" Version="2021.4.0" />
+  <NugetDependency Id="Cd9IgeOg4aDNmfXBD9Nodu" Location="VL.Lang" Version="2021.4.1" />
+  <NugetDependency Id="L3qhGd3buGoQBmHW3Gf3vu" Location="VL.Fundamentals" Version="2021.4.1" />
+  <NugetDependency Id="TRYiwWmB3wuMaoB2p353qz" Location="VL.CoreLib" Version="2021.4.1" />
   <NugetDependency Id="MbQqbGC4UfOLfyUcAdgbRV" Location="Xt.Audio" Version="1.9.0" />
-  <NugetDependency Id="PFaNp3Lkw2GNWjUzaJVrfo" Location="VL.HDE" Version="2021.4.0" />
-  <NugetDependency Id="CWi7ZIUqE8HLyIDVQn2YXk" Location="VL.Skia" Version="2021.4.0" />
+  <NugetDependency Id="PFaNp3Lkw2GNWjUzaJVrfo" Location="VL.HDE" Version="2021.4.1" />
+  <NugetDependency Id="CWi7ZIUqE8HLyIDVQn2YXk" Location="VL.Skia" Version="2021.4.1" />
   <DocumentDependency Id="SOZX7BhG6R9PXahXdJawZ9" Location="./vl/IIR Filter.vl" IsForward="true" />
   <NugetDependency Id="PFCcUi1LcEkQTJyDRt4Ngy" Location="VL.NewAudio" Version="0.3.0-alpha" />
   <NodeFactoryDependency Id="TPUIoDV5uq2OCzGYyT41kW" Location="NewAudio.Factory" IsForward="true" />

@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using NewAudio.Device;
+using VL.NewAudio.Device;
 
-namespace NewAudio.Dsp
+namespace VL.NewAudio.Dsp
 {
     [Flags]
     public enum AudioChannelType: ulong

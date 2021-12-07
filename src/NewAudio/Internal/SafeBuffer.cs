@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Xt;
 
-namespace NewAudio.Internal
+namespace VL.NewAudio.Internal
 {
     public sealed class SafeBuffer: IDisposable
     {

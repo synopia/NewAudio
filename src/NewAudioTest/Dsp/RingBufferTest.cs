@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using NewAudio.Dsp;
+using VL.NewAudio.Dsp;
 
-namespace NewAudioTest.Dsp
+namespace VL.NewAudioTest.Dsp
 {
     [TestFixture]
     public class RingBufferTest

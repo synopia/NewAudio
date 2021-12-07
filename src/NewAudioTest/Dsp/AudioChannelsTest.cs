@@ -1,7 +1,7 @@
-﻿using NewAudio.Dsp;
+﻿using VL.NewAudio.Dsp;
 using NUnit.Framework;
 
-namespace NewAudioTest.Dsp
+namespace VL.NewAudioTest.Dsp
 {
     [TestFixture]
     public class AudioChannelsTest

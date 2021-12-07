@@ -1,8 +1,8 @@
 ﻿using System.Threading;
 using NUnit.Framework;
-using NewAudio.Dispatcher;
+using VL.NewAudio.Dispatcher;
 
-namespace NewAudioTest.Dispatcher
+namespace VL.NewAudioTest.Dispatcher
 {
     [TestFixture]
     public class TestMessages

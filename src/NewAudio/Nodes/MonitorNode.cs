@@ -1,5 +1,5 @@
 ﻿using System;
-using NewAudio.Nodes;
+using VL.NewAudio.Nodes;
 using VL.Lang;
 using VL.Lib.Collections;
 using VL.NewAudio.Processor;
@@ -8,7 +8,18 @@ namespace VL.NewAudio.Nodes
 {
     public class MonitorNode: AudioProcessorNode<MonitorProcessor>
     {
-        public int BufferSize { get; set; }
+        private int _bufferSize;
+        public int BufferSize
+        {
+            get=>_bufferSize;
+            set
+            {
+                _bufferSize = value;
+                Processor.BufferSize = BufferSize*2;
+                _data = new float[BufferSize];
+            }
+        }
+
         private float[] _data = Array.Empty<float>();
         
         public Spread<float> Buffer { get; set; } = Spread<float>.Empty;
@@ -31,17 +42,6 @@ namespace VL.NewAudio.Nodes
                 ringBuffer.Read(_data, BufferSize);
                 Buffer = Spread.Create(_data);
             }
-        }
-
-        public override Message? Update(ulong mask)
-        {
-            if (HasChanged(nameof(BufferSize), mask))
-            {
-                Processor.BufferSize = BufferSize*2;
-                _data = new float[BufferSize];
-            }
-
-            return null;
         }
     }
 }

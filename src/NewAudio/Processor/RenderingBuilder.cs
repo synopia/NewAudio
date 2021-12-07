@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using VL.Model;
 
-namespace NewAudio.Processor
+namespace VL.NewAudio.Processor
 {
     using Node = AudioGraph.Node;
     using NodeId = AudioGraph.NodeId;
@@ -50,10 +50,12 @@ namespace NewAudio.Processor
         private Dictionary<int, int> _delays = new ();
         private int _totalLatency;
 
-        public RenderingBuilder(AudioGraph graph, RenderingProgram program)
+        public RenderingProgram Program => _program;
+
+        public RenderingBuilder(AudioGraph graph)
         {
             _graph = graph;
-            _program = program;
+            _program = new RenderingProgram();
             _orderedNodes = CreateOrderedNodeList(graph);
             _audioBuffers.Add(AssignedBuffer.CreateReadOnlyEmpty());
             

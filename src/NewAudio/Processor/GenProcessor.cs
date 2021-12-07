@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
-using NewAudio.Core;
-using NewAudio.Dsp;
+using VL.NewAudio.Core;
+using VL.NewAudio.Dsp;
 using VL.Lib.Mathematics;
 
-namespace NewAudio.Processor
+namespace VL.NewAudio.Processor
 {
     
     public abstract class GenProcessor: AudioProcessor

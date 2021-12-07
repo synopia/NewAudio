@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace NewAudio.Internal
+namespace VL.NewAudio.Internal
 {
     public class SafeDisposable : IDisposable
     {

@@ -1,7 +1,7 @@
-﻿using NewAudio.Core;
-using NewAudio.Dsp;
+﻿using VL.NewAudio.Core;
+using VL.NewAudio.Dsp;
 
-namespace NewAudio.Processor
+namespace VL.NewAudio.Processor
 {
     
     public abstract class MathProcessor: AudioProcessor

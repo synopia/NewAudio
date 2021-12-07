@@ -2,7 +2,7 @@
 using System.Buffers;
 using System.Runtime.InteropServices;
 
-namespace NewAudio.Dsp
+namespace VL.NewAudio.Dsp
 {
     public class RingBuffer
     {

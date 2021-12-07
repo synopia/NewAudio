@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace NewAudio.Internal
+namespace VL.NewAudio.Internal
 {
     public class Countdown
     {

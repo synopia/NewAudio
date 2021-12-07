@@ -1,10 +1,10 @@
 ﻿using System;
-using NewAudio.Dsp;
-using NewAudio.Processor;
+using VL.NewAudio.Dsp;
+using VL.NewAudio.Processor;
 using NUnit.Framework;
 using VL.NewAudio.Processor;
 
-namespace NewAudioTest.Processor
+namespace VL.NewAudioTest.Processor
 {
     [TestFixture]
     public class AudioGraphTest
@@ -47,8 +47,8 @@ namespace NewAudioTest.Processor
             var orderedNodeList = RenderingBuilder.CreateOrderedNodeList(g);
             Assert.AreEqual(new[]{gen,proc, output, monitor}, orderedNodeList.ToArray());
 
-            var program = new RenderingProgram();
-            var b = new RenderingBuilder(g, program);
+            var b = new RenderingBuilder(g);
+            var program = b.Program;
             var code = program.ToCode;
             Console.WriteLine(code);
             Assert.AreEqual(2, program.NumBuffersNeeded);

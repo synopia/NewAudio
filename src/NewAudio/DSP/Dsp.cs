@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NewAudio.Dsp
+namespace VL.NewAudio.Dsp
 {
     public static class Dsp
     {

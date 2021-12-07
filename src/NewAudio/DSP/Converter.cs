@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Xt;
 
-namespace NewAudio.Dsp
+namespace VL.NewAudio.Dsp
 {
     public interface ISampleType
     {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
-using NewAudio.Dsp;
+using VL.NewAudio.Dsp;
 using Serilog;
 
-namespace NewAudio.Processor
+namespace VL.NewAudio.Processor
 {
     public class AudioGraphIOProcessor: AudioProcessor
     {

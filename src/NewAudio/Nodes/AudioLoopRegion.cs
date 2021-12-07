@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks.Dataflow;
-using NewAudio.Core;
+using VL.NewAudio.Core;
 using VL.Lib.Animation;
 
-namespace NewAudio.Nodes
+namespace VL.NewAudio.Nodes
 {
     public class AudioLoopRegionParams : AudioParams
     {

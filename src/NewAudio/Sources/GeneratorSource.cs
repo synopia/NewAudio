@@ -1,0 +1,42 @@
+﻿using System;
+using VL.NewAudio.Dsp;
+using VL.NewAudio.Sources;
+
+namespace VL.NewAudio.Device
+{
+    public class GeneratorSource : AudioSourceNode
+    {
+        private float _phase;
+        private float _period;
+        private int _sampleRate;
+
+        public float Amplitude { get; set; } = 0.5f;
+        public float Frequency { get; set; } = 1000f;
+
+        public override void PrepareToPlay(int sampleRate, int framesPerBlockExpected)
+        {
+            _period = 1.0f / sampleRate;
+            _phase = 0;
+            _sampleRate = sampleRate;
+        }
+
+        public override void ReleaseResources()
+        {
+            
+        }
+
+        public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
+        {
+            var increase = Frequency * _period;
+            for (int i = 0; i < bufferToFill.NumFrames; i++)
+            {
+                float sample = Amplitude * AudioMath.SinF(_phase*AudioMath.TwoPi);
+                _phase = AudioMath.Fract(_phase + increase);
+                for (int ch = 0; ch < bufferToFill.Buffer.NumberOfChannels; ch++)
+                {
+                    bufferToFill.Buffer[ch, bufferToFill.StartFrame + i] = sample;
+                }
+            }
+        }
+    }
+}

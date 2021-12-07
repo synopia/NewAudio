@@ -2,28 +2,30 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using NewAudio.Processor;
+using VL.NewAudio.Processor;
 using VL.Lib.Basics.Resources;
-using NewAudio;
-using NewAudio.Nodes;
+using VL.NewAudio;
+using VL.NewAudio.Nodes;
 
-namespace NewAudio.Core
+namespace VL.NewAudio.Core
 {
     
     public class AudioLink : IDisposable
     {
-        public AudioGraph.Node Node { get; }
-        private int[] _channels = {0};
+        public AudioGraph.Node Node { get; private set; }
+        private AudioGraph.NodeAndChannel[] _channels;
 
-        public AudioLink(AudioGraph.Node node)
+        public void Create(AudioGraph.Node node)
         {
             Node = node;
+            _channels = new AudioGraph.NodeAndChannel[node.Processor.TotalNumberOfOutputChannels];
+            for (int i = 0; i < _channels.Length; i++)
+            {
+                _channels[i] = new AudioGraph.NodeAndChannel(node.NodeId, i);
+            }
         }
 
-        public IEnumerable<AudioGraph.NodeAndChannel> NodeAndChannels
-        {
-            get { return _channels.Select(ch => new AudioGraph.NodeAndChannel(Node.NodeId, ch)); }
-        }
+        public IEnumerable<AudioGraph.NodeAndChannel> NodeAndChannels => _channels;
 
         public void Dispose()
         {

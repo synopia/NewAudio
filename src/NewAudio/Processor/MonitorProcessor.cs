@@ -1,5 +1,6 @@
-﻿using NewAudio.Dsp;
-using NewAudio.Processor;
+﻿using System;
+using VL.NewAudio.Dsp;
+using VL.NewAudio.Processor;
 
 namespace VL.NewAudio.Processor
 {
@@ -13,7 +14,7 @@ namespace VL.NewAudio.Processor
         public MonitorProcessor()
         {
             SetChannels(1,0);
-            RingBuffers = new RingBuffer[1];
+            RingBuffers = Array.Empty<RingBuffer>();
         }
 
         public override bool IsBusStateSupported(AudioBusState layout)
@@ -34,7 +35,7 @@ namespace VL.NewAudio.Processor
         {
             for (int i = 0; i < TotalNumberOfInputChannels; i++)
             {
-                RingBuffers![i].Write(buffer[i].Span, buffer.NumberOfFrames);
+                RingBuffers[i].Write(buffer[i].Span, buffer.NumberOfFrames);
             }
         }
 

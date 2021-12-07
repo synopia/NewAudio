@@ -30,12 +30,6 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="FFTW.NET" Version="1.0.1" />
-        <PackageReference Include="NAudio" Version="2.0.1" />
-        <PackageReference Include="NAudio.Asio" Version="2.0.0" />
-        <PackageReference Include="NAudio.Core" Version="2.0.0" />
-        <PackageReference Include="NAudio.Midi" Version="2.0.1" />
-        <PackageReference Include="NAudio.Wasapi" Version="2.0.0" />
-        <PackageReference Include="NAudio.WinMM" Version="2.0.1" />
         <PackageReference Include="Serilog" Version="2.10.0" />
         <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />
@@ -46,54 +40,51 @@
         <PackageReference Include="System.Management" Version="6.0.0" />
         <PackageReference Include="System.Memory" Version="4.5.4" />
         <PackageReference Include="System.Reactive" Version="5.0.0" />
-        <PackageReference Include="System.Threading.Tasks.Dataflow" Version="6.0.0" />
         <PackageReference Include="Xt.Audio" Version="1.9.0" />
 
     </ItemGroup>
     <ItemGroup>
         <Reference Include="System.Collections.Immutable, Version=1.2.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-          <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0\lib\System.Collections.Immutable.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.1\lib\System.Collections.Immutable.dll</HintPath>
         </Reference>
         <Reference Include="System.Collections.Immutable, Version=1.2.4.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0\lib\System.Collections.Immutable.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.1\lib\System.Collections.Immutable.dll</HintPath>
         </Reference>
         <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0\lib\VL.Core.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.1\lib\VL.Core.dll</HintPath>
         </Reference>
         <Reference Include="VL.CoreLib, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0\lib\VL.CoreLib.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.1\lib\VL.CoreLib.dll</HintPath>
         </Reference>
         <Reference Include="VL.CoreLib.Windows, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0\lib\VL.CoreLib.Windows.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.1\lib\VL.CoreLib.Windows.dll</HintPath>
         </Reference>
         <Reference Include="VL.Lang, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0\lib\VL.Lang.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.1\lib\VL.Lang.dll</HintPath>
         </Reference>
         <Reference Include="VL.Lang.Roslyn, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0\lib\VL.Lang.Roslyn.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.1\lib\VL.Lang.Roslyn.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Remove="Nodes\AudioGenerator.cs" />
-        <Compile Remove="Nodes\AudioMathNodes.cs" />
-        <Compile Remove="Nodes\AudioEngine.cs" />
+        <Reference Include="r8bsrc.dll">
+            <HintPath>lib\net472\x64\r8bsrc.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
         <Compile Remove="Nodes\AudioChannels.cs" />
     </ItemGroup>
     <ItemGroup>
       <Compile Remove="Nodes\AudioResampling.cs" />
-      <Compile Remove="Nodes\AudioBufferOut.cs" />
       <Compile Remove="Nodes\AudioLoopRegion.cs" />
-      <Compile Remove="Nodes\AudioMixer.cs" />
-      <Compile Remove="Nodes\FFT.cs" />
-      <Compile Remove="Processor\OutputProcessor.cs" />
-      <Compile Remove="DSP\MixBuffers.cs" />
-      <Compile Remove="Internal\Decimator.cs" />
-      <Compile Remove="Backend\AudioService.cs" />
-      <Compile Remove="Backend\AudioState.cs" />
-      <Compile Remove="Backend\IAudioService.cs" />
     </ItemGroup>
     <ItemGroup>
-      <Folder Include="Core" />
+      <Content Include="..\..\lib\net472\x64\r8bsrc.dll">
+        <Link>x64\r8bsrc.dll</Link>
+      </Content>
+      <Content Include="..\..\lib\net472\x64\r8bsrc.lib">
+        <Link>x64\r8bsrc.lib</Link>
+      </Content>
     </ItemGroup>
    
 </Project>

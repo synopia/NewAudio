@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Serilog;
 
-namespace NewAudio.Dsp
+namespace VL.NewAudio.Dsp
 {
     public sealed unsafe class UnmanagedMemoryManager<T> : MemoryManager<T> where T : unmanaged
     {

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using NewAudio.Processor;
+using VL.NewAudio.Processor;
 
-namespace NewAudio.Dsp
+namespace VL.NewAudio.Dsp
 {
     public readonly struct AudioBusState : IEquatable<AudioBusState>
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace NewAudio.Dispatcher
+namespace VL.NewAudio.Dispatcher
 {
     public abstract class MessageListener
     {

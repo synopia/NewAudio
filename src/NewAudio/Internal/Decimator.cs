@@ -1,8 +1,8 @@
 using System;
 using Serilog;
-using static NewAudio.Dsp.AudioMath;
+using VL.NewAudio.Dsp;
 
-namespace NewAudio.Internal
+namespace VL.NewAudio.Internal
 {
     public class Decimator
     {
@@ -62,20 +62,20 @@ namespace NewAudio.Internal
             for (var i = 0; i < len; i++)
             {
                 var t = i - (len - 1) / 2.0f;
-                output[i] = 2 * cutoff * SinC(2 * cutoff * t);
+                output[i] = 2 * cutoff * AudioMath.SinC(2 * cutoff * t);
             }
         }
 
         public static void BlackmanHarrisWindow(float[] x)
         {
-            var factor = 2 * Pi / (x.Length - 1);
+            var factor = 2 * AudioMath.Pi / (x.Length - 1);
             for (var i = 0; i < x.Length; i++)
             {
                 x[i] *=
                     a0
-                    - a1 * CosF(1 * factor * i)
-                    + a2 * CosF(2 * factor * i)
-                    - a3 * CosF(3 * factor * i);
+                    - a1 * AudioMath.CosF(1 * factor * i)
+                    + a2 * AudioMath.CosF(2 * factor * i)
+                    - a3 * AudioMath.CosF(3 * factor * i);
             }
         }
     }

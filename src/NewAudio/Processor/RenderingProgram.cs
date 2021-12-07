@@ -2,9 +2,9 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
-using NewAudio.Dsp;
+using VL.NewAudio.Dsp;
 
-namespace NewAudio.Processor
+namespace VL.NewAudio.Processor
 {
     public class RenderingProgram
     {
@@ -69,10 +69,6 @@ namespace NewAudio.Processor
             CurrentInputBuffer = null;
         }
 
-        public void Reset()
-        {
-            
-        }
         public  void AddClearChannelOp(int index)
         {
             CreateOp($"clear({index})", (ctx)=>ctx.AudioBuffers[index].Span.Fill(0, ctx.NumFrames));

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace NewAudio.Dispatcher
+namespace VL.NewAudio.Dispatcher
 {
     public interface IChangeListener
     {

@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using NewAudio.Dsp;
+using VL.NewAudio.Dsp;
 using Serilog;
 using VL.Lib.Basics.Resources;
-using NewAudio;
+using VL.NewAudio;
 
-namespace NewAudio.Processor
+namespace VL.NewAudio.Processor
 {
  
     public abstract class AudioProcessor : IDisposable, IHasAudioBus
     {
-        protected ILogger Logger { get; private set; }
+        protected ILogger Logger = Resources.GetLogger<AudioProcessor>();
 
         public abstract string Name { get; }
         public AudioBusState Bus => BusConfig.CurrentState;
@@ -122,7 +122,6 @@ namespace NewAudio.Processor
 
         protected virtual void Dispose(bool disposing)
         {
-            Logger.Information("Dispose called for AudioBlock {This} ({Disposing})", Name, disposing);
             if (!_disposedValue)
             {
                 if (disposing)

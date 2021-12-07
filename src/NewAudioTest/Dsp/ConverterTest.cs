@@ -4,12 +4,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using FFTW.NET;
-using NewAudio.Dsp;
-using NewAudio.Internal;
+using VL.NewAudio.Dsp;
+using VL.NewAudio.Internal;
 using NUnit.Framework;
 using Xt;
 
-namespace NewAudioTest.Dsp
+namespace VL.NewAudioTest.Dsp
 {
     public class ConverterTestData
     {

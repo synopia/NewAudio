@@ -2,15 +2,17 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using NewAudio.Dispatcher;
-using NewAudio.Dsp;
+using VL.NewAudio.Dispatcher;
+using VL.NewAudio.Dsp;
 using VL.Lib.Basics.Resources;
 
-namespace NewAudio.Processor
+namespace VL.NewAudio.Processor
 {
     
     public class AudioGraph: AudioProcessor, IAsyncUpdater, IChangeBroadcaster
     {
+        public static AudioGraph CurrentGraph;
+        
         private static void UpdateOnMessageThread(IAsyncUpdater updater)
         {
             // if (Dispatcher.Dispatcher.Instance.IsThisDispatcherThread())
@@ -397,24 +399,22 @@ namespace NewAudio.Processor
         {
             lock (ProcessLock)
             {
-                // todo
+                _program = null;
             }
         }
 
         private void BuildRenderingSequence()
         {
             
-            var program = new RenderingProgram();
-            var b = new RenderingBuilder(this, program);
+            var builder = new RenderingBuilder(this);
             lock (ProcessLock)
             {
+                var program = builder.Program;
                 var currentFramesPerBlock = FramesPerBlock;
                 program.PrepareBuffers(currentFramesPerBlock);
                 
                 if (AnyNodesNeedPreparing())
                 {
-                    program.Reset();
-
                     foreach (var node in _nodes)
                     {
                         node.Prepare(SampleRate, currentFramesPerBlock, this);

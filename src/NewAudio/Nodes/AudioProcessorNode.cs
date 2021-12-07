@@ -1,15 +1,15 @@
 ﻿using System.Linq;
-using NewAudio.Core;
-using NewAudio.Processor;
+using VL.NewAudio.Core;
+using VL.NewAudio.Processor;
 using VL.Lang;
 
-namespace NewAudio.Nodes
+namespace VL.NewAudio.Nodes
 {
     public class AudioProcessorNode<TProcessor> : AudioNode where TProcessor: AudioProcessor
     {
         public readonly TProcessor Processor;
 
-        private AudioGraph.Node _node;
+        private AudioGraph.Node? _node;
         private AudioGraph _graph;
         private AudioLink? _input;
 
@@ -57,14 +57,16 @@ namespace NewAudio.Nodes
         public AudioProcessorNode(TProcessor processor)
         {
             Processor = processor;
-            _graph = Resources.GetAudioGraph().Resource;
+            _graph = AudioGraph.CurrentGraph;
+            Output = new();
             _node = _graph.AddNode(Processor)!;
-            Output = new(_node);
+            Output.Create(_node);
         }
 
-        public override Message? Update(ulong mask)
+        public override bool IsEnable
         {
-            return null;
+            get=>!(_node?.IsBypassed ?? true);
+            set => _node!.IsBypassed = !value;
         }
 
         public override bool IsEnabled => IsEnable;
@@ -77,7 +79,11 @@ namespace NewAudio.Nodes
             {
                 if (disposing)
                 {
-                    _graph.RemoveNode(_node);
+                    if (_node != null)
+                    {
+                        _graph.RemoveNode(_node);
+                    }
+
                     Processor.Dispose();
                 }
 
