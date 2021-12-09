@@ -86,6 +86,14 @@ namespace VL.NewAudio.Dsp
             return v;
         }
 
+        public static int Clamp(int x, int min, int max)
+        {
+            return x<min ? min: x>max ? max : x;
+        }
+        public static ulong Clamp(ulong x, ulong min, ulong max)
+        {
+            return x<min ? min: x>max ? max : x;
+        }
         public static float Clamp(float x, float min, float max)
         {
             return x < min ? min : x > max ? max : x;

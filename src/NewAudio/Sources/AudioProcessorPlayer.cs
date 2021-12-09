@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
 using VL.NewAudio.Processor;
 
-namespace VL.NewAudio.Device
+namespace VL.NewAudio.Sources
 {
     public class AudioProcessorPlayer: IAudioDeviceCallback, IDisposable
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using VL.NewAudio.Device;
+using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
 using VL.NewAudio.Sources;
 

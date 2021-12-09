@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
 using VL.NewAudio.Sources;
 
-namespace VL.NewAudio.Device
+namespace VL.NewAudio.Sources
 {
     public class ChannelRouterSource: AudioSourceNode
     {
@@ -13,6 +14,7 @@ namespace VL.NewAudio.Device
         private AudioBuffer _buffer = new ();
         private object _lock = new();
         private int _requiredChannels = 2;
+        public IAudioSource? Source { get; set; }
 
         public IEnumerable<int> InputMap
         {
@@ -57,7 +59,7 @@ namespace VL.NewAudio.Device
 
         public override void PrepareToPlay(int sampleRate, int framesPerBlockExpected)
         {
-            Input?.Source.PrepareToPlay(sampleRate, framesPerBlockExpected);
+            Source?.PrepareToPlay(sampleRate, framesPerBlockExpected);
         }
 
         public override void ReleaseResources()
@@ -117,7 +119,7 @@ namespace VL.NewAudio.Device
 
                 var remappedInfo = new AudioSourceChannelInfo(_buffer, 0, numFrames); 
                 
-                Input?.Source.GetNextAudioBlock(remappedInfo);
+                Source?.GetNextAudioBlock(remappedInfo);
                 
                 bufferToFill.ClearActiveBuffer();
                 for (int i = 0; i < _requiredChannels; i++)

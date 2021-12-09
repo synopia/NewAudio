@@ -1,8 +1,7 @@
-﻿using System;
+﻿using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
-using VL.NewAudio.Sources;
 
-namespace VL.NewAudio.Device
+namespace VL.NewAudio.Sources
 {
     public class GeneratorSource : AudioSourceNode
     {

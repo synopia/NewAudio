@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using VL.NewAudio;
-using VL.NewAudio.Device;
 using VL.NewAudio.Dsp;
 using Serilog;
+using VL.NewAudio.Core;
 
 namespace VL.NewAudio.Backend
 {

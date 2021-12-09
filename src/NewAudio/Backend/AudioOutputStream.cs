@@ -1,5 +1,5 @@
 ﻿using System;
-using VL.NewAudio.Device;
+using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
 using Xt;
 

@@ -1,14 +1,9 @@
 ﻿using System;
-using VL.Core;
-using VL.Lang.PublicAPI;
-using VL.Lib.Animation;
 using VL.NewAudio.Core;
-using VL.NewAudio.Device;
-using VL.NewAudio.Dsp;
+using VL.NewAudio.Nodes;
 using VL.NewAudio.Processor;
-using VL.NewAudio.Sources;
 
-namespace VL.NewAudio.Nodes
+namespace VL.NewAudio.Sources
 {
     public struct SampleIterator
     {
@@ -29,7 +24,6 @@ namespace VL.NewAudio.Nodes
         
         private int _sampleRate;
         private int _framesExpected;
-        private AudioBuffer _tempBuffer = new();
         private AudioGraph.Node? _outputNode;
         private AudioGraph.Node? _inputNode;
 
@@ -40,6 +34,7 @@ namespace VL.NewAudio.Nodes
 
         public AudioGraphRegion()
         {
+            _graph.SetChannels(2,2);
         }
 
         public override void PrepareToPlay(int sampleRate, int framesPerBlockExpected)
@@ -79,6 +74,7 @@ namespace VL.NewAudio.Nodes
                 _state = res.Item1;
                 // res.Item2;
                 
+                _output!.Input = res.Item2;
                 
                 AudioGraph.CurrentGraph = lastGraph;
                 return _graph;

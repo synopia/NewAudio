@@ -5,7 +5,7 @@ using VL.Lib;
 using VL.Lib.Collections;
 using Xt;
 
-namespace VL.NewAudio.Device
+namespace VL.NewAudio.Core
 {
     [Serializable]
     public class DeviceSelection : DynamicEnumBase<DeviceSelection, DeviceSelectionDefinition>

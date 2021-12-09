@@ -5,7 +5,7 @@ using VL.NewAudio.Dsp;
 using VL.NewAudio.Backend;
 using Xt;
 
-namespace VL.NewAudio.Device
+namespace VL.NewAudio.Core
 {
 
     public record AudioStreamConfig

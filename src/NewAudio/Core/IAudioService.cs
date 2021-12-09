@@ -4,19 +4,18 @@ using System.Reactive.Subjects;
 using VL.Lib.Basics.Resources;
 using Xt;
 
-namespace VL.NewAudio.Device
+namespace VL.NewAudio.Core
 {
     
 
     public interface IAudioService: IDisposable
     {
-        Subject<object> DevicesScanned { get; }
 
         void ScanForDevices();
         
         IEnumerable<DeviceName> GetDevices();
         DeviceName GetDefaultDevice(bool output);
 
-        IResourceHandle<IAudioDevice> OpenDevice(string deviceId);
+        IResourceHandle<IAudioDevice> OpenDevice(string deviceName);
     }
 }

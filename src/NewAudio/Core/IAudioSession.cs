@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Buffers;
-using VL.NewAudio.Device;
 using VL.NewAudio.Dsp;
 
-namespace VL.NewAudio.Device
+namespace VL.NewAudio.Core
 {
     public interface IAudioSession: IDisposable
     {

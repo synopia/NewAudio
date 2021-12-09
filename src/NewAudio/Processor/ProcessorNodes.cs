@@ -29,7 +29,7 @@ namespace VL.NewAudio.Processor
             yield return nodeFactory.NewProcessorNode(_ => new MultiplyProcessor(), category: category, name: "*",
                     hasAudioInput: true, hasAudioOutput: true, hasStateOutput: false)
                 .WithEnabledPins()
-                .AddInput(nameof(SineGenProcessor.Freq), x => x.Processor.Value, (x, v) => x.Processor.Value = v);
+                .AddInput(nameof(MultiplyProcessor.Value), x => x.Processor.Value, (x, v) => x.Processor.Value = v);
 
 
             yield return nodeFactory.NewNode(_ => new MonitorNode(), category: category, update: x => x.FillBuffer(),

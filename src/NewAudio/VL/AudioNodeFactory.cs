@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using VL.NewAudio.Nodes;
 using VL.NewAudio.Processor;
 using VL.Core;
 using VL.Core.Diagnostics;
-using VL.Lang;
-using VL.Lang.PublicAPI;
-using Message = VL.Lang.Message;
 
 namespace VL.NewAudio.Core
 {
@@ -156,7 +152,7 @@ namespace VL.NewAudio.Core
 
         public IReadOnlyList<IVLPinDescription> Outputs => _outputs;
 
-        public IEnumerable<VL.Core.Diagnostics.Message> Messages => Enumerable.Empty<VL.Core.Diagnostics.Message>();
+        public IEnumerable<Message> Messages => Enumerable.Empty<Message>();
 
         public string Summary => typeof(TInstance).GetSummary();
 
@@ -254,7 +250,7 @@ namespace VL.NewAudio.Core
         }
 
         public AudioNodeDesc<TInstance> AddInput<T>(string name, Func<TInstance, T> getter, Action<TInstance, T> setter,
-            string? summary = null, string? remarks = null, bool isVisible = true)
+            string? summary = null, string? remarks = null, bool isVisible = true )
         {
             _inputs.Add(new AudioPinDesc(name, typeof(T), summary, remarks)
             {

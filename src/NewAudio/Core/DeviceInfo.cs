@@ -1,6 +1,6 @@
 ﻿using Xt;
 
-namespace VL.NewAudio.Device
+namespace VL.NewAudio.Core
 {
     public enum SamplingFrequency
     {
@@ -19,23 +19,8 @@ namespace VL.NewAudio.Device
         Hz352800 = 352800
     }
     
-    public record DeviceName
+    public record DeviceName(string Name, XtSystem System, string Id, bool IsInput, bool IsOutput, bool IsDefault)
     {
-        public string Name { get; }
-        public XtSystem System { get; }
-        public string Id { get;  }
-        public bool IsInput { get; }
-        public bool IsOutput { get; }
-
-        public DeviceName(string name, XtSystem system, string id, bool isInput, bool isOutput)
-        {
-            Name = name;
-            System = system;
-            Id = id;
-            IsInput = isInput;
-            IsOutput = isOutput;
-        }
-
         public override string ToString()
         {
             var type = System switch

@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
-using VL.NewAudio;
-using VL.NewAudio.Device;
 using VL.NewAudio.Dsp;
 using Serilog;
+using VL.NewAudio.Core;
 using Xt;
 
 namespace VL.NewAudio.Backend

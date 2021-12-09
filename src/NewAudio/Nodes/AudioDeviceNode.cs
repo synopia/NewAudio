@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using VL.NewAudio.Processor;
 using VL.NewAudio.Core;
-using VL.NewAudio.Device;
-using VL.Lang;
 using VL.Lib.Basics.Resources;
 using Xt;
 
@@ -20,17 +16,17 @@ namespace VL.NewAudio.Nodes
     public class AudioDeviceNode : AudioNode
     {
         private SamplingFrequency[] _availableSamplingFrequencies = Array.Empty<SamplingFrequency>();
-        private DeviceSelection? _deviceSelection;
+        private string? _deviceSelection;
         private IResourceHandle<IAudioDevice>? _audioDevice;
         public IAudioDevice? AudioDevice => _audioDevice?.Resource;
 
         /// <summary>
-        /// The actual device
+        /// The name of the device to use
         /// </summary>
         /// <remarks>
         /// Select nothing (null) will disable the device.  
         /// </remarks>
-        public DeviceSelection? Device
+        public string? Device
         {
             get=>_deviceSelection;
             set
@@ -39,8 +35,8 @@ namespace VL.NewAudio.Nodes
                 _deviceSelection = value;
                 if (_deviceSelection != null)
                 {
-                    var name = (DeviceName)_deviceSelection.Tag;
-                    _audioDevice = AudioService.OpenDevice(name.Id);
+                    
+                    _audioDevice = AudioService.OpenDevice(_deviceSelection);
                     if (AudioDevice != null)
                     {
                         _availableSamplingFrequencies =

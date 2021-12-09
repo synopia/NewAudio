@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using VL.NewAudio.Device;
 using VL.NewAudio.Dsp;
-using VL.Lang;
+using VL.NewAudio.Core;
 
 namespace VL.NewAudio.Nodes
 {

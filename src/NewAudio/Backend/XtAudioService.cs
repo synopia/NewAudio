@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Subjects;
 using Serilog;
-using VL.Core;
-using VL.Lang;
-using VL.Lang.PublicAPI;
 using VL.Lib.Basics.Resources;
-using VL.NewAudio.Device;
+using VL.NewAudio.Core;
 using VL.NewAudio.Internal;
 using Xt;
 
@@ -18,7 +14,7 @@ namespace VL.NewAudio.Backend
         private readonly ILogger _logger = Resources.GetLogger<XtAudioService>();
         private readonly XtPlatform _platform;
 
-        public Subject<object> DevicesScanned { get; } = new();
+         
         private readonly List<DeviceName> _defaultDevices = new();
         private readonly List<DeviceName> _deviceSelections = new();
         private readonly Dictionary<string, DeviceCaps> _deviceCaps = new();
@@ -27,16 +23,11 @@ namespace VL.NewAudio.Backend
 
         public XtAudioService()
         {
+            
             _platform = XtAudio.Init("NewAudio", IntPtr.Zero);
             XtAudio.SetOnError(OnError);
             _logger.Information("==============================================");
             _logger.Information("Starting AudioService");
-            ScanForDevices();
-            _logger.Information("{Devices} devices found", _deviceCaps.Count);
-            foreach (var service in _services)
-            {
-                _logger.Information("{System}: {Count} devices", service.Key, _deviceCaps.Count(c=>c.Value.System==service.Key));
-            }
         }
 
         private void OnError(string message)
@@ -82,14 +73,14 @@ namespace VL.NewAudio.Backend
             return GetDefaultInputDevices().First();
         }
 
-        public IResourceHandle<IAudioDevice> OpenDevice(string deviceId)
+        public IResourceHandle<IAudioDevice> OpenDevice(string deviceName)
         {
-            if (!_deviceCaps.ContainsKey(deviceId))
+            if (!_deviceCaps.ContainsKey(deviceName))
             {
-                throw new InvalidOperationException($"Device {deviceId} not found!");
+                throw new InvalidOperationException($"Device {deviceName} not found!");
             }
 
-            return ResourceProvider.NewPooledSystemWide(deviceId, (id) =>
+            return ResourceProvider.NewPooledSystemWide(deviceName, (id) =>
             {
                 _logger.Information("Create audio device {Id}", id);
                 var caps = _deviceCaps[id];
@@ -122,9 +113,10 @@ namespace VL.NewAudio.Backend
 
                         var deviceId = id;
                         var deviceName = new DeviceName(list.GetName(id), system, deviceId,
-                            (caps & XtDeviceCaps.Input) != 0, (caps & XtDeviceCaps.Output) != 0
+                            (caps & XtDeviceCaps.Input) != 0, (caps & XtDeviceCaps.Output) != 0,
+                            id == outputDefault || id == inputDefault
                         );
-                        _deviceCaps[deviceId] = new DeviceCaps(deviceName)
+                        _deviceCaps[deviceName.Name] = new DeviceCaps(deviceName)
                         {
                             Caps = caps,
                             System = system,
@@ -153,6 +145,12 @@ namespace VL.NewAudio.Backend
             foreach (var device in GetDevices())
             {
                 DeviceSelectionDefinition.Instance.AddEntry(device.ToString(), device);
+            }
+
+            _logger.Information("{Devices} devices found", _deviceCaps.Count);
+            foreach (var service in _services)
+            {
+                _logger.Information("{System}: {Count} devices", service.Key, _deviceCaps.Count(c=>c.Value.System==service.Key));
             }
         }
         public IEnumerable<DeviceName> GetInputDevices()

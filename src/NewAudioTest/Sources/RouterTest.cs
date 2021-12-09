@@ -1,6 +1,5 @@
-﻿using System;
-using NUnit.Framework;
-using VL.NewAudio.Device;
+﻿using NUnit.Framework;
+using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
 using VL.NewAudio.Sources;
 
@@ -24,7 +23,7 @@ namespace VL.NewAudioTest.Sources
             sine1.PrepareToPlay(44100, 1024);
 
             var router = new ChannelRouterSource();
-            router.Input = sine1.Output;
+            router.Source = sine1;
             router.InputMap = new[] {0, 1};
             router.OutputMap = new[] {0, 1};
 
@@ -52,7 +51,7 @@ namespace VL.NewAudioTest.Sources
 
             var router = new ChannelRouterSource();
             router.NumberOfChannelsToProduce = 2;
-            router.Input = sine1.Output;
+            router.Source = sine1;
             router.InputMap = new[] { 0, 1 };
             router.OutputMap =new[] { 2, 3 };
 

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using VL.NewAudio;
-using VL.NewAudio.Device;
 using Serilog;
+using VL.NewAudio.Core;
 using Xt;
 
 namespace VL.NewAudio.Backend

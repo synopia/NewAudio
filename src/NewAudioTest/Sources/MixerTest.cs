@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using VL.NewAudio.Device;
+using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
 using VL.NewAudio.Sources;
 
@@ -23,7 +23,7 @@ namespace VL.NewAudioTest.Sources
             var phase = SineGenTest.AssertSine(0, 2,724,1000,1,info.Buffer);
             
             var mixer = new MixerSource();
-            mixer.Inputs = new[] { sine1.Output };
+            mixer.Sources = new[] { sine1 };
             info.ClearActiveBuffer();
             mixer.GetNextAudioBlock(info);
             phase = SineGenTest.AssertSine(phase, 2,724,1000,1,info.Buffer);
@@ -45,7 +45,7 @@ namespace VL.NewAudioTest.Sources
             var buf = new AudioBuffer(2, 724);
             var info = new AudioSourceChannelInfo(buf, 0, 724);
             var mixer = new MixerSource();
-            mixer.Inputs = new[] { sine1.Output, sine2.Output };
+            mixer.Sources = new[] { sine1, sine2 };
             
             mixer.GetNextAudioBlock(info);
             var phase = SineGenTest.AssertSine(0, 2,724,1000,2,info.Buffer);

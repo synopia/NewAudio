@@ -5,7 +5,7 @@ using VL.NewAudio.Dispatcher;
 using VL.NewAudio.Dsp;
 using Xt;
 
-namespace VL.NewAudio.Device
+namespace VL.NewAudio.Core
 {
     public interface IAudioControl : IChangeBroadcaster, IDisposable
     {

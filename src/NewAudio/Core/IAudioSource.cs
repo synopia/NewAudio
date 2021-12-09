@@ -1,6 +1,6 @@
 ﻿using VL.NewAudio.Dsp;
 
-namespace VL.NewAudio.Sources
+namespace VL.NewAudio.Core
 {
     public struct AudioSourceChannelInfo
     {

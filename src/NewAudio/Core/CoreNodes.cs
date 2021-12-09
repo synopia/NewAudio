@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using VL.Core;
-using VL.NewAudio.Device;
 using VL.NewAudio.Nodes;
 
 namespace VL.NewAudio.Core
@@ -11,9 +10,19 @@ namespace VL.NewAudio.Core
         {
             var category = "NewAudio.Devices";
 
+            yield return nodeFactory.NewNode(ctor: _ => new ListDevices(), category: category, copyOnWrite:true)
+                .AddInput(nameof(ListDevices.Input), x => x.Input, (x, v) => x.Input = v)
+                .AddInput(nameof(ListDevices.Output), x => x.Output, (x, v) => x.Output = v)
+                .AddInput(nameof(ListDevices.Asio), x => x.Asio, (x, v) => x.Asio = v)
+                .AddInput(nameof(ListDevices.Wasapi), x => x.Wasapi, (x, v) => x.Wasapi = v)
+                .AddInput(nameof(ListDevices.DirectSound), x => x.DirectSound, (x, v) => x.DirectSound = v)
+                .AddOutput(nameof(ListDevices.Default), x => x.Default)
+                .AddOutput(nameof(ListDevices.Devices), x => x.Devices);
+                ;
             yield return nodeFactory.NewAudioNode(ctor: ctx => new AudioDeviceNode(), category: category,
                     name: "AudioDevice", hasStateOutput: false)
                 .AddInput(nameof(AudioDeviceNode.Device), x => x.Device, (x, v) => x.Device = v, defaultValue: default)
+                .AddOutput(nameof(AudioDeviceNode.AudioDevice), x => x.AudioDevice)
                 .AddOutput(nameof(AudioDeviceNode.Name), x => x.Name)
                 .AddOutput(nameof(AudioDeviceNode.System), x => x.System)
                 .AddOutput(nameof(AudioDeviceNode.AvailableInputChannels), x => x.AvailableInputChannels)
@@ -23,8 +32,8 @@ namespace VL.NewAudio.Core
                 .AddOutput(nameof(AudioDeviceNode.MinBufferSizeMs), x => x.MinBufferSizeMs)
                 .AddOutput(nameof(AudioDeviceNode.MaxBufferSizeMs), x => x.MaxBufferSizeMs)
                 .AddOutput(nameof(AudioDeviceNode.InputChannelNames), x => x.InputChannelNames)
-                .AddOutput(nameof(AudioDeviceNode.OutputChannelNames), x => x.OutputChannelNames)
-                .AddOutput(nameof(AudioDeviceNode.AudioDevice), x => x.AudioDevice);
+                .AddOutput(nameof(AudioDeviceNode.OutputChannelNames), x => x.OutputChannelNames);
+                
 
             yield return nodeFactory.NewAudioNode(_ => new AudioStreamNode(), category: category, name: "AudioStream",
                     hasStateOutput: false)

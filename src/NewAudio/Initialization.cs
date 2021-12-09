@@ -1,25 +1,19 @@
 ﻿using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading;
-using VL.NewAudio.Processor;
-using VL.NewAudio.Core;
-using VL.NewAudio.Device;
-using VL.NewAudio.Nodes;
 using Serilog;
 using Serilog.Formatting.Display;
 using VL.Core;
 using VL.Core.CompilerServices;
-using VL.Lang.Platforms;
-using VL.Lang.Symbols;
 using VL.Lib.Basics.Resources;
-using VL.Model;
+using VL.NewAudio;
 using VL.NewAudio.Backend;
-using VL.NewAudio.Nodes;
+using VL.NewAudio.Core;
+using VL.NewAudio.Processor;
+using VL.NewAudio.Sources;
 using Xt;
 
-[assembly: AssemblyInitializer(typeof(VL.NewAudio.Initialization))]
+[assembly: AssemblyInitializer(typeof(Initialization))]
 
 namespace VL.NewAudio
 {
@@ -44,7 +38,6 @@ namespace VL.NewAudio
             _audioService = new AudioServiceThread(_logger, ResourceProvider.New(()=>platform.Invoke()));
             _audioGraph = graph ?? new AudioGraph();
         }*/
-
         public static ILogger GetLogger<T>()
         {
             return _logger ??= new LoggerConfiguration()
@@ -78,16 +71,23 @@ namespace VL.NewAudio
     {
         protected override void RegisterServices(IVLFactory factory)
         {
-            factory.RegisterNodeFactory(NodeBuilding.NewNodeFactory(factory, "NewAudio.Factory", f => NodeBuilding.NewFactoryImpl(
-                    
-                CoreNodes.GetNodeDescriptions(f).Concat(ProcessorNodes.GetNodeDescriptions(f))
-                    .Concat(SourceNodes.GetNodeDescriptions(f)).ToImmutableArray())));
+            factory.RegisterNodeFactory(
+                NodeBuilding.NewNodeFactory(factory, "NewAudio.Factory", f => NodeBuilding.NewFactoryImpl(
+                    CoreNodes.GetNodeDescriptions(f)
+                        .Concat(ProcessorNodes.GetNodeDescriptions(f))
+                        .Concat(SourceNodes.GetNodeDescriptions(f)).ToImmutableArray())
+                ));
 
-            
+
             factory.RegisterService<NodeContext, IResourceProvider<IAudioService>>(context =>
             {
                 return ResourceProvider.NewPooledSystemWide("IAudioService",
-                    _ => new XtAudioService(), 0).Finally(a => { a.Dispose(); });
+                    _ =>
+                    {
+                        var service = new XtAudioService();
+                        service.ScanForDevices();
+                        return service;
+                    }, 0).Finally(a => { a.Dispose(); });
             });
 
             factory.RegisterService<NodeContext, IResourceProvider<AudioGraph>>(context =>

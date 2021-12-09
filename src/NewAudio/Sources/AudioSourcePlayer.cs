@@ -1,29 +1,40 @@
 ﻿using System;
 using System.Diagnostics;
-using VL.NewAudio.Device;
+using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
-using VL.NewAudio.Sources;
 
-namespace VL.NewAudio.Device
+namespace VL.NewAudio.Sources
 {
     public class AudioSourcePlayer: IAudioDeviceCallback, IDisposable
     {
-        private AudioConnection? _input;
-        public AudioConnection? Input
-        {
-            get => _input;
-            set
-            {
-                _input = value;
-                SetSource(_input?.Source);
-            }
-        }
-
-
         public float Gain { get; set; } = 1.0f;
 
         private readonly object _readLock = new();
         private IAudioSource? _source;
+        public IAudioSource? Source
+        {
+            get=>_source;
+            set
+            {
+                if (_source != value)
+                {
+                    var oldSource = _source;
+                
+                    if (value != null && _framesPerBlock > 0 && _sampleRate > 0)
+                    {
+                        value.PrepareToPlay(_sampleRate, _framesPerBlock);
+                    }
+
+                    lock (_readLock)
+                    {
+                        _source = value;
+                    }
+
+                    oldSource?.ReleaseResources();
+                }
+            }
+        }
+
         private int _sampleRate;
         private int _framesPerBlock;
         private readonly AudioBuffer _tempBuffer = new();
@@ -43,11 +54,11 @@ namespace VL.NewAudio.Device
                 var totalOutputs = output.NumberOfChannels;
                 _tempBuffer.Merge(input, output, totalInputs, totalOutputs);
 
-                if (_source != null)
+                if (Source != null)
                 {
 
                     var info = new AudioSourceChannelInfo(_tempBuffer, 0, numFrames);
-                    _source.GetNextAudioBlock(info);
+                    Source.GetNextAudioBlock(info);
                     
                     for (int i = info.Buffer.NumberOfChannels; --i >= 0;)
                     {
@@ -74,7 +85,7 @@ namespace VL.NewAudio.Device
 
         public void AudioDeviceStopped()
         {
-            _source?.ReleaseResources();
+            Source?.ReleaseResources();
 
             _sampleRate = 0;
             _framesPerBlock = 0;
@@ -91,7 +102,7 @@ namespace VL.NewAudio.Device
             _sampleRate = sampleRate;
             _framesPerBlock = framesPerBlock;
 
-            _source?.PrepareToPlay(sampleRate, framesPerBlock);
+            Source?.PrepareToPlay(sampleRate, framesPerBlock);
         }
         
         public void Dispose()
@@ -105,31 +116,12 @@ namespace VL.NewAudio.Device
             {
                 if (disposing)
                 {
-                    SetSource(null);
+                    Source=null;
                 }
 
                 _disposedValue = true;
             }
         }
 
-        public void SetSource(IAudioSource? source)
-        {
-            if (_source != source)
-            {
-                var oldSource = _source;
-                
-                if (source != null && _framesPerBlock > 0 && _sampleRate > 0)
-                {
-                    source.PrepareToPlay(_sampleRate, _framesPerBlock);
-                }
-
-                lock (_readLock)
-                {
-                    _source = source;
-                }
-
-                oldSource?.ReleaseResources();
-            }
-        }
     }
 }

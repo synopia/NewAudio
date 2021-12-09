@@ -1,16 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Windows.Forms;
-using VL.NewAudio;
-using VL.NewAudio.Core;
-using VL.NewAudio.Device;
-using VL.NewAudio.Nodes;
-using VL.NewAudio.Processor;
-using VL.Lang;
+﻿using System.Collections.Generic;
 using VL.NewAudio.Backend;
-using Message = VL.Lang.Message;
+using VL.NewAudio.Core;
 
 namespace VL.NewAudio.Nodes
 {

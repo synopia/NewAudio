@@ -1,6 +1,6 @@
 ﻿using System;
 using Serilog;
-using VL.NewAudio.Device;
+using VL.NewAudio.Core;
 
 namespace VL.NewAudio.Nodes
 {

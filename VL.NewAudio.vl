@@ -174,6 +174,102 @@
           <ProcessDefinition Id="NcjCVfgTtoiQC8VeGeTOuj" IsHidden="true" />
         </Patch>
       </Node>
+      <!--
+
+    ************************ InputDeviceSelection ************************
+
+-->
+      <Node Name="InputDeviceSelection" Bounds="873,537" Id="HCCvsawKFudL3jgGJ0RxNj">
+        <p:NodeReference>
+          <Choice Kind="ForwardRecordDefinition" Name="Immutable Forward" />
+          <FullNameCategoryReference ID="Primitive" />
+        </p:NodeReference>
+        <p:TypeAnnotation LastCategoryFullName="VL.NewAudio.Device" LastSymbolSource="VL.NewAudio.dll">
+          <Choice Kind="TypeFlag" Name="InputDeviceSelection" />
+        </p:TypeAnnotation>
+        <Patch Id="LIbM9RRyfySM1NmjItI0Om">
+          <Canvas Id="RjNbtQoKrbjNk6bj23PHOx" CanvasType="Group" />
+          <ProcessDefinition Id="Gah4EDzUxaKPTCCMsKtydt" IsHidden="true" />
+        </Patch>
+      </Node>
+      <!--
+
+    ************************ DeviceName ************************
+
+-->
+      <Node Name="DeviceName" Bounds="657,653" Id="PC1Gv8v5r2YPlragwoTj5c">
+        <p:NodeReference>
+          <Choice Kind="ForwardRecordDefinition" Name="Immutable Forward" />
+          <FullNameCategoryReference ID="Primitive" />
+        </p:NodeReference>
+        <p:TypeAnnotation LastCategoryFullName="VL.NewAudio.Device" LastSymbolSource="VL.NewAudio.dll">
+          <Choice Kind="TypeFlag" Name="DeviceName" />
+        </p:TypeAnnotation>
+        <Patch Id="RrMcHaF2ziZMbR68bAHjbE">
+          <Canvas Id="QBh9ZwBfbxgOGfIWFTm7l0" CanvasType="Group" />
+          <ProcessDefinition Id="UsLyAjakItpPm0VB89zxIZ" IsHidden="true" />
+        </Patch>
+      </Node>
+      <!--
+
+    ************************ Mixer ************************
+
+-->
+      <Node Name="Mixer" Bounds="479,577" Id="AUcuMxRNInvNfoVFawozay">
+        <p:NodeReference>
+          <Choice Kind="ContainerDefinition" Name="Process" />
+          <FullNameCategoryReference ID="Primitive" />
+        </p:NodeReference>
+        <Patch Id="Dlt6jL4ydrcPXcoFcoPDQs">
+          <Canvas Id="SXi759cqv1hPFiD7EE3ohr" CanvasType="Group">
+            <Node Bounds="514,434,42,19" Id="I8WxFvGu5nlNFPyamhZHJp">
+              <p:NodeReference LastCategoryFullName="NewAudio.Sources" LastSymbolSource="NewAudio.Factory">
+                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                <CategoryReference Kind="Category" Name="NewAudio" />
+                <CategoryReference Kind="Category" Name="Sources" />
+                <Choice Kind="ProcessNode" Name="Mixer" />
+              </p:NodeReference>
+              <Pin Id="FwdkfnklhDSP2iTpiFQn2u" Name="Sources" Kind="InputPin" />
+              <Pin Id="Ol1dQyxuf1OO0PTwBFdYAT" Name="Output" Kind="OutputPin" />
+            </Node>
+            <ControlPoint Id="BCF4nwaLLhcLUbSy5Cxu1t" Bounds="500,240" />
+            <Node Bounds="483,361" Id="KOX3mzBTw3YQba6RKBwU4J">
+              <p:NodeReference LastCategoryFullName="Collections.Mutable.MutableArray" LastSymbolSource="VL.Collections.vl">
+                <Choice Kind="NodeFlag" Name="Node" Fixed="true" />
+                <CategoryReference Kind="ArrayType" Name="MutableArray" />
+                <Choice Kind="OperationCallFlag" Name="FromSequence" />
+              </p:NodeReference>
+              <Pin Id="BZ8BzyoAj2qP0aO427yDl0" Name="Input" Kind="StateInputPin" />
+              <Pin Id="N7DOoHZ3uGcN6HrbW7VGQ9" Name="Result" Kind="OutputPin" />
+            </Node>
+          </Canvas>
+          <Patch Id="Koa3i6j6EhgOMam30drRU8" Name="Create" />
+          <Patch Id="Ps2Yt7GmIhdM0nQwTdA3Nq" Name="Update">
+            <Pin Id="VJxfljTDgFaM8fj31RlGQu" Name="Input" Kind="InputPin" IsPinGroup="true">
+              <p:TypeAnnotation>
+                <Choice Kind="TypeFlag" Name="Spread" />
+                <p:TypeArguments>
+                  <TypeReference>
+                    <Choice Kind="TypeFlag" Name="IAudioSource" />
+                  </TypeReference>
+                </p:TypeArguments>
+              </p:TypeAnnotation>
+            </Pin>
+          </Patch>
+          <!--
+
+    ************************  ************************
+
+-->
+          <ProcessDefinition Id="U3dng7IDx50LLEwirthrGb">
+            <Fragment Id="SrHJ4DP6zmNLohQak5bIgK" Patch="Koa3i6j6EhgOMam30drRU8" Enabled="true" />
+            <Fragment Id="O3RpZgc1f5qLa9hoxf7HsL" Patch="Ps2Yt7GmIhdM0nQwTdA3Nq" Enabled="true" />
+          </ProcessDefinition>
+          <Link Id="Mx41rAqONjsPbKrmNMIpJz" Ids="VJxfljTDgFaM8fj31RlGQu,BCF4nwaLLhcLUbSy5Cxu1t" IsHidden="true" />
+          <Link Id="Jm11KUrmckeM8zEqTMfg2V" Ids="BCF4nwaLLhcLUbSy5Cxu1t,BZ8BzyoAj2qP0aO427yDl0" />
+          <Link Id="KtCCAqLlDD2NON3KofdZxb" Ids="N7DOoHZ3uGcN6HrbW7VGQ9,FwdkfnklhDSP2iTpiFQn2u" />
+        </Patch>
+      </Node>
     </Canvas>
     <!--
 
