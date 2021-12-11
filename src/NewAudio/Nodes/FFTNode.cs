@@ -17,29 +17,31 @@ namespace VL.NewAudio.Nodes
         private float[]? _data;
         private bool _disposedValue;
         public AudioMath.WindowFunction WindowFunction { get; set; } = AudioMath.WindowFunction.None;
-        
+
         public int FftSize
         {
             get => _fftSize;
             set
             {
                 var newSize = (int)AudioMath.UpperPow2((uint)value);
-                if (newSize!=_fftSize)
+                if (newSize != _fftSize)
                 {
                     _fftSize = newSize;
                     if (_data != null)
                     {
                         ArrayPool<float>.Shared.Return(_data);
                     }
+
                     _data = ArrayPool<float>.Shared.Rent(_fftSize);
                     Processor.BufferSize = _fftSize * 2;
                 }
             }
         }
+
         public Spread<float> Buffer { get; set; } = Spread<float>.Empty;
 
         public override bool IsEnabled => IsEnable;
-        
+
         public FftNode(bool forward) : base(new MonitorProcessor())
         {
             _fft = forward ? new ForwardFft() : new BackwardFft();
@@ -51,6 +53,7 @@ namespace VL.NewAudio.Nodes
             {
                 return;
             }
+
             var ringBuffer = Processor.RingBuffers[0];
             if (ringBuffer.AvailableRead >= _fftSize)
             {
@@ -58,7 +61,7 @@ namespace VL.NewAudio.Nodes
                 Task.Run(() =>
                 {
                     _fft.DoFft(_data!, _fftSize, WindowFunction);
-                    Buffer = Spread.Create(_data);                    
+                    Buffer = Spread.Create(_data);
                 });
             }
         }
@@ -81,7 +84,5 @@ namespace VL.NewAudio.Nodes
 
             base.Dispose(disposing);
         }
-        
-        
     }
 }

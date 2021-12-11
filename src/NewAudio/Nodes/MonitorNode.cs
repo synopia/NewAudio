@@ -6,27 +6,27 @@ using VL.NewAudio.Processor;
 
 namespace VL.NewAudio.Nodes
 {
-    public class MonitorNode: AudioProcessorNode<MonitorProcessor>
+    public class MonitorNode : AudioProcessorNode<MonitorProcessor>
     {
         private int _bufferSize;
+
         public int BufferSize
         {
-            get=>_bufferSize;
+            get => _bufferSize;
             set
             {
                 _bufferSize = value;
-                Processor.BufferSize = BufferSize*2;
+                Processor.BufferSize = BufferSize * 2;
                 _data = new float[BufferSize];
             }
         }
 
         private float[] _data = Array.Empty<float>();
-        
+
         public Spread<float> Buffer { get; set; } = Spread<float>.Empty;
 
         public MonitorNode() : base(new MonitorProcessor())
         {
-            
         }
 
         public void FillBuffer()

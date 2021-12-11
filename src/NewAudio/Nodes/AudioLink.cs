@@ -9,7 +9,6 @@ using VL.NewAudio.Nodes;
 
 namespace VL.NewAudio.Nodes
 {
-    
     public class AudioLink : IDisposable
     {
         public AudioGraph.Node Node { get; private set; }
@@ -19,7 +18,7 @@ namespace VL.NewAudio.Nodes
         {
             Node = node;
             _channels = new AudioGraph.NodeAndChannel[node.Processor.TotalNumberOfOutputChannels];
-            for (int i = 0; i < _channels.Length; i++)
+            for (var i = 0; i < _channels.Length; i++)
             {
                 _channels[i] = new AudioGraph.NodeAndChannel(node.NodeId, i);
             }

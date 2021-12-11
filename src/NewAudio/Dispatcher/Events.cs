@@ -10,12 +10,13 @@ namespace VL.NewAudio.Dispatcher
         void HandleUpdateNow();
         bool IsUpdatePending();
         void HandleAsyncUpdate();
-
     }
+
     public class AsyncUpdaterMessage : CallbackMessage
     {
         private readonly AsyncUpdater _owner;
         internal int ShouldDeliver;
+
         public AsyncUpdaterMessage(AsyncUpdater owner)
         {
             _owner = owner;
@@ -30,9 +31,11 @@ namespace VL.NewAudio.Dispatcher
             }
         }
     }
-    public abstract class AsyncUpdater: IAsyncUpdater
+
+    public abstract class AsyncUpdater : IAsyncUpdater
     {
         private AsyncUpdaterMessage _message;
+
         protected AsyncUpdater()
         {
             _message = new AsyncUpdaterMessage(this);
@@ -48,7 +51,6 @@ namespace VL.NewAudio.Dispatcher
                     CancelPendingUpdate();
                 }
             }
-            
         }
 
         public void CancelPendingUpdate()
@@ -70,7 +72,6 @@ namespace VL.NewAudio.Dispatcher
         }
 
         public abstract void HandleAsyncUpdate();
-
     }
 
     public class AsyncUpdateSupport : AsyncUpdater

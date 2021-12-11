@@ -16,15 +16,16 @@ namespace VL.NewAudio.Sources
         private float[]? _data;
 
         private IAudioSource? _source;
+
         public IAudioSource? Source
         {
-            get=>_source;
+            get => _source;
             set
             {
                 if (_source != value)
                 {
                     var oldSource = _source;
-                
+
                     if (value != null && _framesPerBlock > 0 && _sampleRate > 0)
                     {
                         value.PrepareToPlay(_sampleRate, _framesPerBlock);
@@ -51,6 +52,7 @@ namespace VL.NewAudio.Sources
                 {
                     return;
                 }
+
                 lock (_readLock)
                 {
                     _bufferSize = value;
@@ -60,14 +62,14 @@ namespace VL.NewAudio.Sources
         }
 
         protected abstract void OnDataReady(float[] data);
-        
+
         public void FillBuffer()
         {
             if (_ringBuffer == null || _data == null)
             {
                 return;
             }
-            
+
             if (_ringBuffer.AvailableRead >= BufferSize)
             {
                 lock (_readLock)
@@ -84,7 +86,7 @@ namespace VL.NewAudio.Sources
             {
                 ArrayPool<float>.Shared.Return(_data);
             }
-            
+
             base.Dispose(disposing);
         }
 
@@ -109,6 +111,7 @@ namespace VL.NewAudio.Sources
             {
                 ArrayPool<float>.Shared.Return(_data);
             }
+
             _data = ArrayPool<float>.Shared.Rent(_bufferSize);
             _ringBuffer = new RingBuffer(_bufferSize * 2);
         }
@@ -123,10 +126,10 @@ namespace VL.NewAudio.Sources
                 }
                 // else
                 // {
-                    // bufferToFill.ClearActiveBuffer();
+                // bufferToFill.ClearActiveBuffer();
                 // }
 
-                if (bufferToFill.Buffer.NumberOfChannels > 0 && _ringBuffer!=null)
+                if (bufferToFill.Buffer.NumberOfChannels > 0 && _ringBuffer != null)
                 {
                     Overflow = _ringBuffer
                         .Write(bufferToFill.Buffer[0].Slice(bufferToFill.StartFrame, bufferToFill.NumFrames).Span,

@@ -11,8 +11,10 @@ namespace VL.NewAudio.Internal
         {
             _value = value;
         }
-        
-        public void Signal() {}
+
+        public void Signal()
+        {
+        }
 
         public void AddCount(int amount)
         {
@@ -30,7 +32,7 @@ namespace VL.NewAudio.Internal
         {
             lock (_locker)
             {
-                while (_value>0)
+                while (_value > 0)
                 {
                     Monitor.Wait(_locker);
                 }

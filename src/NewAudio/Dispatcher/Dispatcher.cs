@@ -5,14 +5,15 @@ using System.Threading;
 
 namespace VL.NewAudio.Dispatcher
 {
-    public class Dispatcher: IDisposable
+    public class Dispatcher : IDisposable
     {
         public static Dispatcher Instance { get; private set; }
 
         public static void NeedToBeLocked()
         {
-            Trace.Assert(Instance!=null && Instance.CurrentThreadHasLockedMessageManager());
+            Trace.Assert(Instance != null && Instance.CurrentThreadHasLockedMessageManager());
         }
+
         public abstract class BaseMessage : IDisposable
         {
             public abstract void MessageCallback();
@@ -42,8 +43,8 @@ namespace VL.NewAudio.Dispatcher
             }
         }
 
-        private CancellationTokenSource _cts = new ();
-        private ConcurrentQueue<BaseMessage> _messageQueue = new ();
+        private CancellationTokenSource _cts = new();
+        private ConcurrentQueue<BaseMessage> _messageQueue = new();
         public CancellationToken ActiveToken;
         private Thread _thread;
         private AutoResetEvent _readyEvent = new(false);
@@ -61,7 +62,7 @@ namespace VL.NewAudio.Dispatcher
             var id = Thread.CurrentThread.ManagedThreadId;
             return id == _dispatcherThreadId; /* || id */
         }
-        
+
         private void StartThread()
         {
             _thread = new Thread(DispatcherLoop);
@@ -72,8 +73,8 @@ namespace VL.NewAudio.Dispatcher
 
             _readyEvent.WaitOne(2000);
         }
-        
-        
+
+
         public bool IsThisDispatcherThread()
         {
             return Thread.CurrentThread.ManagedThreadId == _dispatcherThreadId;
@@ -93,7 +94,7 @@ namespace VL.NewAudio.Dispatcher
                 message.Finished.WaitOne();
                 return message.Result;
             }
-            
+
             Trace.Assert(false);
             return null;
         }
@@ -103,16 +104,17 @@ namespace VL.NewAudio.Dispatcher
             _messageQueue.Enqueue(message);
             return true;
         }
+
         private void DispatcherLoop()
         {
             _dispatcherThreadId = Thread.CurrentThread.ManagedThreadId;
-            Trace.Assert(Instance==null);
+            Trace.Assert(Instance == null);
             Instance = this;
             Trace.Assert(IsThisDispatcherThread());
 
             IsRunning = true;
             _readyEvent.Set();
-            
+
             while (!ActiveToken.IsCancellationRequested)
             {
                 BaseMessage message = null;
@@ -159,19 +161,21 @@ namespace VL.NewAudio.Dispatcher
         }
 
         private bool _disposed;
+
         public void Dispose()
         {
             if (!_disposed)
             {
                 _disposed = true;
-                
+
                 IsRunning = false;
                 _cts.Cancel();
-                bool threadDone = _thread.Join(500);
+                var threadDone = _thread.Join(500);
                 if (!threadDone)
                 {
                     _thread.Abort();
                 }
+
                 threadDone = _thread.Join(500);
                 _readyEvent.Dispose();
                 Instance = null;

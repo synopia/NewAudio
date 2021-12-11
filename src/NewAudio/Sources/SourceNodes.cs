@@ -36,14 +36,20 @@ namespace VL.NewAudio.Sources
                     hasStateOutput: true)
                 .AddInput(nameof(AudioTransportSource.Source), x => x.Source, (x, v) => x.Source = v)
                 .AddInput(nameof(AudioTransportSource.ReadAhead), x => x.ReadAhead, (x, v) => x.ReadAhead = v)
-                .AddInput(nameof(AudioTransportSource.Gain), x => x.Gain, (x, v) => x.Gain = v, defaultValue:1.0f)
+                .AddInput(nameof(AudioTransportSource.Gain), x => x.Gain, (x, v) => x.Gain = v, 1.0f)
                 .AddInput(nameof(AudioTransportSource.Start), x => x.IsPlaying, (x, v) =>
                 {
-                    if (v) x.Start();
+                    if (v)
+                    {
+                        x.Start();
+                    }
                 })
                 .AddInput(nameof(AudioTransportSource.Stop), x => !x.IsPlaying, (x, v) =>
                 {
-                    if (v) x.Stop();
+                    if (v)
+                    {
+                        x.Stop();
+                    }
                 })
                 .AddOutput(nameof(AudioTransportSource.Position), x => x.Position)
                 .AddOutput(nameof(AudioTransportSource.LengthInSeconds), x => x.LengthInSeconds)
@@ -66,7 +72,7 @@ namespace VL.NewAudio.Sources
                     name: "FFT", hasStateOutput: true)
                 .AddInput(nameof(FFTSource.Source), x => x.Source, (x, v) => x.Source = v)
                 .AddInput(nameof(FFTSource.FftSize), x => x.FftSize, (x, v) => x.FftSize = v)
-                .AddInput(nameof(FFTSource.WindowFunction), x=>x.WindowFunction, (x,v)=>x.WindowFunction=v)
+                .AddInput(nameof(FFTSource.WindowFunction), x => x.WindowFunction, (x, v) => x.WindowFunction = v)
                 .AddOutput(nameof(FFTSource.Buffer), x =>
                 {
                     x.FillBuffer();
@@ -76,7 +82,7 @@ namespace VL.NewAudio.Sources
                     name: "iFFT", hasStateOutput: true)
                 .AddInput(nameof(FFTSource.Source), x => x.Source, (x, v) => x.Source = v)
                 .AddInput(nameof(FFTSource.FftSize), x => x.FftSize, (x, v) => x.FftSize = v)
-                .AddInput(nameof(FFTSource.WindowFunction), x=>x.WindowFunction, (x,v)=>x.WindowFunction=v)
+                .AddInput(nameof(FFTSource.WindowFunction), x => x.WindowFunction, (x, v) => x.WindowFunction = v)
                 .AddOutput(nameof(FFTSource.Buffer), x =>
                 {
                     x.FillBuffer();

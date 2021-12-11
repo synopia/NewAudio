@@ -10,9 +10,9 @@ namespace VL.NewAudio.Core
         OnlyOutput,
         Aggregate,
         FullDuplex,
-        Mixed,
+        Mixed
     }
-    
+
     public interface IAudioStreamCallback
     {
         int OnBuffer(XtStream stream, in XtBuffer buffer, object user);
@@ -28,7 +28,6 @@ namespace VL.NewAudio.Core
         int FramesPerBlock { get; }
         AudioStreamConfig Config { get; }
         void CreateBuffers(int numChannels, int numFrames);
-
     }
 
     public interface IAudioInputStream : IAudioStream
@@ -48,6 +47,8 @@ namespace VL.NewAudio.Core
         void Stop();
         void Open(IAudioStreamCallback? callback);
     }
-    
-    public interface IAudioInputOutputStream: IAudioInputStream, IAudioOutputStream{}
+
+    public interface IAudioInputOutputStream : IAudioInputStream, IAudioOutputStream
+    {
+    }
 }

@@ -14,6 +14,7 @@ namespace VL.NewAudio.Backend
         protected readonly ILogger Logger = Resources.GetLogger<IAudioStream>();
         public abstract AudioStreamType Type { get; }
         public AudioStreamConfig Config { get; }
+
         protected XtSample SampleType
         {
             get
@@ -47,7 +48,7 @@ namespace VL.NewAudio.Backend
         protected IAudioDevice Device => Config.AudioDevice;
         protected XtDevice XtDevice => ((XtAudioDevice)Device).XtDevice;
         protected XtService XtService => ((XtAudioDevice)Device).XtService;
-        
+
         public virtual int NumOutputChannels => Config.ActiveOutputChannels.Count;
         public virtual int NumInputChannels => Config.ActiveInputChannels.Count;
 
@@ -104,7 +105,8 @@ namespace VL.NewAudio.Backend
             else
             */
             {
-                Logger.Information("Creating convert buffers (num ch={NumCh}, num frames={NumFrames})", numChannels, numFrames);
+                Logger.Information("Creating convert buffers (num ch={NumCh}, num frames={NumFrames})", numChannels,
+                    numFrames);
                 AudioBuffer = new AudioBuffer(numChannels, numFrames);
                 _channels = AudioBuffer.GetWriteChannels();
             }
@@ -136,7 +138,7 @@ namespace VL.NewAudio.Backend
             {
                 Convert(buffer);
             }
-            
+
             return AudioBuffer;
         }
 

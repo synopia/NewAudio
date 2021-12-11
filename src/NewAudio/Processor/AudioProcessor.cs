@@ -9,7 +9,6 @@ using VL.NewAudio;
 
 namespace VL.NewAudio.Processor
 {
- 
     public abstract class AudioProcessor : IDisposable, IHasAudioBus
     {
         protected ILogger Logger = Resources.GetLogger<AudioProcessor>();
@@ -31,10 +30,12 @@ namespace VL.NewAudio.Processor
         public AudioPlayHead PlayHead { get; set; }
 
 
-        protected AudioProcessor(): this(new AudioBuses()
+        protected AudioProcessor() : this(new AudioBuses()
             .WithInput("Input", AudioChannels.Stereo)
-            .WithOutput("Output", AudioChannels.Stereo)){}
-        
+            .WithOutput("Output", AudioChannels.Stereo))
+        {
+        }
+
         protected AudioProcessor(AudioBuses busesConfig)
         {
             BusConfig = busesConfig;
@@ -43,9 +44,10 @@ namespace VL.NewAudio.Processor
 
         public abstract void PrepareToPlay(int sampleRate, int framesPerBlock);
         public abstract void ReleaseResources();
+
         public virtual void Process(AudioBuffer buffer)
         {
-            for (int ch = MainBusInputChannels; ch < TotalNumberOfOutputChannels; ch++)
+            for (var ch = MainBusInputChannels; ch < TotalNumberOfOutputChannels; ch++)
             {
                 buffer.ZeroChannel(ch);
             }
@@ -53,7 +55,7 @@ namespace VL.NewAudio.Processor
 
         public virtual void ProcessBypassed(AudioBuffer buffer)
         {
-            for (int ch = MainBusInputChannels; ch < TotalNumberOfOutputChannels; ch++)
+            for (var ch = MainBusInputChannels; ch < TotalNumberOfOutputChannels; ch++)
             {
                 buffer.ZeroChannel(ch);
             }
@@ -62,26 +64,25 @@ namespace VL.NewAudio.Processor
 
         public virtual bool IsBusStateSupported(AudioBusState layout)
         {
-            return true;// layout.MainBusInputChannels == 2 && layout.MainBusOutputChannels == 2;
+            return true; // layout.MainBusInputChannels == 2 && layout.MainBusOutputChannels == 2;
         }
 
 
         public void NumberOfBusesChanged(bool input)
         {
-            
         }
 
         public void ChannelsOfBusChanged(bool input, int busIndex)
         {
-            
         }
 
         public void BusLayoutChanged()
         {
-            
         }
 
-        public virtual void Reset(){}
+        public virtual void Reset()
+        {
+        }
 
         public void SetChannels(int numIns, int numOuts)
         {
@@ -94,14 +95,16 @@ namespace VL.NewAudio.Processor
             {
                 BusConfig.MainOutput.SetNumberOfChannels(numOuts);
             }
+
             BusConfig.Apply(this);
         }
-        
+
         public void SetPlayConfig(int numIns, int numOuts, int sampleRate, int framesPerBlock)
         {
             SetChannels(numIns, numOuts);
             SetRateAndFrameSize(sampleRate, framesPerBlock);
         }
+
         public void SetRateAndFrameSize(int sampleRate, int framesPerBlock)
         {
             SampleRate = sampleRate;
@@ -131,6 +134,5 @@ namespace VL.NewAudio.Processor
                 _disposedValue = true;
             }
         }
-
     }
 }

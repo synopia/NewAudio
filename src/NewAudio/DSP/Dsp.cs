@@ -8,9 +8,10 @@ namespace VL.NewAudio.Dsp
         {
             source.Slice(0, length).CopyTo(target);
         }
+
         public static void Fill(this Span<float> target, float value, int length)
         {
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 target[i] = value;
             }
@@ -19,7 +20,7 @@ namespace VL.NewAudio.Dsp
         public static float Sum(Span<float> array, int length)
         {
             var result = 0.0f;
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 result += array[i];
             }
@@ -29,9 +30,9 @@ namespace VL.NewAudio.Dsp
 
         public static void Add(Span<float> array, float scalar, Span<float> target, int length)
         {
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
-                target[i] = array[i]+scalar;
+                target[i] = array[i] + scalar;
             }
         }
 
@@ -39,33 +40,35 @@ namespace VL.NewAudio.Dsp
         {
             Add(source, target, target, length);
         }
+
         public static void Add(Span<float> arrayOne, Span<float> arrayTwo, Span<float> target, int length)
         {
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
-                target[i] = arrayOne[i]+arrayTwo[i];
+                target[i] = arrayOne[i] + arrayTwo[i];
             }
         }
 
         public static void Sub(Span<float> array, float scalar, Span<float> target, int length)
         {
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
-                target[i] = array[i]-scalar;
+                target[i] = array[i] - scalar;
             }
         }
+
         public static void Sub(Span<float> arrayOne, Span<float> arrayTwo, Span<float> target, int length)
         {
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
-                target[i] = arrayOne[i]-arrayTwo[i];
+                target[i] = arrayOne[i] - arrayTwo[i];
             }
         }
 
         public static float Rms(Span<float> array, int length)
         {
             var result = 0.0f;
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 var value = array[i];
                 result += value * value;
@@ -73,48 +76,52 @@ namespace VL.NewAudio.Dsp
 
             return result;
         }
-        
+
         public static void Mul(Span<float> array, float scalar, Span<float> target, int length)
         {
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
-                target[i] = array[i]*scalar;
+                target[i] = array[i] * scalar;
             }
         }
+
         public static void Mul(Span<float> arrayOne, Span<float> arrayTwo, Span<float> target, int length)
         {
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
-                target[i] = arrayOne[i]*arrayTwo[i];
+                target[i] = arrayOne[i] * arrayTwo[i];
             }
         }
-                
+
         public static void Div(Span<float> array, float scalar, Span<float> target, int length)
         {
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
-                target[i] = array[i]/scalar;
+                target[i] = array[i] / scalar;
             }
         }
+
         public static void Div(Span<float> arrayOne, Span<float> arrayTwo, Span<float> target, int length)
         {
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
-                target[i] = arrayOne[i]/arrayTwo[i];
+                target[i] = arrayOne[i] / arrayTwo[i];
             }
         }
-        public static void AddMul(Span<float> arrayOne, Span<float> arrayTwo, float scalar, Span<float> target, int length)
+
+        public static void AddMul(Span<float> arrayOne, Span<float> arrayTwo, float scalar, Span<float> target,
+            int length)
         {
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
-                target[i] = (arrayOne[i]+arrayTwo[i])*scalar;
+                target[i] = (arrayOne[i] + arrayTwo[i]) * scalar;
             }
         }
 
         public static void Normalize(Span<float> array, int length, float maxValue)
         {
             var max = 0.0f;
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 if (array[i] > max)
                 {
@@ -124,19 +131,19 @@ namespace VL.NewAudio.Dsp
 
             if (max > 0.00001f)
             {
-                Mul(array, maxValue/max, array, length);
+                Mul(array, maxValue / max, array, length);
             }
         }
 
         public static float SpectralCentroid(Span<float> array, int length, int sampleRate)
         {
-            float binToFreq = (float)(sampleRate) / (float)(length * 2);
+            var binToFreq = (float)sampleRate / (float)(length * 2);
             float FA = 0;
             float A = 0;
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
-                float freq = i * binToFreq;
-                float mag = array[i];
+                var freq = i * binToFreq;
+                var mag = array[i];
                 FA += freq * mag;
                 A += mag;
             }

@@ -12,8 +12,8 @@ namespace VL.NewAudio.Internal
         private MpegFile _mpegFile;
 
         public int Channels => _mpegFile.Channels;
-        public ulong Samples => (ulong)_mpegFile.Length/(ulong)Channels/4;
-        
+        public ulong Samples => (ulong)_mpegFile.Length / (ulong)Channels / 4;
+
         public Mp3File(MpegFile mpegFile)
         {
             _mpegFile = mpegFile;
@@ -22,29 +22,27 @@ namespace VL.NewAudio.Internal
         public static Mp3File Load(string path)
         {
             return new Mp3File(new MpegFile(path));
-
         }
 
         public unsafe AudioBuffer ToAudioBuffer()
         {
-            AudioBuffer audioBuffer = new AudioBuffer(Channels, (int)Samples);
+            var audioBuffer = new AudioBuffer(Channels, (int)Samples);
             IConvertReader reader = new ConvertReader<Float32Sample, Interleaved>();
-            
-            float[] data = ArrayPool<float>.Shared.Rent((int)Samples*Channels);
-            _mpegFile.ReadSamples(data, 0, (int)Samples*Channels);
+
+            var data = ArrayPool<float>.Shared.Rent((int)Samples * Channels);
+            _mpegFile.ReadSamples(data, 0, (int)Samples * Channels);
             fixed (float* buf = data)
             {
-                XtBuffer buffer = new XtBuffer()
+                var buffer = new XtBuffer()
                 {
                     frames = (int)Samples,
-                    input = new IntPtr(buf),
+                    input = new IntPtr(buf)
                 };
                 reader.Read(buffer, 0, audioBuffer, 0, (int)Samples);
             }
-            
+
             ArrayPool<float>.Shared.Return(data);
             return audioBuffer;
         }
-
     }
 }

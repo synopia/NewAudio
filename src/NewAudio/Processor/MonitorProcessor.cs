@@ -4,7 +4,7 @@ using VL.NewAudio.Processor;
 
 namespace VL.NewAudio.Processor
 {
-    public class MonitorProcessor: AudioProcessor
+    public class MonitorProcessor : AudioProcessor
     {
         public int BufferSize { get; set; }
 
@@ -13,7 +13,7 @@ namespace VL.NewAudio.Processor
 
         public MonitorProcessor()
         {
-            SetChannels(1,0);
+            SetChannels(1, 0);
             RingBuffers = Array.Empty<RingBuffer>();
         }
 
@@ -25,7 +25,7 @@ namespace VL.NewAudio.Processor
         public override void PrepareToPlay(int sampleRate, int framesPerBlock)
         {
             RingBuffers = new RingBuffer[TotalNumberOfInputChannels];
-            for (int i = 0; i < TotalNumberOfInputChannels; i++)
+            for (var i = 0; i < TotalNumberOfInputChannels; i++)
             {
                 RingBuffers[i] = new RingBuffer(BufferSize);
             }
@@ -33,7 +33,7 @@ namespace VL.NewAudio.Processor
 
         public override void Process(AudioBuffer buffer)
         {
-            for (int i = 0; i < TotalNumberOfInputChannels; i++)
+            for (var i = 0; i < TotalNumberOfInputChannels; i++)
             {
                 RingBuffers[i].Write(buffer[i].Span, buffer.NumberOfFrames);
             }
@@ -41,7 +41,6 @@ namespace VL.NewAudio.Processor
 
         public override void ReleaseResources()
         {
-            
         }
     }
 }

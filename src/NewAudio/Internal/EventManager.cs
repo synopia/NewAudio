@@ -5,7 +5,7 @@ namespace VL.NewAudio.Internal
 {
     public class EventManager
     {
-        private static object _lockEvents = new object();
+        private static object _lockEvents = new();
         private static Dictionary<AutoResetEvent, List<AutoResetEvent>> _events = new();
 
         public static AutoResetEvent GenerateAutoResetEvent()
@@ -13,7 +13,7 @@ namespace VL.NewAudio.Internal
             var autoResetEvent = new AutoResetEvent(false);
             lock (_lockEvents)
             {
-                _events.Add(autoResetEvent, new List<AutoResetEvent>()); 
+                _events.Add(autoResetEvent, new List<AutoResetEvent>());
             }
 
             return autoResetEvent;
@@ -62,7 +62,6 @@ namespace VL.NewAudio.Internal
                     autoResetEventChild.Set();
                 }
             }
-        } 
-        
+        }
     }
 }

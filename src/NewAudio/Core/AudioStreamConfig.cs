@@ -7,7 +7,6 @@ using Xt;
 
 namespace VL.NewAudio.Core
 {
-
     public record AudioStreamConfig
     {
         public IAudioDevice AudioDevice { get; }
@@ -48,14 +47,15 @@ namespace VL.NewAudio.Core
                 BufferSize = AudioDevice.ChooseBestBufferSize(BufferSize),
 
                 ActiveInputChannels = ActiveInputChannels.Limit(AudioDevice.NumAvailableInputChannels),
-                ActiveOutputChannels = ActiveOutputChannels.Limit(AudioDevice.NumAvailableOutputChannels),
+                ActiveOutputChannels = ActiveOutputChannels.Limit(AudioDevice.NumAvailableOutputChannels)
             };
         }
-
     }
+
     public class AudioStreamBuilder
     {
         private AudioStreamConfig? _primary;
+
         public AudioStreamConfig? Primary
         {
             get => _primary;
@@ -67,12 +67,9 @@ namespace VL.NewAudio.Core
         public IEnumerable<AudioStreamConfig> Secondary
         {
             get => _secondary;
-            set
-            {
-                _secondary = value.Where(i=>i.ActiveInputChannels.Count>0).ToArray();
-            }
+            set { _secondary = value.Where(i => i.ActiveInputChannels.Count > 0).ToArray(); }
         }
-        
+
 
         private IAudioInputOutputStream Factory<TSampleType, TMemoryAccess>()
             where TSampleType : struct, ISampleType
@@ -80,15 +77,15 @@ namespace VL.NewAudio.Core
         {
             // if (input)
             // {
-                // return new AudioInputStream<TSampleType, TMemoryAccess>(Primary);
+            // return new AudioInputStream<TSampleType, TMemoryAccess>(Primary);
             // }
 
             if (_primary == null)
             {
                 throw new InvalidOperationException("No primary output selected!");
             }
-            
-            if (_secondary.Length==0)
+
+            if (_secondary.Length == 0)
             {
                 if (_primary.ActiveInputChannels.Count == 0)
                 {
@@ -97,25 +94,25 @@ namespace VL.NewAudio.Core
 
                 if (_primary.SupportsFullDuplex)
                 {
-                    return new AudioFullDuplexStream<TSampleType, TMemoryAccess>(_primary);                    
+                    return new AudioFullDuplexStream<TSampleType, TMemoryAccess>(_primary);
                 }
-            } 
-            
-            if (_secondary.Length == 1 && _secondary[0].AudioDevice.Id==_primary.AudioDevice.Id && _primary.SupportsFullDuplex )
+            }
+
+            if (_secondary.Length == 1 && _secondary[0].AudioDevice.Id == _primary.AudioDevice.Id &&
+                _primary.SupportsFullDuplex)
             {
                 return new AudioFullDuplexStream<TSampleType, TMemoryAccess>(_primary);
             }
-            
-            if( _secondary.Length>0  )
+
+            if (_secondary.Length > 0)
             {
                 var aggregationAvailable = _primary.SupportsAggregation &&
-                    _secondary.All(s => s.SupportsAggregation);
+                                           _secondary.All(s => s.SupportsAggregation);
 
                 if (aggregationAvailable)
                 {
                     return new AudioAggregateStream<TSampleType, TMemoryAccess>(_primary, _secondary);
                 }
-                
             }
 
             throw new InvalidOperationException("No compatible session mode found!");
@@ -136,16 +133,19 @@ namespace VL.NewAudio.Core
                     XtSample.Int32 => Factory<Int32LsbSample, Interleaved>(),
                     XtSample.Int24 => Factory<Int24LsbSample, Interleaved>(),
                     XtSample.Int16 => Factory<Int16LsbSample, Interleaved>(),
-                    _ => throw new ArgumentOutOfRangeException(nameof(AudioStreamConfig.SampleType), _primary.SampleType, null)
+                    _ => throw new ArgumentOutOfRangeException(nameof(AudioStreamConfig.SampleType),
+                        _primary.SampleType, null)
                 };
             }
+
             return _primary.SampleType switch
             {
                 XtSample.Float32 => Factory<Float32Sample, NonInterleaved>(),
                 XtSample.Int32 => Factory<Int32LsbSample, NonInterleaved>(),
                 XtSample.Int24 => Factory<Int24LsbSample, NonInterleaved>(),
                 XtSample.Int16 => Factory<Int16LsbSample, NonInterleaved>(),
-                _ => throw new ArgumentOutOfRangeException(nameof(AudioStreamConfig.SampleType), _primary.SampleType, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(AudioStreamConfig.SampleType), _primary.SampleType,
+                    null)
             };
         }
     }

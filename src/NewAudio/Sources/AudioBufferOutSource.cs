@@ -2,7 +2,7 @@
 
 namespace VL.NewAudio.Sources
 {
-    public class AudioBufferOutSource: BaseBufferOutSource
+    public class AudioBufferOutSource : BaseBufferOutSource
     {
         public Spread<float> Buffer { get; set; } = Spread<float>.Empty;
 

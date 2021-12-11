@@ -27,6 +27,7 @@ namespace VL.NewAudio.Backend
                 throw new NotImplementedException();
             }
         }
+
         private AudioStreamConfig Config => _stream.Config;
         private readonly ILogger _logger = Resources.GetLogger<XtAudioSession>();
 
@@ -34,7 +35,7 @@ namespace VL.NewAudio.Backend
         public AudioChannels ActiveInputChannels => AudioChannels.Channels(_stream.NumInputChannels);
         public AudioChannels ActiveOutputChannels => AudioChannels.Channels(_stream.NumOutputChannels);
 
-        private readonly  IAudioInputOutputStream _stream;
+        private readonly IAudioInputOutputStream _stream;
 
         private int _audioCallbackGuard;
         public double InputLatency => _stream.InputLatency;
@@ -45,7 +46,7 @@ namespace VL.NewAudio.Backend
         public AudioStreamType Type => _stream.Type;
         public bool IsRunning { get; private set; }
 
-        public XtAudioSession( IAudioInputOutputStream stream)
+        public XtAudioSession(IAudioInputOutputStream stream)
         {
             _stream = stream;
 
@@ -53,11 +54,13 @@ namespace VL.NewAudio.Backend
             {
                 throw new InvalidOperationException("At least one output channel is needed!");
             }
+
             _logger.Information("Opening session for stream {@Config}", stream.Config);
             _stream.Open(this);
         }
 
         private bool _disposed;
+
         public void Dispose()
         {
             if (!_disposed)
@@ -70,9 +73,9 @@ namespace VL.NewAudio.Backend
 
         public void Start(IAudioDeviceCallback? callback)
         {
-            Trace.Assert(_stream!=null);
+            Trace.Assert(_stream != null);
             _logger.Information("Session start");
-      
+
             if (callback != _currentCallback)
             {
                 callback?.AudioDeviceAboutToStart(this);
@@ -87,21 +90,22 @@ namespace VL.NewAudio.Backend
                     }
                     else
                     {
-                        SetCallback(callback);   
+                        SetCallback(callback);
                     }
-                
+
                     old.AudioDeviceStopped();
                 }
                 else
                 {
-                    Trace.Assert(callback!=null);
+                    Trace.Assert(callback != null);
                     SetCallback(callback);
                     Start();
                 }
+
                 _currentCallback = callback;
             }
         }
-        
+
         private void SetCallback(IAudioDeviceCallback? callback)
         {
             if (!IsRunning)
@@ -117,9 +121,12 @@ namespace VL.NewAudio.Backend
                 {
                     break;
                 }
-                if( old!=null && old==Interlocked.CompareExchange(ref _currentCallback, callback, old)){
+
+                if (old != null && old == Interlocked.CompareExchange(ref _currentCallback, callback, old))
+                {
                     break;
                 }
+
                 Thread.Sleep(1);
             }
         }
@@ -138,12 +145,11 @@ namespace VL.NewAudio.Backend
             }
         }
 
-        
-        
+
         public void Start()
         {
             _audioCallbackGuard = 0;
-            
+
             _stream.Start();
             _logger.Information("AudioSession stream started");
         }
@@ -154,6 +160,7 @@ namespace VL.NewAudio.Backend
             {
                 Thread.Sleep(1);
             }
+
             _logger.Information("AudioSession closing stream");
             _stream.Stop();
             _stream.Dispose();
@@ -170,7 +177,6 @@ namespace VL.NewAudio.Backend
                     var inputBuffer = _stream.BindInput(buffer);
                     var outputBuffer = _stream.BindOutput(buffer);
                     Process(inputBuffer, outputBuffer, buffer.frames);
-
                 }
                 catch (Exception e)
                 {
@@ -181,7 +187,6 @@ namespace VL.NewAudio.Backend
                 {
                     _audioCallbackGuard = 0;
                 }
-
             }
 
             return 0;
@@ -200,8 +205,8 @@ namespace VL.NewAudio.Backend
             {
                 _currentCallback?.AudioDeviceError(error.ToString());
             }
+
             IsRunning = running;
         }
-        
     }
 }

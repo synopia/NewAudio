@@ -35,6 +35,5 @@ namespace VL.NewAudio.Nodes
                 _disposedValue = true;
             }
         }
-
     }
 }

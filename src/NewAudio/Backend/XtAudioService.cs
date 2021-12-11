@@ -14,7 +14,7 @@ namespace VL.NewAudio.Backend
         private readonly ILogger _logger = Resources.GetLogger<XtAudioService>();
         private readonly XtPlatform _platform;
 
-         
+
         private readonly List<DeviceName> _defaultDevices = new();
         private readonly List<DeviceName> _deviceSelections = new();
         private readonly Dictionary<string, DeviceCaps> _deviceCaps = new();
@@ -23,7 +23,6 @@ namespace VL.NewAudio.Backend
 
         public XtAudioService()
         {
-            
             _platform = XtAudio.Init("NewAudio", IntPtr.Zero);
             XtAudio.SetOnError(OnError);
             _logger.Information("==============================================");
@@ -35,7 +34,7 @@ namespace VL.NewAudio.Backend
             _logger.Error("XtAudio.OnError: {Message}", message);
             AddError(message);
         }
-        
+
         public void Dispose()
         {
             if (!_disposed)
@@ -71,6 +70,7 @@ namespace VL.NewAudio.Backend
             {
                 return GetDefaultOutputDevices().First();
             }
+
             return GetDefaultInputDevices().First();
         }
 
@@ -88,7 +88,7 @@ namespace VL.NewAudio.Backend
                 return new XtAudioDevice(GetService(caps.System), caps);
             }).GetHandle();
         }
-        
+
         public void ScanForDevices()
         {
             _deviceSelections.Clear();
@@ -99,16 +99,17 @@ namespace VL.NewAudio.Backend
                 var outputDefault = GetService(system).GetDefaultDeviceId(true);
                 var inputDefault = GetService(system).GetDefaultDeviceId(false);
 
-                for (int d = 0; d < list.GetCount(); d++)
+                for (var d = 0; d < list.GetCount(); d++)
                 {
-                    string id = list.GetId(d);
+                    var id = list.GetId(d);
                     if (id == null)
                     {
                         continue;
                     }
+
                     try
                     {
-                        using XtDevice device = GetService(system).OpenDevice(id);
+                        using var device = GetService(system).OpenDevice(id);
 
                         var caps = list.GetCapabilities(id);
 
@@ -124,7 +125,7 @@ namespace VL.NewAudio.Backend
                             MaxInputChannels = device.GetChannelCount(false),
                             MaxOutputChannels = device.GetChannelCount(true),
                             Interleaved = device.SupportsAccess(true),
-                            NonInterleaved = device.SupportsAccess(false),
+                            NonInterleaved = device.SupportsAccess(false)
                         };
                         _deviceSelections.Add(deviceName);
                         if (id == outputDefault || id == inputDefault)
@@ -151,9 +152,11 @@ namespace VL.NewAudio.Backend
             _logger.Information("{Devices} devices found", _deviceCaps.Count);
             foreach (var service in _services)
             {
-                _logger.Information("{System}: {Count} devices", service.Key, _deviceCaps.Count(c=>c.Value.System==service.Key));
+                _logger.Information("{System}: {Count} devices", service.Key,
+                    _deviceCaps.Count(c => c.Value.System == service.Key));
             }
         }
+
         public IEnumerable<DeviceName> GetInputDevices()
         {
             return _deviceSelections.Where(i => i.IsInput);
@@ -173,6 +176,5 @@ namespace VL.NewAudio.Backend
         {
             return _defaultDevices.Where(i => i.IsOutput);
         }
-
     }
 }

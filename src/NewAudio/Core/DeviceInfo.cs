@@ -18,7 +18,7 @@ namespace VL.NewAudio.Core
         Hz192000 = 192000,
         Hz352800 = 352800
     }
-    
+
     public record DeviceName(string Name, XtSystem System, string Id, bool IsInput, bool IsOutput, bool IsDefault)
     {
         public override string ToString()
@@ -39,7 +39,7 @@ namespace VL.NewAudio.Core
         public DeviceName Name { get; }
         public XtSystem System { get; init; }
         public XtDeviceCaps Caps { get; init; }
-            
+
         public int MaxOutputChannels { get; init; }
         public int MaxInputChannels { get; init; }
 
@@ -54,5 +54,4 @@ namespace VL.NewAudio.Core
             Name = name;
         }
     }
-
 }

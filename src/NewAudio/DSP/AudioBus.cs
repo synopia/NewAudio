@@ -14,7 +14,7 @@ namespace VL.NewAudio.Dsp
         public readonly int TotalNumberOfOutputChannels;
         public int MainBusInputChannels => MainInput.Count;
         public int MainBusOutputChannels => MainOutput.Count;
-        
+
         public AudioChannels MainInput => Inputs[0];
         public AudioChannels MainOutput => Outputs[0];
 
@@ -42,7 +42,7 @@ namespace VL.NewAudio.Dsp
         {
             return input ? Inputs[index] : Outputs[index];
         }
-        
+
         public bool Equals(AudioBusState other)
         {
             return Equals(Inputs, other.Inputs) && Equals(Outputs, other.Outputs);
@@ -57,7 +57,8 @@ namespace VL.NewAudio.Dsp
         {
             unchecked
             {
-                return ((Inputs != null ? Inputs.GetHashCode() : 0) * 397) ^ (Outputs != null ? Outputs.GetHashCode() : 0);
+                return ((Inputs != null ? Inputs.GetHashCode() : 0) * 397) ^
+                       (Outputs != null ? Outputs.GetHashCode() : 0);
             }
         }
 
@@ -70,7 +71,6 @@ namespace VL.NewAudio.Dsp
         {
             return !left.Equals(right);
         }
-        
     }
 
     public interface IHasAudioBus
@@ -86,18 +86,20 @@ namespace VL.NewAudio.Dsp
     public class AudioBuses
     {
         public AudioBusState CurrentState { get; private set; }
-        
+
         private List<AudioBus> Inputs = new();
-        private  List<AudioBus> Outputs = new();
+        private List<AudioBus> Outputs = new();
         public AudioBus MainInput => Inputs[0];
         public AudioBus MainOutput => Outputs[0];
+
         public int GetBusCount(bool input)
         {
             return input ? Inputs.Count : Outputs.Count;
         }
+
         public AudioBus GetBus(bool input, int index)
         {
-            Trace.Assert(index>=0 && index<GetBusCount(input));
+            Trace.Assert(index >= 0 && index < GetBusCount(input));
             return input ? Inputs[index] : Outputs[index];
         }
 
@@ -114,24 +116,26 @@ namespace VL.NewAudio.Dsp
         public AudioBusState Build()
         {
             return new AudioBusState(
-                Inputs.Select(i=>i.CurrentLayout).ToArray(), 
-                Outputs.Select(o=>o.CurrentLayout).ToArray());
+                Inputs.Select(i => i.CurrentLayout).ToArray(),
+                Outputs.Select(o => o.CurrentLayout).ToArray());
         }
 
-        public AudioBuses WithInput(string name, AudioChannels channels, bool enabledByDefault=true)
+        public AudioBuses WithInput(string name, AudioChannels channels, bool enabledByDefault = true)
         {
             Add(name, true, channels, enabledByDefault);
             return this;
         }
-        public AudioBuses WithOutput(string name, AudioChannels channels, bool enabledByDefault=true)
+
+        public AudioBuses WithOutput(string name, AudioChannels channels, bool enabledByDefault = true)
         {
             Add(name, false, channels, enabledByDefault);
             return this;
         }
+
         public void Add(string name, bool input, AudioChannels channels, bool enabledByDefault)
         {
             var bus = new AudioBus(name, input, channels, enabledByDefault);
-            (input?Inputs:Outputs).Add(bus);
+            (input ? Inputs : Outputs).Add(bus);
         }
 
         public void Apply(IHasAudioBus owner)
@@ -141,21 +145,22 @@ namespace VL.NewAudio.Dsp
             {
                 return;
             }
+
             if (owner.IsBusStateSupported(state))
             {
                 var old = CurrentState;
                 CurrentState = state;
                 owner.BusLayoutChanged();
-                foreach (var input in new bool[]{false, true})
+                foreach (var input in new bool[] { false, true })
                 {
                     var newChannels = GetBusState(input);
-                    var oldChannels = (input ? old.Inputs : old.Outputs);
-                    if ((oldChannels?.Length??0) != newChannels.Length)
+                    var oldChannels = input ? old.Inputs : old.Outputs;
+                    if ((oldChannels?.Length ?? 0) != newChannels.Length)
                     {
-                        owner.NumberOfBusesChanged(input);                        
+                        owner.NumberOfBusesChanged(input);
                     }
 
-                    for (int i = 0; i < Math.Min((oldChannels?.Length??0), newChannels.Length);i++ )
+                    for (var i = 0; i < Math.Min(oldChannels?.Length ?? 0, newChannels.Length); i++)
                     {
                         if (oldChannels?[i].Count != newChannels[i].Count)
                         {
@@ -163,17 +168,17 @@ namespace VL.NewAudio.Dsp
                         }
                     }
                 }
-                
             }
         }
 
         public void SetAllEnabled(bool input, bool enabled)
         {
-            foreach (var bus in input?Inputs:Outputs)
+            foreach (var bus in input ? Inputs : Outputs)
             {
                 bus.SetEnable(enabled);
             }
         }
+
         public void SetMainEnabled(bool enabled)
         {
             MainInput.SetEnable(enabled);
@@ -188,13 +193,13 @@ namespace VL.NewAudio.Dsp
                 {
                     bus.SetEnable(enabled);
                 }
-            }            
+            }
         }
-        
+
         public int GetAbsolutChannelOffset(bool input, int busIndex, int channelIndex)
         {
             var bus = GetBusState(input);
-            for (int i = 0; i<busIndex && i < bus.Length; i++)
+            for (var i = 0; i < busIndex && i < bus.Length; i++)
             {
                 channelIndex += bus[i].Count;
             }
@@ -205,18 +210,18 @@ namespace VL.NewAudio.Dsp
         public int GetRelativeChannelOffset(bool input, int absoluteChannelIndex, out int busIndex)
         {
             var bus = GetBusState(input);
-            int numChannels = 0;
+            var numChannels = 0;
             for (busIndex = 0;
-                busIndex < bus.Length && absoluteChannelIndex >= (numChannels = bus[busIndex].Count);
-                busIndex++)
+                 busIndex < bus.Length && absoluteChannelIndex >= (numChannels = bus[busIndex].Count);
+                 busIndex++)
             {
                 absoluteChannelIndex -= numChannels;
             }
 
-            return busIndex>=numChannels ? -1 : absoluteChannelIndex;
+            return busIndex >= numChannels ? -1 : absoluteChannelIndex;
         }
 
-        
+
         public AudioBuffer GetBusBuffer(AudioBuffer processBlockBuffer, bool input, int busIndex)
         {
             var bus = GetBusState(input);
@@ -228,9 +233,8 @@ namespace VL.NewAudio.Dsp
             Array.Copy(processBlockBuffer.GetWriteChannels(), offset, newMemory, 0, channels);
             return new AudioBuffer(newMemory, channels, processBlockBuffer.NumberOfFrames);
         }
-
     }
-    
+
     public class AudioBus
     {
         public string Name { get; }
@@ -239,7 +243,7 @@ namespace VL.NewAudio.Dsp
         private AudioChannels _lastLayout;
         private bool _enabledByDefault;
         private int _countCache;
-        
+
         public bool IsInput { get; }
         public bool IsOutput => !IsInput;
         public int Index { get; }
@@ -272,6 +276,7 @@ namespace VL.NewAudio.Dsp
         {
             SetCurrentLayout(AudioChannels.Disabled);
         }
+
         public void SetEnable(bool b)
         {
             if (b)
@@ -283,7 +288,7 @@ namespace VL.NewAudio.Dsp
                 Disable();
             }
         }
-        
+
         public void SetCurrentLayout(AudioChannels layout)
         {
             _layout = layout;

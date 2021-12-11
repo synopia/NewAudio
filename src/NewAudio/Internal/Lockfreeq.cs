@@ -6,17 +6,20 @@ namespace VL.NewAudio.Internal
 {
     public class MSQueue<T>
     {
-        class node_t
+        private class node_t
         {
             public T value;
             public pointer_t next;
+
             /// <summary>
             /// default constructor
             /// </summary>
-            public node_t(){}
+            public node_t()
+            {
+            }
         }
 
-        struct pointer_t
+        private struct pointer_t
         {
             public long count;
             public node_t ptr;
@@ -30,24 +33,25 @@ namespace VL.NewAudio.Internal
                 ptr = p.ptr;
                 count = p.count;
             }
-            
+
             /// <summary>
             /// constructor that allows caller to specify ptr and count
             /// </summary>
             /// <param name="node"></param>
             /// <param name="c"></param>
-            public pointer_t(node_t node,long c)
+            public pointer_t(node_t node, long c)
             {
                 ptr = node;
                 count = c;
             }
         }
+
         private pointer_t Head;
         private pointer_t Tail;
 
         public MSQueue()
         {
-            node_t node = new node_t();
+            var node = new node_t();
             Head.ptr = Tail.ptr = node;
         }
 
@@ -62,9 +66,9 @@ namespace VL.NewAudio.Internal
         /// <returns></returns>
         private bool CAS(ref pointer_t destination, pointer_t compared, pointer_t exchange)
         {
-            if( compared.ptr == Interlocked.CompareExchange( ref destination.ptr,exchange.ptr,compared.ptr) )
+            if (compared.ptr == Interlocked.CompareExchange(ref destination.ptr, exchange.ptr, compared.ptr))
             {
-                Interlocked.Exchange(ref destination.count,exchange.count);
+                Interlocked.Exchange(ref destination.count, exchange.count);
                 return true;
             }
 
@@ -76,34 +80,33 @@ namespace VL.NewAudio.Internal
             pointer_t head;
 
             // Keep trying until deque is done
-            bool bDequeNotDone = true;
-            while(bDequeNotDone)
+            var bDequeNotDone = true;
+            while (bDequeNotDone)
             {
                 // read head
                 head = Head;
 
                 // read tail
-                pointer_t tail = Tail;
+                var tail = Tail;
 
                 // read next
-                pointer_t next = head.ptr.next;
+                var next = head.ptr.next;
 
                 // Are head, tail, and next consistent?
-                if(head.count == Head.count && head.ptr == Head.ptr)
+                if (head.count == Head.count && head.ptr == Head.ptr)
                 {
                     // is tail falling behind
-                    if(head.ptr == tail.ptr)
+                    if (head.ptr == tail.ptr)
                     {
                         // is the queue empty?
-                        if(null == next.ptr)
+                        if (null == next.ptr)
                         {
                             // queue is empty cannnot dequeue
                             return false;
                         }
 
                         // Tail is falling behind. try to advance it
-                        CAS(ref Tail,tail, new pointer_t(next.ptr,tail.count+1));
-
+                        CAS(ref Tail, tail, new pointer_t(next.ptr, tail.count + 1));
                     } // endif
 
                     else // No need to deal with tail
@@ -112,64 +115,56 @@ namespace VL.NewAudio.Internal
                         t = next.ptr.value;
 
                         // try to swing the head to the next node
-                        if(CAS(ref Head,head, new pointer_t(next.ptr,head.count+1)))
+                        if (CAS(ref Head, head, new pointer_t(next.ptr, head.count + 1)))
                         {
                             bDequeNotDone = false;
                         }
                     }
-
                 } // endif
-
             } // endloop
 
-           // dispose of head.ptr
+            // dispose of head.ptr
             return true;
         }
 
         public void enqueue(T t)
         {
             // Allocate a new node from the free list
-            node_t node = new node_t();
+            var node = new node_t();
 
             // copy enqueued value into node
             node.value = t;
 
             // keep trying until Enqueue is done
-            bool bEnqueueNotDone = true;
+            var bEnqueueNotDone = true;
 
-            while(bEnqueueNotDone)
+            while (bEnqueueNotDone)
             {
                 // read Tail.ptr and Tail.count together
-                pointer_t tail = Tail;
+                var tail = Tail;
 
                 // read next ptr and next count together
-                pointer_t next = tail.ptr.next;
+                var next = tail.ptr.next;
 
                 // are tail and next consistent
-                if(tail.count == Tail.count && tail.ptr == Tail.ptr)
+                if (tail.count == Tail.count && tail.ptr == Tail.ptr)
                 {
                     // was tail pointing to the last node?
-                    if(null == next.ptr)
+                    if (null == next.ptr)
                     {
-                        if(CAS(ref tail.ptr.next,next,new pointer_t(node,next.count+1)))
+                        if (CAS(ref tail.ptr.next, next, new pointer_t(node, next.count + 1)))
                         {
                             bEnqueueNotDone = false;
                         } // endif
-
                     } // endif
 
                     else // tail was not pointing to last node
                     {
                         // try to swing Tail to the next node
-                        CAS(ref Tail,tail,new pointer_t(next.ptr,tail.count+1));
+                        CAS(ref Tail, tail, new pointer_t(next.ptr, tail.count + 1));
                     }
-
                 } // endif
-
             } // endloop
         }
-       
     }
-
-
 }

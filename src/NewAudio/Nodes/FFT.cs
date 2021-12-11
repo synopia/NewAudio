@@ -6,17 +6,17 @@ using Serilog;
 
 namespace VL.NewAudio.Nodes
 {
-
     public abstract class BaseFft
     {
         private readonly ILogger _logger = Resources.GetLogger<BaseFft>();
-        
+
         protected double[]? Window;
         protected int FftLength;
         protected float[] Data;
         private WindowFunction _windowFunction = WindowFunction.None;
-        
+
         private bool _disposedValue;
+
         protected BaseFft()
         {
             _logger.Information("FFT created");
@@ -31,17 +31,19 @@ namespace VL.NewAudio.Nodes
                 _windowFunction = windowFunction;
                 Window = CreateWindow(_windowFunction, FftLength);
                 ResizeBuffers(FftLength, (FftLength - 1) / 2 + 2);
-            } else if (windowFunction != _windowFunction)
+            }
+            else if (windowFunction != _windowFunction)
             {
                 _windowFunction = windowFunction;
                 Window = CreateWindow(windowFunction, FftLength);
             }
+
             OnDataReceived();
         }
 
         protected abstract void OnDataReceived();
         protected abstract void ResizeBuffers(int fftLength, int complexLength);
-        
+
         public void Dispose()
         {
             Dispose(true);
@@ -77,8 +79,8 @@ namespace VL.NewAudio.Nodes
 
         private void CopyInputReal()
         {
-            Trace.Assert(_pinIn!=null && _pinOut!=null);
-            
+            Trace.Assert(_pinIn != null && _pinOut != null);
+
             var j = 0;
             for (var i = 0; i < FftLength; i++)
             {
@@ -88,7 +90,7 @@ namespace VL.NewAudio.Nodes
 
         private void CopyOutputComplex()
         {
-            Trace.Assert(_pinIn!=null && _pinOut!=null);
+            Trace.Assert(_pinIn != null && _pinOut != null);
             var written = 0;
             for (var i = 0; i < FftLength / 2; i++)
             {
@@ -139,19 +141,18 @@ namespace VL.NewAudio.Nodes
 
         private void CopyInputComplex()
         {
-            Trace.Assert(_pinIn!=null && _pinOut!=null);
+            Trace.Assert(_pinIn != null && _pinOut != null);
             var j = 0;
             for (var i = 0; i < _pinIn!.Length - 1; i++)
             {
                 _pinIn[i + 1] = new Complex(Data[j], Data[j + 1]);
                 j += 2;
             }
-
         }
 
         private void CopyOutputReal()
         {
-            Trace.Assert(_pinIn!=null && _pinOut!=null);
+            Trace.Assert(_pinIn != null && _pinOut != null);
             var written = 0;
             for (var b = 0; b < FftLength; b++)
             {

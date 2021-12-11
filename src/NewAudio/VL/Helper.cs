@@ -2,10 +2,10 @@
 
 namespace VL.NewAudio.Core
 {
-    static class Helper
+    internal static class Helper
     {
-        static readonly Regex FSpaceAndCharRegex = new Regex(" [a-zA-Z]", RegexOptions.Compiled);
-        static readonly Regex FLowerAndUpperRegex = new Regex("[a-z0-9][A-Z0-9]", RegexOptions.Compiled);
+        private static readonly Regex FSpaceAndCharRegex = new(" [a-zA-Z]", RegexOptions.Compiled);
+        private static readonly Regex FLowerAndUpperRegex = new("[a-z0-9][A-Z0-9]", RegexOptions.Compiled);
 
         public static string UpperCaseAfterSpace(this string name)
         {

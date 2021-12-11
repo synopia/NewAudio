@@ -14,14 +14,15 @@ namespace VL.NewAudio.Sources
             _framePos = framePos;
         }
     }
-    public class AudioGraphRegion<TState> : AudioSourceNode where TState:class
+
+    public class AudioGraphRegion<TState> : AudioSourceNode where TState : class
     {
         private object _lock = new();
-        private readonly AudioGraph _graph=new();
+        private readonly AudioGraph _graph = new();
         private readonly AudioGraphIOProcessor _graphIn = new(false);
         private readonly AudioGraphIOProcessor _graphOut = new(true);
         private readonly AudioSampleFrameClock _clock = new();
-        
+
         private int _sampleRate;
         private int _framesExpected;
         private AudioGraph.Node? _outputNode;
@@ -34,7 +35,7 @@ namespace VL.NewAudio.Sources
 
         public AudioGraphRegion()
         {
-            _graph.SetChannels(2,2);
+            _graph.SetChannels(2, 2);
         }
 
         public override void PrepareToPlay(int sampleRate, int framesPerBlockExpected)
@@ -45,7 +46,6 @@ namespace VL.NewAudio.Sources
 
         public override void ReleaseResources()
         {
-            
         }
 
         public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
@@ -53,7 +53,8 @@ namespace VL.NewAudio.Sources
             _graph.Process(bufferToFill.Buffer);
         }
 
-        public AudioProcessor Update(AudioLink? input, Func<TState> create, Func<TState, AudioLink, Tuple<TState, AudioLink>> update)
+        public AudioProcessor Update(AudioLink? input, Func<TState> create,
+            Func<TState, AudioLink, Tuple<TState, AudioLink>> update)
         {
             lock (_lock)
             {
@@ -69,13 +70,13 @@ namespace VL.NewAudio.Sources
 
                 // _inputNode ??= _graph.AddNode(_graphIn);
                 // _outputNode ??= _graph.AddNode(_graphOut)!;
-                
+
                 var res = update(_state!, _input1!.Output);
                 _state = res.Item1;
                 // res.Item2;
-                
+
                 _output!.Input = res.Item2;
-                
+
                 AudioGraph.CurrentGraph = lastGraph;
                 return _graph;
             }

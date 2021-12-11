@@ -20,6 +20,7 @@ namespace VL.NewAudio.Core
             Buffer?.Zero(StartFrame, NumFrames);
         }
     }
+
     public interface IAudioSource
     {
         void PrepareToPlay(int sampleRate, int framesPerBlockExpected);

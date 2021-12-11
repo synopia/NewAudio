@@ -13,10 +13,11 @@ namespace VL.NewAudio.Dispatcher
             message.Post();
         }
     }
+
     public class Message : Dispatcher.BaseMessage
     {
         internal MessageListener Recipient;
-        
+
         public override void MessageCallback()
         {
             Recipient?.HandleMessage(this);
@@ -27,8 +28,9 @@ namespace VL.NewAudio.Dispatcher
     {
         public abstract override void MessageCallback();
     }
+
     public delegate object MessageCallbackFunc(object userData);
-    
+
     public class AsyncMessage : Dispatcher.BaseMessage
     {
         private MessageCallbackFunc _callbackFunc;
@@ -36,7 +38,7 @@ namespace VL.NewAudio.Dispatcher
         public object Result { get; private set; }
         public ManualResetEvent Finished { get; } = new(false);
 
-        public AsyncMessage(MessageCallbackFunc callbackFunc, object userData=null)
+        public AsyncMessage(MessageCallbackFunc callbackFunc, object userData = null)
         {
             _callbackFunc = callbackFunc;
             _userData = userData;
@@ -47,7 +49,7 @@ namespace VL.NewAudio.Dispatcher
             Result = _callbackFunc.Invoke(_userData);
             Finished.Set();
         }
-        
+
         private bool _disposedValue;
 
         protected override void Dispose(bool disposing)

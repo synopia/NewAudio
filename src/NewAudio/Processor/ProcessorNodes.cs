@@ -47,7 +47,6 @@ namespace VL.NewAudio.Processor
                 .AddInput("Audio In", x => x.Input, (x, v) => x.Input = v)
                 .AddInput(nameof(FftNode.FftSize), x => x.FftSize, (x, v) => x.FftSize = v)
                 .AddOutput(nameof(FftNode.Buffer), x => x.Buffer);
-
         }
     }
 }

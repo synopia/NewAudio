@@ -5,7 +5,7 @@ using VL.NewAudio.Sources;
 
 namespace VL.NewAudio.Sources
 {
-    public class MixerSource: AudioSourceNode
+    public class MixerSource : AudioSourceNode
     {
         private int _currentSampleRate;
         private int _currentBufferSize;
@@ -25,8 +25,8 @@ namespace VL.NewAudio.Sources
                     sampleRate = _currentSampleRate;
                     bufferSize = _currentBufferSize;
                 }
-                
-                
+
+
                 if (sampleRate > 0)
                 {
                     foreach (var source in value)
@@ -37,7 +37,7 @@ namespace VL.NewAudio.Sources
                         }
                     }
                 }
-                
+
                 foreach (var source in _sources)
                 {
                     if (Array.IndexOf(value, source) == -1)
@@ -80,7 +80,8 @@ namespace VL.NewAudio.Sources
                 {
                     source.ReleaseResources();
                 }
-                _tempBuffer.SetSize(2,0);
+
+                _tempBuffer.SetSize(2, 0);
                 _currentBufferSize = 0;
                 _currentSampleRate = 0;
             }
@@ -96,14 +97,15 @@ namespace VL.NewAudio.Sources
                     if (_sources.Length > 1)
                     {
                         var numFrames = bufferToFill.NumFrames;
-                        _tempBuffer.SetSize(Math.Max(1,bufferToFill.Buffer.NumberOfChannels), numFrames);
+                        _tempBuffer.SetSize(Math.Max(1, bufferToFill.Buffer.NumberOfChannels), numFrames);
                         var buf = new AudioSourceChannelInfo(_tempBuffer, 0, numFrames);
-                        for (int i = 1; i < _sources.Length; i++)
+                        for (var i = 1; i < _sources.Length; i++)
                         {
                             _sources[i].GetNextAudioBlock(buf);
-                            for (int ch = 0; ch < bufferToFill.Buffer.NumberOfChannels; ch++)
+                            for (var ch = 0; ch < bufferToFill.Buffer.NumberOfChannels; ch++)
                             {
-                                bufferToFill.Buffer[ch].Slice(bufferToFill.StartFrame).Span.Add(_tempBuffer[ch].Slice(0).Span, numFrames);
+                                bufferToFill.Buffer[ch].Slice(bufferToFill.StartFrame).Span
+                                    .Add(_tempBuffer[ch].Slice(0).Span, numFrames);
                             }
                         }
                     }

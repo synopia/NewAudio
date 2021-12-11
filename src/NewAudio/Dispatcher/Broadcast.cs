@@ -13,22 +13,24 @@ namespace VL.NewAudio.Dispatcher
     {
         void SendChangeMessage();
     }
-    public class ChangeBroadcaster: IChangeBroadcaster
+
+    public class ChangeBroadcaster : IChangeBroadcaster
     {
         private class ChangeBroadcasterCallback : AsyncUpdater
         {
             internal ChangeBroadcaster Owner;
-            
+
             public override void HandleAsyncUpdate()
             {
-                Trace.Assert(Owner!=null);
+                Trace.Assert(Owner != null);
                 Owner.CallListeners();
             }
         }
 
         private ChangeBroadcasterCallback _broadcastCallback;
-        private List<IChangeListener> _listener = new List<IChangeListener>();
+        private List<IChangeListener> _listener = new();
         private bool _anyListener;
+
         public ChangeBroadcaster()
         {
             _broadcastCallback = new ChangeBroadcasterCallback
@@ -48,7 +50,7 @@ namespace VL.NewAudio.Dispatcher
         {
             Dispatcher.NeedToBeLocked();
             _listener.Remove(listener);
-            _anyListener = _listener.Count>0;
+            _anyListener = _listener.Count > 0;
         }
 
         public void RemoveAllChangeListener()

@@ -4,7 +4,6 @@ using Xt;
 
 namespace VL.NewAudio.Core
 {
-
     public interface IAudioDeviceCallback
     {
         void AudioDeviceCallback(AudioBuffer? input, AudioBuffer output, int numFrames);
@@ -31,7 +30,7 @@ namespace VL.NewAudio.Core
 
         int NumAvailableInputChannels { get; }
         int NumAvailableOutputChannels { get; }
-        
+
         bool HasControlPanel { get; }
         bool SupportsFullDuplex { get; }
         bool SupportsAggregation { get; }

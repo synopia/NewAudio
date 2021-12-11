@@ -21,17 +21,16 @@ namespace VL.NewAudio.Sources
 
         public override void ReleaseResources()
         {
-            
         }
 
         public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
         {
             var increase = Frequency * _period;
-            for (int i = 0; i < bufferToFill.NumFrames; i++)
+            for (var i = 0; i < bufferToFill.NumFrames; i++)
             {
-                float sample = Amplitude * AudioMath.SinF(_phase*AudioMath.TwoPi);
+                var sample = Amplitude * AudioMath.SinF(_phase * AudioMath.TwoPi);
                 _phase = AudioMath.Fract(_phase + increase);
-                for (int ch = 0; ch < bufferToFill.Buffer.NumberOfChannels; ch++)
+                for (var ch = 0; ch < bufferToFill.Buffer.NumberOfChannels; ch++)
                 {
                     bufferToFill.Buffer[ch, bufferToFill.StartFrame + i] = sample;
                 }

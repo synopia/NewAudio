@@ -4,7 +4,8 @@ using Xt;
 
 namespace VL.NewAudio.Backend
 {
-    public class AudioFullDuplexStream<TSampleType, TMemoryAccess> : AudioOutputStream<TSampleType, TMemoryAccess>, IAudioInputOutputStream
+    public class AudioFullDuplexStream<TSampleType, TMemoryAccess> : AudioOutputStream<TSampleType, TMemoryAccess>,
+        IAudioInputOutputStream
         where TSampleType : struct, ISampleType
         where TMemoryAccess : struct, IMemoryAccess
     {
@@ -34,6 +35,7 @@ namespace VL.NewAudio.Backend
                     _inputStream.Dispose();
                 }
             }
+
             base.Dispose(disposing);
         }
 
