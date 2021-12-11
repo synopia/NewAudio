@@ -4,7 +4,8 @@ using Xt;
 
 namespace VL.NewAudio.Backend
 {
-    public class AudioInputStream<TSampleType, TMemoryAccess> : AudioStreamBase<TSampleType, TMemoryAccess>, IAudioInputStream
+    public class AudioInputStream<TSampleType, TMemoryAccess> : AudioStreamBase<TSampleType, TMemoryAccess>,
+        IAudioInputStream
         where TSampleType : struct, ISampleType
         where TMemoryAccess : struct, IMemoryAccess
     {

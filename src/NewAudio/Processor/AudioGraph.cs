@@ -8,11 +8,10 @@ using VL.Lib.Basics.Resources;
 
 namespace VL.NewAudio.Processor
 {
-    
-    public class AudioGraph: AudioProcessor, IAsyncUpdater, IChangeBroadcaster
+    public class AudioGraph : AudioProcessor, IAsyncUpdater, IChangeBroadcaster
     {
         public static AudioGraph CurrentGraph;
-        
+
         private static void UpdateOnMessageThread(IAsyncUpdater updater)
         {
             // if (Dispatcher.Dispatcher.Instance.IsThisDispatcherThread())
@@ -21,9 +20,10 @@ namespace VL.NewAudio.Processor
             }
             // else
             // {
-                // updater.TriggerAsyncUpdate();
+            // updater.TriggerAsyncUpdate();
             // }
         }
+
         private AsyncUpdateSupport _asyncUpdate;
         private ChangeBroadcaster _changeBroadcaster;
         private List<Node> _nodes = new();
@@ -33,7 +33,7 @@ namespace VL.NewAudio.Processor
         private (int, int, bool) _prepareSettings;
         private bool _isPrepared;
 
-        public List<Node> Nodes=>_nodes;
+        public List<Node> Nodes => _nodes;
         public int NodeCount => _nodes.Count;
         public RenderingProgram Program => _program;
 
@@ -79,6 +79,7 @@ namespace VL.NewAudio.Processor
                 {
                     return;
                 }
+
                 _nodes.Clear();
                 TopologyChanged();
             }
@@ -90,6 +91,7 @@ namespace VL.NewAudio.Processor
             {
                 return null;
             }
+
             return _nodes[index];
         }
 
@@ -106,13 +108,13 @@ namespace VL.NewAudio.Processor
             return null;
         }
 
-        public Node? AddNode(AudioProcessor processor, NodeId nodeId=default)
+        public Node? AddNode(AudioProcessor processor, NodeId nodeId = default)
         {
             if (nodeId == default)
             {
                 nodeId.Uid = ++_lastId.Uid;
             }
-            
+
             foreach (var node in _nodes)
             {
                 if (node.Processor == processor || node.NodeId == nodeId)
@@ -133,7 +135,7 @@ namespace VL.NewAudio.Processor
             {
                 _nodes.Add(n);
             }
-            
+
             n.SetParentGraph(this);
             TopologyChanged();
             return n;
@@ -143,6 +145,7 @@ namespace VL.NewAudio.Processor
         {
             return RemoveNode(node.NodeId);
         }
+
         public Node RemoveNode(NodeId nodeId)
         {
             lock (ProcessLock)
@@ -169,7 +172,6 @@ namespace VL.NewAudio.Processor
                         return true;
                     }
                 }
-
             }
 
             return false;
@@ -181,7 +183,6 @@ namespace VL.NewAudio.Processor
             Trace.Assert(_nodes.Contains(target));
 
             return IsAnInputTo(source, target, _nodes.Count);
-
         }
 
         public bool CanConnect(Connection connection)
@@ -203,6 +204,7 @@ namespace VL.NewAudio.Processor
             {
                 connections.AddRange(GetNodeConnections(node));
             }
+
             connections.Sort();
             return connections.Distinct().ToList();
         }
@@ -211,7 +213,7 @@ namespace VL.NewAudio.Processor
         {
             var source = GetNode(connection.source.NodeId);
             var target = GetNode(connection.target.NodeId);
-            if (source != null && target!=null)
+            if (source != null && target != null)
             {
                 var sourceChannel = connection.source.ChannelIndex;
                 var targetChannel = connection.target.ChannelIndex;
@@ -226,8 +228,8 @@ namespace VL.NewAudio.Processor
             }
 
             return false;
-
         }
+
         public bool RemoveConnection(Connection connection)
         {
             var source = GetNode(connection.source.NodeId);
@@ -253,7 +255,7 @@ namespace VL.NewAudio.Processor
             var node = GetNode(nodeId);
             if (node != null)
             {
-                var connections =  GetNodeConnections(node);
+                var connections = GetNodeConnections(node);
                 if (connections.Count > 0)
                 {
                     foreach (var connection in connections)
@@ -282,7 +284,7 @@ namespace VL.NewAudio.Processor
 
         public bool RemoveIllegalConnection()
         {
-            bool anyRemoved = false;
+            var anyRemoved = false;
             foreach (var node in _nodes)
             {
                 var connections = GetNodeConnections(node);
@@ -297,6 +299,7 @@ namespace VL.NewAudio.Processor
 
             return anyRemoved;
         }
+
         public bool IsConnected(Connection connection)
         {
             var source = GetNode(connection.source.NodeId);
@@ -321,6 +324,7 @@ namespace VL.NewAudio.Processor
                     _prepareSettings = newPrepareSettings;
                 }
             }
+
             ClearRenderingSequence();
             UpdateOnMessageThread(this);
         }
@@ -341,7 +345,7 @@ namespace VL.NewAudio.Processor
             {
                 HandleAsyncUpdate();
             }
-            
+
             lock (ProcessLock)
             {
                 if (_isPrepared)
@@ -405,14 +409,13 @@ namespace VL.NewAudio.Processor
 
         private void BuildRenderingSequence()
         {
-            
             var builder = new RenderingBuilder(this);
             lock (ProcessLock)
             {
                 var program = builder.Program;
                 var currentFramesPerBlock = FramesPerBlock;
                 program.PrepareBuffers(currentFramesPerBlock);
-                
+
                 if (AnyNodesNeedPreparing())
                 {
                     foreach (var node in _nodes)
@@ -429,7 +432,6 @@ namespace VL.NewAudio.Processor
         private bool AnyNodesNeedPreparing()
         {
             return _nodes.Any(n => !n.IsPrepared);
-
         }
 
         private bool IsLegal(Node source, int sourceChannel, Node target, int targetChannel)
@@ -437,9 +439,8 @@ namespace VL.NewAudio.Processor
             return sourceChannel >= 0 && sourceChannel < source.Processor.TotalNumberOfOutputChannels
                                       && targetChannel >= 0 &&
                                       targetChannel < target.Processor.TotalNumberOfInputChannels;
-
         }
-        
+
         private bool CanConnect(Node? source, int sourceChannel, Node? target, int targetChannel)
         {
             if (sourceChannel < 0 || targetChannel < 0 || source == target)
@@ -456,10 +457,10 @@ namespace VL.NewAudio.Processor
             {
                 return false;
             }
-            
-            return !IsConnected(source, sourceChannel, target, targetChannel);
 
+            return !IsConnected(source, sourceChannel, target, targetChannel);
         }
+
         private bool IsConnected(Node source, int sourceChannel, Node target, int targetChannel)
         {
             foreach (var output in source.Outputs)
@@ -503,25 +504,25 @@ namespace VL.NewAudio.Processor
             var result = new List<Connection>();
             foreach (var input in node.Inputs)
             {
-                result.Add(new Connection(new NodeAndChannel(input.OtherNode.NodeId, input.OtherChannel), 
+                result.Add(new Connection(new NodeAndChannel(input.OtherNode.NodeId, input.OtherChannel),
                     new NodeAndChannel(node.NodeId, input.OwnChannel)));
             }
+
             foreach (var output in node.Outputs)
             {
-                result.Add(new Connection(new NodeAndChannel(node.NodeId, output.OwnChannel), 
+                result.Add(new Connection(new NodeAndChannel(node.NodeId, output.OwnChannel),
                     new NodeAndChannel(output.OtherNode.NodeId, output.OtherChannel)));
             }
 
             return result;
         }
-        
-        
+
 
         public struct NodeId : IEquatable<NodeId>, IComparable<NodeId>
         {
             public int Uid;
 
-            public NodeId(int uid=0)
+            public NodeId(int uid = 0)
             {
                 Uid = uid;
             }
@@ -560,10 +561,12 @@ namespace VL.NewAudio.Processor
             {
                 return left.Uid < right.Uid;
             }
+
             public static bool operator >(NodeId left, NodeId right)
             {
                 return left.Uid > right.Uid;
             }
+
             public static bool operator !=(NodeId left, NodeId right)
             {
                 return !left.Equals(right);
@@ -619,15 +622,14 @@ namespace VL.NewAudio.Processor
         {
             public NodeId NodeId;
             public AudioProcessor Processor { get; }
-            public List<Connection> Inputs = new ();
-            public List<Connection> Outputs= new ();
+            public List<Connection> Inputs = new();
+            public List<Connection> Outputs = new();
             public bool IsPrepared { get; private set; }
             private bool _bypassed;
 
             public bool IsBypassed
             {
-                get
-                {
+                get =>
                     /*
                     if (Processor != null)
                     {
@@ -638,11 +640,8 @@ namespace VL.NewAudio.Processor
                         }
                     }
                     */
-
-                    return _bypassed;
-                }
-                set
-                {
+                    _bypassed;
+                set =>
                     /*
                     if (Processor != null)
                     {
@@ -653,9 +652,7 @@ namespace VL.NewAudio.Processor
                         }
                     }
                     */
-
                     _bypassed = value;
-                }
             }
 
             private object _processorLock = new();
@@ -675,7 +672,8 @@ namespace VL.NewAudio.Processor
 
                 public bool Equals(Connection other)
                 {
-                    return Equals(OtherNode, other.OtherNode) && OtherChannel == other.OtherChannel && OwnChannel == other.OwnChannel;
+                    return Equals(OtherNode, other.OtherNode) && OtherChannel == other.OtherChannel &&
+                           OwnChannel == other.OwnChannel;
                 }
 
                 public override bool Equals(object obj)
@@ -753,8 +751,9 @@ namespace VL.NewAudio.Processor
                 lock (_processorLock)
                 {
                     Processor.Process(buffer);
-                }                
+                }
             }
+
             public void ProcessBypassed(AudioBuffer buffer)
             {
                 lock (_processorLock)
@@ -807,20 +806,24 @@ namespace VL.NewAudio.Processor
             {
                 return !left.Equals(right);
             }
+
             public int CompareTo(Connection other)
             {
                 if (source.NodeId != other.source.NodeId)
                 {
                     return source.NodeId.CompareTo(other.source.NodeId);
                 }
+
                 if (target.NodeId != other.target.NodeId)
                 {
                     return target.NodeId.CompareTo(other.target.NodeId);
                 }
+
                 if (source.ChannelIndex != other.source.ChannelIndex)
                 {
                     return source.ChannelIndex.CompareTo(other.source.ChannelIndex);
                 }
+
                 return target.ChannelIndex.CompareTo(other.target.ChannelIndex);
             }
 
@@ -828,25 +831,29 @@ namespace VL.NewAudio.Processor
             {
                 return left != right && !(left < right);
             }
+
             public static bool operator <(Connection left, Connection right)
             {
                 if (left.source.NodeId != right.source.NodeId)
                 {
                     return left.source.NodeId < right.source.NodeId;
                 }
+
                 if (left.target.NodeId != right.target.NodeId)
                 {
                     return left.target.NodeId < right.target.NodeId;
                 }
+
                 if (left.source.ChannelIndex != right.source.ChannelIndex)
                 {
                     return left.source.ChannelIndex < right.source.ChannelIndex;
                 }
+
                 return left.target.ChannelIndex < right.target.ChannelIndex;
             }
         }
-        
-        
+
+
         private bool _disposedValue;
 
         protected override void Dispose(bool disposing)

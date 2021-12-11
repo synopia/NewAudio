@@ -13,6 +13,7 @@ namespace VL.NewAudio.Nodes
         private MemoryAudioSource? _source;
         public MemoryAudioSource? Source => _source;
         private Path? _path;
+
         public Path? Path
         {
             get => _path;
@@ -22,7 +23,7 @@ namespace VL.NewAudio.Nodes
                 {
                     return;
                 }
-                
+
                 _path = value;
                 if (_path == null || !_path.IsFile || !_path.Exists)
                 {
@@ -35,7 +36,8 @@ namespace VL.NewAudio.Nodes
                 {
                     _source = new MemoryAudioSource(Mp3File.Load(path).ToAudioBuffer());
                     _source.IsLooping = true;
-                } else if (lower.EndsWith("wav"))
+                }
+                else if (lower.EndsWith("wav"))
                 {
                     _source = new MemoryAudioSource(WaveFile.Load(path).ToAudioBuffer());
                     _source.IsLooping = true;
@@ -54,7 +56,7 @@ namespace VL.NewAudio.Nodes
                 _source.NextReadPos = 0;
             }
         }
-        
+
         public AudioFileNode()
         {
         }

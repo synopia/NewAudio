@@ -1,7 +1,6 @@
-﻿
-namespace VL.NewAudio.Core
+﻿namespace VL.NewAudio.Core
 {
-    public interface IPositionalAudioSource: IAudioSource
+    public interface IPositionalAudioSource : IAudioSource
     {
         ulong NextReadPos { get; set; }
         ulong TotalLength { get; }

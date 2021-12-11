@@ -11,10 +11,10 @@ namespace VL.NewAudio.Dsp
         private int _writeIndex;
         private int _readIndex;
 
-        public int Size => _allocatedSize-1;
+        public int Size => _allocatedSize - 1;
         public int AvailableWrite => GetAvailableWrite(_writeIndex, _readIndex);
         public int AvailableRead => GetAvailableRead(_writeIndex, _readIndex);
-        
+
 
         public RingBuffer(int size)
         {
@@ -24,11 +24,11 @@ namespace VL.NewAudio.Dsp
         public void Resize(int size)
         {
             _allocatedSize = size + 1;
-            if (_data!=null)
+            if (_data != null)
             {
                 ArrayPool<float>.Shared.Return(_data);
-              
-            } 
+            }
+
             _data = ArrayPool<float>.Shared.Rent(_allocatedSize);
             Clear();
         }
@@ -83,7 +83,7 @@ namespace VL.NewAudio.Dsp
         {
             var writeIndex = _writeIndex;
             var readIndex = _readIndex;
-            
+
             if (count > GetAvailableRead(writeIndex, readIndex))
             {
                 return false;
@@ -93,14 +93,14 @@ namespace VL.NewAudio.Dsp
             var source = GCHandle.ToIntPtr(sourceHandle);
             var destHandle = GCHandle.Alloc(array);
             var dest = GCHandle.ToIntPtr(destHandle);
-            
-            int readIndexAfter = readIndex + count;
+
+            var readIndexAfter = readIndex + count;
             if (readIndex + count > _allocatedSize)
             {
                 var countA = _allocatedSize - readIndex;
                 var countB = count - countA;
                 Array.Copy(_data, readIndex, array, 0, countA);
-                Array.Copy(_data,  0, array, countA, countB);
+                Array.Copy(_data, 0, array, countA, countB);
                 readIndexAfter -= _allocatedSize;
             }
             else
@@ -114,7 +114,6 @@ namespace VL.NewAudio.Dsp
 
             _readIndex = readIndexAfter;
             return true;
-
         }
 
         private int GetAvailableWrite(int writeIndex, int readIndex)
@@ -127,13 +126,15 @@ namespace VL.NewAudio.Dsp
 
             return result;
         }
+
         private int GetAvailableRead(int writeIndex, int readIndex)
         {
             if (writeIndex >= readIndex)
             {
                 return writeIndex - readIndex;
             }
-            return writeIndex+_allocatedSize-readIndex;
+
+            return writeIndex + _allocatedSize - readIndex;
         }
     }
 }

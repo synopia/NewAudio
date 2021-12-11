@@ -5,7 +5,7 @@ using Serilog;
 
 namespace VL.NewAudio.Processor
 {
-    public class AudioGraphIOProcessor: AudioProcessor
+    public class AudioGraphIOProcessor : AudioProcessor
     {
         private AudioGraph? _graph;
 
@@ -19,7 +19,7 @@ namespace VL.NewAudio.Processor
                 {
                     var outChannels = IsOutput ? _graph.TotalNumberOfOutputChannels : 0;
                     var inChannels = IsInput ? _graph.TotalNumberOfInputChannels : 0;
-                    SetPlayConfig(outChannels, inChannels, SampleRate, FramesPerBlock );
+                    SetPlayConfig(outChannels, inChannels, SampleRate, FramesPerBlock);
                 }
             }
         }
@@ -46,15 +46,15 @@ namespace VL.NewAudio.Processor
             if (IsOutput)
             {
                 var currentOutput = program.CurrentOutputBuffer;
-                for (int i = Math.Min(currentOutput.NumberOfChannels, buffer.NumberOfChannels); --i >= 0;)
+                for (var i = Math.Min(currentOutput.NumberOfChannels, buffer.NumberOfChannels); --i >= 0;)
                 {
-                    currentOutput.CopyFrom(i,0,buffer, i,0,buffer.NumberOfFrames);
+                    currentOutput.CopyFrom(i, 0, buffer, i, 0, buffer.NumberOfFrames);
                 }
             }
             else
             {
                 var currentInput = program.CurrentInputBuffer!;
-                for (int i = Math.Min(currentInput.NumberOfChannels, buffer.NumberOfChannels); --i >= 0;)
+                for (var i = Math.Min(currentInput.NumberOfChannels, buffer.NumberOfChannels); --i >= 0;)
                 {
                     buffer.CopyFrom(i, 0, currentInput, i, 0, buffer.NumberOfFrames);
                 }
@@ -63,14 +63,12 @@ namespace VL.NewAudio.Processor
 
         public override void PrepareToPlay(int sampleRate, int framesPerBlock)
         {
-            Trace.Assert(_graph!=null);
+            Trace.Assert(_graph != null);
         }
 
-        
+
         public override void ReleaseResources()
         {
-            
         }
-
     }
 }

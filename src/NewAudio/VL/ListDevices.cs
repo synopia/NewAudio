@@ -15,9 +15,10 @@ namespace VL.NewAudio.Core
         public bool DirectSound { get; set; }
 
         public string? Default => DeviceNames.FirstOrDefault(d => d.IsDefault)?.Name;
-        public Spread<string> Devices => DeviceNames.Select(d=>d.Name).ToSpread();
+        public Spread<string> Devices => DeviceNames.Select(d => d.Name).ToSpread();
 
         public IEnumerable<DeviceName> DeviceNames => _audioService.GetDevices().Where(d => (!Input || d.IsInput)
-        && (!Output || d.IsOutput) && (!Asio || d.System==XtSystem.ASIO) && (!Wasapi||d.System==XtSystem.WASAPI) && (!DirectSound ||d.System==XtSystem.DirectSound) );
+            && (!Output || d.IsOutput) && (!Asio || d.System == XtSystem.ASIO) &&
+            (!Wasapi || d.System == XtSystem.WASAPI) && (!DirectSound || d.System == XtSystem.DirectSound));
     }
 }

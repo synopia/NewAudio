@@ -11,12 +11,13 @@ namespace VL.NewAudio.Internal
         Unknown = 0,
         PCM = 1,
         ADPCM = 2,
-        IEEEFloat=3,
-        MPEG=5,
-        ALaw=6,
-        MuLaw=7,
-        Extensible=0xFFFE
+        IEEEFloat = 3,
+        MPEG = 5,
+        ALaw = 6,
+        MuLaw = 7,
+        Extensible = 0xFFFE
     }
+
     public class WaveFile
     {
         public WaveFileFormat Format { get; private set; }
@@ -35,19 +36,19 @@ namespace VL.NewAudio.Internal
 
         public static WaveFile Load(byte[] data)
         {
-            WaveFile wave = new WaveFile();
+            var wave = new WaveFile();
             var chunkId = Encoding.ASCII.GetString(data, 0, 4);
-            int fileSize = (int) (BitConverter.ToUInt32(data, 4) + 8);
+            var fileSize = (int)(BitConverter.ToUInt32(data, 4) + 8);
             var fileFormatId = Encoding.ASCII.GetString(data, 8, 4);
             if (chunkId != "RIFF" || fileFormatId != "WAVE")
             {
                 throw new FormatException();
             }
 
-            for (int i = 12; i < fileSize; )
+            for (var i = 12; i < fileSize;)
             {
                 chunkId = Encoding.ASCII.GetString(data, i, 4);
-                int currentSize = (int)BitConverter.ToUInt32(data, i + 4);
+                var currentSize = (int)BitConverter.ToUInt32(data, i + 4);
                 if (chunkId == "fmt ")
                 {
                     wave.Format = (WaveFileFormat)BitConverter.ToUInt16(data, i + 8);
@@ -56,11 +57,12 @@ namespace VL.NewAudio.Internal
                     wave.BitsPerSample = (int)BitConverter.ToUInt16(data, i + 22);
                     if (wave.Format == WaveFileFormat.Extensible && currentSize > 16)
                     {
-                        int extChunkSize = (int)BitConverter.ToUInt16(data, i + 24);
+                        var extChunkSize = (int)BitConverter.ToUInt16(data, i + 24);
                         wave.BitsPerSample = (int)BitConverter.ToUInt16(data, i + 26);
                         wave.SubFormat = (WaveFileFormat)BitConverter.ToUInt16(data, i + 32);
                     }
-                } else if (chunkId == "data")
+                }
+                else if (chunkId == "data")
                 {
                     wave.Data = new ArraySegment<byte>(data, i + 8, currentSize);
                 }
@@ -76,9 +78,11 @@ namespace VL.NewAudio.Internal
             IConvertReader reader;
             switch (BitsPerSample)
             {
-                case 16: reader = new ConvertReader<Int16LsbSample, Interleaved>();
+                case 16:
+                    reader = new ConvertReader<Int16LsbSample, Interleaved>();
                     break;
-                case 24: reader = new ConvertReader<Int24LsbSample, Interleaved>();
+                case 24:
+                    reader = new ConvertReader<Int24LsbSample, Interleaved>();
                     break;
                 case 32:
                     reader = Format == WaveFileFormat.IEEEFloat
@@ -89,13 +93,13 @@ namespace VL.NewAudio.Internal
                     throw new FormatException();
             }
 
-            AudioBuffer audioBuffer = new AudioBuffer(Channels, Samples);
+            var audioBuffer = new AudioBuffer(Channels, Samples);
             fixed (byte* buf = Data.Array)
             {
-                XtBuffer buffer = new XtBuffer()
+                var buffer = new XtBuffer()
                 {
                     frames = Samples,
-                    input = new IntPtr(buf+Data.Offset),
+                    input = new IntPtr(buf + Data.Offset)
                 };
                 reader.Read(buffer, 0, audioBuffer, 0, Samples);
             }

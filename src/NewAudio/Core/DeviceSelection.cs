@@ -10,7 +10,6 @@ namespace VL.NewAudio.Core
     [Serializable]
     public class DeviceSelection : DynamicEnumBase<DeviceSelection, DeviceSelectionDefinition>
     {
-
         public static DeviceSelection CreateDefault()
         {
             return CreateDefaultBase();

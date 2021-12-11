@@ -8,7 +8,7 @@ using VL.NewAudio.Processor;
 
 namespace VL.NewAudio.Sources
 {
-    public class AudioProcessorPlayer: IAudioDeviceCallback, IDisposable
+    public class AudioProcessorPlayer : IAudioDeviceCallback, IDisposable
     {
         private struct NumChannels
         {
@@ -37,11 +37,11 @@ namespace VL.NewAudio.Sources
         private NumChannels _defaultProcessorChannels;
         private NumChannels _actualProcessorChannels;
         private readonly AudioBuffer _tempBuffer = new();
-        
+
         private NumChannels FindMostSuitableLayout(AudioProcessor processor)
         {
             var layouts = new List<NumChannels> { _deviceChannels };
-            
+
             if (_deviceChannels.ins is 0 or 1)
             {
                 layouts.Add(new NumChannels(_defaultProcessorChannels.ins, _deviceChannels.outs));
@@ -53,11 +53,12 @@ namespace VL.NewAudio.Sources
 
         private void ResizeChannels()
         {
-            var maxChannels = new[]{
+            var maxChannels = new[]
+            {
                 _deviceChannels.ins, _deviceChannels.outs,
-                _actualProcessorChannels.ins,_actualProcessorChannels.outs
+                _actualProcessorChannels.ins, _actualProcessorChannels.outs
             }.Max();
-            
+
             _tempBuffer.SetSize(maxChannels, _framesPerBlock);
         }
 
@@ -67,6 +68,7 @@ namespace VL.NewAudio.Sources
             get => _processor;
             set => SetProcessor(value);
         }
+
         public void SetProcessor(AudioProcessor? processor)
         {
             lock (_lock)
@@ -78,9 +80,11 @@ namespace VL.NewAudio.Sources
 
                 if (processor != null && _sampleRate > 0 && _framesPerBlock > 0)
                 {
-                    _defaultProcessorChannels = new NumChannels(processor.MainBusInputChannels, processor.MainBusOutputChannels);
+                    _defaultProcessorChannels =
+                        new NumChannels(processor.MainBusInputChannels, processor.MainBusOutputChannels);
                     _actualProcessorChannels = FindMostSuitableLayout(processor);
-                    processor.SetPlayConfig(_actualProcessorChannels.ins, _actualProcessorChannels.outs,_sampleRate, _framesPerBlock);
+                    processor.SetPlayConfig(_actualProcessorChannels.ins, _actualProcessorChannels.outs, _sampleRate,
+                        _framesPerBlock);
                     processor.PrepareToPlay(_sampleRate, _framesPerBlock);
                 }
 
@@ -89,7 +93,7 @@ namespace VL.NewAudio.Sources
                 _processor = processor;
                 _isPrepared = true;
                 ResizeChannels();
-                
+
                 if (old != null)
                 {
                     old.ReleaseResources();
@@ -101,12 +105,12 @@ namespace VL.NewAudio.Sources
         {
             lock (_lock)
             {
-                Trace.Assert(_sampleRate>0 && _framesPerBlock>0 );
+                Trace.Assert(_sampleRate > 0 && _framesPerBlock > 0);
                 _tempBuffer.Merge(input, output, _actualProcessorChannels.ins, _actualProcessorChannels.outs);
 
                 if (_processor != null)
                 {
-                    Trace.Assert(output.NumberOfChannels==_actualProcessorChannels.outs);
+                    Trace.Assert(output.NumberOfChannels == _actualProcessorChannels.outs);
                     lock (_processor.ProcessLock)
                     {
                         if (!_processor.SuspendProcessing)
@@ -134,7 +138,7 @@ namespace VL.NewAudio.Sources
                 _framesPerBlock = newFramesPerBlock;
                 _deviceChannels = new NumChannels(numChannelIn, numChannelOut);
                 ResizeChannels();
-                
+
                 if (_processor != null)
                 {
                     if (_isPrepared)
@@ -161,13 +165,12 @@ namespace VL.NewAudio.Sources
                 _sampleRate = 0;
                 _framesPerBlock = 0;
                 _isPrepared = false;
-                _tempBuffer.SetSize(1,1);
+                _tempBuffer.SetSize(1, 1);
             }
         }
 
         public void AudioDeviceError(string errorMessage)
         {
-            
         }
 
         public void Dispose()

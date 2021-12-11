@@ -5,21 +5,22 @@ using VL.NewAudio.Dsp;
 
 namespace VL.NewAudio.Sources
 {
-    public class AudioSourcePlayer: IAudioDeviceCallback, IDisposable
+    public class AudioSourcePlayer : IAudioDeviceCallback, IDisposable
     {
         public float Gain { get; set; } = 1.0f;
 
         private readonly object _readLock = new();
         private IAudioSource? _source;
+
         public IAudioSource? Source
         {
-            get=>_source;
+            get => _source;
             set
             {
                 if (_source != value)
                 {
                     var oldSource = _source;
-                
+
                     if (value != null && _framesPerBlock > 0 && _sampleRate > 0)
                     {
                         value.PrepareToPlay(_sampleRate, _framesPerBlock);
@@ -38,7 +39,7 @@ namespace VL.NewAudio.Sources
         private int _sampleRate;
         private int _framesPerBlock;
         private readonly AudioBuffer _tempBuffer = new();
-        private float _lastGain=1.0f;
+        private float _lastGain = 1.0f;
         private bool _disposedValue;
 
         public AudioSourcePlayer()
@@ -47,7 +48,7 @@ namespace VL.NewAudio.Sources
 
         public void AudioDeviceCallback(AudioBuffer? input, AudioBuffer output, int numFrames)
         {
-            Trace.Assert(_sampleRate>0 && _framesPerBlock>0 );
+            Trace.Assert(_sampleRate > 0 && _framesPerBlock > 0);
             lock (_readLock)
             {
                 var totalInputs = input?.NumberOfChannels ?? 0;
@@ -56,11 +57,10 @@ namespace VL.NewAudio.Sources
 
                 if (Source != null)
                 {
-
                     var info = new AudioSourceChannelInfo(_tempBuffer, 0, numFrames);
                     Source.GetNextAudioBlock(info);
-                    
-                    for (int i = info.Buffer.NumberOfChannels; --i >= 0;)
+
+                    for (var i = info.Buffer.NumberOfChannels; --i >= 0;)
                     {
                         // buffer.applyGainRamp(i, info.StartFrame, info.NumFrames, _lastGain, _gain);
                     }
@@ -69,7 +69,7 @@ namespace VL.NewAudio.Sources
                 }
                 else
                 {
-                    for (int i = 0; i < output.NumberOfChannels; i++)
+                    for (var i = 0; i < output.NumberOfChannels; i++)
                     {
                         output.ZeroChannel(i);
                     }
@@ -81,7 +81,7 @@ namespace VL.NewAudio.Sources
         {
             PrepareToPlay(session.CurrentSampleRate, session.CurrentFramesPerBlock);
         }
-        
+
 
         public void AudioDeviceStopped()
         {
@@ -94,7 +94,6 @@ namespace VL.NewAudio.Sources
 
         public void AudioDeviceError(string errorMessage)
         {
-            
         }
 
         public void PrepareToPlay(int sampleRate, int framesPerBlock)
@@ -104,7 +103,7 @@ namespace VL.NewAudio.Sources
 
             Source?.PrepareToPlay(sampleRate, framesPerBlock);
         }
-        
+
         public void Dispose()
         {
             Dispose(true);
@@ -116,12 +115,11 @@ namespace VL.NewAudio.Sources
             {
                 if (disposing)
                 {
-                    Source=null;
+                    Source = null;
                 }
 
                 _disposedValue = true;
             }
         }
-
     }
 }

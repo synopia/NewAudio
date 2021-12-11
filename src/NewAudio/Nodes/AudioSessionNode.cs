@@ -16,10 +16,9 @@ namespace VL.NewAudio.Nodes
             _graph.SetChannels(ins, outs);
 
      */
-
     public class AudioSessionNode : AudioNode
     {
-        private readonly AudioStreamBuilder _streamBuilder = new ();
+        private readonly AudioStreamBuilder _streamBuilder = new();
         private readonly IAudioControl _control;
         private IAudioDeviceCallback? _input;
         private bool _disposed;
@@ -60,12 +59,12 @@ namespace VL.NewAudio.Nodes
         public int XRuns => _session?.XRuns ?? 0;
         public double InputLatency => _session?.InputLatency ?? 0;
         public double OutputLatency => _session?.OutputLatency ?? 0;
-        
+
         /// <summary>
         /// Returns the current type of the session. 
         /// </summary>
         public AudioStreamType? Type => _session?.Type;
-        
+
         public IAudioDeviceCallback? Input
         {
             get => _input;
@@ -80,6 +79,7 @@ namespace VL.NewAudio.Nodes
                 {
                     _control.RemoveAudioCallback(_input);
                 }
+
                 _input = value;
                 if (_input != null)
                 {
@@ -87,7 +87,7 @@ namespace VL.NewAudio.Nodes
                 }
             }
         }
-        
+
 
         public AudioSessionNode()
         {
@@ -105,10 +105,11 @@ namespace VL.NewAudio.Nodes
                     _control.Dispose();
                 }
             }
+
             base.Dispose(disposing);
         }
 
-        
+
         public void Update()
         {
             if (Primary == null)
@@ -122,10 +123,9 @@ namespace VL.NewAudio.Nodes
                 _session = null;
                 return;
             }
-            
-                
-            _session = _control.Open(_streamBuilder);
 
+
+            _session = _control.Open(_streamBuilder);
         }
     }
 }

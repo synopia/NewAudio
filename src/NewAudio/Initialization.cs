@@ -92,7 +92,7 @@ namespace VL.NewAudio
 
             factory.RegisterService<NodeContext, IResourceProvider<AudioGraph>>(context =>
             {
-                return ResourceProvider.NewPooledPerApp(context, factory: () => new AudioGraph());
+                return ResourceProvider.NewPooledPerApp(context, () => new AudioGraph());
             });
         }
     }

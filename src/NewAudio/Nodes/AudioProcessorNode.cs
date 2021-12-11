@@ -5,7 +5,7 @@ using VL.Lang;
 
 namespace VL.NewAudio.Nodes
 {
-    public class AudioProcessorNode<TProcessor> : AudioNode where TProcessor: AudioProcessor
+    public class AudioProcessorNode<TProcessor> : AudioNode where TProcessor : AudioProcessor
     {
         public readonly TProcessor Processor;
 
@@ -14,6 +14,7 @@ namespace VL.NewAudio.Nodes
         private AudioLink? _input;
 
         public readonly AudioLink Output;
+
         public AudioLink? Input
         {
             get => _input;
@@ -28,7 +29,8 @@ namespace VL.NewAudio.Nodes
                 {
                     var sourceId = _input.Node.NodeId;
                     var targetId = _node.NodeId;
-                    foreach (var connection in _graph.GetConnections().Where(c=> c.source.NodeId == sourceId && c.target.NodeId==targetId))
+                    foreach (var connection in _graph.GetConnections()
+                                 .Where(c => c.source.NodeId == sourceId && c.target.NodeId == targetId))
                     {
                         _graph.RemoveConnection(connection);
                     }
@@ -38,10 +40,11 @@ namespace VL.NewAudio.Nodes
 
                 if (_input != null)
                 {
-                    int ch = 0;
+                    var ch = 0;
                     foreach (var input in _input.NodeAndChannels)
                     {
-                        var connection = new AudioGraph.Connection(input, new AudioGraph.NodeAndChannel(_node.NodeId, ch));
+                        var connection =
+                            new AudioGraph.Connection(input, new AudioGraph.NodeAndChannel(_node.NodeId, ch));
                         _graph.AddConnection(connection);
                         ch++;
                         if (ch >= Processor.TotalNumberOfInputChannels)
@@ -50,7 +53,6 @@ namespace VL.NewAudio.Nodes
                         }
                     }
                 }
-                
             }
         }
 
@@ -58,21 +60,22 @@ namespace VL.NewAudio.Nodes
         {
             Processor = processor;
             _graph = AudioGraph.CurrentGraph;
-            Output = new();
+            Output = new AudioLink();
             _node = _graph.AddNode(Processor)!;
             Output.Create(_node);
         }
 
         public override bool IsEnable
         {
-            get=>!(_node?.IsBypassed ?? true);
+            get => !(_node?.IsBypassed ?? true);
             set => _node!.IsBypassed = !value;
         }
 
         public override bool IsEnabled => IsEnable;
 
-        
+
         private bool _disposedValue;
+
         protected override void Dispose(bool disposing)
         {
             if (!_disposedValue)

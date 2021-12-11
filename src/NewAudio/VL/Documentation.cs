@@ -13,7 +13,7 @@ using System.Collections.Immutable;
 
 namespace VL.NewAudio.Core
 {
-    static class Documentation
+    internal static class Documentation
     {
         #region System.Reflection.Assembly
 
@@ -24,13 +24,13 @@ namespace VL.NewAudio.Core
         public static IEnumerable<EventInfo> GetEventInfosWithAttribute<TAttributeType>(this Assembly assembly)
             where TAttributeType : Attribute
         {
-            foreach (Type type in assembly.GetTypes())
+            foreach (var type in assembly.GetTypes())
             {
-                foreach (EventInfo eventInfo in type.GetEvents(
-                    BindingFlags.Instance |
-                    BindingFlags.Static |
-                    BindingFlags.Public |
-                    BindingFlags.NonPublic))
+                foreach (var eventInfo in type.GetEvents(
+                             BindingFlags.Instance |
+                             BindingFlags.Static |
+                             BindingFlags.Public |
+                             BindingFlags.NonPublic))
                 {
                     if (eventInfo.GetCustomAttributes(typeof(TAttributeType), true).Length > 0)
                     {
@@ -44,15 +44,16 @@ namespace VL.NewAudio.Core
         /// <typeparam name="TAttributeType">The type of the custom attribute.</typeparam>
         /// <param name="assembly">The assembly to iterate through the constructors of.</param>
         /// <returns>The IEnumerable of the constructors with the provided attribute type.</returns>
-        public static IEnumerable<ConstructorInfo> GetConstructorInfosWithAttribute<TAttributeType>(this Assembly assembly)
+        public static IEnumerable<ConstructorInfo> GetConstructorInfosWithAttribute<TAttributeType>(
+            this Assembly assembly)
             where TAttributeType : Attribute
         {
-            foreach (Type type in assembly.GetTypes())
+            foreach (var type in assembly.GetTypes())
             {
-                foreach (ConstructorInfo constructorInfo in type.GetConstructors(
-                    BindingFlags.Instance |
-                    BindingFlags.Public |
-                    BindingFlags.NonPublic))
+                foreach (var constructorInfo in type.GetConstructors(
+                             BindingFlags.Instance |
+                             BindingFlags.Public |
+                             BindingFlags.NonPublic))
                 {
                     if (constructorInfo.GetCustomAttributes(typeof(TAttributeType), true).Length > 0)
                     {
@@ -69,13 +70,13 @@ namespace VL.NewAudio.Core
         public static IEnumerable<PropertyInfo> GetPropertyInfosWithAttribute<TAttributeType>(this Assembly assembly)
             where TAttributeType : Attribute
         {
-            foreach (Type type in assembly.GetTypes())
+            foreach (var type in assembly.GetTypes())
             {
-                foreach (PropertyInfo propertyInfo in type.GetProperties(
-                    BindingFlags.Instance |
-                    BindingFlags.Static |
-                    BindingFlags.Public |
-                    BindingFlags.NonPublic))
+                foreach (var propertyInfo in type.GetProperties(
+                             BindingFlags.Instance |
+                             BindingFlags.Static |
+                             BindingFlags.Public |
+                             BindingFlags.NonPublic))
                 {
                     if (propertyInfo.GetCustomAttributes(typeof(TAttributeType), true).Length > 0)
                     {
@@ -92,13 +93,13 @@ namespace VL.NewAudio.Core
         public static IEnumerable<FieldInfo> GetFieldInfosWithAttribute<TAttributeType>(this Assembly assembly)
             where TAttributeType : Attribute
         {
-            foreach (Type type in assembly.GetTypes())
+            foreach (var type in assembly.GetTypes())
             {
-                foreach (FieldInfo fieldInfo in type.GetFields(
-                    BindingFlags.Instance |
-                    BindingFlags.Static |
-                    BindingFlags.Public |
-                    BindingFlags.NonPublic))
+                foreach (var fieldInfo in type.GetFields(
+                             BindingFlags.Instance |
+                             BindingFlags.Static |
+                             BindingFlags.Public |
+                             BindingFlags.NonPublic))
                 {
                     if (fieldInfo.GetCustomAttributes(typeof(TAttributeType), true).Length > 0)
                     {
@@ -115,13 +116,13 @@ namespace VL.NewAudio.Core
         public static IEnumerable<MethodInfo> GetMethodInfosWithAttribute<TAttributeType>(this Assembly assembly)
             where TAttributeType : Attribute
         {
-            foreach (Type type in assembly.GetTypes())
+            foreach (var type in assembly.GetTypes())
             {
-                foreach (MethodInfo methodInfo in type.GetMethods(
-                    BindingFlags.Instance |
-                    BindingFlags.Static |
-                    BindingFlags.Public |
-                    BindingFlags.NonPublic))
+                foreach (var methodInfo in type.GetMethods(
+                             BindingFlags.Instance |
+                             BindingFlags.Static |
+                             BindingFlags.Public |
+                             BindingFlags.NonPublic))
                 {
                     if (methodInfo.GetCustomAttributes(typeof(TAttributeType), true).Length > 0)
                     {
@@ -138,7 +139,7 @@ namespace VL.NewAudio.Core
         public static IEnumerable<Type> GetTypesWithAttribute<TAttributeType>(this Assembly assembly)
             where TAttributeType : Attribute
         {
-            foreach (Type type in assembly.GetTypes())
+            foreach (var type in assembly.GetTypes())
             {
                 if (type.GetCustomAttributes(typeof(TAttributeType), true).Length > 0)
                 {
@@ -153,7 +154,7 @@ namespace VL.NewAudio.Core
         /// <returns>The IEnumerable of the types that derive from the provided base.</returns>
         public static IEnumerable<Type> GetDerivedTypes<TBase>(this Assembly assembly)
         {
-            Type @base = typeof(TBase);
+            var @base = typeof(TBase);
             return assembly.GetTypes().Where(type =>
                 type != @base &&
                 @base.IsAssignableFrom(type));
@@ -164,9 +165,9 @@ namespace VL.NewAudio.Core
         /// <returns>The file path of the assembly.</returns>
         public static string GetDirectoryPath(this Assembly assembly)
         {
-            string codeBase = assembly.CodeBase;
-            UriBuilder uri = new UriBuilder(codeBase);
-            string path = Uri.UnescapeDataString(uri.Path);
+            var codeBase = assembly.CodeBase;
+            var uri = new UriBuilder(codeBase);
+            var path = Uri.UnescapeDataString(uri.Path);
             return Path.GetDirectoryName(path);
         }
 
@@ -185,13 +186,15 @@ namespace VL.NewAudio.Core
                 {
                     return;
                 }
-                string directoryPath = assembly.GetDirectoryPath();
-                string xmlFilePath = Path.Combine(directoryPath, assembly.GetName().Name + ".xml");
+
+                var directoryPath = assembly.GetDirectoryPath();
+                var xmlFilePath = Path.Combine(directoryPath, assembly.GetName().Name + ".xml");
                 if (File.Exists(xmlFilePath))
                 {
-                    using StreamReader streamReader = new StreamReader(xmlFilePath);
+                    using var streamReader = new StreamReader(xmlFilePath);
                     DoLoadXmlDocumentation(streamReader);
                 }
+
                 // currently marking assembly as loaded even if the XML file was not found
                 // may want to adjust in future, but I think this is good for now
                 _loadedAssemblies.Add(assembly);
@@ -199,12 +202,12 @@ namespace VL.NewAudio.Core
 
             static void DoLoadXmlDocumentation(TextReader textReader)
             {
-                using XmlReader xmlReader = XmlReader.Create(textReader);
+                using var xmlReader = XmlReader.Create(textReader);
                 while (xmlReader.Read())
                 {
                     if (xmlReader.NodeType == XmlNodeType.Element && xmlReader.Name == "member")
                     {
-                        string rawName = xmlReader["name"];
+                        var rawName = xmlReader["name"];
                         LoadedXmlDocumentation[rawName] = xmlReader.ReadInnerXml();
                     }
                 }
@@ -229,8 +232,8 @@ namespace VL.NewAudio.Core
         public static string GetDocumentation(this Type type)
         {
             LoadXmlDocumentation(type.Assembly);
-            string key = "T:" + XmlDocumentationKeyHelper(type.FullName, null);
-            LoadedXmlDocumentation.TryGetValue(key, out string documentation);
+            var key = "T:" + XmlDocumentationKeyHelper(type.FullName, null);
+            LoadedXmlDocumentation.TryGetValue(key, out var documentation);
             return documentation;
         }
 
@@ -240,35 +243,39 @@ namespace VL.NewAudio.Core
         /// <remarks>The XML documentation must be loaded into memory for this function to work.</remarks>
         public static string GetDocumentation(this MethodInfo methodInfo)
         {
-            if (methodInfo == null || methodInfo.DeclaringType==null)
+            if (methodInfo == null || methodInfo.DeclaringType == null)
             {
-                return String.Empty;
+                return string.Empty;
             }
+
             LoadXmlDocumentation(methodInfo.DeclaringType.Assembly);
 
             var typeGenericMap = new Dictionary<string, int>();
-            int tempTypeGeneric = 0;
-            Array.ForEach(methodInfo.DeclaringType.GetGenericArguments(), x => typeGenericMap[x.Name] = tempTypeGeneric++);
+            var tempTypeGeneric = 0;
+            Array.ForEach(methodInfo.DeclaringType.GetGenericArguments(),
+                x => typeGenericMap[x.Name] = tempTypeGeneric++);
 
-            Dictionary<string, int> methodGenericMap = new Dictionary<string, int>();
-            int tempMethodGeneric = 0;
+            var methodGenericMap = new Dictionary<string, int>();
+            var tempMethodGeneric = 0;
             Array.ForEach(methodInfo.GetGenericArguments(), x => methodGenericMap.Add(x.Name, tempMethodGeneric++));
 
             ParameterInfo[] parameterInfos = methodInfo.GetParameters();
 
-            string memberTypePrefix = "M:";
-            string declarationTypeString = GetXmlDocumenationFormattedString(methodInfo.DeclaringType, false, typeGenericMap, methodGenericMap);
-            string memberNameString = methodInfo.Name;
-            string methodGenericArgumentsString =
-                methodGenericMap.Count > 0 ?
-                "``" + methodGenericMap.Count :
-                string.Empty;
-            string parametersString =
-                parameterInfos.Length > 0 ?
-                "(" + string.Join(",", methodInfo.GetParameters().Select(x => GetXmlDocumenationFormattedString(x.ParameterType, true, typeGenericMap, methodGenericMap))) + ")" :
-                string.Empty;
+            var memberTypePrefix = "M:";
+            var declarationTypeString =
+                GetXmlDocumenationFormattedString(methodInfo.DeclaringType, false, typeGenericMap, methodGenericMap);
+            var memberNameString = methodInfo.Name;
+            var methodGenericArgumentsString =
+                methodGenericMap.Count > 0 ? "``" + methodGenericMap.Count : string.Empty;
+            var parametersString =
+                parameterInfos.Length > 0
+                    ? "(" + string.Join(",",
+                        methodInfo.GetParameters().Select(x =>
+                            GetXmlDocumenationFormattedString(x.ParameterType, true, typeGenericMap,
+                                methodGenericMap))) + ")"
+                    : string.Empty;
 
-            string key =
+            var key =
                 memberTypePrefix +
                 declarationTypeString +
                 "." +
@@ -279,10 +286,11 @@ namespace VL.NewAudio.Core
             if (methodInfo.Name == "op_Implicit" ||
                 methodInfo.Name == "op_Explicit")
             {
-                key += "~" + GetXmlDocumenationFormattedString(methodInfo.ReturnType, true, typeGenericMap, methodGenericMap);
+                key += "~" +
+                       GetXmlDocumenationFormattedString(methodInfo.ReturnType, true, typeGenericMap, methodGenericMap);
             }
 
-            LoadedXmlDocumentation.TryGetValue(key, out string documentation);
+            LoadedXmlDocumentation.TryGetValue(key, out var documentation);
             return documentation;
         }
 
@@ -294,35 +302,41 @@ namespace VL.NewAudio.Core
         {
             if (constructorInfo == null || constructorInfo.DeclaringType == null)
             {
-                return String.Empty;
+                return string.Empty;
             }
+
             LoadXmlDocumentation(constructorInfo.DeclaringType.Assembly);
 
-            Dictionary<string, int> typeGenericMap = new Dictionary<string, int>();
-            int tempTypeGeneric = 0;
-            Array.ForEach(constructorInfo.DeclaringType.GetGenericArguments(), x => typeGenericMap[x.Name] = tempTypeGeneric++);
+            var typeGenericMap = new Dictionary<string, int>();
+            var tempTypeGeneric = 0;
+            Array.ForEach(constructorInfo.DeclaringType.GetGenericArguments(),
+                x => typeGenericMap[x.Name] = tempTypeGeneric++);
 
             // constructors don't support generic types so this will always be empty
             var methodGenericMap = new Dictionary<string, int>();
 
             ParameterInfo[] parameterInfos = constructorInfo.GetParameters();
 
-            string memberTypePrefix = "M:";
-            string declarationTypeString = GetXmlDocumenationFormattedString(constructorInfo.DeclaringType, false, typeGenericMap, methodGenericMap);
-            string memberNameString = "#ctor";
-            string parametersString =
-                parameterInfos.Length > 0 ?
-                "(" + string.Join(",", constructorInfo.GetParameters().Select(x => GetXmlDocumenationFormattedString(x.ParameterType, true, typeGenericMap, methodGenericMap))) + ")" :
-                string.Empty;
+            var memberTypePrefix = "M:";
+            var declarationTypeString = GetXmlDocumenationFormattedString(constructorInfo.DeclaringType, false,
+                typeGenericMap, methodGenericMap);
+            var memberNameString = "#ctor";
+            var parametersString =
+                parameterInfos.Length > 0
+                    ? "(" + string.Join(",",
+                        constructorInfo.GetParameters().Select(x =>
+                            GetXmlDocumenationFormattedString(x.ParameterType, true, typeGenericMap,
+                                methodGenericMap))) + ")"
+                    : string.Empty;
 
-            string key =
+            var key =
                 memberTypePrefix +
                 declarationTypeString +
                 "." +
                 memberNameString +
                 parametersString;
 
-            LoadedXmlDocumentation.TryGetValue(key, out string documentation);
+            LoadedXmlDocumentation.TryGetValue(key, out var documentation);
             return documentation;
         }
 
@@ -334,13 +348,13 @@ namespace VL.NewAudio.Core
         {
             if (type.IsGenericParameter)
             {
-                return methodGenericMap.TryGetValue(type.Name, out int methodIndex)
+                return methodGenericMap.TryGetValue(type.Name, out var methodIndex)
                     ? "``" + methodIndex
                     : "`" + typeGenericMap[type.Name];
             }
             else if (type.HasElementType)
             {
-                string elementTypeString = GetXmlDocumenationFormattedString(
+                var elementTypeString = GetXmlDocumenationFormattedString(
                     type.GetElementType(),
                     isMethodParameter,
                     typeGenericMap,
@@ -352,8 +366,8 @@ namespace VL.NewAudio.Core
                 }
                 else if (type.IsArray)
                 {
-                    int rank = type.GetArrayRank();
-                    string arrayDimensionsString = rank > 1
+                    var rank = type.GetArrayRank();
+                    var arrayDimensionsString = rank > 1
                         ? "[" + string.Join(",", Enumerable.Repeat("0:", rank)) + "]"
                         : "[]";
                     return elementTypeString + arrayDimensionsString;
@@ -372,7 +386,7 @@ namespace VL.NewAudio.Core
             }
             else
             {
-                string prefaceString = type.IsNested
+                var prefaceString = type.IsNested
                     ? GetXmlDocumenationFormattedString(
                         type.DeclaringType,
                         isMethodParameter,
@@ -380,11 +394,11 @@ namespace VL.NewAudio.Core
                         methodGenericMap) + "."
                     : type.Namespace + ".";
 
-                string typeNameString = isMethodParameter
+                var typeNameString = isMethodParameter
                     ? Regex.Replace(type.Name, @"`\d+", string.Empty)
                     : type.Name;
 
-                string genericArgumentsString = type.IsGenericType && isMethodParameter
+                var genericArgumentsString = type.IsGenericType && isMethodParameter
                     ? "{" + string.Join(",",
                         type.GetGenericArguments().Select(argument =>
                             GetXmlDocumenationFormattedString(
@@ -392,7 +406,7 @@ namespace VL.NewAudio.Core
                                 isMethodParameter,
                                 typeGenericMap,
                                 methodGenericMap))
-                        ) + "}"
+                    ) + "}"
                     : string.Empty;
 
                 return prefaceString + typeNameString + genericArgumentsString;
@@ -407,11 +421,12 @@ namespace VL.NewAudio.Core
         {
             if (propertyInfo == null || propertyInfo.DeclaringType == null)
             {
-                return String.Empty;
+                return string.Empty;
             }
+
             LoadXmlDocumentation(propertyInfo.DeclaringType.Assembly);
-            string key = "P:" + XmlDocumentationKeyHelper(propertyInfo.DeclaringType.FullName, propertyInfo.Name);
-            LoadedXmlDocumentation.TryGetValue(key, out string documentation);
+            var key = "P:" + XmlDocumentationKeyHelper(propertyInfo.DeclaringType.FullName, propertyInfo.Name);
+            LoadedXmlDocumentation.TryGetValue(key, out var documentation);
             return documentation;
         }
 
@@ -423,11 +438,12 @@ namespace VL.NewAudio.Core
         {
             if (fieldInfo == null || fieldInfo.DeclaringType == null)
             {
-                return String.Empty;
+                return string.Empty;
             }
+
             LoadXmlDocumentation(fieldInfo.DeclaringType.Assembly);
-            string key = "F:" + XmlDocumentationKeyHelper(fieldInfo.DeclaringType.FullName, fieldInfo.Name);
-            LoadedXmlDocumentation.TryGetValue(key, out string documentation);
+            var key = "F:" + XmlDocumentationKeyHelper(fieldInfo.DeclaringType.FullName, fieldInfo.Name);
+            LoadedXmlDocumentation.TryGetValue(key, out var documentation);
             return documentation;
         }
 
@@ -439,21 +455,23 @@ namespace VL.NewAudio.Core
         {
             if (eventInfo == null || eventInfo.DeclaringType == null)
             {
-                return String.Empty;
+                return string.Empty;
             }
+
             LoadXmlDocumentation(eventInfo.DeclaringType.Assembly);
-            string key = "E:" + XmlDocumentationKeyHelper(eventInfo.DeclaringType.FullName, eventInfo.Name);
-            LoadedXmlDocumentation.TryGetValue(key, out string documentation);
+            var key = "E:" + XmlDocumentationKeyHelper(eventInfo.DeclaringType.FullName, eventInfo.Name);
+            LoadedXmlDocumentation.TryGetValue(key, out var documentation);
             return documentation;
         }
 
         internal static string XmlDocumentationKeyHelper(string typeFullNameString, string memberNameString)
         {
-            string key = Regex.Replace(typeFullNameString, @"\[.*\]", string.Empty).Replace('+', '.');
+            var key = Regex.Replace(typeFullNameString, @"\[.*\]", string.Empty).Replace('+', '.');
             if (!(memberNameString is null))
             {
                 key += "." + memberNameString;
             }
+
             return key;
         }
 
@@ -509,20 +527,21 @@ namespace VL.NewAudio.Core
         /// <returns>The XML documenation of the parameter.</returns>
         public static string GetDocumentation(this ParameterInfo parameterInfo)
         {
-            string memberDocumentation = parameterInfo.Member.GetDocumentation();
+            var memberDocumentation = parameterInfo.Member.GetDocumentation();
             if (!(memberDocumentation is null))
             {
-                string regexPattern =
+                var regexPattern =
                     Regex.Escape(@"<param name=" + "\"" + parameterInfo.Name + "\"" + @">") +
                     ".*?" +
                     Regex.Escape(@"</param>");
 
-                Match match = Regex.Match(memberDocumentation, regexPattern);
+                var match = Regex.Match(memberDocumentation, regexPattern);
                 if (match.Success)
                 {
                     return match.Value;
                 }
             }
+
             return null;
         }
 
@@ -567,24 +586,32 @@ namespace VL.NewAudio.Core
         public static string GetDocEntry(this string rawComment, string tag, string name = null)
         {
             if (string.IsNullOrWhiteSpace(rawComment))
+            {
                 return null;
+            }
 
             var element = GetXElement(rawComment, tag, name);
             return element?.ReplaceRefs(ImmutableDictionary<string, string>.Empty).Clean();
         }
 
-        static XElement GetXElement(string rawComment, string tag, string name = null)
+        private static XElement GetXElement(string rawComment, string tag, string name = null)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(rawComment))
+                {
                     return null;
+                }
 
                 var x = XElement.Parse($"<X>{rawComment}</X>");
                 if (name != null)
+                {
                     return x.Elements(tag).FirstOrDefault(e => e.Attribute("name")?.Value == name);
+                }
                 else
+                {
                     return x.Element(tag);
+                }
             }
             catch (Exception)
             {
@@ -594,20 +621,24 @@ namespace VL.NewAudio.Core
 
         //replace multiple consecutive spaces with a single one
         //since some help comes with weird spacings in summary and remarks
-        static string Clean(this string input)
+        private static string Clean(this string input)
         {
             return CleanRegex.Replace(input, " ").Trim();
         }
-        static readonly Regex CleanRegex = new Regex(@"\s{2,}", RegexOptions.Compiled);
 
-        static string ReplaceRefs(this XElement docElement, IReadOnlyDictionary<string, string> parameterNameMap)
+        private static readonly Regex CleanRegex = new(@"\s{2,}", RegexOptions.Compiled);
+
+        private static string ReplaceRefs(this XElement docElement,
+            IReadOnlyDictionary<string, string> parameterNameMap)
         {
             foreach (var see in docElement.Elements("see").ToArray())
             {
                 var original = see.Value;
                 original = see.Attribute("cref")?.Value ?? original;
-                see.ReplaceWith(original.Replace("T:", "").Replace("M:", "")); // TODO: This should be done on the VL symbols with proper scope!
+                see.ReplaceWith(original.Replace("T:", "")
+                    .Replace("M:", "")); // TODO: This should be done on the VL symbols with proper scope!
             }
+
             foreach (var see in docElement.Elements("paramref").ToArray())
             {
                 var original = see.Value;
@@ -618,6 +649,9 @@ namespace VL.NewAudio.Core
             return docElement.Value;
         }
 
-        static string ReplaceParameterName(this string value, IReadOnlyDictionary<string, string> nameMap) => nameMap.ValueOrDefault(value, value);
+        private static string ReplaceParameterName(this string value, IReadOnlyDictionary<string, string> nameMap)
+        {
+            return nameMap.ValueOrDefault(value, value);
+        }
     }
 }

@@ -5,7 +5,8 @@ using Xt;
 
 namespace VL.NewAudio.Backend
 {
-    public class AudioOutputStream<TSampleType, TMemoryAccess> : AudioStreamBase<TSampleType, TMemoryAccess>, IAudioOutputStream
+    public class AudioOutputStream<TSampleType, TMemoryAccess> : AudioStreamBase<TSampleType, TMemoryAccess>,
+        IAudioOutputStream
         where TSampleType : struct, ISampleType
         where TMemoryAccess : struct, IMemoryAccess
     {
@@ -27,7 +28,7 @@ namespace VL.NewAudio.Backend
         {
             Stream?.Stop();
         }
-        
+
         public double OutputLatency => Latency.output;
 
         protected override void Convert(XtBuffer buffer)
@@ -44,7 +45,7 @@ namespace VL.NewAudio.Backend
         {
             return Bind(buffer, NumOutputChannels);
         }
-        
+
         public virtual void Open(IAudioStreamCallback? callback)
         {
             Callback = callback;
@@ -80,8 +81,8 @@ namespace VL.NewAudio.Backend
         where TSampleType : struct, ISampleType
         where TMemoryAccess : struct, IMemoryAccess
     {
-
         private bool _disposed;
+
         public AudioOutputWithNoInputStream(AudioStreamConfig config) : base(config)
         {
         }

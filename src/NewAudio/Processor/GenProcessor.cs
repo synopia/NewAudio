@@ -6,37 +6,37 @@ using VL.Lib.Mathematics;
 
 namespace VL.NewAudio.Processor
 {
-    
-    public abstract class GenProcessor: AudioProcessor
+    public abstract class GenProcessor : AudioProcessor
     {
         public float Freq { get; set; }
         protected float _period;
         protected float _phase;
-        
+
         protected GenProcessor()
         {
             SetChannels(0, 1);
         }
-        
+
         public override bool IsBusStateSupported(AudioBusState layout)
         {
             return layout.MainBusInputChannels == 0 && layout.MainBusOutputChannels == 1;
         }
 
         protected abstract float NextSample();
-        
+
         public override void PrepareToPlay(int sampleRate, int framesPerBlock)
         {
             _period = 1.0f / SampleRate;
         }
+
         public override void Process(AudioBuffer buffer)
         {
-            Trace.Assert(buffer.NumberOfChannels<=TotalNumberOfOutputChannels);
-            
-            for (int i = 0; i < buffer.NumberOfFrames; i++)
+            Trace.Assert(buffer.NumberOfChannels <= TotalNumberOfOutputChannels);
+
+            for (var i = 0; i < buffer.NumberOfFrames; i++)
             {
                 var sample = NextSample();
-                for (int ch = 0; ch < TotalNumberOfOutputChannels; ch++)
+                for (var ch = 0; ch < TotalNumberOfOutputChannels; ch++)
                 {
                     buffer[ch, i] = sample;
                 }
@@ -45,15 +45,14 @@ namespace VL.NewAudio.Processor
 
         public override void ReleaseResources()
         {
-            
         }
     }
 
     public class NoiseGenProcessor : GenProcessor
     {
         public override string Name => "Noise";
-        private Random _random = new Random();
-        
+        private Random _random = new();
+
         public NoiseGenProcessor()
         {
         }
@@ -63,10 +62,11 @@ namespace VL.NewAudio.Processor
             return _random.NextFloat(-1, 1);
         }
     }
+
     public class SineGenProcessor : GenProcessor
     {
         public override string Name => "SineGen";
-        
+
         public SineGenProcessor()
         {
         }

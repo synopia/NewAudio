@@ -6,13 +6,10 @@ using Xt;
 
 namespace VL.NewAudio.Core
 {
-    
-
-    public interface IAudioService: IDisposable
+    public interface IAudioService : IDisposable
     {
-
         void ScanForDevices();
-        
+
         IEnumerable<DeviceName> GetDevices();
         DeviceName GetDefaultDevice(bool output);
 

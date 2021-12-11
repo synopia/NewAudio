@@ -12,11 +12,11 @@ namespace VL.NewAudio.Core
         public double Duration => TimeEnd - TimeBegin;
         public float? ValueBegin { get; init; }
         public float ValueEnd { get; init; }
-        
+
         public bool IsCompleted { get; set; }
         public bool IsCanceled { get; set; }
-        
-    } 
+    }
+
     public class AudioParam
     {
         private object _lock;
@@ -32,9 +32,9 @@ namespace VL.NewAudio.Core
 
         public void ApplyRamp(float valueEnd, double durationSeconds)
         {
-            double timeBegin = PlayHead.CurrentPosition.TimeSeconds;
-            
-            AudioEvent evt = new AudioEvent()
+            var timeBegin = PlayHead.CurrentPosition.TimeSeconds;
+
+            var evt = new AudioEvent()
             {
                 TimeBegin = timeBegin,
                 TimeEnd = timeBegin + durationSeconds,
@@ -44,9 +44,8 @@ namespace VL.NewAudio.Core
             lock (_lock)
             {
                 RemoveEvents(timeBegin);
-                _events.Add(evt);    
+                _events.Add(evt);
             }
-            
         }
 
         public void RemoveEvents(double time)
@@ -56,7 +55,8 @@ namespace VL.NewAudio.Core
                 if (evt.TimeBegin >= time)
                 {
                     evt.IsCanceled = true;
-                } else if (evt.TimeEnd >= time)
+                }
+                else if (evt.TimeEnd >= time)
                 {
                     if (evt.TimeCancel > 0)
                     {

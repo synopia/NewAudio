@@ -10,7 +10,7 @@ namespace VL.NewAudio.Core
         {
             var category = "NewAudio.Devices";
 
-            yield return nodeFactory.NewNode(ctor: _ => new ListDevices(), category: category, copyOnWrite:true)
+            yield return nodeFactory.NewNode(_ => new ListDevices(), category: category, copyOnWrite: true)
                 .AddInput(nameof(ListDevices.Input), x => x.Input, (x, v) => x.Input = v)
                 .AddInput(nameof(ListDevices.Output), x => x.Output, (x, v) => x.Output = v)
                 .AddInput(nameof(ListDevices.Asio), x => x.Asio, (x, v) => x.Asio = v)
@@ -18,8 +18,8 @@ namespace VL.NewAudio.Core
                 .AddInput(nameof(ListDevices.DirectSound), x => x.DirectSound, (x, v) => x.DirectSound = v)
                 .AddOutput(nameof(ListDevices.Default), x => x.Default)
                 .AddOutput(nameof(ListDevices.Devices), x => x.Devices);
-                ;
-            yield return nodeFactory.NewAudioNode(ctor: ctx => new AudioDeviceNode(), category: category,
+            ;
+            yield return nodeFactory.NewAudioNode(ctx => new AudioDeviceNode(), category: category,
                     name: "AudioDevice", hasStateOutput: false)
                 .AddInput(nameof(AudioDeviceNode.Device), x => x.Device, (x, v) => x.Device = v, defaultValue: default)
                 .AddOutput(nameof(AudioDeviceNode.AudioDevice), x => x.AudioDevice)
@@ -33,7 +33,7 @@ namespace VL.NewAudio.Core
                 .AddOutput(nameof(AudioDeviceNode.MaxBufferSizeMs), x => x.MaxBufferSizeMs)
                 .AddOutput(nameof(AudioDeviceNode.InputChannelNames), x => x.InputChannelNames)
                 .AddOutput(nameof(AudioDeviceNode.OutputChannelNames), x => x.OutputChannelNames);
-                
+
 
             yield return nodeFactory.NewAudioNode(_ => new AudioStreamNode(), category: category, name: "AudioStream",
                     hasStateOutput: false)
@@ -43,9 +43,9 @@ namespace VL.NewAudio.Core
                 .AddListInput(nameof(AudioStreamNode.OutputChannels), x => x.OutputChannels,
                     (x, v) => x.OutputChannels = v)
                 .AddInput(nameof(AudioStreamNode.SamplingFrequency), x => x.SamplingFrequency,
-                    (x, v) => x.SamplingFrequency = v, defaultValue: SamplingFrequency.Hz44100)
+                    (x, v) => x.SamplingFrequency = v, SamplingFrequency.Hz44100)
                 .AddInput(nameof(AudioStreamNode.BufferSize), x => x.BufferSize, (x, v) => x.BufferSize = v,
-                    defaultValue: 0)
+                    0)
                 .AddOutput(nameof(AudioStreamNode.Config), x => x.Config);
 
             yield return nodeFactory.NewAudioNode(_ => new AudioSessionNode(), category: category, name: "AudioSession",
@@ -58,7 +58,6 @@ namespace VL.NewAudio.Core
                 .AddOutput(nameof(AudioSessionNode.OutputLatency), x => x.OutputLatency)
                 .AddOutput(nameof(AudioSessionNode.XRuns), x => x.XRuns)
                 .AddOutput(nameof(AudioSessionNode.Type), x => x.Type);
-
         }
     }
 }

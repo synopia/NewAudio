@@ -50,21 +50,23 @@ namespace VL.NewAudio.Dsp
     internal static class ConvertHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int FrameSize<TSampleType>() where TSampleType: struct, ISampleType
+        public static int FrameSize<TSampleType>() where TSampleType : struct, ISampleType
         {
             if (typeof(TSampleType) == typeof(Float32Sample))
             {
                 return 4;
-            } 
-            
+            }
+
             if (typeof(TSampleType) == typeof(Int16LsbSample))
             {
                 return 2;
-            } 
+            }
+
             if (typeof(TSampleType) == typeof(Int24LsbSample))
             {
                 return 3;
-            } 
+            }
+
             if (typeof(TSampleType) == typeof(Int32LsbSample))
             {
                 return 4;
@@ -72,13 +74,12 @@ namespace VL.NewAudio.Dsp
 
             throw new NotImplementedException();
         }
-    } 
+    }
 
     public sealed class ConvertWriter<TSampleType, TMemoryAccess> : IConvertWriter
         where TSampleType : struct, ISampleType
         where TMemoryAccess : struct, IMemoryAccess
     {
-     
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private unsafe int Write(byte* buf, float value)
         {
@@ -114,56 +115,62 @@ namespace VL.NewAudio.Dsp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe void WriteInterleaved(AudioBuffer source, int sourceStartFrame, XtBuffer target, int targetStartFrame, int numFrames)
+        private unsafe void WriteInterleaved(AudioBuffer source, int sourceStartFrame, XtBuffer target,
+            int targetStartFrame, int numFrames)
         {
-            var targetOffset = ConvertHelper.FrameSize<TSampleType>()*source.NumberOfChannels*targetStartFrame;
-            for (int i = sourceStartFrame; i < sourceStartFrame+numFrames; i++)
+            var targetOffset = ConvertHelper.FrameSize<TSampleType>() * source.NumberOfChannels * targetStartFrame;
+            for (var i = sourceStartFrame; i < sourceStartFrame + numFrames; i++)
             {
-                for (int ch = 0; ch < source.NumberOfChannels; ch++)
+                for (var ch = 0; ch < source.NumberOfChannels; ch++)
                 {
                     // ReSharper disable once PossibleNullReferenceException
-                    targetOffset += Write(&(((byte*)target.output)[targetOffset]), source[ch, i]);
+                    targetOffset += Write(&((byte*)target.output)[targetOffset], source[ch, i]);
                 }
             }
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe void WriteNonInterleaved(AudioBuffer source, int sourceStartFrame, XtBuffer target, int targetStartFrame, int numFrames)
+        private unsafe void WriteNonInterleaved(AudioBuffer source, int sourceStartFrame, XtBuffer target,
+            int targetStartFrame, int numFrames)
         {
             if (typeof(TSampleType) == typeof(Float32Sample))
             {
-                for (int ch = 0; ch <source.NumberOfChannels ; ch++)
+                for (var ch = 0; ch < source.NumberOfChannels; ch++)
                 {
                     source[ch].Span.Slice(sourceStartFrame, numFrames).CopyTo(
                         // ReSharper disable once PossibleNullReferenceException
                         new Span<float>(&((float**)target.output)[ch][targetStartFrame], numFrames));
                 }
+
                 return;
             }
 
-            for (int ch = 0; ch < source.NumberOfChannels; ch++)
+            for (var ch = 0; ch < source.NumberOfChannels; ch++)
             {
-                var targetOffset = ConvertHelper.FrameSize<TSampleType>()*targetStartFrame;
-                
-                for (int i = sourceStartFrame; i < sourceStartFrame+numFrames; i++)
+                var targetOffset = ConvertHelper.FrameSize<TSampleType>() * targetStartFrame;
+
+                for (var i = sourceStartFrame; i < sourceStartFrame + numFrames; i++)
                 {
                     // ReSharper disable once PossibleNullReferenceException
-                    targetOffset += Write(&((byte**)target.output)[ch][targetOffset], source[ch,i]);
+                    targetOffset += Write(&((byte**)target.output)[ch][targetOffset], source[ch, i]);
                 }
             }
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write(AudioBuffer source, int sourceStartFrame, XtBuffer target, int targetStartFrame, int numFrames)
+        public void Write(AudioBuffer source, int sourceStartFrame, XtBuffer target, int targetStartFrame,
+            int numFrames)
         {
-            Trace.Assert(sourceStartFrame+numFrames<=source.NumberOfFrames);
-            Trace.Assert(targetStartFrame+numFrames<=target.frames);
-            
+            Trace.Assert(sourceStartFrame + numFrames <= source.NumberOfFrames);
+            Trace.Assert(targetStartFrame + numFrames <= target.frames);
+
             if (typeof(TMemoryAccess) == typeof(Interleaved))
             {
-                WriteInterleaved(source,sourceStartFrame, target, targetStartFrame, numFrames);
+                WriteInterleaved(source, sourceStartFrame, target, targetStartFrame, numFrames);
             }
             else
             {
-                WriteNonInterleaved(source, sourceStartFrame,target, targetStartFrame,numFrames);
+                WriteNonInterleaved(source, sourceStartFrame, target, targetStartFrame, numFrames);
             }
         }
     }
@@ -172,10 +179,10 @@ namespace VL.NewAudio.Dsp
         where TSampleType : struct, ISampleType
         where TMemoryAccess : struct, IMemoryAccess
     {
-        const double Int32ToFloat=1.0 / 2147483648.0;
-        const float Int24ToFloat=1.0f / 8388607.0f;
-        const float Int16ToFloat=1.0f / short.MaxValue;
-        
+        private const double Int32ToFloat = 1.0 / 2147483648.0;
+        private const float Int24ToFloat = 1.0f / 8388607.0f;
+        private const float Int16ToFloat = 1.0f / short.MaxValue;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private unsafe int Read(byte* buf, out float value)
         {
@@ -200,7 +207,7 @@ namespace VL.NewAudio.Dsp
 
             if (typeof(TSampleType) == typeof(Int32LsbSample))
             {
-                value = (float) (*(int*)buf * Int32ToFloat);
+                value = (float)(*(int*)buf * Int32ToFloat);
                 return 4;
             }
 
@@ -209,12 +216,13 @@ namespace VL.NewAudio.Dsp
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe void ReadInterleaved(XtBuffer source, int sourceStartFrame, AudioBuffer target, int targetStartFrame, int numFrames)
+        private unsafe void ReadInterleaved(XtBuffer source, int sourceStartFrame, AudioBuffer target,
+            int targetStartFrame, int numFrames)
         {
-            int offset = ConvertHelper.FrameSize<TSampleType>()*sourceStartFrame*target.NumberOfChannels;
-            for (int i = targetStartFrame; i < targetStartFrame+numFrames; i++)
+            var offset = ConvertHelper.FrameSize<TSampleType>() * sourceStartFrame * target.NumberOfChannels;
+            for (var i = targetStartFrame; i < targetStartFrame + numFrames; i++)
             {
-                for (int ch = 0; ch < target.NumberOfChannels; ch++)
+                for (var ch = 0; ch < target.NumberOfChannels; ch++)
                 {
                     // ReSharper disable once PossibleNullReferenceException
                     offset += Read(&((byte*)source.input)[offset], out var output);
@@ -222,24 +230,27 @@ namespace VL.NewAudio.Dsp
                 }
             }
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe void ReadNonInterleaved(XtBuffer source, int sourceStartFrame, AudioBuffer target, int targetStartFrame, int numFrames)
+        private unsafe void ReadNonInterleaved(XtBuffer source, int sourceStartFrame, AudioBuffer target,
+            int targetStartFrame, int numFrames)
         {
             if (typeof(TSampleType) == typeof(Float32Sample))
-            {                
-                for (int ch = 0; ch < target.NumberOfChannels; ch++)
+            {
+                for (var ch = 0; ch < target.NumberOfChannels; ch++)
                 {
                     // ReSharper disable once PossibleNullReferenceException
                     new Span<float>(&((float**)source.input)[ch][sourceStartFrame], numFrames).CopyTo(
                         target[ch].Span.Slice(targetStartFrame, numFrames));
                 }
+
                 return;
             }
-            
-            for (int ch = 0; ch < target.NumberOfChannels; ch++)
+
+            for (var ch = 0; ch < target.NumberOfChannels; ch++)
             {
-                int sourceOffset = ConvertHelper.FrameSize<TSampleType>()*sourceStartFrame;
-                for (int i = targetStartFrame; i < targetStartFrame+numFrames; i++)
+                var sourceOffset = ConvertHelper.FrameSize<TSampleType>() * sourceStartFrame;
+                for (var i = targetStartFrame; i < targetStartFrame + numFrames; i++)
                 {
                     // ReSharper disable once PossibleNullReferenceException
                     sourceOffset += Read(&((byte**)source.input)[ch][sourceOffset], out var output);
@@ -247,15 +258,16 @@ namespace VL.NewAudio.Dsp
                 }
             }
         }
+
         public void Read(XtBuffer source, int sourceStartFrame, AudioBuffer target, int targetStartFrame, int numFrames)
         {
             if (typeof(TMemoryAccess) == typeof(Interleaved))
             {
-                ReadInterleaved(source, sourceStartFrame,target,targetStartFrame, numFrames);
+                ReadInterleaved(source, sourceStartFrame, target, targetStartFrame, numFrames);
             }
             else
             {
-                ReadNonInterleaved(source, sourceStartFrame,target, targetStartFrame,numFrames);
+                ReadNonInterleaved(source, sourceStartFrame, target, targetStartFrame, numFrames);
             }
         }
     }

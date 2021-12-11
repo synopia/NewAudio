@@ -9,19 +9,20 @@ namespace VL.NewAudio.Nodes
     /// <summary>
     /// Open and configures an audio device. 
     /// </summary>
-    public class AudioStreamNode: AudioNode
+    public class AudioStreamNode : AudioNode
     {
         public IAudioDevice? AudioDevice { get; set; }
-        
+
         /// <summary>
         /// The sampling frequency to use. If nothing is selected or selected frequency is not available, the smallest above 44kHz is chosen.
         /// </summary>
         public SamplingFrequency SamplingFrequency { get; set; } = SamplingFrequency.Hz44100;
+
         /// <summary>
         /// The buffer size to use. If below min or above max, the default buffer size is chosen.
         /// </summary>
         public double BufferSize { get; set; } = 0;
-        
+
         /// <summary>
         /// Input channels to use. You get the available channel names from the AudioDevice node.  
         /// </summary>

@@ -9,7 +9,7 @@ namespace VL.NewAudio.Internal
 {
     public class SafeDisposable : IDisposable
     {
-        public object DisposeLock = new object();
+        public object DisposeLock = new();
         public bool IsDisposed { get; private set; }
 
         public void Dispose()
@@ -22,8 +22,10 @@ namespace VL.NewAudio.Internal
                 }
             }
         }
-        
-        protected virtual void DisposeCore() {}
+
+        protected virtual void DisposeCore()
+        {
+        }
 
         public void AssertSafe()
         {
@@ -42,12 +44,14 @@ namespace VL.NewAudio.Internal
         private readonly MemoryMappedFile _mmFile;
         private readonly MemoryMappedViewAccessor _accessor;
         private unsafe byte* _pointer;
-        
+
         public int Length { get; private set; }
 
         public MemoryMappedViewAccessor Accessor
         {
-            get{ AssertSafe();
+            get
+            {
+                AssertSafe();
                 return _accessor;
             }
         }
@@ -59,7 +63,6 @@ namespace VL.NewAudio.Internal
                 AssertSafe();
                 return _pointer;
             }
-            
         }
 
         public unsafe SafeMemoryMappedFile(MemoryMappedFile mmFile)
@@ -138,10 +141,10 @@ namespace VL.NewAudio.Internal
             }
         }
 
-        unsafe void WriteMessage(byte[] block)
+        private unsafe void WriteMessage(byte[] block)
         {
-            byte* ptr = Buffer.Pointer;
-            byte* offsetPointer = ptr + Offset;
+            var ptr = Buffer.Pointer;
+            var offsetPointer = ptr + Offset;
             var msgPointer = (int*)offsetPointer;
             *msgPointer = block.Length;
             Offset += MessageHeaderLength;
@@ -152,14 +155,14 @@ namespace VL.NewAudio.Internal
                 Offset += block.Length;
             }
 
-            int* iptr = (int*)ptr;
+            var iptr = (int*)ptr;
             *iptr = ++_messageNumber;
         }
 
-        void WriteContinuation(int messageSize)
+        private void WriteContinuation(int messageSize)
         {
-            string newName = Name + "." + ++_bufferCount;
-            int newLength = BufferSize;
+            var newName = Name + "." + ++_bufferCount;
+            var newLength = BufferSize;
             var newFile =
                 new SafeMemoryMappedFile(MemoryMappedFile.CreateNew(newName, newLength,
                     MemoryMappedFileAccess.ReadWrite));
@@ -169,7 +172,7 @@ namespace VL.NewAudio.Internal
             Length = newFile.Length;
             Offset = StartingOffset;
 
-            foreach (var oldBuffer in _oldBuffers.Take(_oldBuffers.Count-1).ToArray())
+            foreach (var oldBuffer in _oldBuffers.Take(_oldBuffers.Count - 1).ToArray())
             {
                 lock (DisposeLock)
                 {
@@ -204,12 +207,12 @@ namespace VL.NewAudio.Internal
             new Thread(Go).Start();
         }
 
-        void Go()
+        private void Go()
         {
-            int spinCycles = 0;
+            var spinCycles = 0;
             while (true)
             {
-                int? latestMessageId = GetLatestMessageId();
+                var latestMessageId = GetLatestMessageId();
                 if (latestMessageId == null)
                 {
                     return;
@@ -218,7 +221,7 @@ namespace VL.NewAudio.Internal
                 if (latestMessageId > _lastMessageProcessed)
                 {
                     Thread.MemoryBarrier();
-                    byte[] msg = GetNextMessage();
+                    var msg = GetNextMessage();
                     if (msg == null)
                     {
                         return;
@@ -245,20 +248,19 @@ namespace VL.NewAudio.Internal
                     Thread.MemoryBarrier();
                     spinCycles--;
                 }
-
             }
         }
 
-        unsafe int? GetLatestMessageId()
+        private unsafe int? GetLatestMessageId()
         {
-            lock(DisposeLock)
+            lock (DisposeLock)
             lock (Buffer.DisposeLock)
             {
                 return IsDisposed || Buffer.IsDisposed ? null : *(int*)Buffer.Pointer;
             }
         }
 
-        unsafe byte[] GetNextMessage()
+        private unsafe byte[] GetNextMessage()
         {
             _lastMessageProcessed++;
             lock (DisposeLock)
@@ -275,16 +277,16 @@ namespace VL.NewAudio.Internal
                         return null;
                     }
 
-                    byte* offsetPointer = Buffer.Pointer + Offset;
+                    var offsetPointer = Buffer.Pointer + Offset;
                     var msgPointer = (int*)offsetPointer;
-                    int msgLength = *msgPointer;
+                    var msgLength = *msgPointer;
                     Offset += MessageHeaderLength;
                     offsetPointer += MessageHeaderLength;
                     if (msgLength == 0)
                     {
                         Buffer.Accessor.Write(4, true);
                         Buffer.Dispose();
-                        string newName = Name + "." + ++_bufferCount;
+                        var newName = Name + "." + ++_bufferCount;
                         Buffer = new SafeMemoryMappedFile(MemoryMappedFile.OpenExisting(newName));
                         Offset = StartingOffset;
                         return Array.Empty<byte>();

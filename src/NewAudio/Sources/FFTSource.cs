@@ -5,7 +5,7 @@ using VL.NewAudio.Nodes;
 
 namespace VL.NewAudio.Sources
 {
-    public class FFTSource: BaseBufferOutSource
+    public class FFTSource : BaseBufferOutSource
     {
         private readonly BaseFft _fft;
         private int _fftSize;
@@ -21,6 +21,7 @@ namespace VL.NewAudio.Sources
                 BufferSize = _fftSize;
             }
         }
+
         public Spread<float> Buffer { get; set; } = Spread<float>.Empty;
 
         public FFTSource(bool forward)
@@ -32,8 +33,8 @@ namespace VL.NewAudio.Sources
         {
             // Task.Run(() =>
             // {
-                _fft.DoFft(data, _fftSize, WindowFunction);
-                Buffer = Spread.Create(data);                    
+            _fft.DoFft(data, _fftSize, WindowFunction);
+            Buffer = Spread.Create(data);
             // });
         }
     }

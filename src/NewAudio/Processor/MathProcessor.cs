@@ -3,14 +3,13 @@ using VL.NewAudio.Dsp;
 
 namespace VL.NewAudio.Processor
 {
-    
-    public abstract class MathProcessor: AudioProcessor
+    public abstract class MathProcessor : AudioProcessor
     {
         public float Value;
-        
+
         protected MathProcessor()
         {
-            SetChannels(1,1);
+            SetChannels(1, 1);
         }
 
         public override bool IsBusStateSupported(AudioBusState layout)
@@ -23,14 +22,15 @@ namespace VL.NewAudio.Processor
         public override void PrepareToPlay(int sampleRate, int framesPerBlock)
         {
         }
+
         public override void Process(AudioBuffer buffer)
         {
-            for (int i = 0; i < buffer.NumberOfFrames; i++)
+            for (var i = 0; i < buffer.NumberOfFrames; i++)
             {
                 var channel = 0;
-                for (int ch = 0; ch < TotalNumberOfOutputChannels; ch++)
+                for (var ch = 0; ch < TotalNumberOfOutputChannels; ch++)
                 {
-                    var sample = NextSample(buffer[channel,i]);
+                    var sample = NextSample(buffer[channel, i]);
                     buffer[ch, i] = sample;
 
                     channel++;
@@ -41,9 +41,7 @@ namespace VL.NewAudio.Processor
 
         public override void ReleaseResources()
         {
-            
         }
-
     }
 
     public class MultiplyProcessor : MathProcessor

@@ -5,7 +5,8 @@ using Xt;
 
 namespace VL.NewAudio.Backend
 {
-    public class AudioAggregateStream<TSampleType, TMemoryAccess> : AudioOutputStream<TSampleType, TMemoryAccess>,  IAudioInputOutputStream
+    public class AudioAggregateStream<TSampleType, TMemoryAccess> : AudioOutputStream<TSampleType, TMemoryAccess>,
+        IAudioInputOutputStream
         where TSampleType : struct, ISampleType
         where TMemoryAccess : struct, IMemoryAccess
     {
@@ -16,21 +17,22 @@ namespace VL.NewAudio.Backend
         private readonly IAudioInputStream _inputStream;
         private readonly AudioStreamConfig[] _configs;
         private bool _disposed;
-        
+
         public AudioAggregateStream(AudioStreamConfig primary, AudioStreamConfig[] secondary)
             : base(primary)
         {
             _configs = secondary.Where(i => i.ActiveInputChannels.Count > 0).ToArray();
-            
+
             var numInputChannels = _configs.Sum(i => i.ActiveInputChannels.Count) + primary.ActiveInputChannels.Count;
             NumOutputChannels = primary.ActiveOutputChannels.Count;
             NumInputChannels = numInputChannels;
 
             _inputStream = new AudioInputStream<TSampleType, TMemoryAccess>(primary
-            with {
-                ActiveInputChannels = AudioChannels.Channels(numInputChannels),
-                ActiveOutputChannels = AudioChannels.Disabled
-            });
+                with
+                {
+                    ActiveInputChannels = AudioChannels.Channels(numInputChannels),
+                    ActiveOutputChannels = AudioChannels.Disabled
+                });
 
             Logger.Information("Audio aggregate stream created: {@This}", this);
         }
@@ -46,6 +48,7 @@ namespace VL.NewAudio.Backend
                     _inputStream.Dispose();
                 }
             }
+
             base.Dispose(disposing);
         }
 
@@ -69,10 +72,11 @@ namespace VL.NewAudio.Backend
                 streamParams = new XtStreamParams(Config.Interleaved, null, null, null);
             }
 
-            double bufSize = Config.BufferSize;
+            var bufSize = Config.BufferSize;
             var aggregateDeviceParams =
                 _configs.Select(i
-                        => new XtAggregateDeviceParams(((XtAudioDevice)i.AudioDevice).XtDevice, new XtChannels(i.ActiveInputChannels.Count, i.ActiveInputChannels.Mask,0,0), bufSize))
+                        => new XtAggregateDeviceParams(((XtAudioDevice)i.AudioDevice).XtDevice,
+                            new XtChannels(i.ActiveInputChannels.Count, i.ActiveInputChannels.Mask, 0, 0), bufSize))
                     .Concat(new[] { new XtAggregateDeviceParams(XtDevice, outputChannels, bufSize) }).ToArray();
 
             var deviceParams = new XtAggregateStreamParams(streamParams, aggregateDeviceParams,

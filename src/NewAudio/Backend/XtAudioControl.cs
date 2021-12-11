@@ -12,7 +12,7 @@ namespace VL.NewAudio.Backend
         private readonly ILogger _logger = Resources.GetLogger<IAudioControl>();
         private readonly IAudioService _service;
         public object AudioProcessLock { get; } = new();
-        
+
         private readonly List<IAudioDeviceCallback> _callbacks = new();
         private readonly CallbackHandler _callbackHandler;
         private readonly AudioBuffer _tempBuffer;
@@ -57,14 +57,14 @@ namespace VL.NewAudio.Backend
         public IAudioSession? Open(AudioStreamBuilder builder)
         {
             Close();
-            _logger.Information("Opening audio control ({@Builder})",builder);
+            _logger.Information("Opening audio control ({@Builder})", builder);
 
             _currentSession = new XtAudioSession(builder.Build());
             _currentSession.Start(_callbackHandler);
             return _currentSession;
         }
 
-        
+
         public void AddAudioCallback(IAudioDeviceCallback callback)
         {
             lock (AudioProcessLock)
@@ -88,7 +88,7 @@ namespace VL.NewAudio.Backend
 
         public void RemoveAudioCallback(IAudioDeviceCallback callback)
         {
-            bool needReinit = _currentSession != null;
+            var needReinit = _currentSession != null;
             lock (AudioProcessLock)
             {
                 needReinit = needReinit && _callbacks.Contains(callback);
@@ -111,11 +111,11 @@ namespace VL.NewAudio.Backend
                     _tempBuffer.SetSize(Math.Max(1, output.NumberOfChannels), Math.Max(1, numFrames), false, false,
                         true);
                     _callbacks[0].AudioDeviceCallback(input, output, numFrames);
-                    for (int i = _callbacks.Count; --i > 0;)
+                    for (var i = _callbacks.Count; --i > 0;)
                     {
                         _callbacks[i].AudioDeviceCallback(input, _tempBuffer, numFrames);
 
-                        for (int ch = 0; ch < output.NumberOfChannels; ch++)
+                        for (var ch = 0; ch < output.NumberOfChannels; ch++)
                         {
                             output[ch].Span.Add(_tempBuffer[0].Span, numFrames);
                         }
@@ -132,7 +132,7 @@ namespace VL.NewAudio.Backend
         {
             lock (AudioProcessLock)
             {
-                for (int i = _callbacks.Count; --i >= 0;)
+                for (var i = _callbacks.Count; --i >= 0;)
                 {
                     _callbacks[i].AudioDeviceAboutToStart(session);
                 }
@@ -151,7 +151,7 @@ namespace VL.NewAudio.Backend
             SendChangeMessage();
             lock (AudioProcessLock)
             {
-                for (int i = _callbacks.Count; --i >= 0;)
+                for (var i = _callbacks.Count; --i >= 0;)
                 {
                     _callbacks[i].AudioDeviceStopped();
                 }
