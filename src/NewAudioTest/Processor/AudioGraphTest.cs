@@ -1,8 +1,6 @@
 ﻿using System;
-using VL.NewAudio.Dsp;
 using VL.NewAudio.Processor;
 using NUnit.Framework;
-using VL.NewAudio.Processor;
 
 namespace VL.NewAudioTest.Processor
 {
@@ -49,8 +47,6 @@ namespace VL.NewAudioTest.Processor
 
             var b = new RenderingBuilder(g);
             var program = b.Program;
-            var code = program.ToCode;
-            Console.WriteLine(code);
             Assert.AreEqual(2, program.NumBuffersNeeded);
         }
     }
