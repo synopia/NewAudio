@@ -30,6 +30,7 @@
         <PackageReference Include="BenchmarkDotNet.Annotations" Version="0.13.1" />
         <PackageReference Include="NUnit" Version="3.13.2" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+        <PackageReference Include="Stride.Core" Version="4.0.1.1428" />
         <ProjectReference Include="..\NewAudio\VL.NewAudio.csproj" />
         <PackageReference Include="NUnitLite" Version="3.13.2" />
         <PackageReference Include="NAudio" Version="2.0.1" />
