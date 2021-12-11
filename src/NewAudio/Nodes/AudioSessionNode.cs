@@ -119,6 +119,7 @@ namespace VL.NewAudio.Nodes
             if (!IsEnable)
             {
                 _control.Close();
+                _session = null;
                 return;
             }
             

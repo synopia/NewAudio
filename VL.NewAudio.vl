@@ -294,6 +294,6 @@
   <NugetDependency Id="PFaNp3Lkw2GNWjUzaJVrfo" Location="VL.HDE" Version="2021.4.1" />
   <NugetDependency Id="CWi7ZIUqE8HLyIDVQn2YXk" Location="VL.Skia" Version="2021.4.1" />
   <DocumentDependency Id="SOZX7BhG6R9PXahXdJawZ9" Location="./vl/IIR Filter.vl" IsForward="true" />
-  <NugetDependency Id="PFCcUi1LcEkQTJyDRt4Ngy" Location="VL.NewAudio" Version="0.3.0-alpha" />
+  <NugetDependency Id="PFCcUi1LcEkQTJyDRt4Ngy" Location="VL.NewAudio" Version="0.4.0-alpha-1" />
   <NodeFactoryDependency Id="TPUIoDV5uq2OCzGYyT41kW" Location="NewAudio.Factory" IsForward="true" />
 </Document>

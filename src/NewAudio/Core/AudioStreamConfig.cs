@@ -59,10 +59,7 @@ namespace VL.NewAudio.Core
         public AudioStreamConfig? Primary
         {
             get => _primary;
-            set
-            {
-                _primary = value;
-            }
+            set => _primary = value;
         }
 
         private AudioStreamConfig[] _secondary = Array.Empty<AudioStreamConfig>();

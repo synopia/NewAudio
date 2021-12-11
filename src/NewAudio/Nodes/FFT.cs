@@ -11,7 +11,7 @@ namespace VL.NewAudio.Nodes
     {
         private readonly ILogger _logger = Resources.GetLogger<BaseFft>();
         
-        protected double[] Window;
+        protected double[]? Window;
         protected int FftLength;
         protected float[] Data;
         private WindowFunction _windowFunction = WindowFunction.None;
@@ -26,7 +26,7 @@ namespace VL.NewAudio.Nodes
         {
             Data = data;
             FftLength = fftLength;
-            if (FftLength != Window.Length)
+            if (FftLength != Window?.Length)
             {
                 _windowFunction = windowFunction;
                 Window = CreateWindow(_windowFunction, FftLength);

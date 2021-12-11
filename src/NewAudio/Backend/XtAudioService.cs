@@ -32,6 +32,7 @@ namespace VL.NewAudio.Backend
 
         private void OnError(string message)
         {
+            _logger.Error("XtAudio.OnError: {Message}", message);
             AddError(message);
         }
         

@@ -7,7 +7,6 @@ namespace VL.NewAudio.Sources
     public abstract class AudioSourceNode : IAudioSource, IDisposable
     {
         private bool _disposedValue;
-
         protected AudioSourceNode()
         {
         }

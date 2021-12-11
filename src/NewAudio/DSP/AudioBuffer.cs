@@ -127,6 +127,15 @@ namespace VL.NewAudio.Dsp
             }
         }
 
+        public void ApplyGain(int channel, int startFrame, int numFrames, float gain)
+        {
+            if (Math.Abs(gain - 1) > Single.Epsilon)
+            {
+                Dsp.Mul(_channels[channel].Slice(startFrame, numFrames).Span, gain,
+                    _channels[channel].Slice(startFrame, numFrames).Span, numFrames);
+            }
+        }
+
         public bool HasBeenCleared() => IsClear;
 
         public void SetNotClear()

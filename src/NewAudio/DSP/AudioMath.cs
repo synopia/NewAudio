@@ -23,10 +23,21 @@ namespace VL.NewAudio.Dsp
                 WindowFunction.Hamming => HammingWindow(size),
                 WindowFunction.Hann => HannWindow(size),
                 WindowFunction.BlackmanHarris => BlackmanHarrisWindow(size),
+                WindowFunction.None=>FixedWindow(size, 1),
                 _ => throw new ArgumentOutOfRangeException(nameof(windowFunction), windowFunction, null)
             };
         }
 
+        public static double[] FixedWindow(int size, double v)
+        {
+            double[] window = new double[size];
+            for (int i = 0; i < size; i++)
+            {
+                window[i] = v;
+            }
+
+            return window;
+        }
         public static double[] BlackmanHarrisWindow(int size)
         {
             double[] window = new double[size];

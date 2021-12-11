@@ -80,7 +80,8 @@ namespace VL.NewAudio.Backend
         where TSampleType : struct, ISampleType
         where TMemoryAccess : struct, IMemoryAccess
     {
-        
+
+        private bool _disposed;
         public AudioOutputWithNoInputStream(AudioStreamConfig config) : base(config)
         {
         }

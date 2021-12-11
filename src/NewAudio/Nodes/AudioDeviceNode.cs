@@ -96,6 +96,7 @@ namespace VL.NewAudio.Nodes
                 if (disposing)
                 {
                     _audioDevice?.Dispose();
+                    _audioDevice = null;
                 }
 
                 _disposedValue = disposing;

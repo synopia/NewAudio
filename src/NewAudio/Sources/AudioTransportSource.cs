@@ -20,7 +20,7 @@ namespace VL.NewAudio.Sources
         private int _frameSize;
         private int _readAheadBufferSize;
         private bool _isPrepared;
-        private bool _inputStreamEOF;
+        private bool _inputStreamEof;
         public float Gain { get; set; } = 1.0f;
 
         public IPositionalAudioSource? Source
@@ -39,6 +39,12 @@ namespace VL.NewAudio.Sources
             Source = null;
             ReleaseMasterSource();
             base.Dispose(disposing);
+        }
+
+        public int ReadAhead
+        {
+            get=> _readAheadBufferSize;
+            set => SetSource(Source, value, _sourceSampleRate);
         }
 
         public void SetSource(IPositionalAudioSource? newSource, int readAheadSize, int sourceSampleRateToCorrectFor, int maxNumChannels=2)
@@ -91,7 +97,7 @@ namespace VL.NewAudio.Sources
                 _bufferingSource = newBufferingSource;
                 _masterSource = newMasterSource;
                 _positionalSource = newPositionalSource;
-                _inputStreamEOF = false;
+                _inputStreamEof = false;
                 _playing = false;
                 
             }
@@ -111,7 +117,7 @@ namespace VL.NewAudio.Sources
                 {
                     _playing = true;
                     _stopped = false;
-                    _inputStreamEOF = false;
+                    _inputStreamEof = false;
                 }
 
                 // SendChangeMessage();
@@ -146,9 +152,9 @@ namespace VL.NewAudio.Sources
         }
 
         public double LengthInSeconds => _sampleRate > 0 ? TotalLength / (double)_sampleRate : 0.0;
-        public bool IsStreamFinished { get; }
+        public bool IsStreamFinished => _inputStreamEof;
 
-        public bool IsPlaying { get; }
+        public bool IsPlaying => _playing;
 
         public ulong NextReadPos
         {
@@ -177,7 +183,7 @@ namespace VL.NewAudio.Sources
                     _positionalSource.NextReadPos = pos;
                     
                     // if()
-                    _inputStreamEOF = false;
+                    _inputStreamEof = false;
                 }
             }
         }
@@ -193,7 +199,7 @@ namespace VL.NewAudio.Sources
                         var ratio = (_sampleRate > 0 && _sourceSampleRate > 0)
                             ? _sampleRate / (double)_sourceSampleRate
                             : 1.0;
-                        return (ulong)(_positionalSource.NextReadPos * ratio);
+                        return (ulong)(_positionalSource.TotalLength * ratio);
                     }
 
                     return 0;
@@ -223,7 +229,7 @@ namespace VL.NewAudio.Sources
                     _masterSource.PrepareToPlay(sampleRate, framesPerBlockExpected);
                 }
 
-                _inputStreamEOF = false;
+                _inputStreamEof = false;
                 _isPrepared = true;
             }
         }
@@ -259,11 +265,16 @@ namespace VL.NewAudio.Sources
                     if (_positionalSource!.NextReadPos > _positionalSource!.TotalLength + 1 && !_positionalSource!.IsLooping)
                     {
                         _playing = false;
-                        _inputStreamEOF = true;
+                        _inputStreamEof = true;
                         // SendChangeMessage();
                     }
 
                     _stopped = !_playing;
+
+                    for (int ch = 0; ch < bufferToFill.Buffer.NumberOfChannels; ch++)
+                    {
+                        bufferToFill.Buffer.ApplyGain(ch, bufferToFill.StartFrame, bufferToFill.NumFrames, Gain);
+                    }
                 }
                 else
                 {

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using VL.Core;
 using VL.NewAudio.Core;
+using VL.NewAudio.Dsp;
 using VL.NewAudio.Nodes;
 
 namespace VL.NewAudio.Sources
@@ -31,10 +32,56 @@ namespace VL.NewAudio.Sources
             yield return nodeFactory.NewNode(_ => new MixerSource(), category: category, name: "Mixer",
                     hasStateOutput: true)
                 .AddInput(nameof(MixerSource.Sources), x => x.Sources, (x, v) => x.Sources = v);
+            yield return nodeFactory.NewNode(_ => new AudioTransportSource(), category: category, name: "Buffer",
+                    hasStateOutput: true)
+                .AddInput(nameof(AudioTransportSource.Source), x => x.Source, (x, v) => x.Source = v)
+                .AddInput(nameof(AudioTransportSource.ReadAhead), x => x.ReadAhead, (x, v) => x.ReadAhead = v)
+                .AddInput(nameof(AudioTransportSource.Gain), x => x.Gain, (x, v) => x.Gain = v, defaultValue:1.0f)
+                .AddInput(nameof(AudioTransportSource.Start), x => x.IsPlaying, (x, v) =>
+                {
+                    if (v) x.Start();
+                })
+                .AddInput(nameof(AudioTransportSource.Stop), x => !x.IsPlaying, (x, v) =>
+                {
+                    if (v) x.Stop();
+                })
+                .AddOutput(nameof(AudioTransportSource.Position), x => x.Position)
+                .AddOutput(nameof(AudioTransportSource.LengthInSeconds), x => x.LengthInSeconds)
+                .AddOutput(nameof(AudioTransportSource.IsPlaying), x => x.IsPlaying)
+                .AddOutput(nameof(AudioTransportSource.IsLooping), x => x.IsLooping);
             yield return nodeFactory.NewNode(_ => new AudioFileNode(), category: category, name: "AudioFile")
                 .AddOutput(nameof(AudioFileNode.Source), x => x.Source)
                 .AddInput(nameof(AudioFileNode.Path), x => x.Path, (x, v) => x.Path = v)
                 .AddInput(nameof(AudioFileNode.Reset), x => false, (x, v) => x.Reset());
+            yield return nodeFactory.NewNode(_ => new AudioBufferOutSource(), category: category,
+                    name: "AudioBufferOut", hasStateOutput: true)
+                .AddInput(nameof(AudioBufferOutSource.Source), x => x.Source, (x, v) => x.Source = v)
+                .AddInput(nameof(AudioBufferOutSource.BufferSize), x => x.BufferSize, (x, v) => x.BufferSize = v)
+                .AddOutput(nameof(AudioBufferOutSource.Buffer), x =>
+                {
+                    x.FillBuffer();
+                    return x.Buffer;
+                });
+            yield return nodeFactory.NewNode(_ => new FFTSource(true), category: category,
+                    name: "FFT", hasStateOutput: true)
+                .AddInput(nameof(FFTSource.Source), x => x.Source, (x, v) => x.Source = v)
+                .AddInput(nameof(FFTSource.FftSize), x => x.FftSize, (x, v) => x.FftSize = v)
+                .AddInput(nameof(FFTSource.WindowFunction), x=>x.WindowFunction, (x,v)=>x.WindowFunction=v)
+                .AddOutput(nameof(FFTSource.Buffer), x =>
+                {
+                    x.FillBuffer();
+                    return x.Buffer;
+                });
+            yield return nodeFactory.NewNode(_ => new FFTSource(false), category: category,
+                    name: "iFFT", hasStateOutput: true)
+                .AddInput(nameof(FFTSource.Source), x => x.Source, (x, v) => x.Source = v)
+                .AddInput(nameof(FFTSource.FftSize), x => x.FftSize, (x, v) => x.FftSize = v)
+                .AddInput(nameof(FFTSource.WindowFunction), x=>x.WindowFunction, (x,v)=>x.WindowFunction=v)
+                .AddOutput(nameof(FFTSource.Buffer), x =>
+                {
+                    x.FillBuffer();
+                    return x.Buffer;
+                });
         }
     }
 }
