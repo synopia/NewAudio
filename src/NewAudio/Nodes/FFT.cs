@@ -1,205 +1,70 @@
-using System;
-using System.Buffers;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using FFTW.NET;
-using NewAudio.Blocks;
-using NewAudio.Core;
-using NewAudio.Internal;
+using static VL.NewAudio.Dsp.AudioMath;
 using Serilog;
 
-namespace NewAudio.Nodes
+namespace VL.NewAudio.Nodes
 {
-    public class FftInitParams : AudioNodeInitParams
+
+    public abstract class BaseFft
     {
-        public AudioParam<int> FFTLength;
-        public AudioParam<FFTUtils.WindowFunction> WindowFunction;
-
-    }
-    public class FftPlayParams : AudioNodePlayParams
-    {
-    }
-
-    public abstract class BaseFFT : AudioNode<FftInitParams, FftPlayParams>
-    {
-        private readonly ILogger _logger = Log.ForContext<BaseFFT>();
-        protected double[] Window;
-
-        private BufferBlock<AudioDataMessage> Source;
-        private AudioTime _time;
-        private BatchBlock<AudioDataMessage> _batchBlock;
-        private ActionBlock<AudioDataMessage[]> _processor;
-        private IDisposable _inputBufferLink;
-        private IDisposable _link1;
-
-        protected BaseFFT()
+        private readonly ILogger _logger = Resources.GetLogger<BaseFft>();
+        
+        protected double[]? Window;
+        protected int FftLength;
+        protected float[] Data;
+        private WindowFunction _windowFunction = WindowFunction.None;
+        
+        private bool _disposedValue;
+        protected BaseFft()
         {
             _logger.Information("FFT created");
-            Source = new BufferBlock<AudioDataMessage>();
         }
 
-        public AudioLink Update(AudioLink input, int fftLength = 512,
-            FFTUtils.WindowFunction windowFunction = FFTUtils.WindowFunction.None)
+        public void DoFft(float[] data, int fftLength, WindowFunction windowFunction)
         {
-            InitParams.WindowFunction.Value = windowFunction;
-            PlayParams.Input.Value = input;
-            InitParams.FFTLength.Value = (int)Utils.UpperPow2((uint)fftLength);;
-
-            return Update();
-        }
-
-        protected void Post(AudioDataMessage buf)
-        {
-            Source.Post(buf);
-        }
-
-        public override bool IsInitValid()
-        {
-            return InitParams.FFTLength.Value > 0;
-
-        }
-        public override bool IsPlayValid()
-        {
-            return PlayParams.Input.Value is { Format: { Channels: 1 } }
-                   && PlayParams.Input.Value.Format.BufferSize > 0;
-        }
-        public override Task<bool> Init()
-        {
-            if (_processor != null)
+            Data = data;
+            FftLength = fftLength;
+            if (FftLength != Window?.Length)
             {
-                _logger.Warning("ActionBlock != null!");
+                _windowFunction = windowFunction;
+                Window = CreateWindow(_windowFunction, FftLength);
+                ResizeBuffers(FftLength, (FftLength - 1) / 2 + 2);
+            } else if (windowFunction != _windowFunction)
+            {
+                _windowFunction = windowFunction;
+                Window = CreateWindow(windowFunction, FftLength);
             }
-            if (_batchBlock != null)
-            {
-                _logger.Warning("BatchBlock != null!");
-            }
-
-            if (_link1 != null)
-            {
-                _logger.Warning("link != null!");
-                _link1.Dispose();
-            }
-            _processor = new ActionBlock<AudioDataMessage[]>(i =>
-            {
-                try
-                {
-                    _time = i[0].Time;
-                    OnDataReceived(i);
-                }
-                catch (Exception e)
-                {
-                    ExceptionHappened(e, "ActionBlock");
-                }
-            });
-            
-            ResizeBuffers(InitParams.FFTLength.Value, (InitParams.FFTLength.Value - 1) / 2 + 2);
-            Window = FFTUtils.CreateWindow(InitParams.WindowFunction.Value, InitParams.FFTLength.Value);
-            Output.SourceBlock = null;
-            
-            return Task.FromResult(true);
-        }
-  
-
-        public override bool Play()
-        {
-            var input = PlayParams.Input.Value;    
-            var fftFormat = input.Format.WithSampleCount(InitParams.FFTLength.Value);
-            _logger.Information("Created, internal: {outFormat} fft={fftLength} {inFormat}", fftFormat, InitParams.FFTLength,
-                input.Format);
-
-            Output.Format = input.Format;
-            _batchBlock = new BatchBlock<AudioDataMessage>(1 * InitParams.FFTLength.Value / input.Format.BufferSize);
-
-            _link1 = _batchBlock.LinkTo(_processor);
-            Output.SourceBlock = Source;
-            _inputBufferLink = InputBufferBlock.LinkTo(_batchBlock);
-            return true;
+            OnDataReceived();
         }
 
-        public override bool Stop()
-        {
-            _inputBufferLink.Dispose();
-            Output.SourceBlock = null;
-            return true;
-        }
-        
-        public override Task<bool> Free()
-        {
-            if (_processor == null)
-            {
-                _logger.Error("ActionBlock == null!");
-            }
-            if (_link1 == null)
-            {
-                _logger.Error("Link == null!");
-            }
-            _link1?.Dispose();
-            _link1 = null;
-            _processor?.Complete();
-            return _processor?.Completion.ContinueWith(t =>
-            {
-                _processor = null;
-                _logger.Information("ActionBlock stopped, status={status}", t.Status);
-                return true;
-            });
-        }
-
-        /*
-        private void DoFFT_C2C(AudioBuffer input)
-        {
-            CopyInputComplex(input);
-            using var pinIn = new PinnedArray<Complex>(_inputBufferComplex);
-            using var output = new FftwArrayComplex(DFT.GetComplexBufferSize(pinIn.GetSize()));
-            DFT.FFT(pinIn, output);
-            CopyOutput(output);
-        }
-
-
-        private void DoIFFT_C2C(AudioBuffer input)
-        {
-            Complex[] o = new Complex[_fftLength/2];
-            CopyInputComplex(input);
-            using var pinIn = new PinnedArray<Complex>(_inputBufferComplex);
-            using var output = new PinnedArray<Complex>(o);
-            DFT.IFFT(pinIn, output);
-            CopyOutput2(output);
-        }
-*/
-
-        protected AudioDataMessage GetBuffer(int outLength)
-        {
-            var buf = new AudioDataMessage(Output.Format, outLength)
-            {
-                Time = _time
-            };
-            // todo
-            _time += new AudioTime(outLength, (double)outLength / PlayParams.Input.Value.Format.SampleRate);
-            return buf;
-        }
-
-
-        public override string DebugInfo()
-        {
-            return $"curr={InitParams.FFTLength}, {_processor?.Completion.Status}, {Source?.Completion.Status}/ {Source?.Count}";
-        }
-
-        protected abstract void OnDataReceived(AudioDataMessage[] input);
+        protected abstract void OnDataReceived();
         protected abstract void ResizeBuffers(int fftLength, int complexLength);
+        
+        public void Dispose()
+        {
+            Dispose(true);
+        }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _logger.Information("Disposing audio node {@This}", this);
+                }
+
+                _disposedValue = true;
+            }
+        }
     }
 
-    public class ForwardFFT : BaseFFT
+    public class ForwardFft : BaseFft
     {
-        private readonly ILogger _logger = Log.ForContext<ForwardFFT>();
-
-        private PinnedArray<double> _pinIn;
-        private PinnedArray<Complex> _pinOut;
-
-        public ForwardFFT()
-        {
-        }
+        private PinnedArray<double>? _pinIn;
+        private PinnedArray<Complex>? _pinOut;
 
         protected override void ResizeBuffers(int fftLength, int complexLength)
         {
@@ -210,54 +75,37 @@ namespace NewAudio.Nodes
             _pinOut = new PinnedArray<Complex>(complexLength);
         }
 
-        private void CopyInputReal(AudioDataMessage[] input)
+        private void CopyInputReal()
         {
-            var block = 0;
+            Trace.Assert(_pinIn!=null && _pinOut!=null);
+            
             var j = 0;
-            for (var i = 0; i < InitParams.FFTLength.Value; i++)
+            for (var i = 0; i < FftLength; i++)
             {
-                _pinIn[i] = input[block].Data[j++] * Window[i];
-                if (input[block].Data.Length == j)
-                {
-                    block++;
-                    j = 0;
-                }
-            }
-            foreach (var message in input)
-            {
-                ArrayPool<float>.Shared.Return(message.Data);
+                _pinIn![i] = Data[j++] * Window[i];
             }
         }
 
         private void CopyOutputComplex()
         {
-            var outLength = PlayParams.Input.Value.Format.SampleCount;
-            var outputBuffer = GetBuffer(outLength);
+            Trace.Assert(_pinIn!=null && _pinOut!=null);
             var written = 0;
-            for (var i = 0; i < InitParams.FFTLength.Value / 2; i++)
+            for (var i = 0; i < FftLength / 2; i++)
             {
-                if (written == outLength)
-                {
-                    Post(outputBuffer);
-                    outputBuffer = GetBuffer(outLength);
-                    written = 0;
-                }
-
-                outputBuffer.Data[written++] = (float)_pinOut[i].Real;
-                outputBuffer.Data[written++] = (float)_pinOut[i].Imaginary;
+                Data[written++] = (float)_pinOut![i].Real;
+                Data[written++] = (float)_pinOut[i].Imaginary;
             }
-
-            Post(outputBuffer);
         }
 
-        protected override void OnDataReceived(AudioDataMessage[] input)
+        protected override void OnDataReceived()
         {
-            CopyInputReal(input);
+            CopyInputReal();
             DFT.FFT(_pinIn, _pinOut);
             CopyOutputComplex();
         }
 
         private bool _disposedValue;
+
         protected override void Dispose(bool disposing)
         {
             if (!_disposedValue)
@@ -270,15 +118,15 @@ namespace NewAudio.Nodes
 
                 _disposedValue = disposing;
             }
+
             base.Dispose(disposing);
         }
     }
 
-    public class BackwardFFT : BaseFFT
+    public class BackwardFft : BaseFft
     {
-        private readonly ILogger _logger = Log.ForContext<ForwardFFT>();
-        private PinnedArray<Complex> _pinIn;
-        private PinnedArray<double> _pinOut;
+        private PinnedArray<Complex>? _pinIn;
+        private PinnedArray<double>? _pinOut;
 
         protected override void ResizeBuffers(int fftLength, int complexLength)
         {
@@ -289,55 +137,37 @@ namespace NewAudio.Nodes
             _pinOut = new PinnedArray<double>(fftLength);
         }
 
-        private void CopyInputComplex(AudioDataMessage[] input)
+        private void CopyInputComplex()
         {
-            // _logger.Verbose("pinIn={pinInLen}, pinOut={pinOutLen}, input={inputLen}", _pinIn.Length, _pinOut.Length, input.Count);
-            var block = 0;
+            Trace.Assert(_pinIn!=null && _pinOut!=null);
             var j = 0;
-            for (var i = 0; i < _pinIn.Length - 1; i++)
+            for (var i = 0; i < _pinIn!.Length - 1; i++)
             {
-                _pinIn[i + 1] = new Complex(input[block].Data[j], input[block].Data[j + 1]);
+                _pinIn[i + 1] = new Complex(Data[j], Data[j + 1]);
                 j += 2;
-                if (input[block].Data.Length == j)
-                {
-                    block++;
-                    j = 0;
-                }
             }
-            foreach (var message in input)
-            {
-                ArrayPool<float>.Shared.Return(message.Data);
-            }
+
         }
 
         private void CopyOutputReal()
         {
-            var outLength = PlayParams.Input.Value.Format.SampleCount;
+            Trace.Assert(_pinIn!=null && _pinOut!=null);
             var written = 0;
-            var outputBuffer = GetBuffer(outLength);
-            for (var b = 0; b < InitParams.FFTLength.Value; b++)
+            for (var b = 0; b < FftLength; b++)
             {
-                if (written == outLength)
-                {
-                    Post(outputBuffer);
-                    outputBuffer = GetBuffer(outLength);
-                    written = 0;
-                }
-
-                outputBuffer.Data[written++] = (float)_pinOut[b] / InitParams.FFTLength.Value;
+                Data[written++] = (float)_pinOut![b] / FftLength;
             }
-
-            Post(outputBuffer);
         }
 
-        protected override void OnDataReceived(AudioDataMessage[] input)
+        protected override void OnDataReceived()
         {
-            CopyInputComplex(input);
+            CopyInputComplex();
             DFT.IFFT(_pinIn, _pinOut);
             CopyOutputReal();
         }
 
         private bool _disposedValue;
+
         protected override void Dispose(bool disposing)
         {
             if (!_disposedValue)
@@ -350,6 +180,7 @@ namespace NewAudio.Nodes
 
                 _disposedValue = disposing;
             }
+
             base.Dispose(disposing);
         }
     }

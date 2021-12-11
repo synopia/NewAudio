@@ -5,13 +5,17 @@
         <FileAlignment>512</FileAlignment>
         <LangVersion>9</LangVersion>
         <Platforms>AnyCPU</Platforms>
-        <TargetFramework>net472</TargetFramework>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <TargetFramework>net472</TargetFramework>
+        <Nullable>enable</Nullable>
+        <NoWarn>1701,1702,1591,1570,1587,1591</NoWarn>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <OutputPath>..\..\lib\</OutputPath>
         <DocumentationFile>..\..\lib\VL.NewAudio.xml</DocumentationFile>
-        <NoWarn>1701;1702;1591;1570;1587</NoWarn>
+        <NoWarn>1701,1702,1591,1570,1587,1591</NoWarn>
         <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
         <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
@@ -20,50 +24,44 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <OutputPath>..\..\lib\</OutputPath>
+        <Optimize>true</Optimize>
+        <DebugType>pdbonly</DebugType>
+        <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Abodit.StateMachine" Version="3.21.83.7" />
         <PackageReference Include="FFTW.NET" Version="1.0.1" />
-        <PackageReference Include="NAudio" Version="2.0.1" />
-        <PackageReference Include="NAudio.Asio" Version="2.0.0" />
-        <PackageReference Include="NAudio.Core" Version="2.0.0" />
-        <PackageReference Include="NAudio.Midi" Version="2.0.1" />
-        <PackageReference Include="NAudio.Wasapi" Version="2.0.0" />
-        <PackageReference Include="NAudio.WinMM" Version="2.0.1" />
+        <PackageReference Include="NLayer.Core" Version="1.15.0" />
         <PackageReference Include="Serilog" Version="2.10.0" />
         <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />
         <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-        <PackageReference Include="Serilog.Sinks.Seq" Version="5.0.1" />
-        <PackageReference Include="SharedMemory" Version="2.2.3" />
-        <PackageReference Include="System.Management" Version="4.7.0" />
-        <PackageReference Include="System.Threading.Tasks.Dataflow" Version="5.0.0" />
-        <!--        <PackageReference Include="System.Management" Version="4.7.0" />-->
-        <PackageReference Include="VL.Core" Version="2021.3.2" />
-        <PackageReference Include="VL.CoreLib" Version="2021.3.2" />
+        <PackageReference Include="Serilog.Sinks.Seq" Version="5.1.0" />
+        <PackageReference Include="Shim.System.Numerics" Version="1.0.1" />
+        <PackageReference Include="System.Buffers" Version="4.5.1" />
+        <PackageReference Include="System.Management" Version="6.0.0" />
+        <PackageReference Include="System.Memory" Version="4.5.4" />
+        <PackageReference Include="System.Reactive" Version="5.0.0" />
+        <PackageReference Include="VL.Core" Version="2021.4.0" />
+        <PackageReference Include="VL.CoreLib" Version="2021.4.0" />
+        <PackageReference Include="VL.CoreLib.Windows" Version="2021.4.0" />
+        <PackageReference Include="VL.Lang" Version="2021.4.0" />
+        <PackageReference Include="VL.Lang.Roslyn" Version="2021.4.0" />
+        <PackageReference Include="Xt.Audio" Version="1.9.0" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Remove="Nodes\SinGen.cs" />
-        <Compile Remove="Nodes\AudioResampling.cs" />
-        <Compile Remove="Nodes\JoinAudioLinks.cs" />
-        <Compile Remove="Nodes\RingBuffer.cs" />
-        <Compile Remove="Core\AudioParam.cs" />
-        <Compile Remove="Blocks\RingBufferBlock.cs" />
-        <Compile Remove="Devices\VirtualDevice.cs" />
+        <Compile Remove="Nodes\AudioChannels.cs" />
     </ItemGroup>
     <ItemGroup>
-      <Reference Include="Microsoft.VisualStudio.Threading, Version=16.10.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-        <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0526-gd606d93626\lib\Microsoft.VisualStudio.Threading.dll</HintPath>
-      </Reference>
-      <Reference Include="VL.Core, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0600-g01fe282c1c\lib\VL.Core.dll</HintPath>
-      </Reference>
-      <Reference Include="VL.CoreLib, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0600-g01fe282c1c\lib\VL.CoreLib.dll</HintPath>
-      </Reference>
-      <Reference Include="VL.Lang, Version=2021.4.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\..\..\..\..\..\Program Files\vvvv\vvvv_gamma_2021.4.0-0600-g01fe282c1c\lib\VL.Lang.dll</HintPath>
-      </Reference>
+      <Compile Remove="Nodes\AudioResampling.cs" />
+      <Compile Remove="Nodes\AudioLoopRegion.cs" />
     </ItemGroup>
-
+    <ItemGroup>
+      <Content Include="..\..\lib\net472\x64\r8bsrc.dll">
+        <Link>x64\r8bsrc.dll</Link>
+      </Content>
+      <Content Include="..\..\lib\net472\x64\r8bsrc.lib">
+        <Link>x64\r8bsrc.lib</Link>
+      </Content>
+    </ItemGroup>
+   
 </Project>

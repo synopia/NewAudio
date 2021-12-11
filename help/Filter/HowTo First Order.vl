@@ -26,15 +26,15 @@
           </Pad>
           <Pad Id="LUVDjMkGnUCQCGi4I2zho8" Comment="Device" Bounds="568,134,374,15" ShowValueBox="true" isIOBox="true" Value="Wasapi Loopback: VoiceMeeter Input (VB-Audio VoiceMeeter VAIO)">
             <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="WaveInputDevice" />
+              <Choice Kind="TypeFlag" Name="InputDeviceSelection" />
             </p:TypeAnnotation>
           </Pad>
           <Pad Id="SQMKeQgy2zhNIFnh3S7y7H" Comment="Device" Bounds="518,529,327,15" ShowValueBox="true" isIOBox="true" Value="ASIO: ASIO4ALL v2">
             <p:TypeAnnotation>
-              <Choice Kind="TypeFlag" Name="WaveOutputDevice" />
+              <Choice Kind="TypeFlag" Name="OutputDeviceSelection" />
             </p:TypeAnnotation>
           </Pad>
-          <Pad Id="TnlwOqEOpjZPfrCKxgDBkS" Bounds="786,249,33,188" ShowValueBox="true" isIOBox="true" Value="979.9932">
+          <Pad Id="TnlwOqEOpjZPfrCKxgDBkS" Bounds="786,249,33,188" ShowValueBox="true" isIOBox="true" Value="7850">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Float32" />
               <FullNameCategoryReference ID="Primitive" />
@@ -117,6 +117,7 @@
             <Pin Id="N3zSdjYtFJIMhuXIxdjuwF" Name="Desired Latency" Kind="InputPin" />
             <Pin Id="AHCz0LtCBipQAHi2D1Bpew" Name="Phase" Kind="OutputPin" />
             <Pin Id="RVSawcBWhksNwuMjFLc4kZ" Name="Debug" Kind="OutputPin" />
+            <Pin Id="Ll0BuP3cBTAONEQLUnZ0H1" Name="Lag Ms" Kind="OutputPin" />
             <Pin Id="PH3pJefOW3lOQHQr5VyiAd" Name="Errors" Kind="OutputPin" />
           </Node>
           <Node Bounds="102,256" Id="L1a53gOMDrVPIcgLaSVeAK">
@@ -129,6 +130,13 @@
             <Pin Id="IAQTzFI8PgENumprFTJVK3" Name="Play" Kind="InputPin" />
             <Pin Id="BqveB0gsXCTNagcXx6WHsW" Name="Debug" Kind="OutputPin" />
           </Node>
+          <Pad Id="IskQ7Hx4rF9NfeB9t5qyMd" Comment="Debug" Bounds="161,461,348,229" ShowValueBox="true" isIOBox="true" Value="text">
+            <p:TypeAnnotation>
+              <Choice Kind="TypeFlag" Name="String" />
+              <FullNameCategoryReference ID="Primitive" />
+            </p:TypeAnnotation>
+          </Pad>
+          <Pad Id="Pzzyzfkn4a2O5vUtGRFSVh" Comment="Sampling Frequency" Bounds="886,593,76,15" ShowValueBox="true" Value="Hz48000" />
         </Canvas>
         <ProcessDefinition Id="ULV96Glo4tzO2Ni7R5Rfo4">
           <Fragment Id="MurYefHBnsDMtyEZpXA4i3" Patch="DVz6M3pcnL0NrNQ23EPrbT" Enabled="true" />
@@ -146,6 +154,9 @@
         <Link Id="RtsPSbgUwzoNWYhfaKeaXn" Ids="JHxxhy9ZN31PppPxnz0Tw4,Fy2IulaoKUFLgHwPrZQPQ0" />
         <Link Id="Au4VW1JBiYBNbgpLLY0YDg" Ids="SQMKeQgy2zhNIFnh3S7y7H,D32z101lmqVLVluYFWYDi5" />
         <Link Id="KNDK5PNDWgWMw95TLzJkPw" Ids="AXDRH1ckdjUQAqbfOFtnBe,IAQTzFI8PgENumprFTJVK3" />
+        <Link Id="AGOdwiDct1tO6pv0c4Z4xm" Ids="BqveB0gsXCTNagcXx6WHsW,IskQ7Hx4rF9NfeB9t5qyMd" />
+        <Link Id="N7FLXmd5AoKONnFyKa9qqi" Ids="Pzzyzfkn4a2O5vUtGRFSVh,SIYz66ugB4ZNnKzOMOyR7p" />
+        <Link Id="SRqckSUjigdMMyoFYVQ05v" Ids="AXDRH1ckdjUQAqbfOFtnBe,OY9BX1z2Et0OW3jo1oKwtV" />
       </Patch>
     </Node>
   </Patch>

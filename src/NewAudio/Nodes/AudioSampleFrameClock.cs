@@ -1,7 +1,7 @@
 ﻿using System;
 using VL.Lib.Animation;
 
-namespace NewAudio.Nodes
+namespace VL.NewAudio.Nodes
 {
     public class AudioSampleFrameClock : IFrameClock
     {

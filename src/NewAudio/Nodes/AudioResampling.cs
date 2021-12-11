@@ -3,7 +3,7 @@ using System.Threading.Tasks.Dataflow;
 using NAudio.Wave.SampleProviders;
 using Serilog;
 
-namespace NewAudio
+namespace VL.NewAudio
 {
     public class WdlResampling : AudioFlowBuffer
     {

@@ -52,7 +52,7 @@
           </Node>
           <Pad Id="Mm6zRNJzIpiPLWBirt9Fu5" Comment="Device" Bounds="205,791,353,15" ShowValueBox="true" isIOBox="true" Value="Wasapi: Kopfhörer (Razer Kraken 7.1 V2)">
             <p:TypeAnnotation LastCategoryFullName="Main.VL.NewAudioApplication" LastSymbolSource="VL.NewAudio.vl">
-              <Choice Kind="TypeFlag" Name="WaveOutputDevice" />
+              <Choice Kind="TypeFlag" Name="OutputDeviceSelection" />
             </p:TypeAnnotation>
           </Pad>
           <Pad Id="GDqWMLEml5wMabWeIGXr5a" Comment="Reset" Bounds="250,194,35,35" ShowValueBox="true" isIOBox="true" Value="False">

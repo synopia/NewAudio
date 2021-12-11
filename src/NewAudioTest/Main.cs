@@ -1,7 +1,7 @@
 ﻿using NUnitLite;
 using Serilog;
 
-namespace NewAudioTest
+namespace VL.NewAudioTest
 {
     public static class Program
     {
