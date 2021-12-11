@@ -1,14 +1,11 @@
-﻿using System;
-using VL.NewAudio.Processor;
+﻿using VL.NewAudio.Processor;
 using NUnit.Framework;
 
 namespace VL.NewAudioTest.Processor
 {
-    [TestFixture]
     public class AudioGraphTest
     {
 
-        [Test]
         public void TestOrderNodes()
         {
             var g = new AudioGraph();
