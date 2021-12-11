@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
     <metadata>
         <id>VL.NewAudio</id>
-        <version>0.4.0-alpha-2</version>
+        <version>0.4.0-alpha-3</version>
         <title>VL.NewAudio</title>
         <authors>synopia</authors>
         <owners>synopia</owners>
@@ -13,14 +13,24 @@
         <tags>VL, audio, naudio</tags>
         <dependencies>
             <group targetFramework=".NETFramework4.7.2" />
+            <dependency id="FFTW.NET" version="1.0.1"/>
+            <dependency id="NLayer.Core" version="1.15.0"/>
+            <dependency id="Serilog" version="2.10.0"/>
+            <dependency id="Serilog.Enrichers.Thread" version="3.1.0"/>
+            <dependency id="Serilog.Sinks.Console" version="4.0.0"/>
+            <dependency id="Serilog.Sinks.File" version="5.0.0"/>
+            <dependency id="Serilog.Sinks.Seq" version="5.1.0"/>
+            <dependency id="Shim.System.Numerics" version="1.0.1"/>
+            <dependency id="System.Reactive" version="4.3.2"/>
+            <dependency id="Xt.Audio" version="1.9.0"/>
         </dependencies>
     </metadata>
     <files>
         <file src="..\*.vl" target="" exclude=""/>
         <file src="..\lib\net472\VL.NewAudio.dll" target="lib\net472\" exclude=""/>
-        <file src="..\lib\net472\FFTW.NET.dll" target="lib\net472" exclude=""/>
-        <file src="..\lib\net472\libfftw3-3-x64.dll" target="lib\net472" exclude=""/>
-        <file src="..\lib\net472\libfftw3-3-x86.dll" target="lib\net472" exclude=""/>
+<!--        <file src="..\lib\net472\FFTW.NET.dll" target="lib\net472" exclude=""/>-->
+<!--        <file src="..\lib\net472\libfftw3-3-x64.dll" target="lib\net472" exclude=""/>-->
+<!--        <file src="..\lib\net472\libfftw3-3-x86.dll" target="lib\net472" exclude=""/>-->
         <file src="..\help\**\*.vl" target="\help" exclude=""/>
         <file src="..\help\**\*.xml" target="\help" exclude=""/>
     </files>
