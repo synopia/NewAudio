@@ -27,8 +27,8 @@ jobs:
       - name: Build Solution
         run: msbuild.exe src\VL.NewAudio.sln /p:platform="Any CPU" /p:configuration="Release"
         
-      - name: Run Tests
-        run: lib-test\net472\VL.NewAudio.Test.exe
+#      - name: Run Tests
+#        run: lib-test\net472\VL.NewAudio.Test.exe
 
       - name: Publish VL Nuget
         uses: vvvv/PublishVLNuget@1.0.29
