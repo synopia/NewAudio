@@ -7,7 +7,7 @@ using VL.Lib.Basics.Resources;
 using VL.NewAudio;
 using VL.NewAudio.Nodes;
 
-namespace VL.NewAudio.Core
+namespace VL.NewAudio.Nodes
 {
     
     public class AudioLink : IDisposable
