@@ -22,5 +22,6 @@
         <file src="..\lib\net472\libfftw3-3-x64.dll" target="lib\net472" exclude=""/>
         <file src="..\lib\net472\libfftw3-3-x86.dll" target="lib\net472" exclude=""/>
         <file src="..\help\**\*.vl" target="\help" exclude=""/>
+        <file src="..\help\**\*.xml" target="\help" exclude=""/>
     </files>
 </package>
