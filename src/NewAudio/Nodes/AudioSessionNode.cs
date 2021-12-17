@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using VL.NewAudio.Backend;
 using VL.NewAudio.Core;
 
@@ -20,7 +21,7 @@ namespace VL.NewAudio.Nodes
     {
         private readonly AudioStreamBuilder _streamBuilder = new();
         private readonly IAudioControl _control;
-        private IAudioDeviceCallback? _input;
+        private IAudioCallback? _input;
         private bool _disposed;
         private IAudioSession? _session;
 
@@ -57,6 +58,8 @@ namespace VL.NewAudio.Nodes
         }
 
         public int XRuns => _session?.XRuns ?? 0;
+        public double CpuUsage => _session?.CpuUsage ?? 0.0;
+        public IEnumerable<string> Times => _session?.Times ?? Array.Empty<string>();
         public double InputLatency => _session?.InputLatency ?? 0;
         public double OutputLatency => _session?.OutputLatency ?? 0;
 
@@ -65,7 +68,7 @@ namespace VL.NewAudio.Nodes
         /// </summary>
         public AudioStreamType? Type => _session?.Type;
 
-        public IAudioDeviceCallback? Input
+        public IAudioCallback? Input
         {
             get => _input;
             set

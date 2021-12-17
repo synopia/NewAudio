@@ -1,6 +1,7 @@
 ﻿using System;
 using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
+using VL.NewAudio.Internal;
 using VL.NewAudio.Sources;
 
 namespace VL.NewAudio.Sources
@@ -89,6 +90,7 @@ namespace VL.NewAudio.Sources
 
         public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
         {
+            using var s = new ScopedMeasure("MixerSource.GetNextAudioBlock");
             lock (_lock)
             {
                 if (_sources.Length > 0)
@@ -104,8 +106,8 @@ namespace VL.NewAudio.Sources
                             _sources[i].GetNextAudioBlock(buf);
                             for (var ch = 0; ch < bufferToFill.Buffer.NumberOfChannels; ch++)
                             {
-                                bufferToFill.Buffer[ch].Slice(bufferToFill.StartFrame).Span
-                                    .Add(_tempBuffer[ch].Slice(0).Span, numFrames);
+                                bufferToFill.Buffer[ch].Offset(bufferToFill.StartFrame)
+                                    .Add(_tempBuffer[ch], numFrames);
                             }
                         }
                     }

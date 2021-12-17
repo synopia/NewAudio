@@ -2,17 +2,22 @@
 using System.Globalization;
 using NLayer;
 using VL.Lib.IO;
+using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
+using VL.NewAudio.Files;
 using VL.NewAudio.Internal;
 using VL.NewAudio.Sources;
 
 namespace VL.NewAudio.Nodes
 {
-    public class AudioFileNode
+    public class AudioFileNode : IDisposable
     {
-        private MemoryAudioSource? _source;
-        public MemoryAudioSource? Source => _source;
+        private AudioFileReaderSource? _source;
+        public AudioFileReaderSource? Source => _source;
         private Path? _path;
+        private bool _disposedValue;
+        private AudioFileBufferedReader _bufferedReader;
+        public int SampleRate { get; private set; }
 
         public Path? Path
         {
@@ -32,14 +37,24 @@ namespace VL.NewAudio.Nodes
 
                 var path = _path.ToString();
                 var lower = path.ToLower();
+                IAudioFileReader? reader = null;
+
                 if (lower.EndsWith("mp3"))
                 {
-                    _source = new MemoryAudioSource(Mp3File.Load(path).ToAudioBuffer());
-                    _source.IsLooping = true;
+                    reader = new Mp3FileReader();
                 }
                 else if (lower.EndsWith("wav"))
                 {
-                    _source = new MemoryAudioSource(WaveFile.Load(path).ToAudioBuffer());
+                    reader = new WavFileReader();
+                }
+
+
+                if (reader != null)
+                {
+                    _bufferedReader = new AudioFileBufferedReader(reader, 1 << 18);
+                    _bufferedReader.Open(path);
+                    _source = new AudioFileReaderSource(_bufferedReader);
+                    SampleRate = reader.SampleRate;
                     _source.IsLooping = true;
                 }
                 else
@@ -59,6 +74,14 @@ namespace VL.NewAudio.Nodes
 
         public AudioFileNode()
         {
+        }
+
+        public void Dispose()
+        {
+            if (!_disposedValue)
+            {
+                _disposedValue = true;
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
+using VL.NewAudio.Internal;
 
 namespace VL.NewAudio.Sources
 {
@@ -15,16 +16,16 @@ namespace VL.NewAudio.Sources
         private readonly object _callbackLock = new();
         private readonly object _rangeLock = new();
         private readonly ManualResetEvent _bufferReady;
-        private ulong _bufferValidStart;
-        private ulong _bufferValidEnd;
-        private ulong _nextPlayPos;
+        private long _bufferValidStart;
+        private long _bufferValidEnd;
+        private long _nextPlayPos;
         private int _sampleRate;
         private bool _wasSourceLooping;
         private bool _isPrepared;
         private bool _prefill;
         private CancellationTokenSource _cts = new();
 
-        public ulong NextReadPos
+        public long NextReadPos
         {
             get =>
                 _source.IsLooping && _nextPlayPos > 0
@@ -41,7 +42,7 @@ namespace VL.NewAudio.Sources
 
         private Task? _fillBufferTask;
 
-        public ulong TotalLength => _source.TotalLength;
+        public long TotalLength => _source.TotalLength;
         public bool IsLooping => _source.IsLooping;
 
         public BufferingAudioSource(IPositionalAudioSource source, int numberOfSamplesToBuffer, int numberOfChannels,
@@ -63,7 +64,7 @@ namespace VL.NewAudio.Sources
                 while (!_cts.Token.IsCancellationRequested)
                 {
                     var r = ReadNextBufferChunk();
-                    Task.Delay(TimeSpan.FromMilliseconds(r ? 0.1 : 100));
+                    Thread.Sleep(TimeSpan.FromMilliseconds(r ? 1 : 100));
                 }
             }, _cts.Token);
         }
@@ -110,7 +111,7 @@ namespace VL.NewAudio.Sources
 
                 do
                 {
-                    Task.Delay(5);
+                    Thread.Sleep(5);
                 } while (_prefill && (int)(_bufferValidEnd - _bufferValidStart) <
                          Math.Min(sampleRate / 4, _buffer.NumberOfFrames / 2));
             }
@@ -126,6 +127,7 @@ namespace VL.NewAudio.Sources
 
         public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
         {
+            using var s = new ScopedMeasure("BufferingAudioSource.GetNextAudioBlock");
             var (validStart, validEnd) = GetValidBufferRange(bufferToFill.NumFrames);
             if (validEnd == validStart)
             {
@@ -150,29 +152,29 @@ namespace VL.NewAudio.Sources
                     for (var ch = 0; ch < Math.Min(_numberOfChannels, bufferToFill.Buffer.NumberOfChannels); ch++)
                     {
                         var startIndex =
-                            (int)(((ulong)validStart + _nextPlayPos) % (ulong)_buffer.NumberOfFrames);
+                            (int)((validStart + _nextPlayPos) % _buffer.NumberOfFrames);
                         var endIndex =
-                            (int)(((ulong)validEnd + _nextPlayPos) % (ulong)_buffer.NumberOfFrames);
+                            (int)((validEnd + _nextPlayPos) % _buffer.NumberOfFrames);
 
                         if (startIndex < endIndex)
                         {
-                            _buffer[ch].Slice(startIndex, validEnd - validStart).CopyTo(bufferToFill.Buffer[ch]
-                                .Slice(bufferToFill.StartFrame + validStart, validEnd - validStart));
+                            _buffer[ch].Offset(startIndex).CopyTo(bufferToFill.Buffer[ch]
+                                .Offset(bufferToFill.StartFrame + validStart), validEnd - validStart);
                         }
                         else
                         {
                             var initialSize = _buffer.NumberOfFrames - startIndex;
 
-                            _buffer[ch].Slice(startIndex, initialSize).CopyTo(bufferToFill.Buffer[ch]
-                                .Slice(bufferToFill.StartFrame + validStart, initialSize));
-                            _buffer[ch].Slice(0, validEnd - validStart - initialSize).CopyTo(bufferToFill.Buffer[ch]
-                                .Slice(bufferToFill.StartFrame + validStart + initialSize,
-                                    validEnd - validStart - initialSize));
+                            _buffer[ch].Offset(startIndex).CopyTo(bufferToFill.Buffer[ch]
+                                .Offset(bufferToFill.StartFrame + validStart), initialSize);
+                            _buffer[ch].CopyTo(bufferToFill.Buffer[ch]
+                                .Offset(bufferToFill.StartFrame + validStart + initialSize),
+                                    validEnd - validStart - initialSize);
                         }
                     }
                 }
 
-                _nextPlayPos += (ulong)bufferToFill.NumFrames;
+                _nextPlayPos += bufferToFill.NumFrames;
             }
         }
 
@@ -186,14 +188,14 @@ namespace VL.NewAudio.Sources
             lock (_rangeLock)
             {
                 return ((int)(AudioMath.Clamp(_nextPlayPos, _bufferValidStart, _bufferValidEnd) - _nextPlayPos),
-                    (int)(AudioMath.Clamp(_nextPlayPos + (ulong)numSamples, _bufferValidStart, _bufferValidEnd) -
+                    (int)(AudioMath.Clamp(_nextPlayPos + numSamples, _bufferValidStart, _bufferValidEnd) -
                           _nextPlayPos));
             }
         }
 
         private bool ReadNextBufferChunk()
         {
-            ulong newBVS, newBVE, sectionToReadStart, sectionToReadEnd;
+            long newBVS, newBVE, sectionToReadStart, sectionToReadEnd;
             lock (_rangeLock)
             {
                 if (_wasSourceLooping != IsLooping)
@@ -204,7 +206,7 @@ namespace VL.NewAudio.Sources
                 }
 
                 newBVS = Math.Max(0, _nextPlayPos);
-                newBVE = newBVS + (ulong)_buffer.NumberOfFrames - 4;
+                newBVE = newBVS + _buffer.NumberOfFrames - 4;
                 sectionToReadStart = 0;
                 sectionToReadEnd = 0;
                 const int maxChunkSize = 2048;
@@ -232,8 +234,8 @@ namespace VL.NewAudio.Sources
                 return false;
             }
 
-            var bufferIndexStart = (int)(sectionToReadStart % (ulong)_buffer.NumberOfFrames);
-            var bufferIndexEnd = (int)(sectionToReadEnd % (ulong)_buffer.NumberOfFrames);
+            var bufferIndexStart = (int)(sectionToReadStart % _buffer.NumberOfFrames);
+            var bufferIndexEnd = (int)(sectionToReadEnd % _buffer.NumberOfFrames);
             if (bufferIndexStart < bufferIndexEnd)
             {
                 ReadBufferSection(sectionToReadStart, (int)(sectionToReadEnd - sectionToReadStart), bufferIndexStart);
@@ -242,7 +244,7 @@ namespace VL.NewAudio.Sources
             {
                 var initialSize = _buffer.NumberOfFrames - bufferIndexStart;
                 ReadBufferSection(sectionToReadStart, initialSize, bufferIndexStart);
-                ReadBufferSection(sectionToReadStart + (ulong)initialSize,
+                ReadBufferSection(sectionToReadStart + initialSize,
                     (int)(sectionToReadEnd - sectionToReadStart) - initialSize, 0);
             }
 
@@ -256,7 +258,7 @@ namespace VL.NewAudio.Sources
             return true;
         }
 
-        private void ReadBufferSection(ulong start, int length, int bufferOffset)
+        private void ReadBufferSection(long start, int length, int bufferOffset)
         {
             if (_source.NextReadPos != start)
             {

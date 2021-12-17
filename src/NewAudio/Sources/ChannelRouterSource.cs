@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
+using VL.NewAudio.Internal;
 using VL.NewAudio.Sources;
 
 namespace VL.NewAudio.Sources
@@ -93,6 +94,7 @@ namespace VL.NewAudio.Sources
 
         public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
         {
+            using var s = new ScopedMeasure("ChannelRouterSource.GetNextAudioBlock");
             lock (_lock)
             {
                 _buffer.SetSize(_requiredChannels, bufferToFill.NumFrames, false, false, true);
@@ -104,8 +106,8 @@ namespace VL.NewAudio.Sources
                     var remapped = GetRemappedInput(i);
                     if (remapped >= 0 && remapped < numChannels)
                     {
-                        bufferToFill.Buffer.GetReadChannel(remapped).Slice(bufferToFill.StartFrame, numFrames)
-                            .CopyTo(_buffer.GetWriteChannel(i).Span);
+                        bufferToFill.Buffer.GetReadChannel(remapped).Offset(bufferToFill.StartFrame)
+                            .CopyTo(_buffer.GetWriteChannel(i), numFrames);
                     }
                     else
                     {
@@ -123,8 +125,8 @@ namespace VL.NewAudio.Sources
                     var remapped = GetRemappedOutput(i);
                     if (remapped >= 0 && remapped < numChannels)
                     {
-                        bufferToFill.Buffer[remapped].Slice(bufferToFill.StartFrame).Span
-                            .Add(_buffer[i].Slice(0).Span, numFrames);
+                        bufferToFill.Buffer[remapped].Offset(bufferToFill.StartFrame)
+                            .Add(_buffer[i], numFrames);
                     }
                 }
             }

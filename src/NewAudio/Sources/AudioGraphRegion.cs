@@ -1,5 +1,6 @@
 ﻿using System;
 using VL.NewAudio.Core;
+using VL.NewAudio.Internal;
 using VL.NewAudio.Nodes;
 using VL.NewAudio.Processor;
 
@@ -50,6 +51,7 @@ namespace VL.NewAudio.Sources
 
         public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
         {
+            using var s = new ScopedMeasure("AudioGraphRegion.GetNextAudioBlock");
             _graph.Process(bufferToFill.Buffer);
         }
 

@@ -35,7 +35,7 @@ namespace VL.NewAudio.Processor
         {
             for (var i = 0; i < TotalNumberOfInputChannels; i++)
             {
-                RingBuffers[i].Write(buffer[i].Span, buffer.NumberOfFrames);
+                RingBuffers[i].Write(buffer[i].AsSpan(), buffer.NumberOfFrames);
             }
         }
 

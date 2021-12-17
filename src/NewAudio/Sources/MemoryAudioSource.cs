@@ -49,12 +49,12 @@ namespace VL.NewAudio.Sources
                 var ch = 0;
                 for (; ch < channels; ch++)
                 {
-                    _buffer[ch].Slice(i % n, max).CopyTo(bufferToFill.Buffer[ch].Slice(bufferToFill.StartFrame + pos));
+                    _buffer[ch].Offset(i % n).CopyTo(bufferToFill.Buffer[ch].Offset(bufferToFill.StartFrame + pos), max);
                 }
 
                 for (; ch < bufferToFill.Buffer.NumberOfChannels; ch++)
                 {
-                    bufferToFill.Buffer[ch].Slice(bufferToFill.StartFrame + pos, max).Span.Clear();
+                    bufferToFill.Buffer[ch].Zero(bufferToFill.StartFrame + pos, max);
                 }
 
                 pos += max;
@@ -68,14 +68,14 @@ namespace VL.NewAudio.Sources
             _position = i;
         }
 
-        public ulong NextReadPos
+        public long NextReadPos
         {
-            get => (ulong)_position;
+            get => _position;
 
             set => _position = (int)value;
         }
 
-        public ulong TotalLength => (ulong)_buffer.NumberOfFrames;
+        public long TotalLength => _buffer.NumberOfFrames;
         public bool IsLooping { get; set; }
     }
 }

@@ -11,10 +11,10 @@ namespace VL.NewAudio.Backend
 {
     public class XtAudioService : ErrorSupport, IAudioService
     {
+        public static int AudioThreadId;
+        
         private readonly ILogger _logger = Resources.GetLogger<XtAudioService>();
         private readonly XtPlatform _platform;
-
-
         private readonly List<DeviceName> _defaultDevices = new();
         private readonly List<DeviceName> _deviceSelections = new();
         private readonly Dictionary<string, DeviceCaps> _deviceCaps = new();

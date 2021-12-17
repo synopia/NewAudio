@@ -57,10 +57,10 @@ namespace VL.NewAudioTest.Sources
 
             router.GetNextAudioBlock(info);
             Assert.AreEqual(4, info.Buffer.NumberOfChannels);
-            SineGenTest.AssertSine(0, 2, 724, 1000, 0, info.Buffer[0].Span.Slice(0,724));
-            SineGenTest.AssertSine(0, 2, 724, 1000, 0, info.Buffer[1].Span.Slice(0,724));
-            SineGenTest.AssertSine(0, 2, 724, 1000, 1, info.Buffer[2].Span.Slice(0,724));
-            SineGenTest.AssertSine(0, 2, 724, 1000, 1, info.Buffer[3].Span.Slice(0,724));
+            SineGenTest.AssertSine(0, 2, 724, 1000, 0, info.Buffer[0].AsSpan(724));
+            SineGenTest.AssertSine(0, 2, 724, 1000, 0, info.Buffer[1].AsSpan(724));
+            SineGenTest.AssertSine(0, 2, 724, 1000, 1, info.Buffer[2].AsSpan(724));
+            SineGenTest.AssertSine(0, 2, 724, 1000, 1, info.Buffer[3].AsSpan(724));
         }
    
     }

@@ -1,5 +1,6 @@
 ﻿using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
+using VL.NewAudio.Internal;
 
 namespace VL.NewAudio.Sources
 {
@@ -25,6 +26,7 @@ namespace VL.NewAudio.Sources
 
         public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
         {
+            using var s = new ScopedMeasure("GeneratorSource.GetNextAudioBlock");
             var increase = Frequency * _period;
             for (var i = 0; i < bufferToFill.NumFrames; i++)
             {

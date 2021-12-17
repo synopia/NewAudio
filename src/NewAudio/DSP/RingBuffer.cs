@@ -60,15 +60,12 @@ namespace VL.NewAudio.Dsp
                 var countA = _allocatedSize - writeIndex;
                 var countB = count - countA;
                 array.Slice(0, countA).CopyTo(_data.AsSpan(writeIndex, countA));
-                // Array.Copy(array,0, _data, writeIndex,countA );
                 array.Slice(countA, countB).CopyTo(_data.AsSpan(0, countB));
-                // Array.Copy(array,countA, _data, 0,countB );
                 writeIndexAfter -= _allocatedSize;
             }
             else
             {
                 array.Slice(0, count).CopyTo(_data.AsSpan(writeIndex, count));
-                // Array.Copy(array, 0, _data, writeIndex, count);
                 if (writeIndexAfter == _allocatedSize)
                 {
                     writeIndexAfter = 0;
@@ -81,6 +78,10 @@ namespace VL.NewAudio.Dsp
 
         public bool Read(float[] array, int count)
         {
+            return Read(array.AsSpan(), count);
+        }
+        public bool Read(Span<float> array, int count)
+        {
             var writeIndex = _writeIndex;
             var readIndex = _readIndex;
 
@@ -89,23 +90,21 @@ namespace VL.NewAudio.Dsp
                 return false;
             }
 
-            var sourceHandle = GCHandle.Alloc(_data);
-            var source = GCHandle.ToIntPtr(sourceHandle);
-            var destHandle = GCHandle.Alloc(array);
-            var dest = GCHandle.ToIntPtr(destHandle);
-
             var readIndexAfter = readIndex + count;
             if (readIndex + count > _allocatedSize)
             {
                 var countA = _allocatedSize - readIndex;
                 var countB = count - countA;
-                Array.Copy(_data, readIndex, array, 0, countA);
-                Array.Copy(_data, 0, array, countA, countB);
+                _data.AsSpan(readIndex,countA).CopyTo(array);
+                // Array.Copy(_data, readIndex, array, 0, countA);
+                _data.AsSpan(0, countB).CopyTo(array.Slice(countA));
+                // Array.Copy(_data, 0, array, countA, countB);
                 readIndexAfter -= _allocatedSize;
             }
             else
             {
-                Array.Copy(_data, readIndex, array, 0, count);
+                _data.AsSpan(readIndex, count).CopyTo(array);
+                // Array.Copy(_data, readIndex, array, 0, count);
                 if (readIndexAfter == _allocatedSize)
                 {
                     readIndexAfter = 0;

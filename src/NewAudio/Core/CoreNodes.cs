@@ -57,6 +57,8 @@ namespace VL.NewAudio.Core
                 .AddOutput(nameof(AudioSessionNode.InputLatency), x => x.InputLatency)
                 .AddOutput(nameof(AudioSessionNode.OutputLatency), x => x.OutputLatency)
                 .AddOutput(nameof(AudioSessionNode.XRuns), x => x.XRuns)
+                .AddOutput(nameof(AudioSessionNode.CpuUsage), x => x.CpuUsage)
+                .AddOutput(nameof(AudioSessionNode.Times), x => x.Times)
                 .AddOutput(nameof(AudioSessionNode.Type), x => x.Type);
         }
     }

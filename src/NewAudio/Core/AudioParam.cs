@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using VL.Core;
 using VL.NewAudio.Processor;
 
 namespace VL.NewAudio.Core
@@ -17,17 +18,18 @@ namespace VL.NewAudio.Core
         public bool IsCanceled { get; set; }
     }
 
-    public class AudioParam
+    [Monadic(typeof(AudioParamFactory<>))]
+    public class AudioParam<T>
     {
         private object _lock;
         private List<AudioEvent> _events = new();
         public AudioPlayHead PlayHead { get; }
-        public float Value { get; set; }
+        public T Value { get; set; }
 
-        public AudioParam(object @lock, AudioPlayHead playHead)
+        public AudioParam()
         {
-            _lock = @lock;
-            PlayHead = playHead;
+            // _lock = @lock;
+            // PlayHead = playHead;
         }
 
         public void ApplyRamp(float valueEnd, double durationSeconds)

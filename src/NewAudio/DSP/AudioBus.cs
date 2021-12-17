@@ -229,7 +229,7 @@ namespace VL.NewAudio.Dsp
             var channels = bus[busIndex].Count;
             var offset = GetAbsolutChannelOffset(input, busIndex, 0);
 
-            var newMemory = new Memory<float>[channels];
+            var newMemory = new AudioChannel[channels];
             Array.Copy(processBlockBuffer.GetWriteChannels(), offset, newMemory, 0, channels);
             return new AudioBuffer(newMemory, channels, processBlockBuffer.NumberOfFrames);
         }

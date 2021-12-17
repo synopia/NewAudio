@@ -4,16 +4,17 @@ using System.Diagnostics;
 using VL.NewAudio.Dsp;
 using Serilog;
 using VL.NewAudio.Core;
+using VL.NewAudio.Internal;
 
 namespace VL.NewAudio.Backend
 {
-    public class XtAudioControl : IAudioControl, IAudioDeviceCallback
+    public class XtAudioControl : IAudioControl, IAudioCallback
     {
         private readonly ILogger _logger = Resources.GetLogger<IAudioControl>();
         private readonly IAudioService _service;
         public object AudioProcessLock { get; } = new();
 
-        private readonly List<IAudioDeviceCallback> _callbacks = new();
+        private readonly List<IAudioCallback> _callbacks = new();
         private readonly CallbackHandler _callbackHandler;
         private readonly AudioBuffer _tempBuffer;
 
@@ -65,7 +66,7 @@ namespace VL.NewAudio.Backend
         }
 
 
-        public void AddAudioCallback(IAudioDeviceCallback callback)
+        public void AddAudioCallback(IAudioCallback callback)
         {
             lock (AudioProcessLock)
             {
@@ -77,7 +78,7 @@ namespace VL.NewAudio.Backend
 
             if (_currentSession != null)
             {
-                callback.AudioDeviceAboutToStart(_currentSession);
+                callback.OnAudioWillStart(_currentSession);
             }
 
             lock (AudioProcessLock)
@@ -86,38 +87,39 @@ namespace VL.NewAudio.Backend
             }
         }
 
-        public void RemoveAudioCallback(IAudioDeviceCallback callback)
+        public void RemoveAudioCallback(IAudioCallback callback)
         {
-            var needReinit = _currentSession != null;
+            var stopped = _currentSession != null;
             lock (AudioProcessLock)
             {
-                needReinit = needReinit && _callbacks.Contains(callback);
+                stopped &= _callbacks.Contains(callback);
                 _callbacks.Remove(callback);
             }
 
-            if (needReinit)
+            if (stopped)
             {
-                callback.AudioDeviceStopped();
+                callback.OnAudioStopped();
             }
         }
 
 
-        public void AudioDeviceCallback(AudioBuffer? input, AudioBuffer output, int numFrames)
+        public void OnAudio(AudioBuffer? input, AudioBuffer output, int numFrames)
         {
+            using var s = new ScopedMeasure("XtAudioControl.OnAudio");
             lock (AudioProcessLock)
             {
                 if (_callbacks.Count > 0)
                 {
                     _tempBuffer.SetSize(Math.Max(1, output.NumberOfChannels), Math.Max(1, numFrames), false, false,
                         true);
-                    _callbacks[0].AudioDeviceCallback(input, output, numFrames);
-                    for (var i = _callbacks.Count; --i > 0;)
+                    _callbacks[0].OnAudio(input, output, numFrames);
+                    for (var i = 1; i<_callbacks.Count; i++)
                     {
-                        _callbacks[i].AudioDeviceCallback(input, _tempBuffer, numFrames);
+                        _callbacks[i].OnAudio(input, _tempBuffer, numFrames);
 
                         for (var ch = 0; ch < output.NumberOfChannels; ch++)
                         {
-                            output[ch].Span.Add(_tempBuffer[0].Span, numFrames);
+                            output[ch].Add(_tempBuffer[ch], numFrames);
                         }
                     }
                 }
@@ -128,13 +130,13 @@ namespace VL.NewAudio.Backend
             }
         }
 
-        public void AudioDeviceAboutToStart(IAudioSession session)
+        public void OnAudioWillStart(IAudioSession session)
         {
             lock (AudioProcessLock)
             {
                 for (var i = _callbacks.Count; --i >= 0;)
                 {
-                    _callbacks[i].AudioDeviceAboutToStart(session);
+                    _callbacks[i].OnAudioWillStart(session);
                 }
             }
 
@@ -146,14 +148,14 @@ namespace VL.NewAudio.Backend
         {
         }
 
-        public void AudioDeviceStopped()
+        public void OnAudioStopped()
         {
             SendChangeMessage();
             lock (AudioProcessLock)
             {
                 for (var i = _callbacks.Count; --i >= 0;)
                 {
-                    _callbacks[i].AudioDeviceStopped();
+                    _callbacks[i].OnAudioStopped();
                 }
             }
         }
@@ -168,7 +170,7 @@ namespace VL.NewAudio.Backend
         }
 
 
-        public void AudioDeviceError(string errorMessage)
+        public void OnAudioError(string errorMessage)
         {
             Trace.WriteLine(errorMessage);
         }

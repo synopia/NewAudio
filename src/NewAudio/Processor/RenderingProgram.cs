@@ -19,7 +19,7 @@ namespace VL.NewAudio.Processor
         {
             public AudioPlayHead PlayHead;
             public int NumFrames;
-            public Memory<float>[] AudioBuffers;
+            public AudioChannel[] AudioBuffers;
         }
 
         private interface IRenderingOperation
@@ -72,19 +72,19 @@ namespace VL.NewAudio.Processor
 
         public void AddClearChannelOp(int index)
         {
-            CreateOp($"clear({index})", (ctx) => ctx.AudioBuffers[index].Span.Fill(0, ctx.NumFrames));
+            CreateOp($"clear({index})", (ctx) => ctx.AudioBuffers[index].Zero(0, ctx.NumFrames));
         }
 
         public void AddCopyChannelOp(int source, int target)
         {
             CreateOp($"copy({source}, {target})",
-                (ctx) => ctx.AudioBuffers[target].Span.CopyFrom(ctx.AudioBuffers[source].Span, ctx.NumFrames));
+                (ctx) => ctx.AudioBuffers[source].CopyTo(ctx.AudioBuffers[target], ctx.NumFrames));
         }
 
         public void AddAddChannelOp(int source, int target)
         {
             CreateOp($"add({source}, {target})",
-                (ctx) => ctx.AudioBuffers[target].Span.Add(ctx.AudioBuffers[source].Span, ctx.NumFrames));
+                (ctx) => ctx.AudioBuffers[target].Add(ctx.AudioBuffers[source], ctx.NumFrames));
         }
 
         public void AddDelayChannelOp(int channel, int delaySize)
@@ -168,7 +168,7 @@ namespace VL.NewAudio.Processor
 
             public void Perform(Context context)
             {
-                var data = context.AudioBuffers[_channel].Span;
+                var data = context.AudioBuffers[_channel];
                 var p = 0;
                 for (var i = context.NumFrames; --i >= 0;)
                 {
@@ -193,7 +193,7 @@ namespace VL.NewAudio.Processor
             private AudioGraph.Node _node;
             private AudioProcessor _processor;
             private List<int> _channelsToUse;
-            private Memory<float>[] _channels;
+            private AudioChannel[] _channels;
             private int _totalChannels;
 
             public string ToCode()
@@ -208,7 +208,7 @@ namespace VL.NewAudio.Processor
                 _totalChannels = totalChannels;
                 _processor = node.Processor;
 
-                _channels = new Memory<float>[totalChannels];
+                _channels = new AudioChannel[totalChannels];
                 while (channelsToUse.Count < totalChannels)
                 {
                     channelsToUse.Add(0);

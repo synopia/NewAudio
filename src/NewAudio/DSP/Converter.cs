@@ -137,7 +137,7 @@ namespace VL.NewAudio.Dsp
             {
                 for (var ch = 0; ch < source.NumberOfChannels; ch++)
                 {
-                    source[ch].Span.Slice(sourceStartFrame, numFrames).CopyTo(
+                    source[ch].Offset(sourceStartFrame).AsSpan( numFrames).CopyTo(
                         // ReSharper disable once PossibleNullReferenceException
                         new Span<float>(&((float**)target.output)[ch][targetStartFrame], numFrames));
                 }
@@ -201,7 +201,7 @@ namespace VL.NewAudio.Dsp
             if (typeof(TSampleType) == typeof(Int24LsbSample))
             {
                 var sample = *buf | (*(buf + 1) << 8) | ((sbyte)*(buf + 2) << 16);
-                value = sample * Int16ToFloat;
+                value = sample * Int24ToFloat;
                 return 3;
             }
 
@@ -241,7 +241,7 @@ namespace VL.NewAudio.Dsp
                 {
                     // ReSharper disable once PossibleNullReferenceException
                     new Span<float>(&((float**)source.input)[ch][sourceStartFrame], numFrames).CopyTo(
-                        target[ch].Span.Slice(targetStartFrame, numFrames));
+                        target[ch].Offset(targetStartFrame).AsSpan( numFrames));
                 }
 
                 return;

@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using VL.NewAudio.Dsp;
 using Serilog;
 using VL.NewAudio.Core;
+using VL.NewAudio.Internal;
 using Xt;
 
 namespace VL.NewAudio.Backend
@@ -40,11 +43,14 @@ namespace VL.NewAudio.Backend
         private int _audioCallbackGuard;
         public double InputLatency => _stream.InputLatency;
         public double OutputLatency => _stream.OutputLatency;
-        public int XRuns { get; private set; }
+        private int _xRuns;
+        public int XRuns => LoadMeasure.XRuns + _xRuns; 
         public int CurrentFramesPerBlock => _stream.FramesPerBlock;
-        private IAudioDeviceCallback? _currentCallback;
+        private IAudioCallback? _currentCallback;
         public AudioStreamType Type => _stream.Type;
         public bool IsRunning { get; private set; }
+        public double CpuUsage => LoadMeasure.CpuUsage * 100;
+        public IEnumerable<string> Times => LoadMeasure.Stack.Select(e=>$"{e.Item1} ({e.Item2})");
 
         public XtAudioSession(IAudioInputOutputStream stream)
         {
@@ -71,14 +77,14 @@ namespace VL.NewAudio.Backend
             }
         }
 
-        public void Start(IAudioDeviceCallback? callback)
+        public void Start(IAudioCallback? callback)
         {
             Trace.Assert(_stream != null);
             _logger.Information("Session start");
 
             if (callback != _currentCallback)
             {
-                callback?.AudioDeviceAboutToStart(this);
+                callback?.OnAudioWillStart(this);
 
                 var old = _currentCallback;
 
@@ -93,7 +99,7 @@ namespace VL.NewAudio.Backend
                         SetCallback(callback);
                     }
 
-                    old.AudioDeviceStopped();
+                    old.OnAudioStopped();
                 }
                 else
                 {
@@ -106,7 +112,7 @@ namespace VL.NewAudio.Backend
             }
         }
 
-        private void SetCallback(IAudioDeviceCallback? callback)
+        private void SetCallback(IAudioCallback? callback)
         {
             if (!IsRunning)
             {
@@ -136,7 +142,8 @@ namespace VL.NewAudio.Backend
             var cb = Interlocked.Exchange(ref _currentCallback, null);
             if (cb != null)
             {
-                cb.AudioDeviceCallback(input, output, numFrames);
+                using var s = new ScopedMeasure("XtAudioSession.Process");
+                cb.OnAudio(input, output, numFrames);
                 _currentCallback = cb;
             }
             else
@@ -167,21 +174,26 @@ namespace VL.NewAudio.Backend
             _audioCallbackGuard = 0;
         }
 
+        
         public int OnBuffer(XtStream stream, in XtBuffer buffer, object user)
         {
             if (Interlocked.CompareExchange(ref _audioCallbackGuard, 1, 0) == 0)
             {
                 try
                 {
+                    LoadMeasure.Start(buffer.frames / (double)CurrentSampleRate * 1000.0);
+                    
                     Trace.Assert(stream != null && buffer.output != null);
                     var inputBuffer = _stream.BindInput(buffer);
                     var outputBuffer = _stream.BindOutput(buffer);
                     Process(inputBuffer, outputBuffer, buffer.frames);
+
+                    LoadMeasure.Stop();
                 }
                 catch (Exception e)
                 {
                     _logger.Error(e, "Exception in AudioSession.OnBuffer!");
-                    _currentCallback?.AudioDeviceError(e.Message);
+                    _currentCallback?.OnAudioError(e.Message);
                 }
                 finally
                 {
@@ -195,7 +207,7 @@ namespace VL.NewAudio.Backend
         public void OnXRun(XtStream stream, int index, object user)
         {
             _logger.Warning("XRun! {Cnt}", XRuns);
-            XRuns++;
+            _xRuns++;
         }
 
         public void OnRunning(XtStream stream, bool running, ulong error, object user)
@@ -203,7 +215,7 @@ namespace VL.NewAudio.Backend
             _logger.Information("AudioStream.OnRunning: running={Running}, error={Error}", running, error);
             if (error != 0)
             {
-                _currentCallback?.AudioDeviceError(error.ToString());
+                _currentCallback?.OnAudioError(error.ToString());
             }
 
             IsRunning = running;

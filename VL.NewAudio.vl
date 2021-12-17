@@ -293,6 +293,6 @@
   <NugetDependency Id="MbQqbGC4UfOLfyUcAdgbRV" Location="Xt.Audio" Version="1.9.0" />
   <NugetDependency Id="PFaNp3Lkw2GNWjUzaJVrfo" Location="VL.HDE" Version="2021.4.1" />
   <NugetDependency Id="CWi7ZIUqE8HLyIDVQn2YXk" Location="VL.Skia" Version="2021.4.1" />
-  <NugetDependency Id="PFCcUi1LcEkQTJyDRt4Ngy" Location="VL.NewAudio" Version="0.4.0-alpha-1" />
+  <NugetDependency Id="PFCcUi1LcEkQTJyDRt4Ngy" Location="VL.NewAudio" Version="0.4.1-alpha" />
   <NodeFactoryDependency Id="TPUIoDV5uq2OCzGYyT41kW" Location="NewAudio.Factory" IsForward="true" />
 </Document>

@@ -4,11 +4,12 @@ using System.Diagnostics;
 using System.Linq;
 using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
+using VL.NewAudio.Internal;
 using VL.NewAudio.Processor;
 
 namespace VL.NewAudio.Sources
 {
-    public class AudioProcessorPlayer : IAudioDeviceCallback, IDisposable
+    public class AudioProcessorPlayer : IAudioCallback, IDisposable
     {
         private struct NumChannels
         {
@@ -101,8 +102,9 @@ namespace VL.NewAudio.Sources
             }
         }
 
-        public void AudioDeviceCallback(AudioBuffer? input, AudioBuffer output, int numFrames)
+        public void OnAudio(AudioBuffer? input, AudioBuffer output, int numFrames)
         {
+            using var s = new ScopedMeasure("AudioProcessorPlayer.OnAudio");
             lock (_lock)
             {
                 Trace.Assert(_sampleRate > 0 && _framesPerBlock > 0);
@@ -125,7 +127,7 @@ namespace VL.NewAudio.Sources
             }
         }
 
-        public void AudioDeviceAboutToStart(IAudioSession session)
+        public void OnAudioWillStart(IAudioSession session)
         {
             var newSampleRate = session.CurrentSampleRate;
             var newFramesPerBlock = session.CurrentFramesPerBlock;
@@ -153,7 +155,7 @@ namespace VL.NewAudio.Sources
             }
         }
 
-        public void AudioDeviceStopped()
+        public void OnAudioStopped()
         {
             lock (_lock)
             {
@@ -169,7 +171,7 @@ namespace VL.NewAudio.Sources
             }
         }
 
-        public void AudioDeviceError(string errorMessage)
+        public void OnAudioError(string errorMessage)
         {
         }
 

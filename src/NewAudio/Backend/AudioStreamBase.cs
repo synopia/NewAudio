@@ -54,7 +54,7 @@ namespace VL.NewAudio.Backend
 
         protected XtStream? Stream;
         protected AudioBuffer? AudioBuffer;
-        private Memory<float>[]? _channels;
+        private AudioChannel[]? _channels;
         protected IAudioStreamCallback? Callback;
         private bool _disposedValue;
 

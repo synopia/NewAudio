@@ -3,6 +3,7 @@ using System.Buffers;
 using VL.Lib.Collections;
 using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
+using VL.NewAudio.Internal;
 
 namespace VL.NewAudio.Sources
 {
@@ -118,6 +119,7 @@ namespace VL.NewAudio.Sources
 
         public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
         {
+            using var s = new ScopedMeasure("BaseBufferOutSource.GetNextAudioBlock");
             lock (_readLock)
             {
                 if (_source != null)
@@ -132,7 +134,7 @@ namespace VL.NewAudio.Sources
                 if (bufferToFill.Buffer.NumberOfChannels > 0 && _ringBuffer != null)
                 {
                     Overflow = _ringBuffer
-                        .Write(bufferToFill.Buffer[0].Slice(bufferToFill.StartFrame, bufferToFill.NumFrames).Span,
+                        .Write(bufferToFill.Buffer[0].Offset(bufferToFill.StartFrame).AsSpan(bufferToFill.NumFrames),
                             bufferToFill.NumFrames);
                 }
             }

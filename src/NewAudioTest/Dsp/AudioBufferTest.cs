@@ -149,7 +149,7 @@ namespace VL.NewAudioTest.Dsp
             var b2 = new AudioBuffer(2, numFrames);
             b1.Zero();
             b2.Zero();
-            Memory<float>[] channels = new Memory<float>[4];
+            AudioChannel[] channels = new AudioChannel[4];
             channels[0] = b1.GetWriteChannel(0);
             channels[1] = b1.GetWriteChannel(1);
             channels[2] = b2.GetWriteChannel(0);

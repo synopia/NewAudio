@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using VL.NewAudio.Dsp;
 
 namespace VL.NewAudio.Core
@@ -14,8 +15,10 @@ namespace VL.NewAudio.Core
         AudioChannels ActiveOutputChannels { get; }
 
         int XRuns { get; }
+        double CpuUsage { get; }
         AudioStreamType Type { get; }
         double InputLatency { get; }
         double OutputLatency { get; }
+        IEnumerable<string> Times { get; }
     }
 }

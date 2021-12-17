@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using VL.NewAudio.Dispatcher;
 using VL.NewAudio.Dsp;
+using VL.NewAudio.Internal;
 using Xt;
 
 namespace VL.NewAudio.Core
@@ -12,8 +13,8 @@ namespace VL.NewAudio.Core
         // void OpenAudioDeviceSetup(DeviceConfig[] setup);
         // void OpenAudioDeviceConfig(DeviceConfig config);
 
-        void AddAudioCallback(IAudioDeviceCallback callback);
-        void RemoveAudioCallback(IAudioDeviceCallback callback);
+        void AddAudioCallback(IAudioCallback callback);
+        void RemoveAudioCallback(IAudioCallback callback);
 
         double GetCpuUsage();
 
@@ -30,33 +31,35 @@ namespace VL.NewAudio.Core
         void Close();
     }
 
-    public class CallbackHandler : IAudioDeviceCallback
+    public class CallbackHandler : IAudioCallback
     {
-        private IAudioDeviceCallback _owner;
+        private IAudioCallback _owner;
 
-        public CallbackHandler(IAudioDeviceCallback owner)
+        public CallbackHandler(IAudioCallback owner)
         {
             _owner = owner;
         }
 
-        public void AudioDeviceCallback(AudioBuffer? input, AudioBuffer output, int numFrames)
+        public void OnAudio(AudioBuffer? input, AudioBuffer output, int numFrames)
         {
-            _owner.AudioDeviceCallback(input, output, numFrames);
+            using var s = new ScopedMeasure("IAudioControl.OnAudio");
+
+            _owner.OnAudio(input, output, numFrames);
         }
 
-        public void AudioDeviceAboutToStart(IAudioSession session)
+        public void OnAudioWillStart(IAudioSession session)
         {
-            _owner.AudioDeviceAboutToStart(session);
+            _owner.OnAudioWillStart(session);
         }
 
-        public void AudioDeviceStopped()
+        public void OnAudioStopped()
         {
-            _owner.AudioDeviceStopped();
+            _owner.OnAudioStopped();
         }
 
-        public void AudioDeviceError(string errorMessage)
+        public void OnAudioError(string errorMessage)
         {
-            _owner.AudioDeviceError(errorMessage);
+            _owner.OnAudioError(errorMessage);
         }
     }
 }

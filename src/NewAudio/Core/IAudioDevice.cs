@@ -4,14 +4,14 @@ using Xt;
 
 namespace VL.NewAudio.Core
 {
-    public interface IAudioDeviceCallback
+    public interface IAudioCallback
     {
-        void AudioDeviceCallback(AudioBuffer? input, AudioBuffer output, int numFrames);
+        void OnAudio(AudioBuffer? input, AudioBuffer output, int numFrames);
 
-        void AudioDeviceAboutToStart(IAudioSession session);
-        void AudioDeviceStopped();
+        void OnAudioWillStart(IAudioSession session);
+        void OnAudioStopped();
 
-        void AudioDeviceError(string errorMessage);
+        void OnAudioError(string errorMessage);
     }
 
     public interface IAudioDevice : IDisposable

@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using VL.NewAudio.Core;
+using VL.NewAudio.Internal;
 
 namespace VL.NewAudio.Sources
 {
@@ -7,7 +8,7 @@ namespace VL.NewAudio.Sources
     {
         private IPositionalAudioSource? _source;
 
-        // Resampling
+        private ResamplingAudioSource? _resamplingAudioSource;
         private BufferingAudioSource? _bufferingSource;
         private IPositionalAudioSource? _positionalSource;
         private IAudioSource? _masterSource;
@@ -23,6 +24,12 @@ namespace VL.NewAudio.Sources
         private bool _inputStreamEof;
         public float Gain { get; set; } = 1.0f;
 
+        public int SourceSampleRate
+        {
+            get => _sourceSampleRate;
+            set => SetSource(Source, _readAheadBufferSize, value);
+        }
+
         public IPositionalAudioSource? Source
         {
             get => _source;
@@ -37,7 +44,7 @@ namespace VL.NewAudio.Sources
         protected override void Dispose(bool disposing)
         {
             Source = null;
-            ReleaseMasterSource();
+            ReleaseResources();
             base.Dispose(disposing);
         }
 
@@ -63,10 +70,12 @@ namespace VL.NewAudio.Sources
             _readAheadBufferSize = readAheadSize;
             _sourceSampleRate = sourceSampleRateToCorrectFor;
 
+            ResamplingAudioSource? newResamplingSource = null;
             BufferingAudioSource? newBufferingSource = null;
             IPositionalAudioSource? newPositionalSource = null;
             IAudioSource? newMasterSource = null;
 
+            var oldResamplingSource = _resamplingAudioSource;
             var oldBufferingSource = _bufferingSource;
             var oldMasterSource = _masterSource;
 
@@ -80,14 +89,20 @@ namespace VL.NewAudio.Sources
                 }
 
                 newPositionalSource.NextReadPos = 0;
-                // if (sourceSampleRateToCorrectFor > 0)
-                // {
-                // newMasterSource
-                // }
-                newMasterSource = newPositionalSource;
+
+                if (sourceSampleRateToCorrectFor > 0)
+                {
+                    newMasterSource = newResamplingSource = new ResamplingAudioSource(newPositionalSource,
+                        sourceSampleRateToCorrectFor, maxNumChannels);
+                }
+                else
+                {
+                    newMasterSource = newPositionalSource;
+                }
 
                 if (_isPrepared)
                 {
+                    
                     newMasterSource.PrepareToPlay(_sampleRate, _frameSize);
                 }
             }
@@ -98,16 +113,13 @@ namespace VL.NewAudio.Sources
                 _bufferingSource = newBufferingSource;
                 _masterSource = newMasterSource;
                 _positionalSource = newPositionalSource;
+                _resamplingAudioSource = newResamplingSource;
                 _inputStreamEof = false;
                 _playing = false;
             }
 
-            if (oldMasterSource != null)
-            {
-                oldMasterSource.ReleaseResources();
-            }
+            oldMasterSource?.ReleaseResources();
         }
-
 
         public void Start()
         {
@@ -145,7 +157,7 @@ namespace VL.NewAudio.Sources
             {
                 if (_sampleRate > 0)
                 {
-                    NextReadPos = (ulong)(_sampleRate * value);
+                    NextReadPos = (long)(_sampleRate * value);
                 }
             }
         }
@@ -155,7 +167,7 @@ namespace VL.NewAudio.Sources
 
         public bool IsPlaying => _playing;
 
-        public ulong NextReadPos
+        public long NextReadPos
         {
             get
             {
@@ -164,7 +176,7 @@ namespace VL.NewAudio.Sources
                     var ratio = _sampleRate > 0 && _sourceSampleRate > 0
                         ? _sampleRate / (double)_sourceSampleRate
                         : 1.0;
-                    return (ulong)(_positionalSource.NextReadPos * ratio);
+                    return (long)(_positionalSource.NextReadPos * ratio);
                 }
 
                 return 0;
@@ -176,7 +188,7 @@ namespace VL.NewAudio.Sources
                     var pos = value;
                     if (_sampleRate > 0 && _sourceSampleRate > 0)
                     {
-                        pos = (ulong)((double)pos * _sourceSampleRate / (double)_sampleRate);
+                        pos = (long)((double)pos * _sourceSampleRate / (double)_sampleRate);
                     }
 
                     _positionalSource.NextReadPos = pos;
@@ -187,7 +199,7 @@ namespace VL.NewAudio.Sources
             }
         }
 
-        public ulong TotalLength
+        public long TotalLength
         {
             get
             {
@@ -198,7 +210,7 @@ namespace VL.NewAudio.Sources
                         var ratio = _sampleRate > 0 && _sourceSampleRate > 0
                             ? _sampleRate / (double)_sourceSampleRate
                             : 1.0;
-                        return (ulong)(_positionalSource.TotalLength * ratio);
+                        return (long)(_positionalSource.TotalLength * ratio);
                     }
 
                     return 0;
@@ -248,6 +260,7 @@ namespace VL.NewAudio.Sources
 
         public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
         {
+            using var s = new ScopedMeasure("AudioTransportSource.GetNextAudioBlock");
             lock (_lock)
             {
                 if (_masterSource != null && !_stopped)
@@ -284,11 +297,6 @@ namespace VL.NewAudio.Sources
 
                 // lastGain = gain;
             }
-        }
-
-
-        private void ReleaseMasterSource()
-        {
         }
     }
 }

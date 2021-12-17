@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
+using VL.NewAudio.Internal;
 
 namespace VL.NewAudio.Sources
 {
-    public class AudioSourcePlayer : IAudioDeviceCallback, IDisposable
+    public class AudioSourcePlayer : IAudioCallback, IDisposable
     {
         public float Gain { get; set; } = 1.0f;
+        
+        public AudioParam<float> GGain { get; set; }
 
         private readonly object _readLock = new();
         private IAudioSource? _source;
@@ -46,9 +50,10 @@ namespace VL.NewAudio.Sources
         {
         }
 
-        public void AudioDeviceCallback(AudioBuffer? input, AudioBuffer output, int numFrames)
+        public void OnAudio(AudioBuffer? input, AudioBuffer output, int numFrames)
         {
             Trace.Assert(_sampleRate > 0 && _framesPerBlock > 0);
+            using var s = new ScopedMeasure("AudioSourcePlayer.OnAudio");
             lock (_readLock)
             {
                 var totalInputs = input?.NumberOfChannels ?? 0;
@@ -77,13 +82,16 @@ namespace VL.NewAudio.Sources
             }
         }
 
-        public void AudioDeviceAboutToStart(IAudioSession session)
+        public void OnAudioWillStart(IAudioSession session)
         {
-            PrepareToPlay(session.CurrentSampleRate, session.CurrentFramesPerBlock);
+            _sampleRate = session.CurrentSampleRate;
+            _framesPerBlock = session.CurrentFramesPerBlock;
+
+            Source?.PrepareToPlay(_sampleRate, _framesPerBlock);
         }
 
 
-        public void AudioDeviceStopped()
+        public void OnAudioStopped()
         {
             Source?.ReleaseResources();
 
@@ -92,18 +100,10 @@ namespace VL.NewAudio.Sources
             _tempBuffer.SetSize(2, 8);
         }
 
-        public void AudioDeviceError(string errorMessage)
+        public void OnAudioError(string errorMessage)
         {
         }
-
-        public void PrepareToPlay(int sampleRate, int framesPerBlock)
-        {
-            _sampleRate = sampleRate;
-            _framesPerBlock = framesPerBlock;
-
-            Source?.PrepareToPlay(sampleRate, framesPerBlock);
-        }
-
+        
         public void Dispose()
         {
             Dispose(true);

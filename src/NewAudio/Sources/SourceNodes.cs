@@ -19,7 +19,8 @@ namespace VL.NewAudio.Sources
             yield return nodeFactory.NewNode(_ => new AudioSourcePlayer(), category: category, name: "Player",
                     hasStateOutput: true)
                 .AddInput(nameof(AudioSourcePlayer.Source), x => x.Source, (x, v) => x.Source = v)
-                .AddInput(nameof(AudioSourcePlayer.Gain), x => x.Gain, (x, v) => x.Gain = v);
+                .AddInput(nameof(AudioSourcePlayer.Gain), x => x.Gain, (x, v) => x.Gain = v)
+                .AddInput(nameof(AudioSourcePlayer.GGain), x => x.GGain, (x, v) => x.GGain = v);
             yield return nodeFactory.NewNode(_ => new AudioProcessorPlayer(), category: category,
                     name: "ProcessorPlayer",
                     hasStateOutput: true)
@@ -36,6 +37,7 @@ namespace VL.NewAudio.Sources
                     hasStateOutput: true)
                 .AddInput(nameof(AudioTransportSource.Source), x => x.Source, (x, v) => x.Source = v)
                 .AddInput(nameof(AudioTransportSource.ReadAhead), x => x.ReadAhead, (x, v) => x.ReadAhead = v)
+                .AddInput(nameof(AudioTransportSource.SourceSampleRate), x => x.SourceSampleRate, (x, v) => x.SourceSampleRate = v)
                 .AddInput(nameof(AudioTransportSource.Gain), x => x.Gain, (x, v) => x.Gain = v, 1.0f)
                 .AddInput(nameof(AudioTransportSource.Start), x => x.IsPlaying, (x, v) =>
                 {
@@ -57,6 +59,7 @@ namespace VL.NewAudio.Sources
                 .AddOutput(nameof(AudioTransportSource.IsLooping), x => x.IsLooping);
             yield return nodeFactory.NewNode(_ => new AudioFileNode(), category: category, name: "AudioFile")
                 .AddOutput(nameof(AudioFileNode.Source), x => x.Source)
+                .AddOutput(nameof(AudioFileNode.SampleRate), x=>x.SampleRate)
                 .AddInput(nameof(AudioFileNode.Path), x => x.Path, (x, v) => x.Path = v)
                 .AddInput(nameof(AudioFileNode.Reset), x => false, (x, v) => x.Reset());
             yield return nodeFactory.NewNode(_ => new AudioBufferOutSource(), category: category,

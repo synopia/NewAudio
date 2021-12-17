@@ -2,8 +2,8 @@
 {
     public interface IPositionalAudioSource : IAudioSource
     {
-        ulong NextReadPos { get; set; }
-        ulong TotalLength { get; }
+        long NextReadPos { get; set; }
+        long TotalLength { get; }
         bool IsLooping { get; }
     }
 }
