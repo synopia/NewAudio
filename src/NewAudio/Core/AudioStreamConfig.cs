@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using VL.Lib.Basics.Resources;
 using VL.NewAudio.Dsp;
 using VL.NewAudio.Backend;
 using Xt;
@@ -37,7 +38,11 @@ namespace VL.NewAudio.Core
             ActiveInputChannels.Count <= AudioDevice.NumAvailableInputChannels &&
             ActiveOutputChannels.Count <= AudioDevice.NumAvailableOutputChannels;
 
-
+        public IResourceHandle<IAudioDevice> OpenDevice()
+        {
+            return Resources.GetAudioService().OpenDevice(AudioDevice.Name);
+        }
+        
         public AudioStreamConfig Match()
         {
             return this with

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Serilog;
 using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
 using VL.NewAudio.Internal;
@@ -7,8 +8,9 @@ using VL.NewAudio.Sources;
 
 namespace VL.NewAudio.Files
 {
-    public class AudioFileReaderSource: AudioSourceNode, IPositionalAudioSource
+    public class AudioFileReaderSource: AudioSourceBase, IPositionalAudioSource
     {
+        private ILogger _logger = Resources.GetLogger<AudioFileReaderSource>();
         
         public long NextReadPos
         {
@@ -35,33 +37,33 @@ namespace VL.NewAudio.Files
         {
         }
 
-        public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
+        public override void FillNextBuffer(AudioBufferToFill buffer)
         {
             using var s = new ScopedMeasure("AudioFileReaderSource.GetNextAudioBlock");
             var start = _nextPosition;
-            var numFrames = bufferToFill.NumFrames;
+            var numFrames = buffer.NumFrames;
             if (IsLooping)
             {
                 var newStart = start % TotalLength;
                 var newEnd = (start+numFrames) % TotalLength;
                 
-                if (newStart <= newEnd)
+                if (newStart < newEnd)
                 {
-                    _fileReader.Read(bufferToFill, newStart);
+                    _fileReader.Read(buffer, newStart);
                 }
                 else
                 {
                     var firstEnd = (int)(TotalLength - newStart);
                     
-                    _fileReader.Read(new AudioSourceChannelInfo(bufferToFill.Buffer, 0, firstEnd), newStart);
-                    _fileReader.Read(new AudioSourceChannelInfo(bufferToFill.Buffer, firstEnd, (int)newEnd), 0);
+                    _fileReader.Read(new AudioBufferToFill(buffer.Buffer, 0, firstEnd), newStart);
+                    _fileReader.Read(new AudioBufferToFill(buffer.Buffer, firstEnd, (int)newEnd), 0);
                 }
 
                 _nextPosition = newEnd;
             }
             else
             {
-                _fileReader.Read(bufferToFill, start);
+                _fileReader.Read(buffer, start);
                 _nextPosition += numFrames;
             }
 

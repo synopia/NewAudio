@@ -32,11 +32,5 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
         <ProjectReference Include="..\NewAudio\VL.NewAudio.csproj" />
         <PackageReference Include="NUnitLite" Version="3.13.2" />
-        <PackageReference Include="NAudio" Version="2.0.1" />
-        <PackageReference Include="NAudio.Asio" Version="2.0.0" />
-        <PackageReference Include="NAudio.Core" Version="2.0.0" />
-        <PackageReference Include="NAudio.Midi" Version="2.0.1" />
-        <PackageReference Include="NAudio.Wasapi" Version="2.0.0" />
-        <PackageReference Include="NAudio.WinMM" Version="2.0.1" />
     </ItemGroup>
 </Project>

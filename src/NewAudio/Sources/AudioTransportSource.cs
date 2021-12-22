@@ -4,7 +4,7 @@ using VL.NewAudio.Internal;
 
 namespace VL.NewAudio.Sources
 {
-    public class AudioTransportSource : AudioSourceNode, IPositionalAudioSource
+    public class AudioTransportSource : AudioSourceBase, IPositionalAudioSource
     {
         private IPositionalAudioSource? _source;
 
@@ -13,7 +13,6 @@ namespace VL.NewAudio.Sources
         private IPositionalAudioSource? _positionalSource;
         private IAudioSource? _masterSource;
 
-        private object _lock = new();
         private bool _playing;
         private bool _stopped;
         private int _sampleRate;
@@ -102,21 +101,17 @@ namespace VL.NewAudio.Sources
 
                 if (_isPrepared)
                 {
-                    
                     newMasterSource.PrepareToPlay(_sampleRate, _frameSize);
                 }
             }
 
-            lock (_lock)
-            {
-                _source = newSource;
-                _bufferingSource = newBufferingSource;
-                _masterSource = newMasterSource;
-                _positionalSource = newPositionalSource;
-                _resamplingAudioSource = newResamplingSource;
-                _inputStreamEof = false;
-                _playing = false;
-            }
+            _source = newSource;
+            _bufferingSource = newBufferingSource;
+            _masterSource = newMasterSource;
+            _positionalSource = newPositionalSource;
+            _resamplingAudioSource = newResamplingSource;
+            _inputStreamEof = false;
+            _playing = false;
 
             oldMasterSource?.ReleaseResources();
         }
@@ -125,12 +120,9 @@ namespace VL.NewAudio.Sources
         {
             if (!_playing && _masterSource != null)
             {
-                lock (_lock)
-                {
-                    _playing = true;
-                    _stopped = false;
-                    _inputStreamEof = false;
-                }
+                _playing = true;
+                _stopped = false;
+                _inputStreamEof = false;
 
                 // SendChangeMessage();
             }
@@ -203,100 +195,82 @@ namespace VL.NewAudio.Sources
         {
             get
             {
-                lock (_lock)
+                if (_positionalSource != null)
                 {
-                    if (_positionalSource != null)
-                    {
-                        var ratio = _sampleRate > 0 && _sourceSampleRate > 0
-                            ? _sampleRate / (double)_sourceSampleRate
-                            : 1.0;
-                        return (long)(_positionalSource.TotalLength * ratio);
-                    }
-
-                    return 0;
+                    var ratio = _sampleRate > 0 && _sourceSampleRate > 0
+                        ? _sampleRate / (double)_sourceSampleRate
+                        : 1.0;
+                    return (long)(_positionalSource.TotalLength * ratio);
                 }
+
+                return 0;
             }
         }
 
         public bool IsLooping
         {
-            get
-            {
-                lock (_lock)
-                {
-                    return _positionalSource?.IsLooping ?? false;
-                }
-            }
+            get { return _positionalSource?.IsLooping ?? false; }
         }
 
         public override void PrepareToPlay(int sampleRate, int framesPerBlockExpected)
         {
-            lock (_lock)
+            _sampleRate = sampleRate;
+            _frameSize = framesPerBlockExpected;
+            if (_masterSource != null)
             {
-                _sampleRate = sampleRate;
-                _frameSize = framesPerBlockExpected;
-                if (_masterSource != null)
-                {
-                    _masterSource.PrepareToPlay(sampleRate, framesPerBlockExpected);
-                }
-
-                _inputStreamEof = false;
-                _isPrepared = true;
+                _masterSource.PrepareToPlay(sampleRate, framesPerBlockExpected);
             }
+
+            _inputStreamEof = false;
+            _isPrepared = true;
         }
 
         public override void ReleaseResources()
         {
-            lock (_lock)
+            if (_masterSource != null)
             {
-                if (_masterSource != null)
-                {
-                    _masterSource.ReleaseResources();
-                }
-
-                _isPrepared = false;
+                _masterSource.ReleaseResources();
             }
+
+            _isPrepared = false;
         }
 
-        public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
+        public override void FillNextBuffer(AudioBufferToFill buffer)
         {
             using var s = new ScopedMeasure("AudioTransportSource.GetNextAudioBlock");
-            lock (_lock)
+            if (_masterSource != null && !_stopped)
             {
-                if (_masterSource != null && !_stopped)
+                _masterSource.FillNextBuffer(buffer);
+                if (!_playing)
                 {
-                    _masterSource.GetNextAudioBlock(bufferToFill);
-                    if (!_playing)
+                    if (buffer.NumFrames > 256)
                     {
-                        if (bufferToFill.NumFrames > 256)
-                        {
-                            bufferToFill.Buffer.Zero(bufferToFill.StartFrame + 256, bufferToFill.NumFrames - 256);
-                        }
-                    }
-
-                    if (_positionalSource!.NextReadPos > _positionalSource!.TotalLength + 1 &&
-                        !_positionalSource!.IsLooping)
-                    {
-                        _playing = false;
-                        _inputStreamEof = true;
-                        // SendChangeMessage();
-                    }
-
-                    _stopped = !_playing;
-
-                    for (var ch = 0; ch < bufferToFill.Buffer.NumberOfChannels; ch++)
-                    {
-                        bufferToFill.Buffer.ApplyGain(ch, bufferToFill.StartFrame, bufferToFill.NumFrames, Gain);
+                        buffer.Buffer.Zero(buffer.StartFrame + 256, buffer.NumFrames - 256);
                     }
                 }
-                else
+
+                if (_positionalSource!.NextReadPos > _positionalSource!.TotalLength + 1 &&
+                    !_positionalSource!.IsLooping)
                 {
-                    bufferToFill.ClearActiveBuffer();
-                    _stopped = true;
+                    _playing = false;
+                    _inputStreamEof = true;
+                    // SendChangeMessage();
                 }
 
-                // lastGain = gain;
+                _stopped = !_playing;
+
+                for (var ch = 0; ch < buffer.Buffer.NumberOfChannels; ch++)
+                {
+                    buffer.Buffer.ApplyGain(ch, buffer.StartFrame, buffer.NumFrames, Gain);
+                }
             }
+            else
+            {
+                buffer.ClearActiveBuffer();
+                _stopped = true;
+            }
+
+            // lastGain = gain;
         }
     }
 }

@@ -17,15 +17,15 @@ namespace VL.NewAudioTest.Sources
             
             sine1.PrepareToPlay(44100, 1024);
             var buf = new AudioBuffer(2, 724);
-            var info = new AudioSourceChannelInfo(buf, 0, 724);
+            var info = new AudioBufferToFill(buf, 0, 724);
             
-            sine1.GetNextAudioBlock(info);
+            sine1.FillNextBuffer(info);
             var phase = SineGenTest.AssertSine(0, 2,724,1000,1,info.Buffer);
             
             var mixer = new MixerSource();
             mixer.Sources = new[] { sine1 };
             info.ClearActiveBuffer();
-            mixer.GetNextAudioBlock(info);
+            mixer.FillNextBuffer(info);
             phase = SineGenTest.AssertSine(phase, 2,724,1000,1,info.Buffer);
             
         }
@@ -43,16 +43,16 @@ namespace VL.NewAudioTest.Sources
             sine2.PrepareToPlay(44100, 1024);
             
             var buf = new AudioBuffer(2, 724);
-            var info = new AudioSourceChannelInfo(buf, 0, 724);
+            var info = new AudioBufferToFill(buf, 0, 724);
             var mixer = new MixerSource();
             mixer.Sources = new[] { sine1, sine2 };
             
-            mixer.GetNextAudioBlock(info);
+            mixer.FillNextBuffer(info);
             var phase = SineGenTest.AssertSine(0, 2,724,1000,2,info.Buffer);
             sine2.Amplitude = 0.5f;
             
             info.ClearActiveBuffer();
-            mixer.GetNextAudioBlock(info);
+            mixer.FillNextBuffer(info);
             phase = SineGenTest.AssertSine(phase, 2,724,1000,1.5f,info.Buffer);
             
         }

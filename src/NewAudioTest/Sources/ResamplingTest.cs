@@ -21,17 +21,17 @@ namespace VL.NewAudioTest.Sources
             resampling.PrepareToPlay(44100, 512);
             
             var buf = new AudioBuffer(2, 512);
-            var info = new AudioSourceChannelInfo(buf, 0, 512);
+            var info = new AudioBufferToFill(buf, 0, 512);
 
-            resampling.GetNextAudioBlock(info);
-            resampling.GetNextAudioBlock(info);
-            resampling.GetNextAudioBlock(info);
-            resampling.GetNextAudioBlock(info);
-            resampling.GetNextAudioBlock(info);
-            resampling.GetNextAudioBlock(info);
-            resampling.GetNextAudioBlock(info);
-            resampling.GetNextAudioBlock(info);
-            resampling.GetNextAudioBlock(info);
+            resampling.FillNextBuffer(info);
+            resampling.FillNextBuffer(info);
+            resampling.FillNextBuffer(info);
+            resampling.FillNextBuffer(info);
+            resampling.FillNextBuffer(info);
+            resampling.FillNextBuffer(info);
+            resampling.FillNextBuffer(info);
+            resampling.FillNextBuffer(info);
+            resampling.FillNextBuffer(info);
         }
     }
 }

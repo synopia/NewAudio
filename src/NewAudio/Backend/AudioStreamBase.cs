@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using VL.NewAudio.Dsp;
 using Serilog;
+using VL.Lib.Basics.Resources;
 using VL.NewAudio.Core;
 using Xt;
 
@@ -45,7 +46,8 @@ namespace VL.NewAudio.Backend
 
         protected XtLatency Latency => Stream?.GetLatency() ?? new XtLatency();
 
-        protected IAudioDevice Device => Config.AudioDevice;
+        private readonly IResourceHandle<IAudioDevice> _deviceHandle;
+        protected IAudioDevice Device => _deviceHandle.Resource;
         protected XtDevice XtDevice => ((XtAudioDevice)Device).XtDevice;
         protected XtService XtService => ((XtAudioDevice)Device).XtService;
 
@@ -63,6 +65,7 @@ namespace VL.NewAudio.Backend
         protected AudioStreamBase(AudioStreamConfig config)
         {
             Config = config;
+            _deviceHandle = config.OpenDevice();
         }
 
         public void Dispose()
@@ -80,6 +83,7 @@ namespace VL.NewAudio.Backend
                     Stream?.Stop();
                     Stream?.Dispose();
                     AudioBuffer?.Dispose();
+                    _deviceHandle.Dispose();
                 }
 
                 _disposedValue = true;

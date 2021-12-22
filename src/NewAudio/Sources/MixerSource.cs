@@ -6,11 +6,10 @@ using VL.NewAudio.Sources;
 
 namespace VL.NewAudio.Sources
 {
-    public class MixerSource : AudioSourceNode
+    public class MixerSource : AudioSourceBase
     {
         private int _currentSampleRate;
         private int _currentBufferSize;
-        private object _lock = new();
         private AudioBuffer _tempBuffer;
         private IAudioSource[] _sources = Array.Empty<IAudioSource>();
 
@@ -21,11 +20,8 @@ namespace VL.NewAudio.Sources
             {
                 int sampleRate;
                 int bufferSize;
-                lock (_lock)
-                {
-                    sampleRate = _currentSampleRate;
-                    bufferSize = _currentBufferSize;
-                }
+                sampleRate = _currentSampleRate;
+                bufferSize = _currentBufferSize;
 
 
                 if (sampleRate > 0)
@@ -47,10 +43,7 @@ namespace VL.NewAudio.Sources
                     }
                 }
 
-                lock (_lock)
-                {
-                    _sources = value;
-                }
+                _sources = value;
             }
         }
 
@@ -62,60 +55,51 @@ namespace VL.NewAudio.Sources
         public override void PrepareToPlay(int sampleRate, int framesPerBlockExpected)
         {
             _tempBuffer.SetSize(2, framesPerBlockExpected);
-            lock (_lock)
+            _currentBufferSize = framesPerBlockExpected;
+            _currentSampleRate = sampleRate;
+            foreach (var source in _sources)
             {
-                _currentBufferSize = framesPerBlockExpected;
-                _currentSampleRate = sampleRate;
-                foreach (var source in _sources)
-                {
-                    source.PrepareToPlay(sampleRate, framesPerBlockExpected);
-                }
+                source.PrepareToPlay(sampleRate, framesPerBlockExpected);
             }
         }
 
         public override void ReleaseResources()
         {
-            lock (_lock)
+            foreach (var source in _sources)
             {
-                foreach (var source in _sources)
-                {
-                    source.ReleaseResources();
-                }
-
-                _tempBuffer.SetSize(2, 0);
-                _currentBufferSize = 0;
-                _currentSampleRate = 0;
+                source.ReleaseResources();
             }
+
+            _tempBuffer.SetSize(2, 0);
+            _currentBufferSize = 0;
+            _currentSampleRate = 0;
         }
 
-        public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
+        public override void FillNextBuffer(AudioBufferToFill buffer)
         {
             using var s = new ScopedMeasure("MixerSource.GetNextAudioBlock");
-            lock (_lock)
+            if (_sources.Length > 0)
             {
-                if (_sources.Length > 0)
+                _sources[0].FillNextBuffer(buffer);
+                if (_sources.Length > 1)
                 {
-                    _sources[0].GetNextAudioBlock(bufferToFill);
-                    if (_sources.Length > 1)
+                    var numFrames = buffer.NumFrames;
+                    _tempBuffer.SetSize(Math.Max(1, buffer.Buffer.NumberOfChannels), numFrames);
+                    var buf = new AudioBufferToFill(_tempBuffer, 0, numFrames);
+                    for (var i = 1; i < _sources.Length; i++)
                     {
-                        var numFrames = bufferToFill.NumFrames;
-                        _tempBuffer.SetSize(Math.Max(1, bufferToFill.Buffer.NumberOfChannels), numFrames);
-                        var buf = new AudioSourceChannelInfo(_tempBuffer, 0, numFrames);
-                        for (var i = 1; i < _sources.Length; i++)
+                        _sources[i].FillNextBuffer(buf);
+                        for (var ch = 0; ch < buffer.Buffer.NumberOfChannels; ch++)
                         {
-                            _sources[i].GetNextAudioBlock(buf);
-                            for (var ch = 0; ch < bufferToFill.Buffer.NumberOfChannels; ch++)
-                            {
-                                bufferToFill.Buffer[ch].Offset(bufferToFill.StartFrame)
-                                    .Add(_tempBuffer[ch], numFrames);
-                            }
+                            buffer.Buffer[ch].Offset(buffer.StartFrame)
+                                .Add(_tempBuffer[ch], numFrames);
                         }
                     }
                 }
-                else
-                {
-                    bufferToFill.ClearActiveBuffer();
-                }
+            }
+            else
+            {
+                buffer.ClearActiveBuffer();
             }
         }
     }

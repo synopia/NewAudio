@@ -17,25 +17,25 @@ namespace VL.NewAudioTest.Sources
             
             sine1.PrepareToPlay(44100, 1024);
             var buf = new AudioBuffer(2, 1024);
-            var info = new AudioSourceChannelInfo(buf, 0, 1024);
+            var info = new AudioBufferToFill(buf, 0, 1024);
 
-            sine1.GetNextAudioBlock(info);
+            sine1.FillNextBuffer(info);
 
             var mem = new MemoryAudioSource(buf);
 
             var b2 = new AudioBuffer(2, 102);
-            var i2 = new AudioSourceChannelInfo(b2, 0, 102);
+            var i2 = new AudioBufferToFill(b2, 0, 102);
             Assert.AreEqual(0, mem.NextReadPos);
-            mem.GetNextAudioBlock(i2);
+            mem.FillNextBuffer(i2);
             var phase = 0;
             while (phase+b2.Size<1024)
             {
                 phase = SineGenTest.AssertSine(phase, 2, 102, 1000, 1, b2);
                 Assert.AreEqual(phase, mem.NextReadPos);
-                mem.GetNextAudioBlock(i2);                
+                mem.FillNextBuffer(i2);                
             }
             phase = SineGenTest.AssertSine(phase, 2, 102, 1000, 1, b2);
-            mem.GetNextAudioBlock(i2);                
+            mem.FillNextBuffer(i2);                
             phase = SineGenTest.AssertSine(phase, 2, 1024-phase, 1000, 1, b2);
             Assert.AreEqual(1024, phase);
             Assert.AreEqual(1024, mem.NextReadPos);

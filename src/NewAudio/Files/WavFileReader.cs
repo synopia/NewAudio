@@ -73,10 +73,11 @@ namespace VL.NewAudio.Files
                 throw new FormatException();
             }
 
-            long pos = 0;
+            long pos = 12;
             long bytePos = 0;
             while (pos<fileSize)
             {
+                _fileStream.Seek(pos, SeekOrigin.Begin);
                 chunkId = _fileStream.ReadString(4);
                 var currentChunkSize = _fileStream.ReadUInt32();
                 if (chunkId == "fmt ")
@@ -85,7 +86,7 @@ namespace VL.NewAudio.Files
                     IsFloatingPoint = format == WaveFileFormat.IEEEFloat;
                     Channels = _fileStream.ReadUInt16();
                     SampleRate = _fileStream.ReadUInt32();
-                    _fileStream.SkipBytes(8);
+                    _fileStream.SkipBytes(6);
                     BitsPerSample = _fileStream.ReadUInt16();
                     if (format == WaveFileFormat.Extensible && currentChunkSize > 16)
                     {
@@ -105,14 +106,14 @@ namespace VL.NewAudio.Files
 
             IsInterleaved = true;
             
-            Samples =bytePos / BytesPerSample;
+            Samples = bytePos / BytesPerSample / Channels;
         }
 
         private (long,long,int) FindChunk(long pos)
         {
             for (int i = 0; i < _chunks.Count; i++)
             {
-                if (_chunks[i].Item1 >= pos)
+                if (_chunks[i].Item1 <= pos && pos<_chunks[i].Item1+_chunks[i].Item3)
                 {
                     return _chunks[i];
                 }
@@ -124,10 +125,9 @@ namespace VL.NewAudio.Files
         protected override int ReadData(byte[] data, long startPos, int numBytes)
         {
             var (chunkStartPos, filePos, len) = FindChunk(startPos);
-            _fileStream.Seek(filePos + (long)startPos, SeekOrigin.Begin);
-            var toRead = Math.Max(numBytes, len);
-            _fileStream.Read(data, 0, toRead);
-            return toRead;
+            _fileStream.Seek(filePos + startPos, SeekOrigin.Begin);
+            var toRead = Math.Min(numBytes, len);
+            return _fileStream.Read(data, 0, toRead);
         }
 
         private bool _disposedValue;

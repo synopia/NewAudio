@@ -42,13 +42,13 @@ namespace VL.NewAudioTest.Sources
 
             sine1.PrepareToPlay(44100, 1024);
             var buf = new AudioBuffer(2, 724);
-            var info = new AudioSourceChannelInfo(buf, 0, 724);
+            var info = new AudioBufferToFill(buf, 0, 724);
 
-            sine1.GetNextAudioBlock(info);
+            sine1.FillNextBuffer(info);
             var phase = AssertSine(0, 2, 724, 1000, 1, info.Buffer);
 
             info.Buffer.Zero();
-            sine1.GetNextAudioBlock(info);
+            sine1.FillNextBuffer(info);
             phase = AssertSine(phase,2, 724, 1000, 1, info.Buffer);
             
         }

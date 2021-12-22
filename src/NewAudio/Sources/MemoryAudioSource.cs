@@ -4,7 +4,7 @@ using VL.NewAudio.Dsp;
 
 namespace VL.NewAudio.Sources
 {
-    public class MemoryAudioSource : AudioSourceNode, IPositionalAudioSource
+    public class MemoryAudioSource : AudioSourceBase, IPositionalAudioSource
     {
         private readonly AudioBuffer _buffer;
         private int _position;
@@ -30,18 +30,18 @@ namespace VL.NewAudio.Sources
         {
         }
 
-        public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
+        public override void FillNextBuffer(AudioBufferToFill buffer)
         {
             if (_buffer.NumberOfFrames == 0)
             {
-                bufferToFill.ClearActiveBuffer();
+                buffer.ClearActiveBuffer();
                 return;
             }
 
-            var channels = Math.Min(bufferToFill.Buffer.NumberOfChannels, _buffer.NumberOfChannels);
+            var channels = Math.Min(buffer.Buffer.NumberOfChannels, _buffer.NumberOfChannels);
             int max, pos = 0;
             var n = _buffer.NumberOfFrames;
-            var m = bufferToFill.NumFrames;
+            var m = buffer.NumFrames;
             var i = _position;
             for (; (i < n || IsLooping) && pos < m; i += max)
             {
@@ -49,12 +49,12 @@ namespace VL.NewAudio.Sources
                 var ch = 0;
                 for (; ch < channels; ch++)
                 {
-                    _buffer[ch].Offset(i % n).CopyTo(bufferToFill.Buffer[ch].Offset(bufferToFill.StartFrame + pos), max);
+                    _buffer[ch].Offset(i % n).CopyTo(buffer.Buffer[ch].Offset(buffer.StartFrame + pos), max);
                 }
 
-                for (; ch < bufferToFill.Buffer.NumberOfChannels; ch++)
+                for (; ch < buffer.Buffer.NumberOfChannels; ch++)
                 {
-                    bufferToFill.Buffer[ch].Zero(bufferToFill.StartFrame + pos, max);
+                    buffer.Buffer[ch].Zero(buffer.StartFrame + pos, max);
                 }
 
                 pos += max;
@@ -62,7 +62,7 @@ namespace VL.NewAudio.Sources
 
             if (pos < m)
             {
-                bufferToFill.Buffer.Zero(bufferToFill.StartFrame + pos, m - pos);
+                buffer.Buffer.Zero(buffer.StartFrame + pos, m - pos);
             }
 
             _position = i;

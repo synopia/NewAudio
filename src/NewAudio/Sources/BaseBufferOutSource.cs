@@ -7,9 +7,8 @@ using VL.NewAudio.Internal;
 
 namespace VL.NewAudio.Sources
 {
-    public abstract class BaseBufferOutSource : AudioSourceNode
+    public abstract class BaseBufferOutSource : AudioSourceBase
     {
-        private readonly object _readLock = new();
         private int _sampleRate;
         private int _framesPerBlock;
         private int _bufferSize;
@@ -32,10 +31,7 @@ namespace VL.NewAudio.Sources
                         value.PrepareToPlay(_sampleRate, _framesPerBlock);
                     }
 
-                    lock (_readLock)
-                    {
-                        _source = value;
-                    }
+                    _source = value;
 
                     oldSource?.ReleaseResources();
                 }
@@ -54,11 +50,8 @@ namespace VL.NewAudio.Sources
                     return;
                 }
 
-                lock (_readLock)
-                {
-                    _bufferSize = value;
-                    Resize();
-                }
+                _bufferSize = value;
+                Resize();
             }
         }
 
@@ -73,11 +66,8 @@ namespace VL.NewAudio.Sources
 
             if (_ringBuffer.AvailableRead >= BufferSize)
             {
-                lock (_readLock)
-                {
-                    _ringBuffer.Read(_data, BufferSize);
-                    OnDataReady(_data);
-                }
+                _ringBuffer.Read(_data, BufferSize);
+                OnDataReady(_data);
             }
         }
 
@@ -93,12 +83,9 @@ namespace VL.NewAudio.Sources
 
         public override void PrepareToPlay(int sampleRate, int framesPerBlockExpected)
         {
-            lock (_readLock)
-            {
-                _sampleRate = sampleRate;
-                _framesPerBlock = framesPerBlockExpected;
-                _source?.PrepareToPlay(sampleRate, framesPerBlockExpected);
-            }
+            _sampleRate = sampleRate;
+            _framesPerBlock = framesPerBlockExpected;
+            _source?.PrepareToPlay(sampleRate, framesPerBlockExpected);
         }
 
         public override void ReleaseResources()
@@ -117,26 +104,23 @@ namespace VL.NewAudio.Sources
             _ringBuffer = new RingBuffer(_bufferSize * 2);
         }
 
-        public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
+        public override void FillNextBuffer(AudioBufferToFill buffer)
         {
             using var s = new ScopedMeasure("BaseBufferOutSource.GetNextAudioBlock");
-            lock (_readLock)
+            if (_source != null)
             {
-                if (_source != null)
-                {
-                    _source.GetNextAudioBlock(bufferToFill);
-                }
-                // else
-                // {
-                // bufferToFill.ClearActiveBuffer();
-                // }
+                _source.FillNextBuffer(buffer);
+            }
+            // else
+            // {
+            // bufferToFill.ClearActiveBuffer();
+            // }
 
-                if (bufferToFill.Buffer.NumberOfChannels > 0 && _ringBuffer != null)
-                {
-                    Overflow = _ringBuffer
-                        .Write(bufferToFill.Buffer[0].Offset(bufferToFill.StartFrame).AsSpan(bufferToFill.NumFrames),
-                            bufferToFill.NumFrames);
-                }
+            if (buffer.Buffer.NumberOfChannels > 0 && _ringBuffer != null)
+            {
+                Overflow = _ringBuffer
+                    .Write(buffer.Buffer[0].Offset(buffer.StartFrame).AsSpan(buffer.NumFrames),
+                        buffer.NumFrames);
             }
         }
     }

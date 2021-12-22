@@ -13,7 +13,6 @@ namespace VL.NewAudio.Sources
         
         public AudioParam<float> GGain { get; set; }
 
-        private readonly object _readLock = new();
         private IAudioSource? _source;
 
         public IAudioSource? Source
@@ -30,10 +29,7 @@ namespace VL.NewAudio.Sources
                         value.PrepareToPlay(_sampleRate, _framesPerBlock);
                     }
 
-                    lock (_readLock)
-                    {
-                        _source = value;
-                    }
+                    _source = value;
 
                     oldSource?.ReleaseResources();
                 }
@@ -54,16 +50,14 @@ namespace VL.NewAudio.Sources
         {
             Trace.Assert(_sampleRate > 0 && _framesPerBlock > 0);
             using var s = new ScopedMeasure("AudioSourcePlayer.OnAudio");
-            lock (_readLock)
-            {
                 var totalInputs = input?.NumberOfChannels ?? 0;
                 var totalOutputs = output.NumberOfChannels;
                 _tempBuffer.Merge(input, output, totalInputs, totalOutputs);
 
                 if (Source != null)
                 {
-                    var info = new AudioSourceChannelInfo(_tempBuffer, 0, numFrames);
-                    Source.GetNextAudioBlock(info);
+                    var info = new AudioBufferToFill(_tempBuffer, 0, numFrames);
+                    Source.FillNextBuffer(info);
 
                     for (var i = info.Buffer.NumberOfChannels; --i >= 0;)
                     {
@@ -79,7 +73,6 @@ namespace VL.NewAudio.Sources
                         output.ZeroChannel(i);
                     }
                 }
-            }
         }
 
         public void OnAudioWillStart(IAudioSession session)

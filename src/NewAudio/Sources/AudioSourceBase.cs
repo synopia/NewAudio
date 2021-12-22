@@ -4,11 +4,11 @@ using VL.NewAudio.Sources;
 
 namespace VL.NewAudio.Sources
 {
-    public abstract class AudioSourceNode : IAudioSource, IDisposable
+    public abstract class AudioSourceBase : IAudioSource, IDisposable
     {
         private bool _disposedValue;
 
-        protected AudioSourceNode()
+        protected AudioSourceBase()
         {
         }
 
@@ -16,7 +16,7 @@ namespace VL.NewAudio.Sources
 
         public abstract void ReleaseResources();
 
-        public abstract void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill);
+        public abstract void FillNextBuffer(AudioBufferToFill buffer);
 
         public void Dispose()
         {

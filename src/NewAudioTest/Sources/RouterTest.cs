@@ -17,9 +17,9 @@ namespace VL.NewAudioTest.Sources
 
             sine1.PrepareToPlay(44100, 1024);
             var buf = new AudioBuffer(2, 724);
-            var info = new AudioSourceChannelInfo(buf, 0, 724);
+            var info = new AudioBufferToFill(buf, 0, 724);
             sine1.Amplitude = 10;
-            sine1.GetNextAudioBlock(info);
+            sine1.FillNextBuffer(info);
             sine1.PrepareToPlay(44100, 1024);
 
             var router = new ChannelRouterSource();
@@ -29,7 +29,7 @@ namespace VL.NewAudioTest.Sources
 
             sine1.Amplitude = 1;
 
-            router.GetNextAudioBlock(info);
+            router.FillNextBuffer(info);
             Assert.AreEqual(2, info.Buffer.NumberOfChannels);
             var phase = SineGenTest.AssertSine(0, 2, 724, 1000, 1, info.Buffer);
         }
@@ -43,9 +43,9 @@ namespace VL.NewAudioTest.Sources
 
             sine1.PrepareToPlay(44100, 1024);
             var buf = new AudioBuffer(4, 724);
-            var info = new AudioSourceChannelInfo(buf, 0, 724);
+            var info = new AudioBufferToFill(buf, 0, 724);
             sine1.Amplitude = 10;
-            sine1.GetNextAudioBlock(info);
+            sine1.FillNextBuffer(info);
             sine1.PrepareToPlay(44100, 1024);
             sine1.Amplitude = 1;
 
@@ -55,7 +55,7 @@ namespace VL.NewAudioTest.Sources
             router.InputMap = new[] { 0, 1 };
             router.OutputMap =new[] { 2, 3 };
 
-            router.GetNextAudioBlock(info);
+            router.FillNextBuffer(info);
             Assert.AreEqual(4, info.Buffer.NumberOfChannels);
             SineGenTest.AssertSine(0, 2, 724, 1000, 0, info.Buffer[0].AsSpan(724));
             SineGenTest.AssertSine(0, 2, 724, 1000, 0, info.Buffer[1].AsSpan(724));

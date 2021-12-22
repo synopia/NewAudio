@@ -139,7 +139,8 @@ namespace VL.NewAudio.Backend
 
         private void Process(AudioBuffer? input, AudioBuffer output, int numFrames)
         {
-            var cb = Interlocked.Exchange(ref _currentCallback, null);
+            var cb = _currentCallback;
+            // var cb = Interlocked.Exchange(ref _currentCallback, null);
             if (cb != null)
             {
                 using var s = new ScopedMeasure("XtAudioSession.Process");
@@ -163,10 +164,10 @@ namespace VL.NewAudio.Backend
 
         public void Stop()
         {
-            while (Interlocked.CompareExchange(ref _audioCallbackGuard, 1, 0) == 1)
-            {
-                Thread.Sleep(1);
-            }
+            // while (Interlocked.CompareExchange(ref _audioCallbackGuard, 1, 0) == 0)
+            // {
+                // Thread.Sleep(1);
+            // }
 
             _logger.Information("AudioSession closing stream");
             _stream.Stop();
@@ -177,8 +178,8 @@ namespace VL.NewAudio.Backend
         
         public int OnBuffer(XtStream stream, in XtBuffer buffer, object user)
         {
-            if (Interlocked.CompareExchange(ref _audioCallbackGuard, 1, 0) == 0)
-            {
+            // if (Interlocked.CompareExchange(ref _audioCallbackGuard, 1, 0) == 0)
+            // {
                 try
                 {
                     LoadMeasure.Start(buffer.frames / (double)CurrentSampleRate * 1000.0);
@@ -199,7 +200,7 @@ namespace VL.NewAudio.Backend
                 {
                     _audioCallbackGuard = 0;
                 }
-            }
+            // }
 
             return 0;
         }

@@ -4,7 +4,7 @@ using VL.NewAudio.Internal;
 
 namespace VL.NewAudio.Sources
 {
-    public class GeneratorSource : AudioSourceNode
+    public class GeneratorSource : AudioSourceBase
     {
         private float _phase;
         private float _period;
@@ -24,17 +24,17 @@ namespace VL.NewAudio.Sources
         {
         }
 
-        public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
+        public override void FillNextBuffer(AudioBufferToFill buffer)
         {
             using var s = new ScopedMeasure("GeneratorSource.GetNextAudioBlock");
             var increase = Frequency * _period;
-            for (var i = 0; i < bufferToFill.NumFrames; i++)
+            for (var i = 0; i < buffer.NumFrames; i++)
             {
                 var sample = Amplitude * AudioMath.SinF(_phase * AudioMath.TwoPi);
                 _phase = AudioMath.Fract(_phase + increase);
-                for (var ch = 0; ch < bufferToFill.Buffer.NumberOfChannels; ch++)
+                for (var ch = 0; ch < buffer.Buffer.NumberOfChannels; ch++)
                 {
-                    bufferToFill.Buffer[ch, bufferToFill.StartFrame + i] = sample;
+                    buffer.Buffer[ch, buffer.StartFrame + i] = sample;
                 }
             }
         }

@@ -57,11 +57,11 @@ namespace VL.NewAudio.Sources
                 .AddOutput(nameof(AudioTransportSource.LengthInSeconds), x => x.LengthInSeconds)
                 .AddOutput(nameof(AudioTransportSource.IsPlaying), x => x.IsPlaying)
                 .AddOutput(nameof(AudioTransportSource.IsLooping), x => x.IsLooping);
-            yield return nodeFactory.NewNode(_ => new AudioFileNode(), category: category, name: "AudioFile")
+            yield return nodeFactory.NewNode(_ => new AudioFileNode(), category: category, name: "AudioFile", update:x=>x.Update())
                 .AddOutput(nameof(AudioFileNode.Source), x => x.Source)
-                .AddOutput(nameof(AudioFileNode.SampleRate), x=>x.SampleRate)
-                .AddInput(nameof(AudioFileNode.Path), x => x.Path, (x, v) => x.Path = v)
-                .AddInput(nameof(AudioFileNode.Reset), x => false, (x, v) => x.Reset());
+                .AddOutput(nameof(AudioFileNode.SampleRate), x => x.SampleRate)
+                .AddInput(nameof(AudioFileNode.IsLooping), x=>x.IsLooping, (x,v)=>x.IsLooping=v, false)
+                .AddInput(nameof(AudioFileNode.Path), x => x.Path, (x, v) => x.Path = v);
             yield return nodeFactory.NewNode(_ => new AudioBufferOutSource(), category: category,
                     name: "AudioBufferOut", hasStateOutput: true)
                 .AddInput(nameof(AudioBufferOutSource.Source), x => x.Source, (x, v) => x.Source = v)

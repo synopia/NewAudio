@@ -30,7 +30,8 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="FFTW.NET" Version="1.0.1" />
-        <PackageReference Include="NLayer.Core" Version="1.15.0" />
+        <PackageReference Include="MP3SharpWithMonoFix" Version="1.0.6" />
+        <PackageReference Include="NLayer" Version="1.14.0" />
         <PackageReference Include="Serilog" Version="2.10.0" />
         <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />

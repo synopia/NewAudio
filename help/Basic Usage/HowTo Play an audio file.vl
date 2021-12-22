@@ -463,12 +463,13 @@
               <CategoryReference Kind="Category" Name="Sources" />
               <Choice Kind="ProcessNode" Name="AudioFile" />
             </p:NodeReference>
+            <Pin Id="QVNjCDMtWUlOTxQWwJFfvB" Name="Is Looping" Kind="InputPin" DefaultValue="True" />
             <Pin Id="QXWwE1sU709NGqqGhkz6ly" Name="Path" Kind="InputPin" />
-            <Pin Id="DGTr11uWE9bOdaMHvJ20op" Name="Reset" Kind="InputPin" DefaultValue="False" />
             <Pin Id="DKIZQ7JVIhpNk5LU75vlrk" Name="Source" Kind="OutputPin" />
             <Pin Id="CR5XlUeEmwPMUapPLgH3lb" Name="Sample Rate" Kind="OutputPin" />
+            <Pin Id="DGTr11uWE9bOdaMHvJ20op" Name="Reset" Kind="InputPin" DefaultValue="False" />
           </Node>
-          <Pad Id="ADmX3iSlAqhPow2XMNAPBE" Comment="Path" Bounds="473,223,35,15" ShowValueBox="true" isIOBox="true" Value="..\..\..\..\..\..\..\..\RiderProjects\NewAudio\Assets\acidflow.mp3">
+          <Pad Id="ADmX3iSlAqhPow2XMNAPBE" Comment="Path" Bounds="473,223,35,15" ShowValueBox="true" isIOBox="true" Value="..\..\..\..\..\..\..\..\RiderProjects\NewAudio\Assets\PHONKIN SNARE 1.mp3">
             <p:TypeAnnotation>
               <Choice Kind="TypeFlag" Name="Path" />
               <FullNameCategoryReference ID="IO" />
@@ -480,9 +481,9 @@
               <Choice Kind="ProcessNode" Name="Buffer" />
             </p:NodeReference>
             <Pin Id="J2JkG5TDI0XNaqEz6VgWGV" Name="Source" Kind="InputPin" />
-            <Pin Id="LPcTiCcuvjGMgsfNCz4wi4" Name="Read Ahead" Kind="InputPin" DefaultValue="8000" />
-            <Pin Id="UDg9HxTthDjMhcRm1At5nK" Name="Source Sample Rate" Kind="InputPin" DefaultValue="44100" />
-            <Pin Id="Taht0UuXuvGMY3i8MvaE8f" Name="Gain" Kind="InputPin" DefaultValue="0.36" />
+            <Pin Id="LPcTiCcuvjGMgsfNCz4wi4" Name="Read Ahead" Kind="InputPin" DefaultValue="0" />
+            <Pin Id="UDg9HxTthDjMhcRm1At5nK" Name="Source Sample Rate" Kind="InputPin" DefaultValue="9999" />
+            <Pin Id="Taht0UuXuvGMY3i8MvaE8f" Name="Gain" Kind="InputPin" DefaultValue="0.32" />
             <Pin Id="PWy4lAUEHsdLUhJLnldeFz" Name="Start" Kind="InputPin" DefaultValue="True" />
             <Pin Id="EH7oLguJ6xlNiTQZ9iw5ha" Name="Stop" Kind="InputPin" DefaultValue="True" />
             <Pin Id="JM3vIHmFxG2OoC94nEZoNG" Name="Output" Kind="OutputPin" />
@@ -491,11 +492,40 @@
             <Pin Id="Mz8tMwk5Qx2MGvWL1TEoaZ" Name="Is Playing" Kind="OutputPin" />
             <Pin Id="CP8Pm67v1e8LWXCVOiZVr5" Name="Is Looping" Kind="OutputPin" />
           </Node>
-          <Pad Id="ELWZUuJgYjiMyYL6AYZwZX" Comment="Times" Bounds="406,812,180,95" ShowValueBox="true">
+          <Pad Id="ELWZUuJgYjiMyYL6AYZwZX" Comment="Times" Bounds="455,904,180,95" ShowValueBox="true">
             <p:ValueBoxSettings>
               <p:maxvisibleentries p:Type="Int32">10</p:maxvisibleentries>
               <p:showentryindex p:Type="Boolean">false</p:showentryindex>
               <p:shownonprintablechars p:Type="Boolean">false</p:shownonprintablechars>
+            </p:ValueBoxSettings>
+          </Pad>
+          <Pad Id="L02o3h6Ms4lLmCvmExlJpX" Comment="Source Sample Rate" Bounds="584,179,49,118" ShowValueBox="true" isIOBox="true" Value="40916">
+            <p:TypeAnnotation>
+              <Choice Kind="TypeFlag" Name="Integer32" />
+              <FullNameCategoryReference ID="Primitive" />
+            </p:TypeAnnotation>
+            <p:ValueBoxSettings>
+              <p:maximum p:Type="Int32">48000</p:maximum>
+              <p:minimum p:Type="Int32">10000</p:minimum>
+              <p:showslider p:Type="Boolean">true</p:showslider>
+            </p:ValueBoxSettings>
+          </Pad>
+          <Pad Id="JGYQtxcUBpUMN4sXtfzjns" Comment="Start" Bounds="619,345,35,35" ShowValueBox="true" isIOBox="true" Value="False">
+            <p:TypeAnnotation>
+              <Choice Kind="TypeFlag" Name="Boolean" />
+              <FullNameCategoryReference ID="Primitive" />
+            </p:TypeAnnotation>
+            <p:ValueBoxSettings>
+              <p:buttonmode p:Assembly="VL.UI.Forms" p:Type="VL.HDE.PatchEditor.Editors.ButtonModeEnum">Bang</p:buttonmode>
+            </p:ValueBoxSettings>
+          </Pad>
+          <Pad Id="U9hGZdBsTbeP8fYQs7OL13" Comment="Stop" Bounds="717,371,35,35" ShowValueBox="true" isIOBox="true" Value="False">
+            <p:TypeAnnotation>
+              <Choice Kind="TypeFlag" Name="Boolean" />
+              <FullNameCategoryReference ID="Primitive" />
+            </p:TypeAnnotation>
+            <p:ValueBoxSettings>
+              <p:buttonmode p:Assembly="VL.UI.Forms" p:Type="VL.HDE.PatchEditor.Editors.ButtonModeEnum">Bang</p:buttonmode>
             </p:ValueBoxSettings>
           </Pad>
         </Canvas>
@@ -557,8 +587,12 @@
         <Link Id="Fz9M0E0bWU0QDW1AemUJTA" Ids="A7sIuwgMYHXM6yyUjTlz0U,K2Hop1SCPN0MSIATRh6JPF" />
         <Link Id="Rfa7hObu62RMadFHtjbkD7" Ids="ADmX3iSlAqhPow2XMNAPBE,QXWwE1sU709NGqqGhkz6ly" />
         <Link Id="Qy5ADWKs1AuOxjGjyq0Bmk" Ids="DKIZQ7JVIhpNk5LU75vlrk,J2JkG5TDI0XNaqEz6VgWGV" />
-        <Link Id="SXbHPlVy5QnOoyiluQaCoV" Ids="JM3vIHmFxG2OoC94nEZoNG,NyD3W8SZyTJOSHxQZkL4Ib" />
-        <Link Id="AZzI16nrjn0PxYeFhwetqn" Ids="AXzrOz5kashK9YJT8nxl9c,ELWZUuJgYjiMyYL6AYZwZX" />
+        <Link Id="T0yie9a9X7GN2EDF9fIrxh" Ids="JM3vIHmFxG2OoC94nEZoNG,MqHP8P5UmMzORDaOiL2C37" />
+        <Link Id="M6xEGGHvLWKQOUJriSTqwC" Ids="MndBsWCezKlPTnxiGGjOIn,NyD3W8SZyTJOSHxQZkL4Ib" />
+        <Link Id="TpOVAz3Cc7JQNM7Z7gKShq" Ids="JGYQtxcUBpUMN4sXtfzjns,PWy4lAUEHsdLUhJLnldeFz" />
+        <Link Id="Aq7EsttYLXgPoCZVztut1I" Ids="U9hGZdBsTbeP8fYQs7OL13,EH7oLguJ6xlNiTQZ9iw5ha" />
+        <Link Id="SQr6SSty8PyQRVegvBFXKo" Ids="AXzrOz5kashK9YJT8nxl9c,ELWZUuJgYjiMyYL6AYZwZX" />
+        <Link Id="Qm6vJKzKWXAP4q7gbZiZHz" Ids="CR5XlUeEmwPMUapPLgH3lb,UDg9HxTthDjMhcRm1At5nK" />
       </Patch>
     </Node>
   </Patch>

@@ -16,7 +16,7 @@ namespace VL.NewAudio.Sources
         }
     }
 
-    public class AudioGraphRegion<TState> : AudioSourceNode where TState : class
+    public class AudioGraphRegion<TState> : AudioSourceBase where TState : class
     {
         private object _lock = new();
         private readonly AudioGraph _graph = new();
@@ -49,10 +49,10 @@ namespace VL.NewAudio.Sources
         {
         }
 
-        public override void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill)
+        public override void FillNextBuffer(AudioBufferToFill buffer)
         {
             using var s = new ScopedMeasure("AudioGraphRegion.GetNextAudioBlock");
-            _graph.Process(bufferToFill.Buffer);
+            _graph.Process(buffer.Buffer);
         }
 
         public AudioProcessor Update(AudioLink? input, Func<TState> create,

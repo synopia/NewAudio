@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Buffers;
+using Serilog;
 using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
 using Xt;
 
 namespace VL.NewAudio.Files
 {
-    public interface IAudioFileReader
+    public interface IAudioFileReader : IDisposable
     {
         int SampleRate { get; }
         long Samples { get; }
@@ -16,12 +17,12 @@ namespace VL.NewAudio.Files
         bool IsInterleaved { get; }
 
         void Open(string path);
-        int Read(AudioSourceChannelInfo info, long startPos);
+        void Read(AudioBufferToFill info, long startPos);
     }
 
-    public abstract class AudioFileReaderBase : IAudioFileReader, IDisposable
+    public abstract class AudioFileReaderBase : IAudioFileReader
     {
-        private byte[] _buffer;
+        private readonly byte[] _buffer;
         public int SampleRate { get; protected set; }
         public long Samples { get; protected set; }
         public int Channels { get; protected set; }
@@ -34,7 +35,7 @@ namespace VL.NewAudio.Files
 
         protected AudioFileReaderBase()
         {
-            _buffer = ArrayPool<byte>.Shared.Rent(2048);
+            _buffer = ArrayPool<byte>.Shared.Rent(1024);
         }
 
         protected abstract void ReadHeader(string path);
@@ -46,35 +47,48 @@ namespace VL.NewAudio.Files
         }
 
 
-        public virtual unsafe int Read(AudioSourceChannelInfo info, long startPos)
+        public virtual unsafe void Read(AudioBufferToFill info, long startPos)
         {
-            int numSamples = info.NumFrames;
+            int numSamples = Math.Min(info.NumFrames, (int)(Samples - startPos));
+            if (numSamples <= 0)
+            {
+                info.Buffer.Zero();
+                return;
+            }
+
             int numBytes = numSamples * BytesPerSample * Channels;
 
-            long pos = startPos;
+            long pos = startPos * BytesPerSample * Channels;
             int audioBufferPos = info.StartFrame;
             while (numBytes > 0)
             {
                 var read = ReadData(_buffer, pos, Math.Min(numBytes, _buffer.Length));
+                if (read == 0) 
+                {
+                    // eof
+                    break;
+                }
                 var frames = read / BytesPerSample / Channels;
                 fixed (byte* b = _buffer)
                 {
-
                     var inputBuffer = new XtBuffer()
                     {
                         frames = frames,
-                        input =new IntPtr(b)
+                        input = new IntPtr(b)
                     };
 
                     _convertReader!.Read(inputBuffer, 0, info.Buffer, audioBufferPos, frames);
-
                 }
+
                 audioBufferPos += frames;
                 pos += read;
                 numBytes -= read;
             }
 
-            return audioBufferPos;
+            if (audioBufferPos < info.NumFrames)
+            {
+                info.Buffer.Zero(audioBufferPos, info.NumFrames - audioBufferPos);
+            }
         }
 
 

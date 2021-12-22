@@ -18,7 +18,7 @@ namespace VL.NewAudio.Dsp
         {
             r8 = R8.r8b_create(sourceSampleRate, targetSampleRate, maxFramesPerBlock, transBand, 2);
             InData = new double[maxFramesPerBlock];
-            var framesPerBlock = (int)(maxFramesPerBlock * targetSampleRate/sourceSampleRate+1);
+            var framesPerBlock = (int) AudioMath.UpperPow2((uint)(maxFramesPerBlock * targetSampleRate/sourceSampleRate+1));
             _outData = new float[framesPerBlock];
             Buffer = new RingBuffer(framesPerBlock * 2);
         }
@@ -84,39 +84,6 @@ namespace VL.NewAudio.Dsp
             var path = Path.Combine(location, prefix);
             var x = LoadLibrary(Path.Combine(path, "r8bsrc.dll"));
             Console.WriteLine(x);
-        }
-
-        internal static unsafe IntPtr R8BCreate(double sourceSampleRate, double targetSampleRate, int maxFramesPerBlock, double transBand=2.0)
-        {
-            return r8b_create(sourceSampleRate, targetSampleRate, maxFramesPerBlock, transBand, 2);
-            
-            var d = new double[1000];
-            var o = new double[1000];
-            for (var i = 0; i < 1000; i++)
-            {
-                d[i] = i / 1000.0f;
-            }
-
-            fixed (void* ip0 = d)
-            fixed (void* output = o)
-            {
-                var x = r8b_create(44100, 50000, 1000, 1, 2);
-                while (true)
-                {
-                    var r = r8b_process(x, new IntPtr(ip0), 1000, out var op);
-                    for (var i = 0; i < r; i++)
-                    {
-                        o[i] = ((double*)op.ToPointer())[i];
-                    }
-
-                    Trace.WriteLine(o[50]);
-                }
-
-                r8b_delete(x);
-            }
-
-            Trace.WriteLine(d[50]);
-            Trace.WriteLine(o[50]);
         }
     }
 }

@@ -1,12 +1,13 @@
 ﻿using System;
 using NLayer;
+using Serilog;
 
 namespace VL.NewAudio.Files
 {
     public class Mp3FileReader: AudioFileReaderBase
     {
-        
-        private MpegFile _mpegFile;
+  
+        private MpegFile? _mpegFile;
         protected override void ReadHeader(string path)
         {
             _mpegFile = new MpegFile(path);
@@ -20,7 +21,16 @@ namespace VL.NewAudio.Files
 
         protected override int ReadData(byte[] data, long startPos, int numBytes)
         {
-            // _mpegFile.Position = startPos;
+            if (_mpegFile == null)
+            {
+                return 0;
+            }
+
+            if (startPos != _mpegFile.Position)
+            {
+                _mpegFile.Position = startPos;
+            }
+
             return _mpegFile.ReadSamples(data, 0, numBytes);
         }
     }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
 using VL.NewAudio.Core;
 using VL.NewAudio.Dsp;
 
@@ -9,12 +11,14 @@ namespace VL.NewAudio.Files
 {
     internal record Block
     {
+        private ILogger _logger = Resources.GetLogger<AudioFileBufferedReader>();
         public Block(IAudioFileReader reader, long startPos, int length)
         {
             StartPos = startPos;
-            EndPos = StartPos + length;
+            EndPos = Math.Min(StartPos + length, reader.Samples);
+            length = (int)(EndPos - StartPos);
             AudioBuffer = new AudioBuffer(reader.Channels, length);
-            reader.Read(new AudioSourceChannelInfo(AudioBuffer, 0, length), startPos);
+            reader.Read(new AudioBufferToFill(AudioBuffer, 0, length), startPos);
         }
 
         public long StartPos { get; }
@@ -29,6 +33,8 @@ namespace VL.NewAudio.Files
 
     public class AudioFileBufferedReader : IAudioFileReader, IDisposable
     {
+        private ILogger _logger = Resources.GetLogger<AudioFileBufferedReader>();
+        
         private List<Block> _blocks = new();
         private readonly IAudioFileReader _source;
         private readonly int _numBlocks;
@@ -43,13 +49,16 @@ namespace VL.NewAudio.Files
         public bool IsInterleaved => _source.IsInterleaved;
         private CancellationTokenSource _cts = new();
         private Task? _fillBufferTask;
-        private readonly object _lock = new();
         private bool _disposedValue;
+        private Stopwatch _timer = new();
+        private double _timeOut;
+        private readonly object _lock = new();
 
-        public AudioFileBufferedReader(IAudioFileReader source, int samplesToBuffer)
+        public AudioFileBufferedReader(IAudioFileReader source, int samplesToBuffer, double timeOut = 50.0)
         {
             _source = source;
             _numBlocks = 1 + samplesToBuffer / SamplesPerBlock;
+            _timeOut = timeOut;
         }
 
         public void Dispose()
@@ -74,8 +83,15 @@ namespace VL.NewAudio.Files
             {
                 while (!_cts.Token.IsCancellationRequested)
                 {
-                    var r = ReadNextBufferChunk();
-                    Thread.Sleep(TimeSpan.FromMilliseconds(r ? 1 : 100));
+                    try
+                    {
+                        var r = ReadNextBufferChunk();
+                        Thread.Sleep(TimeSpan.FromMilliseconds(r ? 1 : 100));
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Error(e,"StartFillBlockTask");
+                    }
                 }
             }, _cts.Token);
         }
@@ -110,11 +126,11 @@ namespace VL.NewAudio.Files
             long endPos = Math.Min(Samples, pos + _numBlocks * SamplesPerBlock);
 
             List<Block> newBlocks = new List<Block>();
-            for (int i = _blocks.Count - 1; i >= 0; i--)
+            foreach (var block in _blocks)
             {
-                if (_blocks[i].Intersects(pos, endPos))
+                if (block.StartPos==0 || block.Intersects(pos, endPos))
                 {
-                    newBlocks.Add(_blocks[i]);
+                    newBlocks.Add(block);
                 }
             }
 
@@ -140,13 +156,13 @@ namespace VL.NewAudio.Files
             return true;
         }
 
-        public int Read(AudioSourceChannelInfo info, long startPos)
+        public void Read(AudioBufferToFill info, long startPos)
         {
             var numFrames = info.NumFrames;
             var destStart = info.StartFrame;
 
             _nextReadPosition = startPos;
-
+            _timer.Restart();
             while (numFrames > 0)
             {
                 var wait = false;
@@ -174,11 +190,19 @@ namespace VL.NewAudio.Files
 
                 if (wait)
                 {
+                    if (_timer.Elapsed.TotalMilliseconds > _timeOut)
+                    {
+                        for (int ch = 0; ch < info.Buffer.NumberOfChannels; ch++)
+                        {
+                            info.Buffer[ch].Zero(destStart, numFrames);
+                        }
+
+                        break;
+                    }
+
                     Thread.Sleep(1);
                 }
             }
-
-            return numFrames;
         }
     }
 }

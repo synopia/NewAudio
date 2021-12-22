@@ -2,13 +2,13 @@
 
 namespace VL.NewAudio.Core
 {
-    public struct AudioSourceChannelInfo
+    public readonly struct AudioBufferToFill
     {
-        public AudioBuffer Buffer;
-        public int StartFrame;
-        public int NumFrames;
+        public readonly AudioBuffer Buffer;
+        public readonly int StartFrame;
+        public readonly int NumFrames;
 
-        public AudioSourceChannelInfo(AudioBuffer buffer, int startFrame, int numFrames)
+        public AudioBufferToFill(AudioBuffer buffer, int startFrame, int numFrames)
         {
             Buffer = buffer;
             StartFrame = startFrame;
@@ -25,6 +25,6 @@ namespace VL.NewAudio.Core
     {
         void PrepareToPlay(int sampleRate, int framesPerBlockExpected);
         void ReleaseResources();
-        void GetNextAudioBlock(AudioSourceChannelInfo bufferToFill);
+        void FillNextBuffer(AudioBufferToFill buffer);
     }
 }
